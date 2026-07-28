@@ -1,11 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
-import * as path from 'path';
-import * as fs from 'fs';
+import { StorageService } from '../storage/storage.service';
 
 @Injectable()
 export class DocumentsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private storage: StorageService,
+  ) {}
 
   async uploadToActivity(
     activityId: string,
@@ -20,11 +22,12 @@ export class DocumentsService {
     if (!activity) throw new NotFoundException('Activité introuvable');
 
     const storageKey = `${organizationId}/${activityId}/${Date.now()}-${file.originalname}`;
+    await this.storage.upload(storageKey, file);
 
     return this.prisma.document.create({
       data: {
         activityId,
-        type,
+        type: type ?? 'autre',
         storageKey,
         fileName: file.originalname,
         fileSize: file.size,
@@ -47,12 +50,13 @@ export class DocumentsService {
     if (!item) throw new NotFoundException('Tâche introuvable');
 
     const storageKey = `${organizationId}/checklist/${checklistItemId}/${Date.now()}-${file.originalname}`;
+    await this.storage.upload(storageKey, file);
 
     return this.prisma.document.create({
       data: {
         checklistItemId,
         activityId: item.activityId,
-        type,
+        type: type ?? 'autre',
         storageKey,
         fileName: file.originalname,
         fileSize: file.size,
@@ -67,7 +71,6 @@ export class DocumentsService {
       where: { id: activityId, organizationId },
     });
     if (!activity) throw new NotFoundException('Activité introuvable');
-
     return this.prisma.document.findMany({
       where: { activityId },
       orderBy: { createdAt: 'desc' },
@@ -79,11 +82,25 @@ export class DocumentsService {
       where: { id: checklistItemId, activity: { organizationId } },
     });
     if (!item) throw new NotFoundException('Tâche introuvable');
-
     return this.prisma.document.findMany({
       where: { checklistItemId },
       orderBy: { createdAt: 'desc' },
     });
+  }
+
+  async getDownloadUrl(id: string, organizationId: string) {
+    const doc = await this.prisma.document.findFirst({
+      where: {
+        id,
+        OR: [
+          { activity: { organizationId } },
+          { checklistItem: { activity: { organizationId } } },
+        ],
+      },
+    });
+    if (!doc) throw new NotFoundException('Document introuvable');
+    const url = await this.storage.getSignedUrl(doc.storageKey);
+    return { url, fileName: doc.fileName, mimeType: doc.mimeType };
   }
 
   async remove(id: string, organizationId: string) {
@@ -97,13 +114,7 @@ export class DocumentsService {
       },
     });
     if (!doc) throw new NotFoundException('Document introuvable');
-
-    // Supprimer le fichier local (en Phase 6 : supprimer sur Backblaze B2)
-    const localPath = path.join(process.cwd(), 'uploads', doc.storageKey);
-    if (fs.existsSync(localPath)) {
-      fs.unlinkSync(localPath);
-    }
-
+    await this.storage.delete(doc.storageKey);
     return this.prisma.document.delete({ where: { id } });
   }
 }

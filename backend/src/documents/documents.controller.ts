@@ -3,24 +3,12 @@ import {
   UseGuards, UseInterceptors, HttpCode, HttpStatus, BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import * as path from 'path';
+import { memoryStorage } from 'multer';
 import { DocumentsService } from './documents.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
-const storage = diskStorage({
-  destination: (req, file, cb) => {
-    const uploadPath = path.join(process.cwd(), 'uploads');
-    cb(null, uploadPath);
-  },
-  filename: (req, file, cb) => {
-    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    cb(null, `${unique}${path.extname(file.originalname)}`);
-  },
-});
-
-const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
+const upload = { storage: memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } };
 
 @Controller()
 @UseGuards(JwtAuthGuard)
@@ -28,7 +16,7 @@ export class DocumentsController {
   constructor(private documentsService: DocumentsService) {}
 
   @Post('activities/:activityId/documents')
-  @UseInterceptors(FileInterceptor('file', { storage, limits: { fileSize: MAX_FILE_SIZE } }))
+  @UseInterceptors(FileInterceptor('file', upload))
   uploadToActivity(
     @Param('activityId') activityId: string,
     @UploadedFile() file: Express.Multer.File,
@@ -36,7 +24,7 @@ export class DocumentsController {
     @CurrentUser() user: any,
   ) {
     if (!file) throw new BadRequestException('Fichier manquant');
-    return this.documentsService.uploadToActivity(activityId, file, type ?? 'autre', user.organizationId, user.id);
+    return this.documentsService.uploadToActivity(activityId, file, type, user.organizationId, user.id);
   }
 
   @Get('activities/:activityId/documents')
@@ -45,7 +33,7 @@ export class DocumentsController {
   }
 
   @Post('checklist-items/:itemId/documents')
-  @UseInterceptors(FileInterceptor('file', { storage, limits: { fileSize: MAX_FILE_SIZE } }))
+  @UseInterceptors(FileInterceptor('file', upload))
   uploadToChecklist(
     @Param('itemId') itemId: string,
     @UploadedFile() file: Express.Multer.File,
@@ -53,12 +41,17 @@ export class DocumentsController {
     @CurrentUser() user: any,
   ) {
     if (!file) throw new BadRequestException('Fichier manquant');
-    return this.documentsService.uploadToChecklistItem(itemId, file, type ?? 'autre', user.organizationId, user.id);
+    return this.documentsService.uploadToChecklistItem(itemId, file, type, user.organizationId, user.id);
   }
 
   @Get('checklist-items/:itemId/documents')
   findByChecklistItem(@Param('itemId') itemId: string, @CurrentUser() user: any) {
     return this.documentsService.findByChecklistItem(itemId, user.organizationId);
+  }
+
+  @Get('documents/:id/download')
+  getDownloadUrl(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.documentsService.getDownloadUrl(id, user.organizationId);
   }
 
   @Delete('documents/:id')
