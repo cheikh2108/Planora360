@@ -1,0 +1,252 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum SubscriptionPlan {
+  ESSENTIELLE
+  PROFESSIONNELLE
+  ORGANISATION
+  SUR_MESURE
+}
+
+enum ActivityStatus {
+  NON_DEMARREE
+  EN_PREPARATION
+  EN_COURS
+  EN_ATTENTE
+  SUSPENDUE
+  TERMINEE
+  VALIDEE
+  EN_RETARD
+  ANNULEE
+}
+
+enum ValidationStep {
+  SOUMISSION
+  VERIFICATION_HIERARCHIQUE
+  VALIDATION_TECHNIQUE
+  VALIDATION_ADMINISTRATIVE
+  CLOTURE
+}
+
+enum ValidationDecision {
+  APPROUVE
+  REJETE
+  EN_ATTENTE
+}
+
+model Organization {
+  id               String           @id @default(cuid())
+  name             String
+  logoUrl          String?
+  subscriptionPlan SubscriptionPlan @default(ESSENTIELLE)
+  createdAt        DateTime         @default(now())
+
+  users       User[]
+  actionPlans ActionPlan[]
+  auditLogs   AuditLog[]
+
+  @@map("organizations")
+}
+
+model Role {
+  id          String @id @default(cuid())
+  name        String @unique
+  permissions Json
+
+  users User[]
+
+  @@map("roles")
+}
+
+model User {
+  id              String       @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  roleId          String
+  role            Role         @relation(fields: [roleId], references: [id])
+  email           String       @unique
+  firstName       String
+  lastName        String
+  passwordHash    String
+  twoFactorSecret String?
+  isTwoFactorEnabled Boolean   @default(false)
+  isActive        Boolean      @default(true)
+  lastLoginAt     DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  refreshTokens         RefreshToken[]
+  responsibleActivities Activity[]      @relation("ActivityResponsible")
+  checklistItems        ChecklistItem[] @relation("ChecklistResponsible")
+
+  @@index([organizationId])
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model ActionPlan {
+  id                 String       @id @default(cuid())
+  organizationId     String
+  organization       Organization @relation(fields: [organizationId], references: [id])
+  title              String
+  periodStart        DateTime
+  periodEnd          DateTime
+  strategicGoals     String?
+  expectedResults    String?
+  budgetPrevisional  Decimal?     @db.Decimal(14, 2)
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  axes Axis[]
+
+  @@index([organizationId])
+  @@map("action_plans")
+}
+
+model Axis {
+  id           String     @id @default(cuid())
+  actionPlanId String
+  actionPlan   ActionPlan @relation(fields: [actionPlanId], references: [id], onDelete: Cascade)
+  title        String
+  order        Int        @default(0)
+
+  activities Activity[]
+
+  @@map("axes")
+}
+
+model Activity {
+  id               String         @id @default(cuid())
+  organizationId   String
+  axisId           String
+  axis             Axis           @relation(fields: [axisId], references: [id], onDelete: Cascade)
+  parentActivityId String?
+  parent           Activity?      @relation("SubActivities", fields: [parentActivityId], references: [id])
+  subActivities    Activity[]     @relation("SubActivities")
+  title            String
+  description      String?
+  responsibleId    String
+  responsible      User           @relation("ActivityResponsible", fields: [responsibleId], references: [id])
+  startDate        DateTime
+  dueDate          DateTime
+  priority         String         @default("MOYENNE")
+  budgetPlanned    Decimal?       @db.Decimal(14, 2)
+  budgetExecuted   Decimal?       @db.Decimal(14, 2)
+  status           ActivityStatus @default(NON_DEMARREE)
+  completionRate   Float          @default(0)
+  risks            String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  checklistItems ChecklistItem[]
+  validations    Validation[]
+  documents      Document[]
+  budgets        Budget[]
+
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@index([axisId])
+  @@map("activities")
+}
+
+model ChecklistItem {
+  id            String    @id @default(cuid())
+  activityId    String
+  activity      Activity  @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  label         String
+  responsibleId String
+  responsible   User      @relation("ChecklistResponsible", fields: [responsibleId], references: [id])
+  dueDate       DateTime?
+  isMandatory   Boolean   @default(true)
+  progress      Float     @default(0)
+  observations  String?
+  isValidated   Boolean   @default(false)
+  order         Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  documents Document[]
+
+  @@index([activityId])
+  @@map("checklist_items")
+}
+
+model Validation {
+  id          String             @id @default(cuid())
+  activityId  String
+  activity    Activity           @relation(fields: [activityId], references: [id])
+  step        ValidationStep
+  decision    ValidationDecision @default(EN_ATTENTE)
+  validatorId String
+  comment     String?
+  createdAt   DateTime           @default(now())
+
+  @@index([activityId])
+  @@map("validations")
+}
+
+model Budget {
+  id            String   @id @default(cuid())
+  activityId    String
+  activity      Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  planned       Decimal  @db.Decimal(14, 2)
+  committed     Decimal  @db.Decimal(14, 2) @default(0)
+  disbursed     Decimal  @db.Decimal(14, 2) @default(0)
+  executed      Decimal  @db.Decimal(14, 2) @default(0)
+  fundingSource String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([activityId])
+  @@map("budgets")
+}
+
+model Document {
+  id              String         @id @default(cuid())
+  activityId      String?
+  activity        Activity?      @relation(fields: [activityId], references: [id])
+  checklistItemId String?
+  checklistItem   ChecklistItem? @relation(fields: [checklistItemId], references: [id])
+  type            String
+  storageKey      String
+  fileName        String
+  fileSize        Int?
+  mimeType        String?
+  uploadedById    String
+  createdAt       DateTime       @default(now())
+
+  @@index([activityId])
+  @@map("documents")
+}
+
+model AuditLog {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  userId         String
+  action         String
+  entityType     String
+  entityId       String
+  metadata       Json?
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId])
+  @@index([organizationId, createdAt])
+  @@map("audit_logs")
+}
