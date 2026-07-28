@@ -16,7 +16,7 @@ export class ChecklistController {
   constructor(private checklistService: ChecklistService) {}
 
   @Post()
-  @Roles('org_admin', 'coordonnateur', 'resp_projet', 'chef_service', 'resp_activite')
+  @Roles('Administrateur', 'Coordinateur', 'Responsable de projet', 'Chef de service', "Responsable d'activité")
   create(
     @Param('activityId') activityId: string,
     @Body() dto: CreateChecklistItemDto,
@@ -36,7 +36,7 @@ export class ChecklistController {
   }
 
   @Patch(':id')
-  @Roles('org_admin', 'coordonnateur', 'resp_projet', 'chef_service', 'resp_activite')
+  @Roles('Administrateur', 'Coordinateur', 'Responsable de projet', 'Chef de service', "Responsable d'activité")
   update(
     @Param('id') id: string,
     @Body() dto: UpdateChecklistItemDto,
@@ -46,7 +46,7 @@ export class ChecklistController {
   }
 
   @Delete(':id')
-  @Roles('org_admin', 'coordonnateur', 'resp_projet', 'chef_service')
+  @Roles('Administrateur', 'Coordinateur', 'Responsable de projet', 'Chef de service')
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: string, @CurrentUser() user: any) {
     return this.checklistService.remove(id, user.organizationId);

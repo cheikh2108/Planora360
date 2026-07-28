@@ -17,7 +17,7 @@ export class ActionPlansController {
   constructor(private actionPlansService: ActionPlansService) {}
 
   @Post()
-  @Roles('org_admin', 'coordonnateur', 'resp_projet')
+  @Roles('Administrateur', 'Coordinateur', 'Responsable de projet')
   create(@Body() dto: CreateActionPlanDto, @CurrentUser() user: any) {
     return this.actionPlansService.create(dto, user.organizationId);
   }
@@ -33,13 +33,13 @@ export class ActionPlansController {
   }
 
   @Patch(':id')
-  @Roles('org_admin', 'coordonnateur', 'resp_projet')
+  @Roles('Administrateur', 'Coordinateur', 'Responsable de projet')
   update(@Param('id') id: string, @Body() dto: UpdateActionPlanDto, @CurrentUser() user: any) {
     return this.actionPlansService.update(id, dto, user.organizationId);
   }
 
   @Delete(':id')
-  @Roles('org_admin', 'coordonnateur')
+  @Roles('Administrateur', 'Coordinateur')
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: string, @CurrentUser() user: any) {
     return this.actionPlansService.remove(id, user.organizationId);
@@ -47,19 +47,19 @@ export class ActionPlansController {
 
   // Axes
   @Post(':planId/axes')
-  @Roles('org_admin', 'coordonnateur', 'resp_projet')
+  @Roles('Administrateur', 'Coordinateur', 'Responsable de projet')
   createAxis(@Param('planId') planId: string, @Body() dto: CreateAxisDto, @CurrentUser() user: any) {
     return this.actionPlansService.createAxis(planId, dto, user.organizationId);
   }
 
   @Patch('axes/:axisId')
-  @Roles('org_admin', 'coordonnateur', 'resp_projet')
+  @Roles('Administrateur', 'Coordinateur', 'Responsable de projet')
   updateAxis(@Param('axisId') axisId: string, @Body() dto: UpdateAxisDto, @CurrentUser() user: any) {
     return this.actionPlansService.updateAxis(axisId, dto, user.organizationId);
   }
 
   @Delete('axes/:axisId')
-  @Roles('org_admin', 'coordonnateur')
+  @Roles('Administrateur', 'Coordinateur')
   @HttpCode(HttpStatus.NO_CONTENT)
   removeAxis(@Param('axisId') axisId: string, @CurrentUser() user: any) {
     return this.actionPlansService.removeAxis(axisId, user.organizationId);

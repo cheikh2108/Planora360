@@ -1,0 +1,114 @@
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import {
+  LayoutDashboard, FolderKanban, CheckSquare, GitBranch,
+  PiggyBank, FileText, Bell, BarChart3, Settings, LogOut,
+  ChevronDown, Users, Shield,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useAuth } from '@/lib/auth-context';
+import { useState } from 'react';
+
+interface NavItem {
+  href: string;
+  label: string;
+  icon: React.ElementType;
+  permission?: string;
+}
+
+const NAV_ITEMS: NavItem[] = [
+  { href: '/dashboard',     label: 'Tableau de bord', icon: LayoutDashboard, permission: 'dashboard.view' },
+  { href: '/plans',         label: "Plans d'action",  icon: FolderKanban,    permission: 'plan.read' },
+  { href: '/activities',    label: 'Activités',       icon: CheckSquare,     permission: 'activity.read' },
+  { href: '/validations',   label: 'Validations',     icon: GitBranch,       permission: 'validation.approve' },
+  { href: '/budgets',       label: 'Budget',          icon: PiggyBank,       permission: 'budget.read' },
+  { href: '/documents',     label: 'Documents',       icon: FileText,        permission: 'document.download' },
+  { href: '/reports',       label: 'Rapports',        icon: BarChart3,       permission: 'report.generate' },
+  { href: '/notifications', label: 'Notifications',   icon: Bell },
+];
+
+const ORG_ADMIN_ITEMS: NavItem[] = [
+  { href: '/admin/users',  label: 'Utilisateurs', icon: Users,  permission: 'user.read' },
+  { href: '/admin/roles',  label: 'Rôles',        icon: Shield, permission: 'user.create' },
+  { href: '/settings',     label: 'Paramètres',   icon: Settings },
+];
+
+export function Sidebar({ onClose }: { onClose?: () => void }) {
+  const pathname = usePathname();
+  const { user, logout } = useAuth();
+  const [adminOpen, setAdminOpen] = useState(false);
+
+  const canSee = (item: NavItem) => {
+    if (!item.permission) return true;
+    const perms: string[] = user?.role?.permissions ?? [];
+    return perms.includes('*') || perms.includes(item.permission);
+  };
+
+  const navLink = (item: NavItem) => {
+    const active = pathname === item.href || pathname.startsWith(item.href + '/');
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        onClick={onClose}
+        className={cn(
+          'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
+          active
+            ? 'bg-[#2563eb] text-white'
+            : 'text-white/60 hover:bg-white/8 hover:text-white'
+        )}
+      >
+        <item.icon size={18} className="shrink-0" />
+        <span className="flex-1 truncate">{item.label}</span>
+      </Link>
+    );
+  };
+
+  const visibleAdmin = ORG_ADMIN_ITEMS.filter(canSee);
+
+  return (
+    <aside className="flex flex-col h-full bg-[#0f1e38] text-white w-64 shrink-0">
+      <div className="flex items-center gap-3 px-5 py-5 border-b border-white/10">
+        <div className="w-8 h-8 rounded-lg bg-[#2563eb] flex items-center justify-center font-bold text-sm">A</div>
+        <div>
+          <p className="font-semibold text-sm leading-tight">ATAABA Pilot</p>
+          <p className="text-xs text-white/40 truncate max-w-35">{user?.organization?.name ?? '—'}</p>
+        </div>
+      </div>
+
+      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
+        {NAV_ITEMS.filter(canSee).map(navLink)}
+
+        {visibleAdmin.length > 0 && (
+          <div className="pt-4">
+            <button
+              onClick={() => setAdminOpen(v => !v)}
+              className="flex items-center gap-2 px-3 py-1.5 w-full text-xs font-semibold uppercase tracking-wider text-white/30 hover:text-white/60 transition-colors"
+            >
+              <span className="flex-1 text-left">Administration</span>
+              <ChevronDown className={cn('w-3.5 h-3.5 transition-transform', adminOpen && 'rotate-180')} />
+            </button>
+            {adminOpen && <div className="mt-1 space-y-0.5">{visibleAdmin.map(navLink)}</div>}
+          </div>
+        )}
+      </nav>
+
+      <div className="px-3 py-3 border-t border-white/10">
+        <div className="flex items-center gap-3 px-3 py-2 rounded-lg">
+          <div className="w-8 h-8 rounded-full bg-[#2563eb]/30 flex items-center justify-center text-sm font-bold shrink-0">
+            {user?.firstName?.[0]}{user?.lastName?.[0]}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-white truncate">{user?.firstName} {user?.lastName}</p>
+            <p className="text-xs text-white/40 truncate">{user?.role?.name}</p>
+          </div>
+          <button onClick={logout} title="Se déconnecter" className="p-1.5 rounded-md text-white/30 hover:text-red-400 hover:bg-white/8 transition-colors">
+            <LogOut size={16} />
+          </button>
+        </div>
+      </div>
+    </aside>
+  );
+}

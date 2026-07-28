@@ -47,6 +47,7 @@ model Organization {
   createdAt        DateTime         @default(now())
 
   users       User[]
+  roles       Role[]
   actionPlans ActionPlan[]
   auditLogs   AuditLog[]
 
@@ -54,12 +55,16 @@ model Organization {
 }
 
 model Role {
-  id          String @id @default(cuid())
-  name        String @unique
-  permissions Json
+  id             String  @id @default(cuid())
+  organizationId String?
+  name           String
+  permissions    Json
 
-  users User[]
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  users        User[]
 
+  @@unique([organizationId, name])
+  @@index([organizationId])
   @@map("roles")
 }
 

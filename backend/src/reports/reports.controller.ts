@@ -9,7 +9,7 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 @Controller('reports')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('org_admin', 'coordonnateur', 'resp_projet', 'resp_financier', 'auditeur')
+@Roles('Administrateur', 'Coordinateur', 'Responsable de projet', 'Responsable financier', 'Auditeur')
 export class ReportsController {
   constructor(private reportsService: ReportsService) {}
 

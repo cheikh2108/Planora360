@@ -19,7 +19,9 @@ export class OrganizationsService {
   findAll() {
     return this.prisma.organization.findMany({
       orderBy: { createdAt: 'desc' },
-      include: { _count: { select: { users: true, actionPlans: true } } },
+      include: {
+        _count: { select: { users: true, actionPlans: true } },
+      },
     });
   }
 
@@ -27,8 +29,7 @@ export class OrganizationsService {
     const org = await this.prisma.organization.findUnique({
       where: { id },
       include: {
-        users: { include: { role: true }, orderBy: { createdAt: 'desc' } },
-        _count: { select: { actionPlans: true } },
+        _count: { select: { actionPlans: true, users: true } },
       },
     });
     if (!org) throw new NotFoundException('Organisation introuvable');

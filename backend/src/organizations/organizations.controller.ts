@@ -11,7 +11,7 @@ import { Roles } from '../common/decorators/roles.decorator';
 
 @Controller('organizations')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('super_admin')
+@Roles('Super administrateur')
 export class OrganizationsController {
   constructor(private organizationsService: OrganizationsService) {}
 

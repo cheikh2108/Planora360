@@ -11,13 +11,13 @@ export class AuditController {
   constructor(private auditService: AuditService) {}
 
   @Get()
-  @Roles('org_admin', 'coordonnateur', 'auditeur', 'super_admin')
+  @Roles('Administrateur', 'Coordinateur', 'Auditeur', 'Super administrateur')
   findAll(@CurrentUser() user: any, @Query('limit') limit?: string) {
     return this.auditService.findByOrganization(user.organizationId, limit ? parseInt(limit) : 100);
   }
 
   @Get('activity/:id')
-  @Roles('org_admin', 'coordonnateur', 'resp_projet', 'auditeur', 'super_admin')
+  @Roles('Administrateur', 'Coordinateur', 'Responsable de projet', 'Auditeur', 'Super administrateur')
   findByActivity(@Param('id') id: string, @CurrentUser() user: any) {
     return this.auditService.findByEntity('Activity', id, user.organizationId);
   }

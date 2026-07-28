@@ -16,7 +16,7 @@ export class BudgetsController {
   constructor(private budgetsService: BudgetsService) {}
 
   @Post('activities/:activityId/budgets')
-  @Roles('org_admin', 'resp_projet', 'resp_financier')
+  @Roles('Administrateur', 'Responsable de projet', 'Responsable financier')
   create(
     @Param('activityId') activityId: string,
     @Body() dto: CreateBudgetDto,
@@ -31,13 +31,13 @@ export class BudgetsController {
   }
 
   @Patch('budgets/:id')
-  @Roles('org_admin', 'resp_projet', 'resp_financier')
+  @Roles('Administrateur', 'Responsable de projet', 'Responsable financier')
   update(@Param('id') id: string, @Body() dto: UpdateBudgetDto, @CurrentUser() user: any) {
     return this.budgetsService.update(id, dto, user.organizationId);
   }
 
   @Delete('budgets/:id')
-  @Roles('org_admin', 'resp_financier')
+  @Roles('Administrateur', 'Responsable financier')
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: string, @CurrentUser() user: any) {
     return this.budgetsService.remove(id, user.organizationId);

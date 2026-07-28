@@ -16,36 +16,36 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @Get('roles')
-  findRoles() {
-    return this.usersService.findRoles();
+  findRoles(@CurrentUser() user: any) {
+    return this.usersService.findRoles(user.organizationId, user.role?.name);
   }
 
   @Post()
-  @Roles('super_admin', 'org_admin')
+  @Roles('Super administrateur', 'Administrateur')
   create(@Body() dto: CreateUserDto, @CurrentUser() user: any) {
     return this.usersService.create(dto, user.organizationId, user.role.name);
   }
 
   @Get()
-  @Roles('super_admin', 'org_admin', 'coordonnateur')
+  @Roles('Super administrateur', 'Administrateur', 'Coordinateur')
   findAll(@CurrentUser() user: any) {
     return this.usersService.findAll(user.organizationId);
   }
 
   @Get(':id')
-  @Roles('super_admin', 'org_admin', 'coordonnateur')
+  @Roles('Super administrateur', 'Administrateur', 'Coordinateur')
   findOne(@Param('id') id: string, @CurrentUser() user: any) {
     return this.usersService.findOne(id, user.organizationId);
   }
 
   @Patch(':id')
-  @Roles('super_admin', 'org_admin')
+  @Roles('Super administrateur', 'Administrateur')
   update(@Param('id') id: string, @Body() dto: UpdateUserDto, @CurrentUser() user: any) {
     return this.usersService.update(id, dto, user.organizationId);
   }
 
   @Delete(':id')
-  @Roles('super_admin', 'org_admin')
+  @Roles('Super administrateur', 'Administrateur')
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: string, @CurrentUser() user: any) {
     return this.usersService.remove(id, user.organizationId);

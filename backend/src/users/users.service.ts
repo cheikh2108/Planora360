@@ -14,7 +14,7 @@ export class UsersService {
   constructor(private prisma: PrismaService) {}
 
   async create(dto: CreateUserDto, actorOrganizationId: string, actorRole: string) {
-    const orgId = actorRole === 'super_admin' && dto.organizationId
+    const orgId = actorRole === 'Super administrateur' && dto.organizationId
       ? dto.organizationId
       : actorOrganizationId;
 
@@ -24,7 +24,7 @@ export class UsersService {
     const role = await this.prisma.role.findUnique({ where: { id: dto.roleId } });
     if (!role) throw new NotFoundException('Rôle introuvable');
 
-    if (actorRole !== 'super_admin' && role.name === 'super_admin') {
+    if (actorRole !== 'Super administrateur' && role.name === 'Super administrateur') {
       throw new ForbiddenException('Vous ne pouvez pas créer un super admin');
     }
 
@@ -89,7 +89,16 @@ export class UsersService {
     await this.prisma.user.delete({ where: { id } });
   }
 
-  findRoles() {
-    return this.prisma.role.findMany({ orderBy: { name: 'asc' } });
+  findRoles(organizationId?: string, callerRole?: string) {
+    const isSuperAdmin = callerRole === 'Super administrateur';
+    return this.prisma.role.findMany({
+      where: {
+        ...(organizationId
+          ? { OR: [{ organizationId }, { organizationId: null }] }
+          : {}),
+        ...(isSuperAdmin ? {} : { NOT: { name: 'Super administrateur' } }),
+      },
+      orderBy: [{ organizationId: 'asc' }, { name: 'asc' }],
+    });
   }
 }

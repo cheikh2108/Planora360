@@ -17,7 +17,7 @@ export class ActivitiesController {
   constructor(private activitiesService: ActivitiesService) {}
 
   @Post()
-  @Roles('org_admin', 'coordonnateur', 'resp_projet', 'chef_service')
+  @Roles('Administrateur', 'Coordinateur', 'Responsable de projet', 'Chef de service')
   create(@Body() dto: CreateActivityDto, @CurrentUser() user: any) {
     return this.activitiesService.create(dto, user.organizationId);
   }
@@ -33,19 +33,19 @@ export class ActivitiesController {
   }
 
   @Patch(':id')
-  @Roles('org_admin', 'coordonnateur', 'resp_projet', 'chef_service', 'resp_activite')
+  @Roles('Administrateur', 'Coordinateur', 'Responsable de projet', 'Chef de service', "Responsable d'activité")
   update(@Param('id') id: string, @Body() dto: UpdateActivityDto, @CurrentUser() user: any) {
     return this.activitiesService.update(id, dto, user.organizationId);
   }
 
   @Patch(':id/status')
-  @Roles('org_admin', 'coordonnateur', 'resp_projet', 'chef_service', 'resp_activite')
+  @Roles('Administrateur', 'Coordinateur', 'Responsable de projet', 'Chef de service', "Responsable d'activité")
   updateStatus(@Param('id') id: string, @Body() dto: UpdateStatusDto, @CurrentUser() user: any) {
     return this.activitiesService.updateStatus(id, dto.status, user.organizationId);
   }
 
   @Delete(':id')
-  @Roles('org_admin', 'coordonnateur', 'resp_projet')
+  @Roles('Administrateur', 'Coordinateur', 'Responsable de projet')
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: string, @CurrentUser() user: any) {
     return this.activitiesService.remove(id, user.organizationId);

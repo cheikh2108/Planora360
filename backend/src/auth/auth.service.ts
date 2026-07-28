@@ -24,7 +24,7 @@ export class AuthService {
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
-      include: { role: true },
+      include: { role: true, organization: true },
     });
 
     if (!user || !user.isActive) throw new UnauthorizedException('Identifiants invalides');
@@ -55,7 +55,7 @@ export class AuthService {
   async refresh(token: string) {
     const stored = await this.prisma.refreshToken.findUnique({
       where: { token },
-      include: { user: { include: { role: true } } },
+      include: { user: { include: { role: true, organization: true } } },
     });
 
     if (!stored || stored.expiresAt < new Date()) {
@@ -162,7 +162,16 @@ export class AuthService {
         firstName: user.firstName,
         lastName: user.lastName,
         organizationId: user.organizationId,
-        role: user.role?.name,
+        isActive: user.isActive,
+        twoFactorEnabled: user.isTwoFactorEnabled,
+        role: {
+          id: user.role?.id,
+          name: user.role?.name,
+          permissions: user.role?.permissions ?? [],
+        },
+        organization: user.organization
+          ? { id: user.organization.id, name: user.organization.name }
+          : undefined,
       },
     };
   }

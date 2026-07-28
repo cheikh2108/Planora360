@@ -7,9 +7,9 @@ const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
 const ROLES = [
-  { name: 'super_admin', permissions: ['*'] },
+  { name: 'Super administrateur', permissions: ['*'] },
   {
-    name: 'org_admin',
+    name: 'Administrateur',
     permissions: [
       'user.create', 'user.update', 'user.delete', 'user.read',
       'plan.create', 'plan.update', 'plan.delete', 'plan.read',
@@ -22,7 +22,7 @@ const ROLES = [
     ],
   },
   {
-    name: 'coordonnateur',
+    name: 'Coordinateur',
     permissions: [
       'plan.create', 'plan.update', 'plan.read',
       'activity.create', 'activity.update', 'activity.read',
@@ -33,7 +33,7 @@ const ROLES = [
     ],
   },
   {
-    name: 'resp_projet',
+    name: 'Responsable de projet',
     permissions: [
       'plan.create', 'plan.update', 'plan.read',
       'activity.create', 'activity.update', 'activity.read',
@@ -45,7 +45,7 @@ const ROLES = [
     ],
   },
   {
-    name: 'chef_service',
+    name: 'Chef de service',
     permissions: [
       'activity.create', 'activity.update', 'activity.read',
       'checklist.create', 'checklist.update',
@@ -55,7 +55,7 @@ const ROLES = [
     ],
   },
   {
-    name: 'resp_activite',
+    name: "Responsable d'activité",
     permissions: [
       'activity.update', 'activity.read',
       'checklist.create', 'checklist.update',
@@ -65,7 +65,7 @@ const ROLES = [
     ],
   },
   {
-    name: 'validateur',
+    name: 'Validateur',
     permissions: [
       'activity.read',
       'validation.approve', 'validation.reject',
@@ -74,7 +74,7 @@ const ROLES = [
     ],
   },
   {
-    name: 'resp_financier',
+    name: 'Responsable financier',
     permissions: [
       'activity.read',
       'budget.read', 'budget.edit',
@@ -84,11 +84,11 @@ const ROLES = [
     ],
   },
   {
-    name: 'lecture_seule',
+    name: 'Observateur',
     permissions: ['activity.read', 'plan.read', 'document.download', 'dashboard.view'],
   },
   {
-    name: 'auditeur',
+    name: 'Auditeur',
     permissions: ['activity.read', 'plan.read', 'document.download', 'report.generate', 'dashboard.view'],
   },
 ];
@@ -97,14 +97,14 @@ async function main() {
   console.log('Seeding roles...');
   for (const role of ROLES) {
     await prisma.role.upsert({
-      where: { name: role.name },
+      where: { organizationId_name: { organizationId: null as any, name: role.name } },
       update: { permissions: role.permissions },
-      create: role,
+      create: { ...role, organizationId: null },
     });
   }
   console.log(`${ROLES.length} rôles créés/mis à jour.`);
 
-  const superAdminRole = await prisma.role.findUnique({ where: { name: 'super_admin' } });
+  const superAdminRole = await prisma.role.findFirst({ where: { name: 'super_admin', organizationId: null } });
 
   const existingOrg = await prisma.organization.findFirst({ where: { name: 'ATAABA' } });
   const org = existingOrg ?? await prisma.organization.create({
