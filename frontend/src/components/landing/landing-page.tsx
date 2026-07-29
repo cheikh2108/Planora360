@@ -5,37 +5,6 @@ import Script from 'next/script';
 
 export default function LandingPage() {
   useEffect(() => {
-    // Inject Google Fonts
-    const geistLink = document.createElement('link');
-    geistLink.rel = 'stylesheet';
-    geistLink.href = 'https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap';
-    document.head.appendChild(geistLink);
-
-    const jakartaLink = document.createElement('link');
-    jakartaLink.rel = 'stylesheet';
-    jakartaLink.href = 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap';
-    document.head.appendChild(jakartaLink);
-
-    // Inject animationIn keyframe
-    const styleEl = document.createElement('style');
-    styleEl.textContent = `
-      @keyframes animationIn {
-        0% { opacity: 0; transform: translateY(30px); filter: blur(8px); }
-        100% { opacity: 1; transform: translateY(0); filter: blur(0px); }
-      }
-      @keyframes progress-shimmer {
-        0% { transform: translateX(-100%); }
-        100% { transform: translateX(100%); }
-      }
-      .font-geist { font-family: 'Geist', sans-serif !important; }
-      .font-jakarta { font-family: 'Plus Jakarta Sans', sans-serif !important; }
-      .animate-float-3d { animation: floatY 4s ease-in-out infinite; }
-      @keyframes floatY {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-10px); }
-      }
-    `;
-    document.head.appendChild(styleEl);
 
     // Reveal on scroll
     const reveals = document.querySelectorAll('.reveal');
@@ -119,8 +88,6 @@ export default function LandingPage() {
 
   return (
     <>
-      {/* Tailwind CDN */}
-      <Script src="https://cdn.tailwindcss.com" strategy="beforeInteractive" />
       {/* Iconify */}
       <Script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js" strategy="afterInteractive" />
 
