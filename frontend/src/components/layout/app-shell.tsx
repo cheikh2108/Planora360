@@ -20,7 +20,7 @@ export function AppShell({ children }: AppShellProps) {
   }, []);
 
   return (
-    <div className="flex h-full min-h-screen">
+    <div className="flex h-full min-h-screen bg-slate-50">
       {/* Desktop sidebar */}
       <div className="hidden lg:flex">
         <Sidebar />
