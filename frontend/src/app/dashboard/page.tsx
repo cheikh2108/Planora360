@@ -374,8 +374,6 @@ export default function DashboardPage() {
                 value={overview?.totalActivities ?? 0}
                 subtitle={`${inProgress} en cours`}
                 icon={ActivityIcon}
-                iconBg="bg-indigo-50"
-                iconColor="text-indigo-600"
                 highlight
               />
               <KpiCard
@@ -383,24 +381,21 @@ export default function DashboardPage() {
                 value={overdue}
                 subtitle="Nécessitent attention"
                 icon={AlertTriangle}
-                iconBg="bg-red-50"
-                iconColor="text-red-500"
+                accent="red"
               />
               <KpiCard
                 title="Validées"
                 value={validated}
                 subtitle="Circuit complété"
                 icon={CheckCircle2}
-                iconBg="bg-green-50"
-                iconColor="text-green-600"
+                accent="green"
               />
               <KpiCard
                 title="En attente validation"
                 value={overview?.pendingValidations ?? 0}
                 subtitle="À traiter"
                 icon={GitBranch}
-                iconBg="bg-amber-50"
-                iconColor="text-amber-600"
+                accent="amber"
               />
             </>
           )}
@@ -409,24 +404,24 @@ export default function DashboardPage() {
         {/* ── Taux physique + budgétaire + validation ── */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Taux physique */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-5 flex flex-col gap-3">
+          <div className="bg-[#0f1e38] rounded-2xl border border-[#1a2e52] p-5 flex flex-col gap-4 text-white">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-slate-700">Exécution physique</p>
-              <TrendingUp size={18} className="text-indigo-500" />
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-white/40">Exécution physique</p>
+              <TrendingUp size={16} className="text-indigo-400" />
             </div>
-            {loadingOverview ? <div className="h-24 bg-slate-100 rounded-xl animate-pulse" /> : (
+            {loadingOverview ? <div className="h-24 bg-white/5 rounded-xl animate-pulse" /> : (
               <>
-                <div className="flex items-end gap-3">
-                  <p className="text-4xl font-bold text-slate-900">{overview?.completionRate ?? 0}%</p>
-                  <p className="text-sm text-slate-400 mb-1">taux moyen</p>
+                <div className="flex items-end gap-2">
+                  <p className="text-5xl font-bold tabular-nums leading-none">{overview?.completionRate ?? 0}</p>
+                  <span className="text-2xl font-light text-white/50 mb-1">%</span>
                 </div>
-                <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                <div className="w-full bg-white/[0.08] rounded-full h-2.5 overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-indigo-500 transition-all duration-700"
+                    className="h-full rounded-full bg-indigo-400 transition-all duration-700 shadow-[0_0_8px_rgba(129,140,248,0.5)]"
                     style={{ width: `${overview?.completionRate ?? 0}%` }}
                   />
                 </div>
-                <p className="text-xs text-slate-400">Basé sur les check-lists de toutes les activités</p>
+                <p className="text-[11px] text-white/30">Taux moyen des check-lists d'activités</p>
               </>
             )}
           </div>
@@ -434,8 +429,8 @@ export default function DashboardPage() {
           {/* Budget */}
           <div className="bg-white rounded-2xl border border-slate-200 p-5">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-sm font-semibold text-slate-700">Exécution budgétaire</p>
-              <Wallet size={18} className="text-blue-500" />
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Exécution budgétaire</p>
+              <Wallet size={16} className="text-blue-500" />
             </div>
             {loadingOverview ? <div className="h-24 bg-slate-100 rounded-xl animate-pulse" /> : (
               <BudgetChart planned={overview?.budgetPlanned ?? 0} executed={overview?.budgetExecuted ?? 0} />
@@ -445,8 +440,8 @@ export default function DashboardPage() {
           {/* Circuit de validation */}
           <div className="bg-white rounded-2xl border border-slate-200 p-5 flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-slate-700">Circuit de validation</p>
-              <Clock size={18} className="text-amber-500" />
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Circuit de validation</p>
+              <Clock size={16} className="text-amber-500" />
             </div>
             <div className="flex-1 flex flex-col justify-center">
               <ValidationPipeline counts={{
@@ -473,7 +468,7 @@ export default function DashboardPage() {
           {/* Résultats atteints vs cibles */}
           <div className="bg-white rounded-2xl border border-slate-200 p-5">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-sm font-semibold text-slate-700">Résultats atteints vs cibles</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Résultats atteints vs cibles</p>
               <Target size={16} className="text-teal-500" />
             </div>
             {loadingActivities ? (
@@ -486,7 +481,7 @@ export default function DashboardPage() {
           {/* Activités critiques */}
           <div className="bg-white rounded-2xl border border-slate-200 p-5">
             <div className="flex items-center justify-between mb-1">
-              <p className="text-sm font-semibold text-slate-700">Activités critiques</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Activités critiques</p>
               <Link href="/activities?status=EN_RETARD" className="text-xs text-[#2563eb] hover:underline font-medium">
                 Voir tout →
               </Link>
@@ -505,7 +500,7 @@ export default function DashboardPage() {
           {/* Risques et blocages */}
           <div className="bg-white rounded-2xl border border-slate-200 p-5">
             <div className="flex items-center justify-between mb-1">
-              <p className="text-sm font-semibold text-slate-700">Risques et blocages</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Risques et blocages</p>
               <Link href="/activities" className="text-xs text-[#2563eb] hover:underline font-medium">
                 Voir tout →
               </Link>
@@ -521,7 +516,7 @@ export default function DashboardPage() {
           {/* Performance par responsable */}
           <div className="bg-white rounded-2xl border border-slate-200 p-5">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-sm font-semibold text-slate-700">Performance par responsable</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Performance par responsable</p>
               <Users size={16} className="text-indigo-500" />
             </div>
             {loadingPerf ? (
@@ -535,7 +530,7 @@ export default function DashboardPage() {
         {/* ── Répartition statuts + Échéances proches ── */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div className="bg-white rounded-2xl border border-slate-200 p-5">
-            <p className="text-sm font-semibold text-slate-700 mb-4">Répartition par statut</p>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-4">Répartition par statut</p>
             {loadingOverview ? (
               <div className="h-52 bg-slate-100 rounded-xl animate-pulse" />
             ) : (
@@ -545,7 +540,7 @@ export default function DashboardPage() {
 
           <div className="bg-white rounded-2xl border border-slate-200 p-5">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-sm font-semibold text-slate-700">Échéances proches</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Échéances proches</p>
               <CalendarClock size={16} className="text-slate-400" />
             </div>
             {loadingOverview ? (
@@ -560,7 +555,7 @@ export default function DashboardPage() {
         <section className="grid grid-cols-1 xl:grid-cols-3 gap-4">
           <div className="xl:col-span-2 bg-white rounded-2xl border border-slate-200 overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-              <p className="text-sm font-semibold text-slate-700">Activités récentes</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Activités récentes</p>
               <Link href="/activities" className="text-xs text-[#2563eb] hover:underline font-medium">
                 Voir tout →
               </Link>
@@ -600,7 +595,7 @@ export default function DashboardPage() {
 
           <div className="bg-white rounded-2xl border border-slate-200 p-5">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-sm font-semibold text-slate-700">Journal d'activité</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Journal d'activité</p>
               <Link href="/notifications" className="text-xs text-[#2563eb] hover:underline font-medium">
                 Voir tout →
               </Link>
@@ -625,29 +620,29 @@ export default function DashboardPage() {
 
         {/* ── Résumé financier ────────────────────────── */}
         {!loadingOverview && overview && (
-          <section className="bg-[#0f1e38] rounded-2xl p-5 md:p-6 text-white">
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-sm font-semibold text-white/60 uppercase tracking-wider">Résumé financier</p>
-              <Link href="/budgets" className="text-xs text-white/50 hover:text-white/80 transition-colors flex items-center gap-1">
-                Détail <BarChart3 size={12} />
+          <section className="bg-[#0b1629] rounded-2xl border border-[#1a2e52] overflow-hidden text-white">
+            <div className="flex items-center justify-between px-5 md:px-6 pt-5 pb-4 border-b border-white/[0.06]">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-white/35">Résumé financier</p>
+              <Link href="/budgets" className="flex items-center gap-1.5 text-[11px] text-white/40 hover:text-white/70 transition-colors font-medium">
+                Voir le détail <BarChart3 size={11} />
               </Link>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-              <div>
-                <p className="text-xs text-white/40 mb-1">Budget prévu</p>
-                <p className="text-xl font-bold">{formatCurrency(overview.budgetPlanned)}</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-white/[0.06]">
+              <div className="px-5 md:px-6 py-5">
+                <p className="text-[10px] uppercase tracking-widest text-white/30 mb-2">Budget prévu</p>
+                <p className="text-xl font-bold tabular-nums">{formatCurrency(overview.budgetPlanned)}</p>
               </div>
-              <div>
-                <p className="text-xs text-white/40 mb-1">Budget exécuté</p>
-                <p className="text-xl font-bold text-green-400">{formatCurrency(overview.budgetExecuted)}</p>
+              <div className="px-5 md:px-6 py-5">
+                <p className="text-[10px] uppercase tracking-widest text-white/30 mb-2">Budget exécuté</p>
+                <p className="text-xl font-bold tabular-nums text-emerald-400">{formatCurrency(overview.budgetExecuted)}</p>
               </div>
-              <div>
-                <p className="text-xs text-white/40 mb-1">Solde disponible</p>
-                <p className="text-xl font-bold text-blue-300">{formatCurrency((overview.budgetPlanned ?? 0) - (overview.budgetExecuted ?? 0))}</p>
+              <div className="px-5 md:px-6 py-5">
+                <p className="text-[10px] uppercase tracking-widest text-white/30 mb-2">Solde disponible</p>
+                <p className="text-xl font-bold tabular-nums text-blue-300">{formatCurrency((overview.budgetPlanned ?? 0) - (overview.budgetExecuted ?? 0))}</p>
               </div>
-              <div>
-                <p className="text-xs text-white/40 mb-1">Taux d'exécution</p>
-                <p className="text-xl font-bold text-amber-300">{overview.executionRate}%</p>
+              <div className="px-5 md:px-6 py-5">
+                <p className="text-[10px] uppercase tracking-widest text-white/30 mb-2">Taux d'exécution</p>
+                <p className="text-xl font-bold tabular-nums text-amber-300">{overview.executionRate}%</p>
               </div>
             </div>
           </section>

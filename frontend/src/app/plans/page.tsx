@@ -10,60 +10,94 @@ import { Modal } from '@/components/ui/modal';
 import { FormField, Input, Textarea } from '@/components/ui/form-field';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
-import { formatDate } from '@/lib/utils';
-import { FolderKanban, Plus, ChevronRight, Calendar, Target, Wallet } from 'lucide-react';
+import { formatDate, formatCurrency } from '@/lib/utils';
+import { FolderKanban, Plus, ChevronRight, Calendar, Target, Wallet, Activity } from 'lucide-react';
 import Link from 'next/link';
+
+/* ─── helpers ─────────────────────────────────────────────── */
+
+function planStatus(plan: ActionPlan): { label: string; cls: string } {
+  const now = new Date();
+  const start = new Date(plan.periodStart);
+  const end = new Date(plan.periodEnd);
+  if (now < start) return { label: 'À venir', cls: 'bg-slate-100 text-slate-500' };
+  if (now > end)   return { label: 'Terminé',  cls: 'bg-teal-50 text-teal-600' };
+  return { label: 'En cours', cls: 'bg-blue-50 text-blue-600' };
+}
+
+function durationMonths(plan: ActionPlan) {
+  return Math.ceil(
+    (new Date(plan.periodEnd).getTime() - new Date(plan.periodStart).getTime()) / (1000 * 60 * 60 * 24 * 30)
+  );
+}
+
+/* ─── PlanCard ─────────────────────────────────────────────── */
 
 function PlanCard({ plan }: { plan: ActionPlan }) {
   const total = plan.axes?.reduce((n, a) => n + (a.activities?.length ?? 0), 0) ?? 0;
-  const durationMonths = Math.ceil(
-    (new Date(plan.periodEnd).getTime() - new Date(plan.periodStart).getTime()) / (1000 * 60 * 60 * 24 * 30)
-  );
+  const months = durationMonths(plan);
+  const status = planStatus(plan);
 
   return (
     <Link href={`/plans/${plan.id}`} className="block group">
-      <div className="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-md hover:border-[#2563eb]/30 transition-all">
-        <div className="flex items-start justify-between gap-3 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-[#0f1e38]/8 flex items-center justify-center shrink-0">
-            <FolderKanban size={20} className="text-[#0f1e38]" />
+      <div className="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-md hover:border-[#2563eb]/30 transition-all flex flex-col gap-4">
+
+        {/* Header row */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-[#0f1e38] flex items-center justify-center shrink-0">
+              <FolderKanban size={16} className="text-white" />
+            </div>
+            <div className="min-w-0">
+              <h3 className="font-semibold text-slate-900 text-sm line-clamp-2 leading-snug">{plan.title}</h3>
+            </div>
           </div>
-          <ChevronRight size={16} className="text-slate-300 group-hover:text-[#2563eb] transition-colors mt-1 shrink-0" />
+          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${status.cls}`}>
+            {status.label}
+          </span>
         </div>
 
-        <h3 className="font-semibold text-slate-900 text-sm mb-1 line-clamp-2">{plan.title}</h3>
-
+        {/* Strategic goals */}
         {plan.strategicGoals && (
-          <p className="text-xs text-slate-400 mb-4 line-clamp-2">{plan.strategicGoals}</p>
+          <p className="text-xs text-slate-400 line-clamp-2 -mt-1">{plan.strategicGoals}</p>
         )}
 
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-xs text-slate-500">
-            <Calendar size={12} className="shrink-0" />
-            <span>{formatDate(plan.periodStart)} → {formatDate(plan.periodEnd)}</span>
+        {/* Meta chips */}
+        <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+          <div className="flex items-center gap-1.5 text-xs text-slate-500">
+            <Calendar size={11} className="shrink-0 text-slate-400" />
+            <span>{formatDate(plan.periodStart)} – {formatDate(plan.periodEnd)}</span>
             <span className="text-slate-300">·</span>
-            <span>{durationMonths} mois</span>
+            <span className="font-medium text-slate-600">{months} mois</span>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1.5 text-xs text-slate-500">
-              <Target size={12} />
-              <span>{plan.axes?.length ?? 0} axes</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-xs text-slate-500">
-              <FolderKanban size={12} />
-              <span>{total} activités</span>
-            </div>
-            {plan.budgetPrevisional && (
-              <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                <Wallet size={12} />
-                <span>{(plan.budgetPrevisional / 1_000_000).toFixed(1)}M</span>
-              </div>
-            )}
+        </div>
+
+        {/* Stats row */}
+        <div className="flex items-center gap-3 pt-1 border-t border-slate-100">
+          <div className="flex items-center gap-1.5 text-xs text-slate-500">
+            <Target size={11} className="text-slate-400" />
+            <span><span className="font-semibold text-slate-700">{plan.axes?.length ?? 0}</span> axes</span>
           </div>
+          <div className="flex items-center gap-1.5 text-xs text-slate-500">
+            <Activity size={11} className="text-slate-400" />
+            <span><span className="font-semibold text-slate-700">{total}</span> activités</span>
+          </div>
+          {plan.budgetPrevisional ? (
+            <div className="flex items-center gap-1.5 text-xs text-slate-500 ml-auto">
+              <Wallet size={11} className="text-slate-400" />
+              <span className="font-semibold text-slate-700">
+                {(plan.budgetPrevisional / 1_000_000).toFixed(1)}M FCFA
+              </span>
+            </div>
+          ) : null}
+          <ChevronRight size={14} className="text-slate-300 group-hover:text-[#2563eb] transition-colors ml-auto shrink-0" />
         </div>
       </div>
     </Link>
   );
 }
+
+/* ─── CreatePlanModal ──────────────────────────────────────── */
 
 function CreatePlanModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const qc = useQueryClient();
@@ -135,6 +169,8 @@ function CreatePlanModal({ open, onClose }: { open: boolean; onClose: () => void
   );
 }
 
+/* ─── Page ─────────────────────────────────────────────────── */
+
 export default function PlansPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const { data: plans = [], isLoading } = useQuery<ActionPlan[]>({
@@ -142,20 +178,51 @@ export default function PlansPage() {
     queryFn: async () => { const r = await plansApi.list(); return r.data; },
   });
 
+  const totalActivities = plans.reduce(
+    (n, p) => n + (p.axes?.reduce((m, a) => m + (a.activities?.length ?? 0), 0) ?? 0), 0
+  );
+  const totalBudget = plans.reduce((n, p) => n + (p.budgetPrevisional ?? 0), 0);
+  const active = plans.filter(p => {
+    const now = new Date();
+    return new Date(p.periodStart) <= now && new Date(p.periodEnd) >= now;
+  }).length;
+
   return (
     <div className="flex flex-col flex-1 min-h-0 overflow-auto">
       <Header title="Plans d'action" subtitle={`${plans.length} plan${plans.length > 1 ? 's' : ''}`} />
-      <main className="flex-1 px-4 md:px-6 py-6">
-        <div className="flex items-center justify-between mb-6">
-          <div />
+      <main className="flex-1 px-4 md:px-6 py-6 space-y-5">
+
+        {/* KPI strip */}
+        {!isLoading && plans.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { label: 'Plans total', value: plans.length, display: String(plans.length), color: 'text-slate-900' },
+              { label: 'En cours', value: active, display: String(active), color: 'text-blue-600' },
+              { label: 'Activités', value: totalActivities, display: String(totalActivities), color: 'text-indigo-600' },
+              { label: 'Budget total', value: totalBudget, display: totalBudget > 0 ? `${(totalBudget / 1_000_000).toFixed(0)}M` : '0', color: 'text-slate-700' },
+            ].map(k => (
+              <div key={k.label} className="bg-white rounded-2xl border border-slate-200 p-4 flex flex-col gap-1">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">{k.label}</p>
+                <p className={`text-4xl font-bold tabular-nums ${k.color}`}>{k.display}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Actions bar */}
+        <div className="flex items-center justify-between">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+            {isLoading ? '' : `${plans.length} plan${plans.length > 1 ? 's' : ''}`}
+          </p>
           <Button icon={<Plus size={16} />} onClick={() => setCreateOpen(true)}>
             Nouveau plan
           </Button>
         </div>
 
+        {/* Content */}
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-            {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-44" />)}
+            {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-52" />)}
           </div>
         ) : plans.length === 0 ? (
           <EmptyState
