@@ -7,21 +7,52 @@ import { organizationsApi } from '@/lib/api';
 import type { Organization, SubscriptionPlan } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
-import { FormField, Input, Select } from '@/components/ui/form-field';
+import { FormField, Input } from '@/components/ui/form-field';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDate, cn } from '@/lib/utils';
 import {
   Building2, Plus, Search, Users, FolderKanban,
-  ChevronRight, Trash2, AlertCircle,
+  ChevronRight, Trash2, AlertCircle, Sparkles, CheckCircle2,
 } from 'lucide-react';
 
-const PLAN_ORDER: SubscriptionPlan[] = ['ESSENTIELLE', 'PROFESSIONNELLE', 'ORGANISATION', 'SUR_MESURE'];
-const PLAN_META: Record<SubscriptionPlan, { label: string; color: string; bg: string; dot: string }> = {
-  ESSENTIELLE:     { label: 'Essentielle',     color: 'text-slate-600',  bg: 'bg-slate-100',  dot: 'bg-slate-400' },
-  PROFESSIONNELLE: { label: 'Professionnelle', color: 'text-blue-700',   bg: 'bg-blue-100',   dot: 'bg-blue-500' },
-  ORGANISATION:    { label: 'Organisation',    color: 'text-indigo-700', bg: 'bg-indigo-100', dot: 'bg-indigo-500' },
-  SUR_MESURE:      { label: 'Sur mesure',      color: 'text-amber-700',  bg: 'bg-amber-100',  dot: 'bg-amber-500' },
+const PLAN_ORDER: SubscriptionPlan[] = ['DECOUVERTE', 'PROFESSIONNELLE', 'SUR_MESURE'];
+
+const PLAN_META: Record<SubscriptionPlan, {
+  label: string; color: string; bg: string; dot: string;
+  description: string; limits: string[]; badge?: string;
+}> = {
+  DECOUVERTE:      {
+    label: 'Découverte',
+    color: 'text-emerald-700', bg: 'bg-emerald-100', dot: 'bg-emerald-500',
+    description: 'Essai gratuit 30 jours, sans engagement',
+    badge: '30 jours gratuits',
+    limits: ['2 plans d\'action', '5 utilisateurs', 'Fonctionnalités de base'],
+  },
+  ESSENTIELLE:     {
+    label: 'Essentielle',
+    color: 'text-slate-600', bg: 'bg-slate-100', dot: 'bg-slate-400',
+    description: '',
+    limits: [],
+  },
+  PROFESSIONNELLE: {
+    label: 'Professionnelle',
+    color: 'text-blue-700', bg: 'bg-blue-100', dot: 'bg-blue-500',
+    description: 'Pour les organisations en croissance',
+    limits: ['Plans illimités', '50 utilisateurs', 'Rapports avancés', 'Export PDF/Excel'],
+  },
+  ORGANISATION:    {
+    label: 'Organisation',
+    color: 'text-indigo-700', bg: 'bg-indigo-100', dot: 'bg-indigo-500',
+    description: '',
+    limits: [],
+  },
+  SUR_MESURE:      {
+    label: 'Entreprise',
+    color: 'text-amber-700', bg: 'bg-amber-100', dot: 'bg-amber-500',
+    description: 'Solution sur mesure pour les grandes structures',
+    limits: ['Tout illimité', 'SLA dédié', 'Intégrations personnalisées', 'Support prioritaire'],
+  },
 };
 
 function PlanBadge({ plan }: { plan: SubscriptionPlan }) {
@@ -218,7 +249,7 @@ export default function SuperAdminOrganizationsPage() {
 
 const EMPTY_FORM = {
   name: '',
-  subscriptionPlan: 'ESSENTIELLE' as SubscriptionPlan,
+  subscriptionPlan: 'DECOUVERTE' as SubscriptionPlan,
   adminFirstName: '',
   adminLastName: '',
   adminEmail: '',
@@ -265,11 +296,57 @@ function CreateOrgModal({ open, onClose }: { open: boolean; onClose: () => void 
           <Input value={form.name} onChange={set('name')} placeholder="Ex : Ministère de l'Eau" error={!!errors.name} autoFocus />
         </FormField>
 
-        <FormField label="Formule d'abonnement">
-          <Select value={form.subscriptionPlan} onChange={set('subscriptionPlan')}>
-            {PLAN_ORDER.map(p => <option key={p} value={p}>{PLAN_META[p].label}</option>)}
-          </Select>
-        </FormField>
+        <div>
+          <p className="text-sm font-medium text-slate-700 mb-2">Formule d&apos;abonnement</p>
+          <div className="grid grid-cols-1 gap-2">
+            {PLAN_ORDER.map(p => {
+              const m = PLAN_META[p];
+              const selected = form.subscriptionPlan === p;
+              return (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, subscriptionPlan: p }))}
+                  className={cn(
+                    'w-full text-left rounded-xl border px-4 py-3 transition-all cursor-pointer',
+                    selected
+                      ? 'border-[#2563eb] bg-[#eef5ff] ring-1 ring-[#2563eb]/20'
+                      : 'border-slate-200 bg-white hover:border-slate-300'
+                  )}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className={cn('text-[11px] font-bold px-2 py-0.5 rounded-full', m.bg, m.color)}>
+                          {m.label}
+                        </span>
+                        {m.badge && (
+                          <span className="flex items-center gap-1 text-[10px] font-semibold text-emerald-600">
+                            <Sparkles size={10} />
+                            {m.badge}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-slate-400 mt-1">{m.description}</p>
+                      <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1.5">
+                        {m.limits.map(l => (
+                          <span key={l} className="flex items-center gap-1 text-[10px] text-slate-500">
+                            <CheckCircle2 size={9} className="text-slate-300 shrink-0" />
+                            {l}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <div className={cn(
+                      'w-4 h-4 rounded-full border-2 shrink-0 mt-0.5 transition-all',
+                      selected ? 'border-[#2563eb] bg-[#2563eb]' : 'border-slate-300'
+                    )} />
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         {/* Séparateur admin */}
         <div className="pt-1">

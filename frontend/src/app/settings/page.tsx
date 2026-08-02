@@ -30,6 +30,24 @@ interface PlanInfo {
 
 const PLANS: PlanInfo[] = [
   {
+    key: 'DECOUVERTE',
+    label: 'Découverte',
+    tagline: 'Essai gratuit 30 jours',
+    color: 'bg-emerald-50 border-emerald-200',
+    ring: 'ring-emerald-300',
+    badge: '30 jours gratuits',
+    limits: { plans: '2 plans actifs', users: "Jusqu'à 5 utilisateurs" },
+    features: [
+      { label: 'Activités & check-lists', included: true },
+      { label: 'Tableau de bord standard', included: true },
+      { label: 'Alertes e-mail', included: false },
+      { label: 'Exports PDF / Excel', included: false },
+      { label: 'Suivi budgétaire', included: false },
+      { label: 'Circuit de validation', included: false },
+      { label: 'API accès', included: false },
+    ],
+  },
+  {
     key: 'ESSENTIELLE',
     label: 'Essentielle',
     tagline: 'Pour démarrer simplement',
@@ -108,7 +126,7 @@ const PLANS: PlanInfo[] = [
   },
 ];
 
-const PLAN_ORDER: SubscriptionPlan[] = ['ESSENTIELLE', 'PROFESSIONNELLE', 'ORGANISATION', 'SUR_MESURE'];
+const PLAN_ORDER: SubscriptionPlan[] = ['DECOUVERTE', 'ESSENTIELLE', 'PROFESSIONNELLE', 'ORGANISATION', 'SUR_MESURE'];
 
 function SubscriptionSection({ currentPlan }: { currentPlan: SubscriptionPlan }) {
   const [upgradeModal, setUpgradeModal] = useState(false);
@@ -120,10 +138,11 @@ function SubscriptionSection({ currentPlan }: { currentPlan: SubscriptionPlan })
 
   // Couleurs par formule
   const ACCENT: Record<SubscriptionPlan, { from: string; to: string; text: string; dot: string }> = {
-    ESSENTIELLE:     { from: 'from-slate-800',  to: 'to-slate-700',   text: 'text-slate-300', dot: 'bg-slate-400' },
-    PROFESSIONNELLE: { from: 'from-[#0f1e38]',  to: 'to-[#1a3a6e]',  text: 'text-blue-300',  dot: 'bg-blue-400' },
-    ORGANISATION:    { from: 'from-indigo-900', to: 'to-indigo-700',  text: 'text-indigo-300', dot: 'bg-indigo-400' },
-    SUR_MESURE:      { from: 'from-amber-900',  to: 'to-amber-700',   text: 'text-amber-300', dot: 'bg-amber-400' },
+    DECOUVERTE:      { from: 'from-emerald-800', to: 'to-emerald-700', text: 'text-emerald-300', dot: 'bg-emerald-400' },
+    ESSENTIELLE:     { from: 'from-slate-800',  to: 'to-slate-700',   text: 'text-slate-300',   dot: 'bg-slate-400' },
+    PROFESSIONNELLE: { from: 'from-[#0f1e38]',  to: 'to-[#1a3a6e]',  text: 'text-blue-300',    dot: 'bg-blue-400' },
+    ORGANISATION:    { from: 'from-indigo-900', to: 'to-indigo-700',  text: 'text-indigo-300',  dot: 'bg-indigo-400' },
+    SUR_MESURE:      { from: 'from-amber-900',  to: 'to-amber-700',   text: 'text-amber-300',   dot: 'bg-amber-400' },
   };
   const acc = ACCENT[currentPlan];
 
@@ -193,9 +212,10 @@ function SubscriptionSection({ currentPlan }: { currentPlan: SubscriptionPlan })
               const extras = plan.features.filter(
                 f => f.included && !current.features.find(cf => cf.label === f.label && cf.included)
               );
-              const isTop = i === 0;
+
 
               const CARD_STYLES: Record<SubscriptionPlan, { border: string; icon: string; btn: string }> = {
+                DECOUVERTE:      { border: 'border-emerald-200 bg-emerald-50/40', icon: 'text-emerald-600', btn: '' },
                 ESSENTIELLE:     { border: 'border-slate-200', icon: 'text-slate-400', btn: '' },
                 PROFESSIONNELLE: { border: 'border-[#2563eb]/40 bg-blue-50/50', icon: 'text-[#2563eb]', btn: '' },
                 ORGANISATION:    { border: 'border-indigo-200 bg-indigo-50/40', icon: 'text-indigo-600', btn: '' },

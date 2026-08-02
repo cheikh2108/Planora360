@@ -16,8 +16,9 @@ import {
   CheckCircle2, FolderKanban, AlertCircle, Star,
 } from 'lucide-react';
 
-const PLAN_ORDER: SubscriptionPlan[] = ['ESSENTIELLE', 'PROFESSIONNELLE', 'ORGANISATION', 'SUR_MESURE'];
+const PLAN_ORDER: SubscriptionPlan[] = ['DECOUVERTE', 'ESSENTIELLE', 'PROFESSIONNELLE', 'ORGANISATION', 'SUR_MESURE'];
 const PLAN_META: Record<SubscriptionPlan, { label: string; tagline: string; color: string; bg: string; darkFrom: string; darkTo: string }> = {
+  DECOUVERTE:      { label: 'Découverte',      tagline: '30 jours gratuits',           color: 'text-emerald-700', bg: 'bg-emerald-100', darkFrom: 'from-emerald-800', darkTo: 'to-emerald-700' },
   ESSENTIELLE:     { label: 'Essentielle',     tagline: 'Pour démarrer',               color: 'text-slate-600',  bg: 'bg-slate-100',  darkFrom: 'from-slate-800',  darkTo: 'to-slate-700' },
   PROFESSIONNELLE: { label: 'Professionnelle', tagline: 'Pour les équipes actives',    color: 'text-blue-700',   bg: 'bg-blue-100',   darkFrom: 'from-[#0f1e38]',  darkTo: 'to-[#1a3a6e]' },
   ORGANISATION:    { label: 'Organisation',    tagline: 'Pour les grandes structures', color: 'text-indigo-700', bg: 'bg-indigo-100', darkFrom: 'from-indigo-900', darkTo: 'to-indigo-700' },

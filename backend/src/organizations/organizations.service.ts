@@ -20,11 +20,17 @@ export class OrganizationsService {
     const emailTaken = await this.prisma.user.findUnique({ where: { email: dto.adminEmail } });
     if (emailTaken) throw new ConflictException('Cet email est déjà utilisé');
 
+    const isTrialPlan = !dto.subscriptionPlan || dto.subscriptionPlan === 'DECOUVERTE';
+    const trialEndsAt = isTrialPlan
+      ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+      : undefined;
+
     const org = await this.prisma.organization.create({
       data: {
         name: dto.name,
         logoUrl: dto.logoUrl,
-        subscriptionPlan: dto.subscriptionPlan,
+        subscriptionPlan: dto.subscriptionPlan ?? 'DECOUVERTE',
+        trialEndsAt,
       },
     });
 

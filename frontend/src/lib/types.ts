@@ -1,4 +1,4 @@
-export type SubscriptionPlan = 'ESSENTIELLE' | 'PROFESSIONNELLE' | 'ORGANISATION' | 'SUR_MESURE';
+export type SubscriptionPlan = 'DECOUVERTE' | 'ESSENTIELLE' | 'PROFESSIONNELLE' | 'ORGANISATION' | 'SUR_MESURE';
 
 export type ActivityStatus =
   | 'NON_DEMARREE'

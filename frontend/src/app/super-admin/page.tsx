@@ -6,13 +6,14 @@ import { organizationsApi } from '@/lib/api';
 import type { Organization, SubscriptionPlan } from '@/lib/types';
 import { formatDate, cn } from '@/lib/utils';
 import {
-  Building2, Users, CreditCard, TrendingUp, ChevronRight,
+  Building2, Users, ChevronRight,
   FolderKanban, Star,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const PLAN_ORDER: SubscriptionPlan[] = ['ESSENTIELLE', 'PROFESSIONNELLE', 'ORGANISATION', 'SUR_MESURE'];
+const PLAN_ORDER: SubscriptionPlan[] = ['DECOUVERTE', 'ESSENTIELLE', 'PROFESSIONNELLE', 'ORGANISATION', 'SUR_MESURE'];
 const PLAN_META: Record<SubscriptionPlan, { label: string; color: string; bg: string; bar: string }> = {
+  DECOUVERTE:      { label: 'Découverte',      color: 'text-emerald-700', bg: 'bg-emerald-100', bar: 'bg-emerald-400' },
   ESSENTIELLE:     { label: 'Essentielle',     color: 'text-slate-600',  bg: 'bg-slate-100',  bar: 'bg-slate-400' },
   PROFESSIONNELLE: { label: 'Professionnelle', color: 'text-blue-700',   bg: 'bg-blue-100',   bar: 'bg-blue-500' },
   ORGANISATION:    { label: 'Organisation',    color: 'text-indigo-700', bg: 'bg-indigo-100', bar: 'bg-indigo-500' },
