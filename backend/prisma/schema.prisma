@@ -8,9 +8,7 @@ datasource db {
 
 enum SubscriptionPlan {
   DECOUVERTE
-  ESSENTIELLE
   PROFESSIONNELLE
-  ORGANISATION
   SUR_MESURE
 }
 

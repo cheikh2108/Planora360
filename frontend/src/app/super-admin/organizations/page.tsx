@@ -29,23 +29,11 @@ const PLAN_META: Record<SubscriptionPlan, {
     badge: '30 jours gratuits',
     limits: ['2 plans d\'action', '5 utilisateurs', 'Fonctionnalités de base'],
   },
-  ESSENTIELLE:     {
-    label: 'Essentielle',
-    color: 'text-slate-600', bg: 'bg-slate-100', dot: 'bg-slate-400',
-    description: '',
-    limits: [],
-  },
   PROFESSIONNELLE: {
     label: 'Professionnelle',
     color: 'text-blue-700', bg: 'bg-blue-100', dot: 'bg-blue-500',
     description: 'Pour les organisations en croissance',
     limits: ['Plans illimités', '50 utilisateurs', 'Rapports avancés', 'Export PDF/Excel'],
-  },
-  ORGANISATION:    {
-    label: 'Organisation',
-    color: 'text-indigo-700', bg: 'bg-indigo-100', dot: 'bg-indigo-500',
-    description: '',
-    limits: [],
   },
   SUR_MESURE:      {
     label: 'Entreprise',

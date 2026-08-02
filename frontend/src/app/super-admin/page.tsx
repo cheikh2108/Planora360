@@ -11,13 +11,11 @@ import {
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const PLAN_ORDER: SubscriptionPlan[] = ['DECOUVERTE', 'ESSENTIELLE', 'PROFESSIONNELLE', 'ORGANISATION', 'SUR_MESURE'];
+const PLAN_ORDER: SubscriptionPlan[] = ['DECOUVERTE', 'PROFESSIONNELLE', 'SUR_MESURE'];
 const PLAN_META: Record<SubscriptionPlan, { label: string; color: string; bg: string; bar: string }> = {
   DECOUVERTE:      { label: 'Découverte',      color: 'text-emerald-700', bg: 'bg-emerald-100', bar: 'bg-emerald-400' },
-  ESSENTIELLE:     { label: 'Essentielle',     color: 'text-slate-600',  bg: 'bg-slate-100',  bar: 'bg-slate-400' },
   PROFESSIONNELLE: { label: 'Professionnelle', color: 'text-blue-700',   bg: 'bg-blue-100',   bar: 'bg-blue-500' },
-  ORGANISATION:    { label: 'Organisation',    color: 'text-indigo-700', bg: 'bg-indigo-100', bar: 'bg-indigo-500' },
-  SUR_MESURE:      { label: 'Sur mesure',      color: 'text-amber-700',  bg: 'bg-amber-100',  bar: 'bg-amber-500' },
+  SUR_MESURE:      { label: 'Entreprise',      color: 'text-amber-700',  bg: 'bg-amber-100',  bar: 'bg-amber-500' },
 };
 
 export default function SuperAdminDashboard() {
@@ -53,7 +51,7 @@ export default function SuperAdminDashboard() {
             { label: 'Organisations',   value: orgs.length,  icon: Building2,    color: 'text-[#0f1e38]',  bg: 'bg-[#0f1e38]/8' },
             { label: 'Utilisateurs',    value: totalUsers,   icon: Users,        color: 'text-blue-600',   bg: 'bg-blue-50' },
             { label: "Plans d'action",  value: totalPlans,   icon: FolderKanban, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-            { label: 'Formules actives', value: orgs.filter(o => o.subscriptionPlan !== 'ESSENTIELLE').length, icon: Star, color: 'text-amber-600', bg: 'bg-amber-50' },
+            { label: 'Formules actives', value: orgs.length, icon: Star, color: 'text-amber-600', bg: 'bg-amber-50' },
           ].map(s => (
             <div key={s.label} className="bg-white rounded-2xl border border-slate-200 p-5">
               <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center mb-3', s.bg)}>

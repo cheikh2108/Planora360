@@ -44,26 +44,6 @@ const PLANS: PlanInfo[] = [
       { label: 'Exports PDF / Excel', included: false },
       { label: 'Suivi budgétaire', included: false },
       { label: 'Circuit de validation', included: false },
-      { label: 'API accès', included: false },
-    ],
-  },
-  {
-    key: 'ESSENTIELLE',
-    label: 'Essentielle',
-    tagline: 'Pour démarrer simplement',
-    color: 'bg-slate-50 border-slate-200',
-    ring: 'ring-slate-300',
-    limits: { plans: '1 plan actif', users: 'Jusqu\'à 5 utilisateurs' },
-    features: [
-      { label: 'Activités & check-lists', included: true },
-      { label: 'Tableau de bord standard', included: true },
-      { label: 'Alertes e-mail', included: true },
-      { label: 'Exports PDF / Excel', included: true },
-      { label: 'Suivi budgétaire', included: false },
-      { label: 'Circuit de validation', included: false },
-      { label: 'Gestion documentaire', included: false },
-      { label: 'Rapports automatisés', included: false },
-      { label: 'Accès partenaires / bailleurs', included: false },
     ],
   },
   {
@@ -73,7 +53,7 @@ const PLANS: PlanInfo[] = [
     color: 'bg-blue-50 border-blue-200',
     ring: 'ring-[#2563eb]',
     badge: 'Populaire',
-    limits: { plans: 'Plusieurs plans', users: 'Jusqu\'à 20 utilisateurs' },
+    limits: { plans: 'Plans illimités', users: "Jusqu'à 50 utilisateurs" },
     features: [
       { label: 'Activités & check-lists', included: true },
       { label: 'Tableaux de bord avancés', included: true },
@@ -83,31 +63,11 @@ const PLANS: PlanInfo[] = [
       { label: 'Circuit de validation', included: true },
       { label: 'Gestion documentaire', included: true },
       { label: 'Rapports automatisés', included: true },
-      { label: 'Accès partenaires / bailleurs', included: false },
-    ],
-  },
-  {
-    key: 'ORGANISATION',
-    label: 'Organisation',
-    tagline: 'Pour les grandes structures',
-    color: 'bg-indigo-50 border-indigo-200',
-    ring: 'ring-indigo-400',
-    limits: { plans: 'Plusieurs plans', users: 'Utilisateurs illimités' },
-    features: [
-      { label: 'Activités & check-lists', included: true },
-      { label: 'Tableaux de bord personnalisés', included: true },
-      { label: 'Alertes personnalisées', included: true },
-      { label: 'Exports PDF / Excel', included: true },
-      { label: 'Suivi budgétaire', included: true },
-      { label: 'Circuit de validation', included: true },
-      { label: 'Gestion documentaire', included: true },
-      { label: 'Rapports automatisés', included: true },
-      { label: 'Accès partenaires / bailleurs', included: true },
     ],
   },
   {
     key: 'SUR_MESURE',
-    label: 'Sur mesure',
+    label: 'Entreprise',
     tagline: 'Hébergement dédié & intégrations',
     color: 'bg-amber-50 border-amber-200',
     ring: 'ring-amber-400',
@@ -118,15 +78,13 @@ const PLANS: PlanInfo[] = [
       { label: 'Intégrations (Power BI, Kobo, DHIS2…)', included: true },
       { label: 'Migration de données', included: true },
       { label: 'Accompagnement & formation', included: true },
-      { label: 'Maintenance annuelle', included: true },
       { label: 'SLA garanti', included: true },
       { label: 'Développements spécifiques', included: true },
-      { label: 'Accès partenaires / bailleurs', included: true },
     ],
   },
 ];
 
-const PLAN_ORDER: SubscriptionPlan[] = ['DECOUVERTE', 'ESSENTIELLE', 'PROFESSIONNELLE', 'ORGANISATION', 'SUR_MESURE'];
+const PLAN_ORDER: SubscriptionPlan[] = ['DECOUVERTE', 'PROFESSIONNELLE', 'SUR_MESURE'];
 
 function SubscriptionSection({ currentPlan }: { currentPlan: SubscriptionPlan }) {
   const [upgradeModal, setUpgradeModal] = useState(false);
@@ -139,9 +97,7 @@ function SubscriptionSection({ currentPlan }: { currentPlan: SubscriptionPlan })
   // Couleurs par formule
   const ACCENT: Record<SubscriptionPlan, { from: string; to: string; text: string; dot: string }> = {
     DECOUVERTE:      { from: 'from-emerald-800', to: 'to-emerald-700', text: 'text-emerald-300', dot: 'bg-emerald-400' },
-    ESSENTIELLE:     { from: 'from-slate-800',  to: 'to-slate-700',   text: 'text-slate-300',   dot: 'bg-slate-400' },
     PROFESSIONNELLE: { from: 'from-[#0f1e38]',  to: 'to-[#1a3a6e]',  text: 'text-blue-300',    dot: 'bg-blue-400' },
-    ORGANISATION:    { from: 'from-indigo-900', to: 'to-indigo-700',  text: 'text-indigo-300',  dot: 'bg-indigo-400' },
     SUR_MESURE:      { from: 'from-amber-900',  to: 'to-amber-700',   text: 'text-amber-300',   dot: 'bg-amber-400' },
   };
   const acc = ACCENT[currentPlan];
@@ -208,18 +164,15 @@ function SubscriptionSection({ currentPlan }: { currentPlan: SubscriptionPlan })
           </div>
 
           <div className="grid grid-cols-1 gap-3">
-            {PLANS.filter(p => PLAN_ORDER.indexOf(p.key) > currentIndex).map((plan, i) => {
+            {PLANS.filter(p => PLAN_ORDER.indexOf(p.key) > currentIndex).map((plan) => {
               const extras = plan.features.filter(
                 f => f.included && !current.features.find(cf => cf.label === f.label && cf.included)
               );
 
-
-              const CARD_STYLES: Record<SubscriptionPlan, { border: string; icon: string; btn: string }> = {
-                DECOUVERTE:      { border: 'border-emerald-200 bg-emerald-50/40', icon: 'text-emerald-600', btn: '' },
-                ESSENTIELLE:     { border: 'border-slate-200', icon: 'text-slate-400', btn: '' },
-                PROFESSIONNELLE: { border: 'border-[#2563eb]/40 bg-blue-50/50', icon: 'text-[#2563eb]', btn: '' },
-                ORGANISATION:    { border: 'border-indigo-200 bg-indigo-50/40', icon: 'text-indigo-600', btn: '' },
-                SUR_MESURE:      { border: 'border-amber-200 bg-amber-50/40', icon: 'text-amber-600', btn: '' },
+              const CARD_STYLES: Record<SubscriptionPlan, { border: string; icon: string }> = {
+                DECOUVERTE:      { border: 'border-emerald-200 bg-emerald-50/40', icon: 'text-emerald-600' },
+                PROFESSIONNELLE: { border: 'border-[#2563eb]/40 bg-blue-50/50',  icon: 'text-[#2563eb]' },
+                SUR_MESURE:      { border: 'border-amber-200 bg-amber-50/40',     icon: 'text-amber-600' },
               };
               const style = CARD_STYLES[plan.key];
 
@@ -502,7 +455,7 @@ export default function SettingsPage() {
             )}
 
             {section === 'Abonnement' && (
-              <SubscriptionSection currentPlan={(user?.organization?.subscriptionPlan ?? 'ESSENTIELLE') as SubscriptionPlan} />
+              <SubscriptionSection currentPlan={(user?.organization?.subscriptionPlan ?? 'DECOUVERTE') as SubscriptionPlan} />
             )}
           </div>
         </div>
