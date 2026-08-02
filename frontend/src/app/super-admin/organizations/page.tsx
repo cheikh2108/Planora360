@@ -216,14 +216,27 @@ export default function SuperAdminOrganizationsPage() {
   );
 }
 
+const EMPTY_FORM = {
+  name: '',
+  subscriptionPlan: 'ESSENTIELLE' as SubscriptionPlan,
+  adminFirstName: '',
+  adminLastName: '',
+  adminEmail: '',
+};
+
 function CreateOrgModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const qc = useQueryClient();
-  const [form, setForm] = useState({ name: '', subscriptionPlan: 'ESSENTIELLE' as SubscriptionPlan });
+  const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { mutate, isPending } = useMutation({
     mutationFn: () => organizationsApi.create(form),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['organizations'] }); onClose(); setForm({ name: '', subscriptionPlan: 'ESSENTIELLE' }); setErrors({}); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['organizations'] });
+      onClose();
+      setForm(EMPTY_FORM);
+      setErrors({});
+    },
     onError: (err: unknown) => {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
       setErrors({ submit: typeof msg === 'string' ? msg : 'Erreur lors de la création' });
@@ -233,21 +246,58 @@ function CreateOrgModal({ open, onClose }: { open: boolean; onClose: () => void 
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm(f => ({ ...f, [k]: e.target.value }));
 
+  function validate() {
+    const e: Record<string, string> = {};
+    if (form.name.trim().length < 2) e.name = 'Nom requis (2 caractères minimum)';
+    if (!form.adminFirstName.trim()) e.adminFirstName = 'Prénom requis';
+    if (!form.adminLastName.trim()) e.adminLastName = 'Nom requis';
+    if (!form.adminEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.adminEmail))
+      e.adminEmail = 'Email valide requis';
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  }
+
   return (
     <Modal open={open} onClose={onClose} title="Nouvelle organisation" size="md">
-      <form onSubmit={e => { e.preventDefault(); if (form.name.trim().length >= 2) mutate(); else setErrors({ name: 'Nom requis (2 caractères minimum)' }); }} className="space-y-4">
+      <form onSubmit={e => { e.preventDefault(); if (validate()) mutate(); }} className="space-y-4">
+
         <FormField label="Nom de l'organisation" required error={errors.name}>
           <Input value={form.name} onChange={set('name')} placeholder="Ex : Ministère de l'Eau" error={!!errors.name} autoFocus />
         </FormField>
+
         <FormField label="Formule d'abonnement">
           <Select value={form.subscriptionPlan} onChange={set('subscriptionPlan')}>
             {PLAN_ORDER.map(p => <option key={p} value={p}>{PLAN_META[p].label}</option>)}
           </Select>
         </FormField>
+
+        {/* Séparateur admin */}
+        <div className="pt-1">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 border-l-2 border-[#2563eb] pl-2">
+            Compte administrateur
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            <FormField label="Prénom" required error={errors.adminFirstName}>
+              <Input value={form.adminFirstName} onChange={set('adminFirstName')} placeholder="Prénom" error={!!errors.adminFirstName} />
+            </FormField>
+            <FormField label="Nom" required error={errors.adminLastName}>
+              <Input value={form.adminLastName} onChange={set('adminLastName')} placeholder="Nom" error={!!errors.adminLastName} />
+            </FormField>
+          </div>
+          <FormField label="Adresse e-mail" required error={errors.adminEmail} className="mt-3">
+            <Input type="email" value={form.adminEmail} onChange={set('adminEmail')} placeholder="admin@organisation.com" error={!!errors.adminEmail} />
+          </FormField>
+          <p className="text-[11px] text-slate-400 mt-2 flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#2563eb] inline-block shrink-0" />
+            Un mot de passe temporaire sera envoyé par email.
+          </p>
+        </div>
+
         {errors.submit && <p className="text-xs text-red-600 bg-red-50 px-3 py-2.5 rounded-xl border border-red-200">{errors.submit}</p>}
+
         <div className="flex justify-end gap-3 pt-2">
           <Button type="button" variant="secondary" onClick={onClose}>Annuler</Button>
-          <Button type="submit" loading={isPending} icon={<Plus size={14} />}>Créer l'organisation</Button>
+          <Button type="submit" loading={isPending} icon={<Plus size={14} />}>Créer l&apos;organisation</Button>
         </div>
       </form>
     </Modal>

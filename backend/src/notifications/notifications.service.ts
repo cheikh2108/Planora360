@@ -37,6 +37,38 @@ export class NotificationsService {
     }
   }
 
+  async sendWelcomeCredentials(params: {
+    email: string;
+    firstName: string;
+    orgName: string;
+    tempPassword: string;
+  }) {
+    await this.sendEmail(
+      params.email,
+      `[ATAABA Pilot] Votre accès à ${params.orgName}`,
+      `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 24px">
+        <div style="background:#0b1629;border-radius:12px;padding:24px;text-align:center;margin-bottom:28px">
+          <span style="color:white;font-size:22px;font-weight:800;letter-spacing:-0.5px">ATAABA Pilot</span>
+        </div>
+        <p style="color:#0f172a;font-size:16px">Bonjour <strong>${params.firstName}</strong>,</p>
+        <p style="color:#475569;font-size:14px;line-height:1.6">
+          Un compte a été créé pour vous sur <strong>ATAABA Pilot</strong> dans l'organisation <strong>${params.orgName}</strong>.
+          Voici vos identifiants de connexion :
+        </p>
+        <div style="background:#f1f5f9;border-radius:10px;padding:20px 24px;margin:24px 0">
+          <p style="margin:0 0 8px;color:#64748b;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em">Adresse e-mail</p>
+          <p style="margin:0 0 16px;color:#0f172a;font-size:15px;font-weight:600">${params.email}</p>
+          <p style="margin:0 0 8px;color:#64748b;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em">Mot de passe temporaire</p>
+          <p style="margin:0;color:#2563eb;font-size:18px;font-weight:800;letter-spacing:0.08em;font-family:monospace">${params.tempPassword}</p>
+        </div>
+        <p style="color:#ef4444;font-size:13px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px 16px">
+          Vous serez invité à choisir un nouveau mot de passe lors de votre première connexion.
+        </p>
+        <p style="color:#94a3b8;font-size:12px;margin-top:32px">© 2025 ATAABA Pilot — Ne pas répondre à cet email.</p>
+      </div>`,
+    );
+  }
+
   async notifyValidationPending(params: {
     activityId: string;
     activityTitle: string;

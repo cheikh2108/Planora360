@@ -48,6 +48,7 @@ export const authApi = {
   setup2fa: () => api.post('/auth/2fa/setup'),
   enable2fa: (token: string) => api.post('/auth/2fa/enable', { token }),
   disable2fa: (token: string) => api.post('/auth/2fa/disable', { token }),
+  changePassword: (newPassword: string) => api.patch('/auth/change-password', { newPassword }),
 };
 
 // Dashboard
@@ -162,7 +163,7 @@ export const rolesApi = {
 export const organizationsApi = {
   list: () => api.get('/organizations'),
   get: (id: string) => api.get(`/organizations/${id}`),
-  create: (data: { name: string; logoUrl?: string; subscriptionPlan?: string }) =>
+  create: (data: { name: string; logoUrl?: string; subscriptionPlan?: string; adminFirstName: string; adminLastName: string; adminEmail: string }) =>
     api.post('/organizations', data),
   update: (id: string, data: { name?: string; logoUrl?: string; subscriptionPlan?: string }) =>
     api.patch(`/organizations/${id}`, data),

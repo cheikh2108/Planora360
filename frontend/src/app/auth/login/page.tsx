@@ -16,12 +16,16 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
       const user = await login(email, password, totp || undefined);
+      if (user.mustChangePassword) {
+        router.replace('/auth/change-password');
+        return;
+      }
       const dest = user.role?.name === 'Super administrateur' ? '/super-admin' : '/dashboard';
       router.replace(dest);
     } catch (err: unknown) {

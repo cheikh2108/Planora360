@@ -96,15 +96,16 @@ const ROLES = [
 async function main() {
   console.log('Seeding roles...');
   for (const role of ROLES) {
-    await prisma.role.upsert({
-      where: { organizationId_name: { organizationId: null as any, name: role.name } },
-      update: { permissions: role.permissions },
-      create: { ...role, organizationId: null },
-    });
+    const existing = await prisma.role.findFirst({ where: { name: role.name, organizationId: null } });
+    if (existing) {
+      await prisma.role.update({ where: { id: existing.id }, data: { permissions: role.permissions } });
+    } else {
+      await prisma.role.create({ data: { ...role, organizationId: null } });
+    }
   }
   console.log(`${ROLES.length} rôles créés/mis à jour.`);
 
-  const superAdminRole = await prisma.role.findFirst({ where: { name: 'super_admin', organizationId: null } });
+  const superAdminRole = await prisma.role.findFirst({ where: { name: 'Super administrateur', organizationId: null } });
 
   const existingOrg = await prisma.organization.findFirst({ where: { name: 'ATAABA' } });
   const org = existingOrg ?? await prisma.organization.create({
@@ -127,6 +128,32 @@ async function main() {
     console.log('Super admin créé : admin@ataaba.com / Admin@2108!');
   } else {
     console.log('Super admin existe déjà.');
+  }
+
+  // Organisation et compte test
+  const existingTestOrg = await prisma.organization.findFirst({ where: { name: 'Test Org' } });
+  const testOrg = existingTestOrg ?? await prisma.organization.create({
+    data: { name: 'Test Org', subscriptionPlan: 'SUR_MESURE' },
+  });
+
+  const coordRole = await prisma.role.findFirst({ where: { name: 'Coordinateur', organizationId: null } });
+
+  const existingTest = await prisma.user.findUnique({ where: { email: 'test@ataaba.com' } });
+  if (!existingTest) {
+    const passwordHash = await bcrypt.hash('Test@2108!', 12);
+    await prisma.user.create({
+      data: {
+        email: 'test@ataaba.com',
+        firstName: 'Test',
+        lastName: 'User',
+        passwordHash,
+        organizationId: testOrg.id,
+        roleId: coordRole!.id,
+      },
+    });
+    console.log('Compte test créé : test@ataaba.com / Test@2108!');
+  } else {
+    console.log('Compte test existe déjà.');
   }
 }
 

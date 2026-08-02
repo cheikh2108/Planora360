@@ -38,6 +38,7 @@ export class UsersService {
         passwordHash,
         organizationId: orgId,
         roleId: dto.roleId,
+        mustChangePassword: true,
       },
       include: { role: true },
     });

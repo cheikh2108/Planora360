@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Patch, Body, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
@@ -45,5 +45,12 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   disable2fa(@CurrentUser() user: any, @Body() dto: Verify2faDto) {
     return this.authService.disable2fa(user.id, dto.token);
+  }
+
+  @Patch('change-password')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  changePassword(@CurrentUser() user: any, @Body() dto: { newPassword: string }) {
+    return this.authService.changePassword(user.id, dto.newPassword);
   }
 }

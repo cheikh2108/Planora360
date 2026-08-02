@@ -84,6 +84,7 @@ export interface User {
   organizationId: string;
   organization?: Organization;
   isActive: boolean;
+  mustChangePassword: boolean;
   twoFactorEnabled: boolean;
   createdAt?: string;
 }

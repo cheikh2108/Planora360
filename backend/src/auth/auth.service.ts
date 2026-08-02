@@ -112,6 +112,18 @@ export class AuthService {
     return { message: '2FA activé avec succès' };
   }
 
+  async changePassword(userId: string, newPassword: string) {
+    if (!newPassword || newPassword.length < 8) {
+      throw new BadRequestException('Le mot de passe doit contenir au moins 8 caractères');
+    }
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash, mustChangePassword: false },
+    });
+    return { message: 'Mot de passe mis à jour' };
+  }
+
   async disable2fa(userId: string, token: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user || !user.twoFactorSecret) throw new BadRequestException();
@@ -163,6 +175,7 @@ export class AuthService {
         lastName: user.lastName,
         organizationId: user.organizationId,
         isActive: user.isActive,
+        mustChangePassword: user.mustChangePassword,
         twoFactorEnabled: user.isTwoFactorEnabled,
         role: {
           id: user.role?.id,
