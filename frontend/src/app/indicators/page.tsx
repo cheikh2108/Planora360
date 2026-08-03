@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { indicatorsApi, plansApi, activitiesApi } from '@/lib/api';
+import { Pagination } from '@/components/ui/pagination';
 import type { Indicator, ActionPlan, Activity } from '@/lib/types';
 import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
@@ -68,7 +69,7 @@ function IndicatorModal({
         : indicatorsApi.create(payload);
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['indicators'] });
+      qc.invalidateQueries({ queryKey: ['indicators'], exact: false });
       toast.success(isEdit ? 'Indicateur mis à jour' : 'Indicateur créé');
       onClose();
     },
@@ -125,27 +126,32 @@ export default function IndicatorsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Indicator | undefined>();
   const [filterActivity, setFilterActivity] = useState('');
+  const [page, setPage] = useState(1);
 
-  const { data: indicators = [], isLoading } = useQuery<Indicator[]>({
-    queryKey: ['indicators', filterActivity],
+  useEffect(() => { setPage(1); }, [filterActivity]);
+
+  const { data: indicatorsPage, isLoading } = useQuery({
+    queryKey: ['indicators', filterActivity, page],
     queryFn: async () => {
-      const params: Record<string, unknown> = {};
+      const params: Record<string, unknown> = { page };
       if (filterActivity) params.activityId = filterActivity;
       const r = await indicatorsApi.list(params);
-      return r.data;
+      return r.data as { data: Indicator[]; total: number; page: number; limit: number };
     },
   });
+  const indicators: Indicator[] = indicatorsPage?.data ?? [];
+  const total = indicatorsPage?.total ?? 0;
 
   const { data: activities = [] } = useQuery<Activity[]>({
     queryKey: ['activities-all'],
-    queryFn: async () => { const r = await activitiesApi.list({}); return r.data; },
+    queryFn: async () => { const r = await activitiesApi.list({ limit: 1000 }); return (r.data as any).data ?? []; },
     staleTime: 60_000,
   });
 
   const { mutate: remove } = useMutation({
     mutationFn: (id: string) => indicatorsApi.remove(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['indicators'] });
+      qc.invalidateQueries({ queryKey: ['indicators'], exact: false });
       toast.success('Indicateur supprimé');
     },
     onError: () => toast.error('Erreur', 'Impossible de supprimer.'),
@@ -159,7 +165,7 @@ export default function IndicatorsPage() {
     <div className="flex flex-col flex-1 min-h-0 overflow-auto">
       <Header
         title="Indicateurs de performance"
-        subtitle={`${indicators.length} indicateur${indicators.length > 1 ? 's' : ''}`}
+        subtitle={`${total} indicateur${total > 1 ? 's' : ''}`}
         actions={
           <Button icon={<Plus size={16} />} onClick={() => { setEditTarget(undefined); setModalOpen(true); }}>
             Nouvel indicateur
@@ -170,10 +176,10 @@ export default function IndicatorsPage() {
       <main className="flex-1 px-4 md:px-6 py-6 space-y-5">
 
         {/* KPI strip */}
-        {!isLoading && indicators.length > 0 && (
+        {!isLoading && total > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { label: 'Total', value: indicators.length, color: 'text-slate-900', bg: 'bg-white' },
+              { label: 'Total', value: total, color: 'text-slate-900', bg: 'bg-white' },
               { label: 'Atteints (≥80%)', value: totalOnTrack, color: 'text-green-600', bg: 'bg-green-50' },
               { label: 'En risque (50–79%)', value: totalAtRisk, color: 'text-amber-600', bg: 'bg-amber-50' },
               { label: 'En retard (<50%)', value: totalLagging, color: 'text-red-600', bg: 'bg-red-50' },
@@ -202,7 +208,7 @@ export default function IndicatorsPage() {
         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Tableau de bord des indicateurs</p>
-            {indicators.length > 0 && <span className="text-xs tabular-nums text-slate-400">{indicators.length}</span>}
+            {total > 0 && <span className="text-xs tabular-nums text-slate-400">{total}</span>}
           </div>
 
           {isLoading ? (
@@ -290,6 +296,11 @@ export default function IndicatorsPage() {
                   })}
                 </tbody>
               </table>
+            </div>
+          )}
+          {total > 20 && (
+            <div className="px-5 py-3 border-t border-slate-100">
+              <Pagination page={page} total={total} limit={20} onChange={setPage} />
             </div>
           )}
         </div>

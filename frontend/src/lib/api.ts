@@ -104,7 +104,7 @@ export const dashboardApi = {
 
 // Action Plans
 export const plansApi = {
-  list: () => api.get('/action-plans'),
+  list: (params?: Record<string, unknown>) => api.get('/action-plans', { params }),
   get: (id: string) => api.get(`/action-plans/${id}`),
   create: (data: Record<string, unknown>) => api.post('/action-plans', data),
   update: (id: string, data: Record<string, unknown>) => api.patch(`/action-plans/${id}`, data),
@@ -133,7 +133,7 @@ export const checklistApi = {
 
 // Validations
 export const validationsApi = {
-  getPending: () => api.get('/validations/pending'),
+  getPending: (params?: Record<string, unknown>) => api.get('/validations/pending', { params }),
   getCurrent: (activityId: string) => api.get(`/activities/${activityId}/validations/current`),
   submit: (activityId: string) => api.post(`/activities/${activityId}/submit`),
   transition: (activityId: string, data: Record<string, unknown>) =>

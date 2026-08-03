@@ -229,24 +229,26 @@ export class ValidationsService {
     return validation;
   }
 
-  findPending(userId: string, organizationId: string) {
-    return this.prisma.activity.findMany({
-      where: {
-        organizationId,
-        status: { notIn: ['VALIDEE', 'ANNULEE', 'NON_DEMARREE'] },
-        validations: {
-          some: {
-            step: 'SOUMISSION',
-            decision: 'APPROUVE',
-          },
+  async findPending(userId: string, organizationId: string, page = 1, limit = 10) {
+    const where = {
+      organizationId,
+      status: { notIn: ['VALIDEE', 'ANNULEE', 'NON_DEMARREE'] as any },
+      validations: { some: { step: 'SOUMISSION' as any, decision: 'APPROUVE' as any } },
+    };
+    const [data, total] = await Promise.all([
+      this.prisma.activity.findMany({
+        where,
+        include: {
+          responsible: { select: { id: true, firstName: true, lastName: true } },
+          validations: { orderBy: { createdAt: 'desc' }, take: 1 },
+          _count: { select: { checklistItems: true } },
         },
-      },
-      include: {
-        responsible: { select: { id: true, firstName: true, lastName: true } },
-        validations: { orderBy: { createdAt: 'desc' }, take: 1 },
-        _count: { select: { checklistItems: true } },
-      },
-      orderBy: { updatedAt: 'desc' },
-    });
+        orderBy: { updatedAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.activity.count({ where }),
+    ]);
+    return { data, total, page, limit };
   }
 }

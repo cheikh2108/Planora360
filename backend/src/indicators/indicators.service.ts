@@ -24,12 +24,19 @@ export class IndicatorsService {
     });
   }
 
-  findAll(organizationId: string, activityId?: string) {
-    return this.prisma.indicator.findMany({
-      where: { organizationId, ...(activityId ? { activityId } : {}) },
-      orderBy: { createdAt: 'desc' },
-      include: { activity: { select: { id: true, title: true } } },
-    });
+  async findAll(organizationId: string, activityId?: string, page = 1, limit = 20) {
+    const where = { organizationId, ...(activityId ? { activityId } : {}) };
+    const [data, total] = await Promise.all([
+      this.prisma.indicator.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+        include: { activity: { select: { id: true, title: true } } },
+      }),
+      this.prisma.indicator.count({ where }),
+    ]);
+    return { data, total, page, limit };
   }
 
   async findOne(id: string, organizationId: string) {

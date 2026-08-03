@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { validationsApi } from '@/lib/api';
+import { Pagination } from '@/components/ui/pagination';
 import type { Activity } from '@/lib/types';
 import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
@@ -44,19 +45,26 @@ export default function ValidationsPage() {
   const qc = useQueryClient();
   const [selected, setSelected] = useState<PendingValidation | null>(null);
   const [form, setForm] = useState({ decision: 'APPROUVE', comment: '' });
+  const [page, setPage] = useState(1);
 
-  const { data: pending = [], isLoading } = useQuery<PendingValidation[]>({
-    queryKey: ['validations-pending'],
+  const { data: pendingPage, isLoading } = useQuery({
+    queryKey: ['validations-pending', page],
     queryFn: async () => {
-      const r = await validationsApi.getPending();
-      return (r.data as (Activity & { validations: { step: string; createdAt: string }[] })[]).map(act => ({
-        activity: act,
-        currentStep: act.validations?.[0]?.step ?? 'SOUMISSION',
-        pendingSince: act.validations?.[0]?.createdAt ?? (act as any).createdAt,
-      }));
+      const r = await validationsApi.getPending({ page, limit: 10 });
+      const result = r.data as { data: (Activity & { validations: { step: string; createdAt: string }[] })[]; total: number; page: number; limit: number };
+      return {
+        items: result.data.map(act => ({
+          activity: act,
+          currentStep: act.validations?.[0]?.step ?? 'SOUMISSION',
+          pendingSince: act.validations?.[0]?.createdAt ?? (act as any).createdAt,
+        })),
+        total: result.total,
+      };
     },
     refetchInterval: 30_000,
   });
+  const pending: PendingValidation[] = pendingPage?.items ?? [];
+  const totalPending = pendingPage?.total ?? 0;
 
   const { mutate: process, isPending: processing } = useMutation({
     mutationFn: () => {
@@ -66,7 +74,7 @@ export default function ValidationsPage() {
       return validationsApi.transition(selected!.activity.id, { ...form, toStep });
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['validations-pending'] });
+      qc.invalidateQueries({ queryKey: ['validations-pending'], exact: false });
       setSelected(null);
       setForm({ decision: 'APPROUVE', comment: '' });
     },
@@ -90,8 +98,8 @@ export default function ValidationsPage() {
       <Header
         title="Validations"
         subtitle={
-          pending.length > 0
-            ? `${pending.length} en attente${urgentCount > 0 ? ` · ${urgentCount} urgente${urgentCount > 1 ? 's' : ''}` : ''}`
+          totalPending > 0
+            ? `${totalPending} en attente${urgentCount > 0 ? ` · ${urgentCount} urgente${urgentCount > 1 ? 's' : ''}` : ''}`
             : 'Aucune validation en attente'
         }
       />
@@ -100,7 +108,7 @@ export default function ValidationsPage() {
         {/* KPI strip */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
           {[
-            { label: 'En attente', value: pending.length,  color: 'text-amber-600',  bg: 'bg-white border-slate-200' },
+            { label: 'En attente', value: totalPending,  color: 'text-amber-600',  bg: 'bg-white border-slate-200' },
             { label: 'Urgentes',   value: urgentCount,     color: 'text-red-600',    bg: urgentCount > 0 ? 'bg-red-50 border-red-100' : 'bg-white border-slate-200' },
             {
               label: 'Soumission',
@@ -227,6 +235,11 @@ export default function ValidationsPage() {
                   </div>
                 );
               })}
+            </div>
+          )}
+          {totalPending > 10 && (
+            <div className="px-5 py-3 border-t border-slate-100">
+              <Pagination page={page} total={totalPending} limit={10} onChange={setPage} />
             </div>
           )}
         </div>

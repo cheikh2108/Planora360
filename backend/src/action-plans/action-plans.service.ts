@@ -27,18 +27,25 @@ export class ActionPlansService {
     });
   }
 
-  findAll(organizationId: string) {
-    return this.prisma.actionPlan.findMany({
-      where: { organizationId },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        axes: {
-          orderBy: { order: 'asc' },
-          include: { _count: { select: { activities: true } } },
+  async findAll(organizationId: string, page = 1, limit = 10) {
+    const where = { organizationId };
+    const [data, total] = await Promise.all([
+      this.prisma.actionPlan.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+        include: {
+          axes: {
+            orderBy: { order: 'asc' },
+            include: { _count: { select: { activities: true } } },
+          },
+          _count: { select: { axes: true } },
         },
-        _count: { select: { axes: true } },
-      },
-    });
+      }),
+      this.prisma.actionPlan.count({ where }),
+    ]);
+    return { data, total, page, limit };
   }
 
   async findOne(id: string, organizationId: string) {

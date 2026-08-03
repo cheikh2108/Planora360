@@ -19,8 +19,18 @@ export class IndicatorsController {
   }
 
   @Get()
-  findAll(@CurrentUser() user: any, @Query('activityId') activityId?: string) {
-    return this.indicatorsService.findAll(user.organizationId, activityId);
+  findAll(
+    @CurrentUser() user: any,
+    @Query('activityId') activityId?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.indicatorsService.findAll(
+      user.organizationId,
+      activityId,
+      page ? parseInt(page) : 1,
+      limit ? parseInt(limit) : 20,
+    );
   }
 
   @Get(':id')

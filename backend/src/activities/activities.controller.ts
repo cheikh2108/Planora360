@@ -23,8 +23,18 @@ export class ActivitiesController {
   }
 
   @Get()
-  findAll(@CurrentUser() user: any, @Query('planId') planId?: string) {
-    return this.activitiesService.findAll(user.organizationId, planId);
+  findAll(
+    @CurrentUser() user: any,
+    @Query('planId') planId?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.activitiesService.findAll(
+      user.organizationId,
+      planId,
+      page ? parseInt(page) : 1,
+      limit ? parseInt(limit) : 20,
+    );
   }
 
   @Get(':id')

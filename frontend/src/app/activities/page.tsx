@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { activitiesApi } from '@/lib/api';
 import type { Activity, ActivityStatus } from '@/lib/types';
+import { Pagination } from '@/components/ui/pagination';
 import { Header } from '@/components/layout/header';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { ProgressBar } from '@/components/ui/progress-bar';
@@ -44,36 +45,42 @@ const PRIORITY_PILL: Record<string, string> = {
   CRITIQUE: 'bg-red-50 text-red-600',
 };
 
-export default function ActivitiesPage() {
+function ActivitiesContent() {
   const searchParams = useSearchParams();
   const [statusFilter, setStatusFilter] = useState<ActivityStatus | 'ALL'>('ALL');
   const [search, setSearch] = useState(searchParams.get('search') ?? '');
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     const q = searchParams.get('search');
     if (q) setSearch(q);
   }, [searchParams]);
 
-  const { data: activities = [], isLoading } = useQuery<Activity[]>({
-    queryKey: ['activities', statusFilter],
+  useEffect(() => { setPage(1); }, [statusFilter]);
+
+  const { data: activitiesPage, isLoading } = useQuery({
+    queryKey: ['activities', statusFilter, page],
     queryFn: async () => {
-      const params: Record<string, string> = {};
+      const params: Record<string, string | number> = { page };
       if (statusFilter !== 'ALL') params.status = statusFilter;
       const r = await activitiesApi.list(params);
-      return r.data;
+      return r.data as { data: Activity[]; total: number; page: number; limit: number };
     },
   });
+  const activities: Activity[] = activitiesPage?.data ?? [];
+  const total = activitiesPage?.total ?? 0;
 
   // Separate full-list query for chart and KPIs — always unfiltered
   const { data: allActivities = [] } = useQuery<Activity[]>({
     queryKey: ['activities-overview'],
-    queryFn: async () => { const r = await activitiesApi.list({}); return r.data; },
+    queryFn: async () => { const r = await activitiesApi.list({ limit: 1000 }); return (r.data as any).data ?? []; },
     staleTime: 60_000,
   });
 
   const filtered = search.trim()
     ? activities.filter(a => a.title.toLowerCase().includes(search.toLowerCase()))
     : activities;
+  const displayTotal = search.trim() ? filtered.length : total;
 
   const enCours = allActivities.filter(a => a.status === 'EN_COURS').length;
   const enRetard = allActivities.filter(a => a.status === 'EN_RETARD').length;
@@ -96,7 +103,7 @@ export default function ActivitiesPage() {
 
   return (
     <div className="flex flex-col flex-1 min-h-0 overflow-auto">
-      <Header title="Activités" subtitle={`${filtered.length} activité${filtered.length > 1 ? 's' : ''}`} />
+      <Header title="Activités" subtitle={`${displayTotal} activité${displayTotal > 1 ? 's' : ''}`} />
       <main className="flex-1 px-4 md:px-6 py-6 space-y-5">
 
         {/* KPI strip + donut */}
@@ -186,8 +193,8 @@ export default function ActivitiesPage() {
         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
           <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Liste des activités</p>
-            {filtered.length > 0 && (
-              <span className="text-xs tabular-nums text-slate-400">{filtered.length}</span>
+            {total > 0 && (
+              <span className="text-xs tabular-nums text-slate-400">{total}</span>
             )}
           </div>
 
@@ -272,8 +279,21 @@ export default function ActivitiesPage() {
               </table>
             </div>
           )}
+          {!search.trim() && total > 20 && (
+            <div className="px-4 py-3 border-t border-slate-100">
+              <Pagination page={page} total={total} limit={20} onChange={setPage} />
+            </div>
+          )}
         </div>
       </main>
     </div>
+  );
+}
+
+export default function ActivitiesPage() {
+  return (
+    <Suspense>
+      <ActivitiesContent />
+    </Suspense>
   );
 }

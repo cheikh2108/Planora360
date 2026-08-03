@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
+import { Pagination } from '@/components/ui/pagination';
 import type { User, Role } from '@/lib/types';
 import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
@@ -17,11 +18,17 @@ export default function UsersPage() {
   const qc = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
 
-  const { data: users = [], isLoading } = useQuery<User[]>({
-    queryKey: ['users'],
-    queryFn: async () => { const r = await api.get('/users'); return r.data; },
+  const { data: usersPage, isLoading } = useQuery({
+    queryKey: ['users', page],
+    queryFn: async () => {
+      const r = await api.get('/users', { params: { page, limit: 10 } });
+      return r.data as { data: User[]; total: number; page: number; limit: number };
+    },
   });
+  const users: User[] = usersPage?.data ?? [];
+  const total = usersPage?.total ?? 0;
 
   const { data: roles = [] } = useQuery<Role[]>({
     queryKey: ['roles'],
@@ -30,7 +37,7 @@ export default function UsersPage() {
 
   const { mutate: toggleStatus } = useMutation({
     mutationFn: (user: User) => api.patch(`/users/${user.id}`, { isActive: !user.isActive }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['users'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['users'], exact: false }),
   });
 
   const filtered = search.trim()
@@ -40,16 +47,17 @@ export default function UsersPage() {
     : users;
 
   const activeCount = users.filter(u => u.isActive).length;
+  const displayTotal = search.trim() ? filtered.length : total;
 
   return (
     <div className="flex flex-col flex-1 min-h-0 overflow-auto">
-      <Header title="Gestion des utilisateurs" subtitle={`${users.length} utilisateur${users.length > 1 ? 's' : ''} · ${activeCount} actifs`} />
+      <Header title="Gestion des utilisateurs" subtitle={`${displayTotal} utilisateur${displayTotal > 1 ? 's' : ''} · ${activeCount} actifs`} />
       <main className="flex-1 px-4 md:px-6 py-6 space-y-5">
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'Total', value: users.length, color: 'text-slate-900' },
+            { label: 'Total', value: total, color: 'text-slate-900' },
             { label: 'Actifs', value: activeCount, color: 'text-green-600' },
             { label: 'Inactifs', value: users.length - activeCount, color: 'text-red-500' },
             { label: 'Avec 2FA', value: users.filter(u => u.twoFactorEnabled).length, color: 'text-indigo-600' },
@@ -156,6 +164,11 @@ export default function UsersPage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+          {!search.trim() && total > 10 && (
+            <div className="px-5 py-3 border-t border-slate-100">
+              <Pagination page={page} total={total} limit={10} onChange={setPage} />
             </div>
           )}
         </div>

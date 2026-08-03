@@ -1,6 +1,6 @@
 import {
   Controller, Get, Post, Body, Patch, Param, Delete,
-  UseGuards, HttpCode, HttpStatus,
+  UseGuards, HttpCode, HttpStatus, Query,
 } from '@nestjs/common';
 import { ActionPlansService } from './action-plans.service';
 import { CreateActionPlanDto } from './dto/create-action-plan.dto';
@@ -23,8 +23,16 @@ export class ActionPlansController {
   }
 
   @Get()
-  findAll(@CurrentUser() user: any) {
-    return this.actionPlansService.findAll(user.organizationId);
+  findAll(
+    @CurrentUser() user: any,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.actionPlansService.findAll(
+      user.organizationId,
+      page ? parseInt(page) : 1,
+      limit ? parseInt(limit) : 10,
+    );
   }
 
   @Get(':id')

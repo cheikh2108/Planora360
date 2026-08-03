@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { plansApi } from '@/lib/api';
 import type { ActionPlan } from '@/lib/types';
+import { Pagination } from '@/components/ui/pagination';
 import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
@@ -121,8 +122,8 @@ function CreatePlanModal({ open, onClose, onCreated }: { open: boolean; onClose:
       budgetPrevisional: form.budgetPrevisional ? Number(form.budgetPrevisional) : undefined,
     }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['plans'] });
-      qc.invalidateQueries({ queryKey: ['plans', 'active'] });
+      qc.invalidateQueries({ queryKey: ['plans'], exact: false });
+      qc.invalidateQueries({ queryKey: ['plans', 'active'], exact: false });
       onClose();
       onCreated?.();
       setForm({ title: '', periodStart: '', periodEnd: '', strategicGoals: '', expectedResults: '', budgetPrevisional: '' });
@@ -185,13 +186,17 @@ function CreatePlanModal({ open, onClose, onCreated }: { open: boolean; onClose:
 export default function PlansPage() {
   const toast = useToast();
   const [createOpen, setCreateOpen] = useState(false);
-  const { data: plans = [], isLoading } = useQuery<ActionPlan[]>({
-    queryKey: ['plans', 'active'],
+  const [page, setPage] = useState(1);
+  const { data: plansPage, isLoading } = useQuery({
+    queryKey: ['plans', 'active', page],
     queryFn: async () => {
-      const r = await plansApi.list();
-      return (r.data as ActionPlan[]).filter(p => p.status !== 'ARCHIVE');
+      const r = await plansApi.list({ page, limit: 10 });
+      const result = r.data as { data: ActionPlan[]; total: number; page: number; limit: number };
+      return { ...result, data: result.data.filter(p => p.status !== 'ARCHIVE') };
     },
   });
+  const plans: ActionPlan[] = plansPage?.data ?? [];
+  const total = plansPage?.total ?? 0;
 
   const totalActivities = plans.reduce(
     (n, p) => n + (p.axes?.reduce((m, a) => m + (a.activities?.length ?? 0), 0) ?? 0), 0
@@ -242,9 +247,14 @@ export default function PlansPage() {
             action={<Button icon={<Plus size={16} />} onClick={() => setCreateOpen(true)}>Créer un plan</Button>}
           />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-            {plans.map(plan => <PlanCard key={plan.id} plan={plan} />)}
-          </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+              {plans.map(plan => <PlanCard key={plan.id} plan={plan} />)}
+            </div>
+            {total > 10 && (
+              <Pagination page={page} total={total} limit={10} onChange={setPage} />
+            )}
+          </>
         )}
       </main>
       <CreatePlanModal

@@ -82,16 +82,28 @@ export class ActivitiesService {
     return activity;
   }
 
-  findAll(organizationId: string, planId?: string) {
-    return this.prisma.activity.findMany({
-      where: {
-        organizationId,
-        parentActivityId: null,
-        ...(planId ? { axis: { actionPlanId: planId } } : {}),
-      },
-      orderBy: { createdAt: 'desc' },
-      include: ACTIVITY_INCLUDE,
-    });
+  async findAll(
+    organizationId: string,
+    planId?: string,
+    page = 1,
+    limit = 20,
+  ) {
+    const where = {
+      organizationId,
+      parentActivityId: null,
+      ...(planId ? { axis: { actionPlanId: planId } } : {}),
+    };
+    const [data, total] = await Promise.all([
+      this.prisma.activity.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+        include: ACTIVITY_INCLUDE,
+      }),
+      this.prisma.activity.count({ where }),
+    ]);
+    return { data, total, page, limit };
   }
 
   async findOne(id: string, organizationId: string) {

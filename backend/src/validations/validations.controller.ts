@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Post, Body, Param, UseGuards, HttpCode, HttpStatus,
+  Controller, Get, Post, Body, Param, Query, UseGuards, HttpCode, HttpStatus,
 } from '@nestjs/common';
 import { ValidationsService } from './validations.service';
 import { TransitionDto } from './dto/transition.dto';
@@ -43,7 +43,16 @@ export class ValidationsController {
 
   // File des activités en attente de validation pour l'utilisateur connecté
   @Get('validations/pending')
-  getPending(@CurrentUser() user: any) {
-    return this.validationsService.findPending(user.id, user.organizationId);
+  getPending(
+    @CurrentUser() user: any,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.validationsService.findPending(
+      user.id,
+      user.organizationId,
+      page ? parseInt(page) : 1,
+      limit ? parseInt(limit) : 10,
+    );
   }
 }

@@ -47,13 +47,24 @@ export class UsersService {
     return safe;
   }
 
-  async findAll(organizationId: string) {
-    const users = await this.prisma.user.findMany({
-      where: { organizationId },
-      include: { role: true },
-      orderBy: { createdAt: 'desc' },
-    });
-    return users.map(({ passwordHash, twoFactorSecret, ...u }) => u);
+  async findAll(organizationId: string, page = 1, limit = 10) {
+    const where = { organizationId };
+    const [users, total] = await Promise.all([
+      this.prisma.user.findMany({
+        where,
+        include: { role: true },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.user.count({ where }),
+    ]);
+    return {
+      data: users.map(({ passwordHash, twoFactorSecret, ...u }) => u),
+      total,
+      page,
+      limit,
+    };
   }
 
   async findOne(id: string, organizationId: string) {

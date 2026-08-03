@@ -21,8 +21,11 @@ ataaba-pilot/
 │   │   ├── app/              # Pages Next.js (App Router)
 │   │   │   ├── auth/         # Connexion, inscription
 │   │   │   ├── dashboard/    # Tableau de bord
-│   │   │   ├── action-plans/ # Plans d'action
+│   │   │   ├── plans/        # Plans d'action
 │   │   │   ├── activities/   # Activités
+│   │   │   ├── indicators/   # Indicateurs de performance
+│   │   │   ├── validations/  # Circuit de validation
+│   │   │   ├── reports/      # Export de rapports
 │   │   │   └── super-admin/  # Administration globale
 │   │   └── lib/              # API client, types, utilitaires
 │   └── public/
@@ -32,10 +35,12 @@ ataaba-pilot/
     │   ├── auth/             # Authentification, inscription
     │   ├── organizations/    # Gestion des organisations
     │   ├── action-plans/     # Plans d'action
-    │   ├── activities/       # Activités & sous-activités
+    │   ├── activities/       # Activités & sous-activités & collaborateurs
+    │   ├── indicators/       # Indicateurs de performance
     │   ├── documents/        # Upload & validation fichiers
     │   ├── validations/      # Circuit de validation
     │   ├── budgets/          # Suivi budgétaire
+    │   ├── reports/          # Export Excel (xlsx)
     │   ├── notifications/    # Emails (Nodemailer)
     │   └── common/           # Guards, decorators, Prisma
     └── prisma/
@@ -74,8 +79,9 @@ npm run dev
 - **Gestion des rôles** — attribution des permissions par organisation
 
 ### Pilotage
-- **Plans d'action** — création multi-axes, suivi par statut (Brouillon, En cours, Terminé, Archivé), budget prévisionnel
-- **Activités** — gestion par axe, sous-activités, responsable, priorité, dates, taux d'avancement, statuts détaillés (En préparation, En attente, Suspendue, Validée, En retard…)
+- **Plans d'action** — création multi-axes, suivi par statut (Brouillon, En cours, Terminé, Archivé), budget prévisionnel, résultats attendus
+- **Activités** — gestion par axe, sous-activités, responsable, co-responsables multiples, priorité, dates, taux d'avancement, résultats attendus, statuts détaillés (En préparation, En attente, Suspendue, Validée, En retard…)
+- **Indicateurs de performance** — cible / réalisé / valeur de base, taux d'atteinte, rattachement optionnel à une activité, indicateurs globaux ou par activité, KPIs : atteints ≥80%, en risque 50–79%, en retard <50%
 - **Checklist** — items de validation par activité, responsables, dates, progression
 - **Validations** — circuit multi-étapes (Soumission → Vérification hiérarchique → Validation technique → Validation administrative → Clôture)
 - **Budget** — suivi par activité : prévu, engagé, décaissé, exécuté, source de financement
@@ -85,6 +91,15 @@ npm run dev
 - **Validation 4 couches** — taille (max 20 Mo) → whitelist d'extensions → magic bytes (`file-type`) → cohérence extension/contenu
 - **Formats acceptés** — PDF, Word (doc/docx), Excel (xls/xlsx), PowerPoint (ppt/pptx), JPEG, PNG
 - **Protection** — rejette les exécutables et fichiers malveillants déguisés en documents
+
+### Rapports
+- **Export Excel** — génération à la demande : activités, plans, budget, indicateurs de performance
+- **4 types de rapport** — Activités, Plans d'action, Budget, Indicateurs
+
+### Navigation & UX
+- **Pagination numérique** — toutes les listes paginées côté serveur avec ellipsis, compteur "X–Y sur N" et navigation par page
+- **Notifications toast** — feedback visuel pour toutes les actions (création, modification, suppression, erreurs)
+- **Responsive mobile** — sidebar rétractable, tableaux adaptatifs, layouts fluides
 
 ### Notifications
 - **Email de bienvenue** — envoi automatique des identifiants temporaires à la création d'un compte
