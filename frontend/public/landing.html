@@ -44,6 +44,7 @@ filter: blur(0px);
 }
 }
 </script>
+<script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
 </head>
   <body class="min-h-screen overflow-x-hidden antialiased selection:bg-cyan-300/20 selection:text-cyan-100 text-slate-100 font-sans bg-[#080c14]" style="font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
     <div class="pointer-events-none fixed inset-0 -z-50" style="background: radial-gradient(circle at 50% -10%, rgba(88, 166, 255, 0.16), transparent 36%), radial-gradient(circle at 82% 18%, rgba(103, 232, 249, 0.08), transparent 28%), linear-gradient(180deg, #0b1020 0%, #080c14 42%, #0a0d13 100%);"></div>
@@ -59,7 +60,7 @@ filter: blur(0px);
 
       <header class="sticky border-white/[0.06] [animation:animationIn_0.8s_ease-out_0.1s_both] z-50 bg-[#080c14]/70 border-b top-0 backdrop-blur-2xl">
         <nav class="mx-auto flex h-16 w-full max-w-[1280px] items-center justify-between px-5 sm:px-8 lg:px-10">
-          <a href="#" class="group flex items-center gap-3">
+          <a href="/" class="group flex items-center gap-3">
             <span class="text-base font-semibold text-white tracking-[-0.035em] font-geist">
               ATAABA Pilot
             </span>
@@ -67,29 +68,31 @@ filter: blur(0px);
 
           <div class="hidden items-center gap-8 md:flex">
             <a href="#problem" class="relative text-sm text-slate-400 transition duration-300 ease-out hover:text-white font-geist">
-              Problem
+              Problème
               <span class="absolute -bottom-2 left-0 h-px w-0 bg-cyan-200/70 transition-all duration-300 ease-out hover:w-full"></span>
             </a>
             <a href="#how" class="relative text-sm text-slate-400 transition duration-300 ease-out hover:text-white font-geist">
-              How it works
+              Fonctionnement
               <span class="absolute -bottom-2 left-0 h-px w-0 bg-cyan-200/70 transition-all duration-300 ease-out hover:w-full"></span>
             </a>
             <a href="#reviews" class="relative text-sm text-slate-400 transition duration-300 ease-out hover:text-white font-geist">
-              Reviews
+              Témoignages
               <span class="absolute -bottom-2 left-0 h-px w-0 bg-cyan-200/70 transition-all duration-300 ease-out hover:w-full"></span>
             </a>
             <a href="/auth/login" class="relative text-sm text-slate-400 transition duration-300 ease-out hover:text-white font-geist">
-              Pricing
+              Tarifs
               <span class="absolute -bottom-2 left-0 h-px w-0 bg-cyan-200/70 transition-all duration-300 ease-out hover:w-full"></span>
             </a>
           </div>
 
-          <a href="/auth/login" class="hidden text-sm text-slate-400 transition duration-300 ease-out hover:text-white font-geist sm:inline-flex items-center">
-            Se connecter
-          </a>
-          <a href="/auth/register" class="hidden rounded-full border border-cyan-200/20 bg-cyan-100 px-4 py-2 text-sm font-medium text-slate-950 shadow-lg shadow-cyan-950/20 transition duration-300 ease-out hover:scale-[1.03] hover:border-cyan-200/35 hover:bg-cyan-50 hover:shadow-cyan-900/25 sm:inline-flex font-geist">
-            Commencer
-          </a>
+          <div class="hidden sm:flex items-center gap-3">
+            <a href="/auth/login" class="text-sm text-slate-400 transition duration-300 ease-out hover:text-white font-geist">
+              Se connecter
+            </a>
+            <a href="/auth/register" class="rounded-full border border-cyan-200/20 bg-cyan-100 px-4 py-2 text-sm font-medium text-slate-950 shadow-lg shadow-cyan-950/20 transition duration-300 ease-out hover:scale-[1.03] hover:border-cyan-200/35 hover:bg-cyan-50 hover:shadow-cyan-900/25 font-geist">
+              Commencer
+            </a>
+          </div>
 
           <button aria-label="Open menu" class="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-slate-300 md:hidden">
             <iconify-icon icon="solar:hamburger-menu-linear" width="20" height="20"></iconify-icon>
@@ -98,42 +101,40 @@ filter: blur(0px);
       </header>
 
       <main class="">
-        <section class="overflow-hidden sm:px-8 sm:pb-28 sm:pt-28 lg:px-10 lg:pt-24 lg:pb-24 pt-20 pr-5 pb-24 pl-5 relative" id="blueprint">
+        <section class="overflow-hidden sm:px-8 lg:px-10 pr-5 pl-5 pt-20 pb-20 sm:pt-28 sm:pb-28 lg:pt-32 lg:pb-32 min-h-[calc(100vh-4rem)] flex items-center relative" id="blueprint">
           <canvas id="webgl-canvas" class="absolute inset-0 z-0 pointer-events-none opacity-60 mix-blend-screen w-full h-full"></canvas>
           <div class="pointer-events-none absolute left-1/2 top-24 h-72 w-72 -translate-x-1/2 rounded-full bg-cyan-200/10 blur-3xl"></div>
-          <div class="grid gap-14 lg:grid-cols-[0.95fr_1.05fr] lg:gap-12 w-full max-w-[1280px] mr-auto ml-auto gap-x-14 gap-y-14 items-center">
+          <div class="grid gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16 w-full max-w-[1280px] mr-auto ml-auto items-center">
             <!-- Left content -->
-            <div class="reveal [animation:animationIn_0.8s_ease-out_0.1s_both] z-10 relative" style=" transition: opacity 900ms ease-out, transform 900ms ease-out;">
-              <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-xs text-slate-300 shadow-2xl shadow-black/20 backdrop-blur-xl font-geist">
+            <div class="reveal [animation:animationIn_0.8s_ease-out_0.1s_both] z-10 relative">
+              <div class="mb-7 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-xs text-slate-300 shadow-2xl shadow-black/20 backdrop-blur-xl font-geist">
                 <span class="h-1.5 w-1.5 rounded-full bg-cyan-200 shadow-lg shadow-cyan-200/40"></span>
                 Pilotage des plans d'action pour les équipes
               </div>
 
-              <h1 class="sm:text-6xl lg:text-7xl text-5xl font-medium text-white tracking-tighter font-jakarta max-w-4xl" style=" transition: opacity 900ms ease-out 300ms, transform 900ms ease-out; will-change: auto;">
+              <h1 class="text-[2.4rem] sm:text-5xl lg:text-[4rem] xl:text-[4.5rem] font-medium text-white tracking-tighter font-jakarta max-w-xl leading-[1.08]" style=" transition: opacity 900ms ease-out 300ms, transform 900ms ease-out; will-change: auto;">
                 Gérez vos plans d'action sans complexité.
               </h1>
 
-              <p class="mt-7 max-w-2xl text-base leading-7 text-slate-400 sm:text-lg font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: auto;">
-                ATAABA Pilot helps small teams, startups, and freelancers organize
-                tasks, track deadlines, and keep work in one calm workspace
-                without complex setup or a learning curve.
+              <p class="mt-6 max-w-md text-base leading-7 text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: auto;">
+                ATAABA Pilot aide les organisations à piloter leurs plans d'action, suivre les délais et centraliser le travail dans un espace unique, sans configuration complexe.
               </p>
 
-              <div class="mt-9 flex flex-col gap-3 sm:flex-row">
+              <div class="mt-8 flex flex-col gap-3 sm:flex-row">
                 <a href="/auth/register" class="group inline-flex items-center justify-center gap-2 shadow-cyan-950/30 transition duration-300 ease-out hover:scale-[1.03] hover:bg-cyan-50 hover:shadow-cyan-300/10 text-sm font-semibold text-slate-950 bg-cyan-100 rounded-full pt-3 pr-5 pb-3 pl-5 shadow-2xl font-geist">
                   Commencer
                   <iconify-icon class="transition duration-300 ease-out group-hover:translate-x-0.5" icon="solar:arrow-right-linear" width="18" height="18"></iconify-icon>
                 </a>
 
                 <a href="#how" class="inline-flex items-center justify-center gap-2 rounded-full border border-white/[0.1] bg-white/[0.04] px-5 py-3 text-sm font-medium text-slate-200 shadow-2xl shadow-black/20 backdrop-blur-xl transition duration-300 ease-out hover:scale-[1.02] hover:border-white/[0.18] hover:bg-white/[0.07] font-geist">
-                  See how it works
+                  Voir comment ça marche
                   <iconify-icon icon="solar:checklist-minimalistic-linear" width="18" height="18" class=""></iconify-icon>
                 </a>
               </div>
             </div>
 
             <!-- Right dashboard visual -->
-            <div class="reveal transition-all duration-700 ease-out lg:h-[43rem] group [animation:animationIn_0.8s_ease-out_0.1s_both] w-full h-[34rem] max-w-[42rem] mr-auto ml-auto relative" style="perspective: 1200px;" id="heroObject">
+            <div class="reveal transition-all duration-700 ease-out group [animation:animationIn_0.8s_ease-out_0.1s_both] w-full h-[min(70vh,40rem)] max-w-[44rem] mr-auto ml-auto relative" style="perspective: 1200px;" id="heroObject">
               <!-- Soft background glows (Hidden from screen readers) -->
               <div aria-hidden="true" class="absolute left-1/2 top-1/2 h-[34rem] w-[34rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan-400/[0.08] blur-[100px] transition-all duration-500 group-hover:bg-cyan-400/[0.12]"></div>
               <div aria-hidden="true" class="absolute left-[62%] top-[22%] h-44 w-44 -translate-x-1/2 rounded-full bg-emerald-400/[0.06] blur-[80px]"></div>
@@ -426,30 +427,27 @@ filter: blur(0px);
               <!-- Left: label + title -->
               <div class="max-w-3xl">
                 <p class="text-sm font-medium text-cyan-100 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                  01 · Product preview
+                  01 · Aperçu du produit
                 </p>
 
                 <h2 class="mt-4 text-4xl text-white sm:text-5xl lg:text-6xl tracking-tighter leading-[0.95] font-jakarta font-medium" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                  Preview every project, task, and deadline in one calm
-                  workspace.
+                  Visualisez chaque plan, activité et échéance dans un espace unifié.
                 </h2>
               </div>
 
               <!-- Right: subtitle + button -->
               <div class="lg:ml-auto lg:max-w-md">
                 <p class="text-base leading-7 text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                  See how ATAABA Pilot brings priorities, owners, timelines, and
-                  progress together so your team can understand what is
-                  happening at a glance and move work forward with confidence.
+                  Découvrez comment ATAABA Pilot regroupe priorités, responsables, délais et avancement pour que votre équipe pilote l'essentiel d'un coup d'œil.
                 </p>
 
                 <div class="mt-7 flex flex-wrap gap-3">
-                  <a href="#" class="inline-flex items-center justify-center transition hover:bg-cyan-50 text-sm font-medium text-slate-950 font-geist bg-cyan-100 h-11 rounded-full px-5 shadow-[0_0_0_1px_rgba(255,255,255,0.12),0_18px_50px_rgba(0,0,0,0.35)]">
-                    View product
+                  <a href="#how" class="inline-flex items-center justify-center transition hover:bg-cyan-50 text-sm font-medium text-slate-950 font-geist bg-cyan-100 h-11 rounded-full px-5 shadow-[0_0_0_1px_rgba(255,255,255,0.12),0_18px_50px_rgba(0,0,0,0.35)]">
+                    Voir le produit
                   </a>
 
-                  <a href="#" class="inline-flex h-11 items-center justify-center rounded-full border border-white/[0.12] bg-white/[0.04] px-5 text-sm font-medium text-white backdrop-blur-xl transition hover:bg-white/[0.08] font-geist">
-                    Learn more
+                  <a href="#problem" class="inline-flex h-11 items-center justify-center rounded-full border border-white/[0.12] bg-white/[0.04] px-5 text-sm font-medium text-white backdrop-blur-xl transition hover:bg-white/[0.08] font-geist">
+                    En savoir plus
                   </a>
                 </div>
               </div>
@@ -945,29 +943,27 @@ filter: blur(0px);
               <!-- Left: label + title -->
               <div class="max-w-4xl">
                 <p class="text-base font-medium text-cyan-200 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                  02 · The problem
+                  02 · Le problème
                 </p>
 
                 <h2 class="mt-5 text-5xl text-white sm:text-6xl tracking-tighter leading-tight font-jakarta font-medium" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                  Most project tools make simple work feel heavy.
+                  La plupart des outils rendent le travail plus lourd qu'il ne l'est.
                 </h2>
               </div>
 
               <!-- Right: subtitle + button -->
               <div class="lg:ml-auto lg:max-w-md">
                 <p class="text-lg leading-8 text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                  Small teams do not need endless configuration, crowded
-                  dashboards, or a week of onboarding. They need a clear place
-                  to see what matters and move work forward.
+                  Les organisations n'ont pas besoin d'une configuration sans fin ni d'un onboarding de plusieurs jours. Elles ont besoin d'un endroit clair pour voir ce qui compte et avancer.
                 </p>
 
                 <div class="mt-7 flex flex-wrap gap-3">
-                  <a href="#" class="inline-flex h-11 items-center justify-center rounded-full bg-cyan-100 px-5 text-sm font-medium text-slate-950 shadow-[0_0_0_1px_rgba(255,255,255,0.12),0_18px_50px_rgba(0,0,0,0.35)] transition hover:bg-cyan-50 font-geist">
-                    See the solution
+                  <a href="#how" class="inline-flex h-11 items-center justify-center rounded-full bg-cyan-100 px-5 text-sm font-medium text-slate-950 shadow-[0_0_0_1px_rgba(255,255,255,0.12),0_18px_50px_rgba(0,0,0,0.35)] transition hover:bg-cyan-50 font-geist">
+                    Voir la solution
                   </a>
 
-                  <a href="#" class="inline-flex h-11 items-center justify-center rounded-full border border-white/[0.12] bg-white/[0.04] px-5 text-sm font-medium text-white backdrop-blur-xl transition hover:bg-white/[0.08] font-geist">
-                    Learn more
+                  <a href="#benefits" class="inline-flex h-11 items-center justify-center rounded-full border border-white/[0.12] bg-white/[0.04] px-5 text-sm font-medium text-white backdrop-blur-xl transition hover:bg-white/[0.08] font-geist">
+                    En savoir plus
                   </a>
                 </div>
               </div>
@@ -1141,7 +1137,7 @@ filter: blur(0px);
 
                           <div class="flex items-center gap-1.5 text-slate-400 font-geist">
                             <span class="h-1.5 w-1.5 rounded-full bg-red-400/80"></span>
-                            8 overdue
+                            8 en retard
                           </div>
                         </div>
                       </div>
@@ -1150,11 +1146,10 @@ filter: blur(0px);
                 </div>
 
                 <h3 class="relative z-10 mt-8 text-2xl text-white tracking-tight font-jakarta font-medium" style="will-change: opacity, transform; transition: opacity 900ms ease-out, transform 900ms ease-out;">
-                  Too many features
+                  Trop de fonctionnalités inutiles
                 </h3>
                 <p class="relative z-10 mt-4 text-sm sm:text-base leading-relaxed text-slate-400 font-geist" style="will-change: opacity, transform; transition: opacity 900ms ease-out, transform 900ms ease-out;">
-                  Complex tools bury simple tasks under views, settings, and
-                  workflows your team never asked for.
+                  Les outils complexes noient les tâches simples sous des vues, paramètres et workflows dont personne n'a besoin.
                 </p>
               </article>
 
@@ -1280,11 +1275,10 @@ filter: blur(0px);
                 </div>
 
                 <h3 class="relative z-10 mt-8 text-2xl text-white tracking-tight font-jakarta font-medium" style="will-change: opacity, transform; transition: opacity 900ms ease-out, transform 900ms ease-out;">
-                  Hard to onboard
+                  Prise en main difficile
                 </h3>
                 <p class="relative z-10 mt-4 text-sm sm:text-base leading-relaxed text-slate-400 font-geist" style="will-change: opacity, transform; transition: opacity 900ms ease-out, transform 900ms ease-out;">
-                  New collaborators should understand the workspace instantly,
-                  not wait for training or documentation.
+                  Les nouveaux collaborateurs devraient comprendre l'espace de travail immédiatement, sans formation ni documentation.
                 </p>
               </article>
 
@@ -1430,11 +1424,10 @@ filter: blur(0px);
                 </div>
 
                 <h3 class="relative z-10 mt-8 text-2xl text-white tracking-tight font-jakarta font-medium" style="will-change: opacity, transform; transition: opacity 900ms ease-out, transform 900ms ease-out;">
-                  Work is scattered
+                  Le travail est éparpillé
                 </h3>
                 <p class="relative z-10 mt-4 text-sm sm:text-base leading-relaxed text-slate-400 font-geist" style="will-change: opacity, transform; transition: opacity 900ms ease-out, transform 900ms ease-out;">
-                  Tasks, deadlines, updates, and decisions get split across too
-                  many tabs and conversations.
+                  Activités, échéances, mises à jour et décisions se dispersent à travers trop d'onglets et de conversations.
                 </p>
               </article>
             </div>
@@ -1448,29 +1441,27 @@ filter: blur(0px);
               <!-- Left: label + title -->
               <div class="max-w-3xl">
                 <p class="text-sm font-medium text-cyan-100 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                  03 · How it works
+                  03 · Comment ça marche
                 </p>
 
                 <h2 class="mt-4 max-w-2xl text-4xl tracking-tighter text-white sm:text-5xl lg:text-6xl font-jakarta font-medium" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                  Add tasks, set deadlines, track progress.
+                  Créez vos activités, fixez les délais, suivez l'avancement.
                 </h2>
               </div>
 
               <!-- Right: subtitle + buttons -->
               <div class="lg:ml-auto lg:max-w-md">
                 <p class="text-base leading-7 text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                  ATAABA Pilot keeps the core workflow obvious. Create the work,
-                  assign the owner, choose a date, and see every project move
-                  from To Do to Done.
+                  ATAABA Pilot rend le flux de travail évident. Créez l'activité, désignez le responsable, choisissez une date, et suivez chaque plan de bout en bout.
                 </p>
 
                 <div class="mt-7 flex flex-wrap gap-3">
-                  <a href="#" class="inline-flex h-11 items-center justify-center rounded-full bg-cyan-100 px-5 text-sm font-medium text-slate-950 shadow-[0_0_0_1px_rgba(255,255,255,0.12),0_18px_50px_rgba(0,0,0,0.35)] transition hover:bg-cyan-50 font-geist">
-                    Explore workflow
+                  <a href="/auth/register" class="inline-flex h-11 items-center justify-center rounded-full bg-cyan-100 px-5 text-sm font-medium text-slate-950 shadow-[0_0_0_1px_rgba(255,255,255,0.12),0_18px_50px_rgba(0,0,0,0.35)] transition hover:bg-cyan-50 font-geist">
+                    Explorer le flux
                   </a>
 
-                  <a href="#" class="inline-flex h-11 items-center justify-center rounded-full border border-white/[0.12] bg-white/[0.04] px-5 text-sm font-medium text-white backdrop-blur-xl transition hover:bg-white/[0.08] font-geist">
-                    Learn more
+                  <a href="#benefits" class="inline-flex h-11 items-center justify-center rounded-full border border-white/[0.12] bg-white/[0.04] px-5 text-sm font-medium text-white backdrop-blur-xl transition hover:bg-white/[0.08] font-geist">
+                    En savoir plus
                   </a>
                 </div>
               </div>
@@ -1487,29 +1478,28 @@ filter: blur(0px);
 
                   <div class="relative z-10 flex h-full flex-col">
                     <p class="inline-flex w-fit rounded-full border border-blue-400/20 bg-blue-500/10 px-3 py-1 text-[0.68rem] font-medium uppercase tracking-[0.16em] text-blue-200 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      Step 01
+                      Étape 01
                     </p>
 
                     <h3 class="mt-5 text-lg font-semibold text-white font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      Capture the task
+                      Créer l'activité
                     </h3>
 
                     <p class="mt-2 text-sm leading-6 text-slate-300 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      Add tasks quickly with only the details your team actually
-                      needs.
+                      Ajoutez une activité rapidement avec uniquement les informations dont votre équipe a besoin.
                     </p>
 
                     <div class="mt-auto rounded-2xl border border-white/[0.08] bg-[#070d18]/70 p-3 shadow-xl shadow-black/30">
                       <div class="mb-3 flex items-center justify-between">
                         <p class="text-xs font-medium text-white font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                          New task
+                          Nouvelle activité
                         </p>
                         <span class="h-2 w-2 rounded-full bg-blue-400 shadow-[0_0_16px_rgba(96,165,250,0.8)]"></span>
                       </div>
 
                       <div class="rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2">
                         <p class="text-xs text-slate-500 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                          Update pricing page
+                          Mettre à jour le plan d'action
                         </p>
                       </div>
 
@@ -1551,21 +1541,21 @@ filter: blur(0px);
 
                   <div class="relative z-10 flex h-full flex-col">
                     <p class="inline-flex w-fit rounded-full border border-blue-400/20 bg-blue-500/10 px-3 py-1 text-[0.68rem] font-medium uppercase tracking-[0.16em] text-blue-200 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      Step 02
+                      Étape 02
                     </p>
 
                     <h3 class="mt-5 text-lg font-semibold text-white font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      Set the deadline
+                      Fixer l'échéance
                     </h3>
 
                     <p class="mt-2 text-sm leading-6 text-slate-300 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      Due dates and priority markers make the next move clear.
+                      Les dates et les indicateurs de priorité rendent la prochaine étape évidente.
                     </p>
 
                     <div class="mt-auto rounded-2xl border border-white/[0.08] bg-[#070d18]/70 p-3 shadow-xl shadow-black/30">
                       <div class="mb-3 flex items-center justify-between">
                         <p class="text-xs font-medium text-white font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                          May 2025
+                          Mai 2025
                         </p>
 
                         <div class="flex gap-1">
@@ -1598,7 +1588,7 @@ filter: blur(0px);
                         <div class="flex items-center gap-2">
                           <span class="h-2 w-2 rounded-full bg-amber-400"></span>
                           <p class="text-xs text-slate-300 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                            High priority
+                            Priorité haute
                           </p>
                         </div>
 
@@ -1618,21 +1608,21 @@ filter: blur(0px);
 
                   <div class="relative z-10 flex h-full flex-col">
                     <p class="inline-flex w-fit rounded-full border border-blue-400/20 bg-blue-500/10 px-3 py-1 text-[0.68rem] font-medium uppercase tracking-[0.16em] text-blue-200 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      Step 03
+                      Étape 03
                     </p>
 
                     <h3 class="mt-5 text-lg font-semibold text-white font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      Move the status
+                      Mettre à jour le statut
                     </h3>
 
                     <p class="mt-2 text-sm leading-6 text-slate-300 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      Use simple columns: To Do, In Progress, and Done.
+                      Colonnes simples : À faire, En cours, Terminé.
                     </p>
 
                     <div class="mt-auto grid grid-cols-3 gap-2 rounded-2xl border border-white/[0.08] bg-[#070d18]/70 p-3 shadow-xl shadow-black/30">
                       <div class="rounded-xl border border-white/[0.07] bg-white/[0.035] p-2">
                         <p class="mb-2 text-[0.55rem] font-semibold uppercase tracking-wide text-slate-500 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                          To do
+                          À faire
                         </p>
 
                         <div class="space-y-2">
@@ -1648,7 +1638,7 @@ filter: blur(0px);
 
                       <div class="rounded-xl border border-blue-400/20 bg-blue-500/[0.06] p-2">
                         <p class="mb-2 text-[0.55rem] font-semibold uppercase tracking-wide text-blue-200 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                          Progress
+                          En cours
                         </p>
 
                         <div class="space-y-2">
@@ -1664,7 +1654,7 @@ filter: blur(0px);
 
                       <div class="rounded-xl border border-white/[0.07] bg-white/[0.035] p-2">
                         <p class="mb-2 text-[0.55rem] font-semibold uppercase tracking-wide text-slate-500 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                          Done
+                          Terminé
                         </p>
 
                         <div class="space-y-2">
@@ -1689,16 +1679,15 @@ filter: blur(0px);
 
                   <div class="relative z-10 flex h-full flex-col">
                     <p class="inline-flex w-fit rounded-full border border-blue-400/20 bg-blue-500/10 px-3 py-1 text-[0.68rem] font-medium uppercase tracking-[0.16em] text-blue-200 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      Step 04
+                      Étape 04
                     </p>
 
                     <h3 class="mt-5 text-lg font-semibold text-white font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      Keep updates together
+                      Centraliser les mises à jour
                     </h3>
 
                     <p class="mt-2 text-sm leading-6 text-slate-300 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      Assign owners and add lightweight comments without extra
-                      setup.
+                      Désignez des responsables et ajoutez des commentaires sans configuration supplémentaire.
                     </p>
 
                     <div class="mt-auto rounded-2xl border border-white/[0.08] bg-[#070d18]/70 p-3 shadow-xl shadow-black/30">
@@ -1721,12 +1710,12 @@ filter: blur(0px);
                               Alex
                             </p>
                             <p class="text-[0.65rem] text-slate-500 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                              2m ago
+                              il y a 2m
                             </p>
                           </div>
 
                           <p class="mt-1 text-xs leading-5 text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                            Updated the copy on the homepage.
+                            Mise à jour du texte sur la page d'accueil.
                           </p>
                         </div>
 
@@ -1736,12 +1725,12 @@ filter: blur(0px);
                               Priya
                             </p>
                             <p class="text-[0.65rem] text-slate-500 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                              5m ago
+                              il y a 5m
                             </p>
                           </div>
 
                           <p class="mt-1 text-xs leading-5 text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                            Looks good. Let’s ship it.
+                            C’est bon, on peut valider.
                           </p>
                         </div>
                       </div>
@@ -1763,30 +1752,29 @@ filter: blur(0px);
               <!-- Left: label + title -->
               <div class="max-w-3xl">
                 <p class="text-[13px] font-medium text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                  04 · Key benefits
+                  04 · Avantages clés
                 </p>
 
                 <h2 class="mt-4 text-4xl text-white sm:text-[56px] leading-[1.1] tracking-tight font-jakarta font-medium" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                  Everything teams need,
+                  Tout ce dont les équipes ont besoin,
                   <br>
-                  nothing they have to fight.
+                  sans friction.
                 </h2>
               </div>
 
               <!-- Right: subtitle + buttons -->
               <div class="lg:ml-auto lg:max-w-md">
                 <p class="text-[17px] leading-relaxed text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                  ATAABA Pilot is built for quick understanding, fast daily use,
-                  and calm project visibility.
+                  ATAABA Pilot est conçu pour une prise en main rapide, un usage quotidien fluide et une visibilité sereine sur vos projets.
                 </p>
 
                 <div class="mt-7 flex flex-wrap gap-3">
-                  <a href="#" class="inline-flex h-11 items-center justify-center rounded-full bg-cyan-100 px-5 text-sm font-medium text-slate-950 shadow-[0_0_0_1px_rgba(255,255,255,0.12),0_18px_50px_rgba(0,0,0,0.35)] transition hover:bg-cyan-50 font-geist">
-                    See benefits
+                  <a href="#reviews" class="inline-flex h-11 items-center justify-center rounded-full bg-cyan-100 px-5 text-sm font-medium text-slate-950 shadow-[0_0_0_1px_rgba(255,255,255,0.12),0_18px_50px_rgba(0,0,0,0.35)] transition hover:bg-cyan-50 font-geist">
+                    Voir les avantages
                   </a>
 
-                  <a href="#" class="inline-flex h-11 items-center justify-center rounded-full border border-white/[0.12] bg-white/[0.04] px-5 text-sm font-medium text-white backdrop-blur-xl transition hover:bg-white/[0.08] font-geist">
-                    Learn more
+                  <a href="/auth/register" class="inline-flex h-11 items-center justify-center rounded-full border border-white/[0.12] bg-white/[0.04] px-5 text-sm font-medium text-white backdrop-blur-xl transition hover:bg-white/[0.08] font-geist">
+                    En savoir plus
                   </a>
                 </div>
               </div>
@@ -1823,13 +1811,13 @@ filter: blur(0px);
                 </div>
 
                 <span class="text-[11px] font-semibold tracking-widest text-blue-400 uppercase font-geist">
-                  Clarity
+                  Clarté
                 </span>
                 <h3 class="mt-3 text-[22px] text-white font-jakarta font-medium" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                  No learning curve
+                  Aucune courbe d'apprentissage
                 </h3>
                 <p class="mt-3 text-[15px] leading-relaxed text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                  A simple workspace your team can understand in minutes.
+                  Un espace de travail que votre équipe comprend en quelques minutes.
                 </p>
               </div>
 
@@ -1868,13 +1856,13 @@ filter: blur(0px);
                 </div>
 
                 <span class="text-[11px] font-semibold tracking-widest text-blue-400 uppercase font-geist">
-                  Speed
+                  Rapidité
                 </span>
                 <h3 class="mt-3 text-[22px] text-white font-jakarta font-medium" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                  Lightweight by default
+                  Léger par défaut
                 </h3>
                 <p class="mt-3 text-[15px] leading-relaxed text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                  Create, update, and review work without slow, heavy workflows.
+                  Créez, mettez à jour et suivez le travail sans processus lourds ni workflows complexes.
                 </p>
               </div>
 
@@ -1911,10 +1899,10 @@ filter: blur(0px);
                   Focus
                 </span>
                 <h3 class="mt-3 text-[22px] text-white font-jakarta font-medium" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                  One shared place
+                  Un espace partagé
                 </h3>
                 <p class="mt-3 text-[15px] leading-relaxed text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                  Tasks, projects, deadlines, and updates stay connected.
+                  Activités, plans, échéances et mises à jour restent connectés.
                 </p>
               </div>
 
@@ -1953,13 +1941,13 @@ filter: blur(0px);
                 </div>
 
                 <span class="text-[11px] font-semibold tracking-widest text-blue-400 uppercase font-geist">
-                  Trust
+                  Confiance
                 </span>
                 <h3 class="mt-3 text-[22px] text-white font-jakarta font-medium" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                  Clear ownership
+                  Responsabilités claires
                 </h3>
                 <p class="mt-3 text-[15px] leading-relaxed text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                  Everyone knows what they own and what needs attention next.
+                  Chacun sait ce qu'il pilote et ce qui nécessite une attention immédiate.
                 </p>
               </div>
             </div>
@@ -1975,29 +1963,28 @@ filter: blur(0px);
             <!-- Left Column: Text Content -->
             <div class="reveal lg:mt-10" style=" transition: opacity 900ms ease-out 180ms, transform 900ms ease-out;">
               <p class="text-[13px] font-medium text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                05 · Social proof
+                05 · Ils nous font confiance
               </p>
 
               <h2 class="mt-4 text-4xl text-white sm:text-[56px] leading-[1.1] tracking-tight font-jakarta font-medium" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                Built for teams
+                Conçu pour les équipes
                 <br>
-                that want work to
+                qui veulent piloter
                 <br>
-                feel obvious.
+                sans complexité.
               </h2>
 
               <p class="mt-6 text-[17px] leading-relaxed text-slate-400 max-w-[400px] font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                ATAABA Pilot gives growing teams a calmer way to coordinate
-                projects without adopting a heavyweight operating system.
+                ATAABA Pilot offre aux organisations une façon plus sereine de coordonner leurs plans d'action sans adopter un outil lourd.
               </p>
 
               <div class="mt-7 flex flex-wrap gap-3">
-                <a href="#" class="inline-flex h-11 items-center justify-center rounded-full bg-cyan-100 px-5 text-sm font-medium text-slate-950 shadow-[0_0_0_1px_rgba(255,255,255,0.12),0_18px_50px_rgba(0,0,0,0.35)] transition hover:bg-cyan-50 font-geist">
-                  Read stories
+                <a href="#reviews" class="inline-flex h-11 items-center justify-center rounded-full bg-cyan-100 px-5 text-sm font-medium text-slate-950 shadow-[0_0_0_1px_rgba(255,255,255,0.12),0_18px_50px_rgba(0,0,0,0.35)] transition hover:bg-cyan-50 font-geist">
+                  Lire les témoignages
                 </a>
 
-                <a href="#" class="inline-flex h-11 items-center justify-center rounded-full border border-white/[0.12] bg-white/[0.04] px-5 text-sm font-medium text-white backdrop-blur-xl transition hover:bg-white/[0.08] font-geist">
-                  Get started
+                <a href="/auth/register" class="inline-flex h-11 items-center justify-center rounded-full border border-white/[0.12] bg-white/[0.04] px-5 text-sm font-medium text-white backdrop-blur-xl transition hover:bg-white/[0.08] font-geist">
+                  Démarrer
                 </a>
               </div>
             </div>
@@ -2021,11 +2008,10 @@ filter: blur(0px);
 
                 <div class="flex-1">
                   <h3 class="text-[22px] text-white font-jakarta font-medium" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                    1,200+ small teams
+                    +150 organisations
                   </h3>
                   <p class="mt-2 text-[15px] leading-relaxed text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                    Use ATAABA Pilot to keep tasks, owners, and deadlines visible
-                    without overcomplicating the process.
+                    Utilisent ATAABA Pilot pour garder activités, responsables et délais visibles sans complexifier le processus.
                   </p>
 
                   <!-- Avatar Group & Dotted Line -->
@@ -2070,14 +2056,14 @@ filter: blur(0px);
 
                 <div class="flex-1 relative z-10 pt-2">
                   <h3 class="text-[22px] text-white leading-tight font-jakarta font-medium" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                    “Our whole team understood it on day one.”
+                    “Toute notre équipe a compris l'outil dès le premier jour.”
                   </h3>
-                  <p class="mt-4 text-[15px] leading-relaxed text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                    <span class="text-blue-400 font-medium font-geist">
+                  <p class=”mt-4 text-[15px] leading-relaxed text-slate-400 font-geist” style=” transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;”>
+                    <span class=”text-blue-400 font-medium font-geist”>
                       Maya Chen
                     </span>
-                    , Studio Lead — a lightweight workspace replaced three
-                    scattered tools.
+                    , Studio Lead — un espace de travail léger qui a remplacé trois
+                    outils éparpillés.
                   </p>
                 </div>
               </div>
@@ -2097,11 +2083,10 @@ filter: blur(0px);
                 <div class="flex-1 flex flex-col md:flex-row md:items-end justify-between gap-6">
                   <div class="max-w-[320px]">
                     <h3 class="text-[22px] text-white font-jakarta font-medium" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      Less time managing the tool
+                      Moins de temps à gérer l'outil
                     </h3>
                     <p class="mt-2 text-[15px] leading-relaxed text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      Teams spend more time doing the work and less time
-                      maintaining complicated boards.
+                      Les équipes passent plus de temps à avancer et moins de temps à maintenir des tableaux complexes.
                     </p>
                   </div>
 
@@ -2113,7 +2098,7 @@ filter: blur(0px);
                         ↑ 32%
                       </span>
                       <span class="text-[9px] text-slate-400 font-geist">
-                        Time saved
+                        Temps gagné
                       </span>
                     </div>
 
@@ -2158,17 +2143,16 @@ filter: blur(0px);
               <!-- Right: subtitle + toggle -->
               <div class="lg:ml-auto lg:max-w-md">
                 <p class="text-[17px] leading-relaxed text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                  Start free, upgrade when your team needs more projects,
-                  reporting, and collaboration controls.
+                  Commencez gratuitement, évoluez quand votre équipe a besoin de plus de plans, de rapports et de contrôles de collaboration.
                 </p>
 
                 <div class="mt-7 inline-flex rounded-full border border-white/[0.12] bg-white/[0.04] p-1 backdrop-blur-xl">
                   <button class="h-10 rounded-full bg-cyan-100 px-5 text-sm font-medium text-slate-950 shadow-[0_12px_35px_rgba(0,0,0,0.28)] transition font-geist">
-                    Monthly
+                    Mensuel
                   </button>
 
                   <button class="h-10 rounded-full px-5 text-sm font-medium text-slate-300 transition hover:text-white font-geist">
-                    Yearly
+                    Annuel
                   </button>
                 </div>
               </div>
@@ -2182,10 +2166,10 @@ filter: blur(0px);
                 <div class="flex items-start justify-between gap-6">
                   <div class="">
                     <p class="text-[11px] font-semibold uppercase tracking-widest text-blue-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      Starter
+                      Découverte
                     </p>
                     <h3 class="mt-3 text-[24px] tracking-tight text-white font-jakarta font-medium" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      For getting organized
+                      Pour démarrer
                     </h3>
                   </div>
                   <span class="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium text-slate-400 font-geist">
@@ -2203,13 +2187,12 @@ filter: blur(0px);
                     </span>
                   </div>
                   <p class="mt-4 text-[15px] leading-relaxed text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                    A calm workspace for individuals and small teams starting
-                    their first projects.
+                    Un espace de travail pour les organisations qui démarrent leurs premiers plans d'action.
                   </p>
                 </div>
 
                 <a href="/auth/register" class="mt-8 inline-flex items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-medium text-slate-200 transition duration-300 ease-out hover:border-white/20 hover:bg-white/[0.07] font-geist">
-                  Start free
+                  Commencer gratuitement
                 </a>
 
                 <div class="mt-8 h-px w-full bg-white/[0.08]"></div>
@@ -2221,7 +2204,7 @@ filter: blur(0px);
                         <path d="M20 6 9 17l-5-5"></path>
                       </svg>
                     </span>
-                    Up to 3 projects
+                    Jusqu'à 3 plans d'action
                   </li>
                   <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
                     <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-300">
@@ -2229,7 +2212,7 @@ filter: blur(0px);
                         <path d="M20 6 9 17l-5-5"></path>
                       </svg>
                     </span>
-                    Simple task boards
+                    Suivi des activités simplifié
                   </li>
                   <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
                     <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-300">
@@ -2237,7 +2220,7 @@ filter: blur(0px);
                         <path d="M20 6 9 17l-5-5"></path>
                       </svg>
                     </span>
-                    Due dates and owners
+                    Échéances et responsables
                   </li>
                   <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
                     <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-300">
@@ -2245,7 +2228,7 @@ filter: blur(0px);
                         <path d="M20 6 9 17l-5-5"></path>
                       </svg>
                     </span>
-                    Weekly activity summary
+                    Résumé hebdomadaire d'avancement
                   </li>
                 </ul>
               </article>
@@ -2260,7 +2243,7 @@ filter: blur(0px);
                       Pro
                     </p>
                     <h3 class="mt-3 text-[24px] tracking-tight text-white font-jakarta font-medium" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      For focused teams
+                      Pour les équipes actives
                     </h3>
                   </div>
                   <span class="rounded-full border border-blue-300/20 bg-blue-400/10 px-3 py-1 text-xs font-medium text-blue-200 font-geist">
@@ -2278,13 +2261,12 @@ filter: blur(0px);
                     </span>
                   </div>
                   <p class="mt-4 text-[15px] leading-relaxed text-slate-300 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                    Everything small teams need to plan work, stay aligned, and
-                    ship consistently.
+                    Tout ce dont les équipes ont besoin pour planifier, rester alignées et avancer avec régularité.
                   </p>
                 </div>
 
                 <a href="/auth/register" class="mt-8 inline-flex items-center justify-center rounded-full bg-cyan-100 px-5 py-3 text-sm font-semibold text-slate-950 shadow-2xl shadow-cyan-950/20 transition duration-300 ease-out hover:bg-cyan-50 font-geist">
-                  Start 14-day trial
+                  Essai 14 jours gratuit
                 </a>
 
                 <div class="mt-8 h-px w-full bg-blue-200/15"></div>
@@ -2296,7 +2278,7 @@ filter: blur(0px);
                         <path d="M20 6 9 17l-5-5"></path>
                       </svg>
                     </span>
-                    Unlimited projects
+                    Plans d'action illimités
                   </li>
                   <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
                     <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-300/15 text-blue-200">
@@ -2304,7 +2286,7 @@ filter: blur(0px);
                         <path d="M20 6 9 17l-5-5"></path>
                       </svg>
                     </span>
-                    Timeline and calendar views
+                    Vues chronologie et calendrier
                   </li>
                   <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
                     <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-300/15 text-blue-200">
@@ -2312,7 +2294,7 @@ filter: blur(0px);
                         <path d="M20 6 9 17l-5-5"></path>
                       </svg>
                     </span>
-                    Priority labels and filters
+                    Priorités et filtres avancés
                   </li>
                   <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
                     <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-300/15 text-blue-200">
@@ -2320,7 +2302,7 @@ filter: blur(0px);
                         <path d="M20 6 9 17l-5-5"></path>
                       </svg>
                     </span>
-                    Team comments and mentions
+                    Commentaires et mentions d'équipe
                   </li>
                   <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
                     <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-300/15 text-blue-200">
@@ -2328,7 +2310,7 @@ filter: blur(0px);
                         <path d="M20 6 9 17l-5-5"></path>
                       </svg>
                     </span>
-                    Progress reports
+                    Rapports d'avancement
                   </li>
                 </ul>
               </article>
@@ -2343,7 +2325,7 @@ filter: blur(0px);
                       Business
                     </p>
                     <h3 class="mt-3 text-[24px] tracking-tight text-white font-jakarta font-medium" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      For growing teams
+                      Pour les organisations en croissance
                     </h3>
                   </div>
                   <span class="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium text-slate-400 font-geist">
@@ -2361,13 +2343,12 @@ filter: blur(0px);
                     </span>
                   </div>
                   <p class="mt-4 text-[15px] leading-relaxed text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                    Advanced controls and visibility for teams coordinating
-                    multiple projects.
+                    Contrôles avancés et visibilité accrue pour coordonner plusieurs plans d'action simultanément.
                   </p>
                 </div>
 
                 <a href="/auth/register" class="mt-8 inline-flex items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-medium text-slate-200 transition duration-300 ease-out hover:border-white/20 hover:bg-white/[0.07] font-geist">
-                  Contact sales
+                  Contacter l'équipe
                 </a>
 
                 <div class="mt-8 h-px w-full bg-white/[0.08]"></div>
@@ -2379,7 +2360,7 @@ filter: blur(0px);
                         <path d="M20 6 9 17l-5-5"></path>
                       </svg>
                     </span>
-                    Everything in Pro
+                    Tout ce qui est dans Pro
                   </li>
                   <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
                     <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-300">
@@ -2387,7 +2368,7 @@ filter: blur(0px);
                         <path d="M20 6 9 17l-5-5"></path>
                       </svg>
                     </span>
-                    Admin permissions
+                    Permissions administrateur
                   </li>
                   <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
                     <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-300">
@@ -2395,7 +2376,7 @@ filter: blur(0px);
                         <path d="M20 6 9 17l-5-5"></path>
                       </svg>
                     </span>
-                    Portfolio reporting
+                    Reporting portefeuille
                   </li>
                   <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
                     <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-300">
@@ -2403,7 +2384,7 @@ filter: blur(0px);
                         <path d="M20 6 9 17l-5-5"></path>
                       </svg>
                     </span>
-                    Priority support
+                    Support prioritaire
                   </li>
                   <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
                     <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-300">
@@ -2411,7 +2392,7 @@ filter: blur(0px);
                         <path d="M20 6 9 17l-5-5"></path>
                       </svg>
                     </span>
-                    Custom onboarding
+                    Onboarding personnalisé
                   </li>
                 </ul>
               </article>
@@ -2419,8 +2400,7 @@ filter: blur(0px);
 
             <div class="text-center border-white/10 border rounded-[2rem] mt-10 pt-6 pr-6 pb-6 pl-6">
               <p class="text-[15px] leading-relaxed text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                All plans include secure workspaces, unlimited tasks, and a calm
-                interface your team can learn in minutes.
+                Tous les plans incluent des espaces de travail sécurisés, des activités illimitées et une interface que votre équipe maîtrise en quelques minutes.
               </p>
             </div>
           </div>
@@ -2438,24 +2418,23 @@ filter: blur(0px);
                 </p>
 
                 <h2 class="mt-4 text-4xl leading-[1.1] tracking-tight text-white sm:text-[56px] font-jakarta font-medium" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                  Questions teams ask before getting started.
+                  Les questions que les équipes posent avant de démarrer.
                 </h2>
               </div>
 
               <!-- Right: subtitle + buttons -->
               <div class="lg:ml-auto lg:max-w-md">
                 <p class="text-[17px] leading-relaxed text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                  Everything you need to know about setting up ATAABA Pilot,
-                  inviting your team, and keeping projects organized.
+                  Tout ce que vous devez savoir sur la mise en place d'ATAABA Pilot, l'invitation de votre équipe et l'organisation de vos plans d'action.
                 </p>
 
                 <div class="mt-7 flex flex-wrap gap-3">
-                  <a href="#" class="inline-flex h-11 items-center justify-center rounded-full bg-white px-5 text-sm font-medium text-slate-950 shadow-[0_0_0_1px_rgba(255,255,255,0.12),0_18px_50px_rgba(0,0,0,0.35)] transition hover:bg-cyan-50 font-geist">
-                    View FAQ
+                  <a href="#faq" class="inline-flex h-11 items-center justify-center rounded-full bg-white px-5 text-sm font-medium text-slate-950 shadow-[0_0_0_1px_rgba(255,255,255,0.12),0_18px_50px_rgba(0,0,0,0.35)] transition hover:bg-cyan-50 font-geist">
+                    Voir la FAQ
                   </a>
 
-                  <a href="#" class="inline-flex h-11 items-center justify-center rounded-full border border-white/[0.12] bg-white/[0.04] px-5 text-sm font-medium text-white backdrop-blur-xl transition hover:bg-white/[0.08] font-geist">
-                    Contact us
+                  <a href="mailto:contact@ataaba.com" class="inline-flex h-11 items-center justify-center rounded-full border border-white/[0.12] bg-white/[0.04] px-5 text-sm font-medium text-white backdrop-blur-xl transition hover:bg-white/[0.08] font-geist">
+                    Nous contacter
                   </a>
                 </div>
               </div>
@@ -2476,13 +2455,10 @@ filter: blur(0px);
                   </span>
                   <div class="">
                     <h3 class="text-[22px] tracking-tight text-white font-jakarta font-medium" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      How quickly can my team start using ATAABA Pilot?
+                      En combien de temps mon équipe peut-elle démarrer ?
                     </h3>
                     <p class="mt-4 text-[15px] leading-relaxed text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      Most teams create their first workspace, add a project,
-                      and invite collaborators in just a few minutes. The
-                      workflow is intentionally simple, so there is no long
-                      setup process.
+                      La plupart des équipes créent leur premier espace de travail, ajoutent un plan d'action et invitent leurs collaborateurs en quelques minutes. Le flux de travail est volontairement simple, sans processus de configuration long.
                     </p>
                   </div>
                 </div>
@@ -2503,12 +2479,10 @@ filter: blur(0px);
                   </span>
                   <div class="">
                     <h3 class="text-[22px] tracking-tight text-white font-jakarta font-medium" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      Is ATAABA Pilot built for individuals or teams?
+                      ATAABA Pilot est-il fait pour les individus ou les équipes ?
                     </h3>
                     <p class="mt-4 text-[15px] leading-relaxed text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      Both. Freelancers can use it to manage personal client
-                      work, while teams can coordinate tasks, owners, deadlines,
-                      comments, and project progress in one shared place.
+                      Les deux. Les organisations publiques et privées peuvent l'utiliser pour coordonner activités, responsables, échéances, commentaires et avancement des plans dans un espace partagé.
                     </p>
                   </div>
                 </div>
@@ -2527,12 +2501,10 @@ filter: blur(0px);
                   </span>
                   <div>
                     <h3 class="text-[22px] tracking-tight text-white font-jakarta font-medium" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      Can we customize projects and workflows?
+                      Peut-on personnaliser les plans et les flux de travail ?
                     </h3>
                     <p class="mt-4 text-[15px] leading-relaxed text-slate-300 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      Yes. You can organize work with projects, task statuses,
-                      owners, priorities, due dates, and notes without turning
-                      the workspace into a complicated system.
+                      Oui. Vous pouvez organiser le travail avec des statuts, des responsables, des priorités, des échéances et des notes sans transformer l'espace en un système complexe.
                     </p>
                   </div>
                 </div>
@@ -2552,13 +2524,10 @@ filter: blur(0px);
                   </span>
                   <div class="">
                     <h3 class="text-[22px] tracking-tight text-white font-jakarta font-medium" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      Can ATAABA Pilot replace spreadsheets and scattered notes?
+                      ATAABA Pilot peut-il remplacer les tableurs et les notes éparpillées ?
                     </h3>
                     <p class="mt-4 text-[15px] leading-relaxed text-slate-300 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      For task tracking and project coordination, yes. ATAABA Pilot
-                      keeps responsibilities, timelines, updates, and progress
-                      visible so teams do not need to chase information across
-                      tabs.
+                      Pour le suivi des activités et la coordination des plans, oui. ATAABA Pilot garde responsabilités, délais, mises à jour et avancement visibles pour que les équipes n'aient plus à chercher l'information partout.
                     </p>
                   </div>
                 </div>
@@ -2577,12 +2546,10 @@ filter: blur(0px);
                   </span>
                   <div class="">
                     <h3 class="text-[22px] tracking-tight text-white font-jakarta font-medium" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      Is our workspace secure?
+                      Notre espace de travail est-il sécurisé ?
                     </h3>
                     <p class="mt-4 text-[15px] leading-relaxed text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      ATAABA Pilot is designed around secure workspaces and clear
-                      access for your team. You control who is invited and what
-                      projects they collaborate on.
+                      ATAABA Pilot est conçu autour d'espaces sécurisés et d'accès clairs pour votre équipe. Vous contrôlez qui est invité et sur quels plans ils peuvent collaborer.
                     </p>
                   </div>
                 </div>
@@ -2601,12 +2568,10 @@ filter: blur(0px);
                   </span>
                   <div class="">
                     <h3 class="text-[22px] tracking-tight text-white font-jakarta font-medium" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      What happens if we need more capacity later?
+                      Que se passe-t-il si nous avons besoin de plus de capacité ?
                     </h3>
                     <p class="mt-4 text-[15px] leading-relaxed text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      You can start small and expand when your team needs more
-                      projects, reporting, collaboration controls, or support.
-                      ATAABA Pilot is built to scale without adding clutter.
+                      Vous pouvez commencer petit et évoluer quand votre équipe a besoin de plus de plans, de rapports, de contrôles de collaboration ou de support. ATAABA Pilot est conçu pour évoluer sans ajouter de complexité.
                     </p>
                   </div>
                 </div>
@@ -2615,8 +2580,7 @@ filter: blur(0px);
 
             <div class="mt-10 rounded-[2rem] border border-white/10 bg-white/[0.03] p-6 text-center">
               <p class="text-[15px] leading-relaxed text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                Still have questions? Start a free trial or contact the team to
-                see how ATAABA Pilot fits your workflow.
+                Vous avez encore des questions ? Démarrez un essai gratuit ou contactez notre équipe pour voir comment ATAABA Pilot s'adapte à votre organisation.
               </p>
             </div>
           </div>
@@ -2640,12 +2604,11 @@ filter: blur(0px);
                 </div>
 
                 <h2 class="mt-5 text-3xl tracking-tighter text-white sm:text-4xl lg:text-5xl font-jakarta font-medium" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                  Give your team one clear place to manage work.
+                  Donnez à votre équipe un espace clair pour piloter le travail.
                 </h2>
 
                 <p class="mt-5 max-w-2xl text-sm leading-6 text-slate-400 sm:text-base font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                  No credit card required. Create your first project, invite
-                  your team, and see every deadline in one calm workspace.
+                  Sans carte bancaire. Soumettez votre demande, notre équipe valide votre accès sous 48h.
                 </p>
               </div>
 
@@ -2656,7 +2619,7 @@ filter: blur(0px);
                 </a>
 
                 <a href="#how" class="inline-flex items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.03] px-6 py-3 text-sm font-medium text-slate-200 transition duration-300 ease-out hover:bg-white/[0.06] hover:text-white font-geist">
-                  See how it works
+                  Voir comment ça marche
                 </a>
               </div>
             </div>
@@ -2680,13 +2643,13 @@ filter: blur(0px);
               </p>
 
               <h2 class="max-w-5xl text-6xl leading-none tracking-tighter text-white sm:text-7xl lg:text-8xl font-jakarta font-medium" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                Let’s get work under control.
+                Prenez le contrôle de vos plans d’action.
               </h2>
             </div>
 
             <div class="max-w-xl lg:justify-self-end">
               <p class="text-2xl leading-tight tracking-tight text-slate-400 sm:text-3xl font-jakarta font-medium" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                One calm workspace for tasks, deadlines, and team focus.
+                Un espace unifié pour piloter, valider et rendre compte.
               </p>
 
               <div class="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -2699,7 +2662,7 @@ filter: blur(0px);
                 </a>
 
                 <a href="#how" class="inline-flex items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.03] px-6 py-4 text-base font-medium text-slate-200 transition duration-300 ease-out hover:bg-white/[0.06] hover:text-white font-geist">
-                  See product
+                  Voir le produit
                 </a>
               </div>
             </div>
@@ -2708,7 +2671,7 @@ filter: blur(0px);
           <!-- Middle links -->
           <div class="mt-16 grid gap-12 border-t border-white/[0.06] pt-12 sm:mt-20 sm:grid-cols-2 lg:mt-24 lg:grid-cols-[1.2fr_0.6fr_0.6fr_0.6fr] lg:gap-16">
             <div class="max-w-sm">
-              <a href="#" class="inline-flex items-center gap-3">
+              <a href="/" class="inline-flex items-center gap-3">
                 <span class="flex h-10 w-10 items-center justify-center rounded-2xl border border-cyan-100/10 bg-cyan-100/[0.06] text-cyan-100">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M4 7h16"></path>
@@ -2722,8 +2685,8 @@ filter: blur(0px);
               </a>
 
               <p class="mt-5 text-sm leading-6 text-slate-500 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                A simple project workspace for small teams, startups, and
-                freelancers who want less clutter and more clarity.
+                Une plateforme de pilotage pour organisations publiques et privées,
+                qui veulent plus de clarté et moins de complexité.
               </p>
             </div>
 
@@ -2733,35 +2696,35 @@ filter: blur(0px);
               </p>
               <nav class="mt-5 flex flex-col gap-3">
                 <a href="#how" class="text-sm text-slate-300 transition hover:text-cyan-100 font-geist">
-                  Product
+                  Produit
                 </a>
                 <a href="/auth/login" class="text-sm text-slate-300 transition hover:text-cyan-100 font-geist">
-                  Pricing
+                  Tarifs
                 </a>
                 <a href="#reviews" class="text-sm text-slate-300 transition hover:text-cyan-100 font-geist">
-                  Customers
+                  Clients
                 </a>
                 <a href="#problem" class="text-sm text-slate-300 transition hover:text-cyan-100 font-geist">
-                  About
+                  À propos
                 </a>
               </nav>
             </div>
 
             <div class="">
               <p class="text-sm font-medium text-slate-500 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                Resources
+                Ressources
               </p>
               <nav class="mt-5 flex flex-col gap-3">
                 <a href="#" class="text-sm text-slate-300 transition hover:text-cyan-100 font-geist">
-                  Help center
+                  Centre d'aide
                 </a>
                 <a href="#" class="text-sm text-slate-300 transition hover:text-cyan-100 font-geist">
-                  Privacy
+                  Confidentialité
                 </a>
                 <a href="#" class="text-sm text-slate-300 transition hover:text-cyan-100 font-geist">
-                  Terms
+                  Conditions d'utilisation
                 </a>
-                <a href="#" class="text-sm text-slate-300 transition hover:text-cyan-100 font-geist">
+                <a href="mailto:contact@ataaba.com" class="text-sm text-slate-300 transition hover:text-cyan-100 font-geist">
                   Contact
                 </a>
               </nav>
@@ -2769,7 +2732,7 @@ filter: blur(0px);
 
             <div>
               <p class="text-sm font-medium text-slate-500 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                Socials
+                Réseaux sociaux
               </p>
               <nav class="mt-5 flex flex-col gap-3">
                 <a href="#" class="text-sm text-slate-300 transition hover:text-cyan-100 font-geist">
@@ -2791,18 +2754,18 @@ filter: blur(0px);
           <!-- Bottom bar -->
           <div class="mt-12 flex flex-col justify-between gap-5 border-t border-white/[0.06] pt-8 text-sm text-slate-500 sm:flex-row sm:items-center">
             <p class="font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-              © 2026 ATAABA Pilot. All rights reserved.
+              © 2026 ATAABA Pilot. Tous droits réservés.
             </p>
 
             <div class="flex flex-wrap gap-x-4 gap-y-2 font-geist">
               <a href="#how" class="transition hover:text-slate-300 font-geist">
-                Built for focused teams
+                Conçu pour les équipes qui pilotent
               </a>
               <a href="/auth/login" class="transition hover:text-slate-300 font-geist">
-                Start free
+                Commencer gratuitement
               </a>
               <a href="#" class="transition hover:text-slate-300 font-geist">
-                Privacy
+                Confidentialité
               </a>
             </div>
           </div>
@@ -2810,6 +2773,20 @@ filter: blur(0px);
       </footer>
     </div>
 
+    <!-- Back to top button -->
+<button
+  id="back-to-top"
+  aria-label="Retour en haut"
+  class="fixed bottom-6 right-6 z-50 w-11 h-11 rounded-full bg-cyan-100 text-slate-950 shadow-lg shadow-cyan-950/30 flex items-center justify-center transition-all duration-300 opacity-0 translate-y-4 pointer-events-none hover:scale-105 hover:bg-cyan-50"
+  onclick="lenis.scrollTo(0, { duration: 1.4 })"
+>
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="m18 15-6-6-6 6"/>
+  </svg>
+</button>
+<style>
+  #back-to-top.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+</style>
     <script>
       const reveals = document.querySelectorAll(".reveal");
       const textReveals = document.querySelectorAll(
@@ -3184,5 +3161,23 @@ filter: blur(0px);
         composer.render();
       }
     </script>
-  
+<script>
+  const lenis = new Lenis({ duration: 1.2, easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)), smooth: true });
+  function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+  requestAnimationFrame(raf);
+  // Smooth anchor scrolling
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) lenis.scrollTo(target, { offset: -80 });
+    });
+  });
+  const btn = document.getElementById('back-to-top');
+  lenis.on('scroll', ({ scroll }) => {
+    if (scroll > 400) btn.classList.add('visible');
+    else btn.classList.remove('visible');
+  });
+</script>
+
 </body></html>  
