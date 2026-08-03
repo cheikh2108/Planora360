@@ -10,7 +10,7 @@ export class NotificationsService {
 
   constructor(
     private prisma: PrismaService,
-    private config: ConfigService,
+    config: ConfigService,
   ) {
     const apiKey = config.get<string>('RESEND_API_KEY');
     if (apiKey) {
@@ -43,6 +43,11 @@ export class NotificationsService {
     orgName: string;
     tempPassword: string;
   }) {
+    if (!this.resend) {
+      this.logger.log(
+        `\n┌─ CREDENTIALS ──────────────────────────┐\n│ Org      : ${params.orgName}\n│ Email    : ${params.email}\n│ Password : ${params.tempPassword}\n└────────────────────────────────────────┘`,
+      );
+    }
     await this.sendEmail(
       params.email,
       `[ATAABA Pilot] Votre accès à ${params.orgName}`,

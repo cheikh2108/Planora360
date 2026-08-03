@@ -4,7 +4,7 @@ import { useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { activitiesApi, checklistApi, validationsApi, budgetsApi } from '@/lib/api';
-import type { Activity, ChecklistItem, Validation, Budget } from '@/lib/types';
+import type { Activity, ActivityStatus, ChecklistItem, Validation, Budget } from '@/lib/types';
 import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
@@ -14,20 +14,31 @@ import { ProgressBar } from '@/components/ui/progress-bar';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ValidationPipeline } from '@/components/dashboard/validation-pipeline';
-import { formatDate, formatCurrency, PRIORITY_LABELS, PRIORITY_COLORS, VALIDATION_STEP_LABELS, cn } from '@/lib/utils';
+import { formatDate, formatCurrency, PRIORITY_LABELS, PRIORITY_COLORS, STATUS_LABELS, VALIDATION_STEP_LABELS, cn } from '@/lib/utils';
 import {
   ArrowLeft, Plus, CheckSquare, GitBranch, Wallet, Send,
   CheckCircle2, XCircle, Trash2, Calendar, User, AlertTriangle, Upload,
   FileText as FileTextIcon,
 } from 'lucide-react';
+import { useToast } from '@/components/ui/toast';
 
 const TABS = ['Checklist', 'Validation', 'Budget', 'Documents'] as const;
 type Tab = typeof TABS[number];
+
+const ALLOWED_TRANSITIONS: Partial<Record<ActivityStatus, ActivityStatus[]>> = {
+  NON_DEMARREE: ['EN_PREPARATION', 'ANNULEE'],
+  EN_PREPARATION: ['EN_COURS', 'ANNULEE'],
+  EN_COURS: ['EN_ATTENTE', 'SUSPENDUE', 'TERMINEE'],
+  EN_ATTENTE: ['EN_COURS', 'SUSPENDUE', 'ANNULEE'],
+  SUSPENDUE: ['EN_COURS', 'ANNULEE'],
+  EN_RETARD: ['EN_COURS', 'SUSPENDUE', 'ANNULEE'],
+};
 
 export default function ActivityDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const qc = useQueryClient();
+  const toast = useToast();
   const [tab, setTab] = useState<Tab>('Checklist');
   const [addItemOpen, setAddItemOpen] = useState(false);
   const [addBudgetOpen, setAddBudgetOpen] = useState(false);
@@ -59,7 +70,10 @@ export default function ActivityDetailPage() {
   const { mutate: updateProgress } = useMutation({
     mutationFn: ({ itemId, progress }: { itemId: string; progress: number }) =>
       checklistApi.update(id, itemId, { progress }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['checklist', id] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['checklist', id] });
+      qc.invalidateQueries({ queryKey: ['activity', id] });
+    },
   });
 
   const { mutate: deleteItem } = useMutation({
@@ -73,9 +87,20 @@ export default function ActivityDetailPage() {
   const { mutate: submit, isPending: submitting } = useMutation({
     mutationFn: () => validationsApi.submit(id),
     onSuccess: () => {
+      toast.success('Soumis pour validation', 'L\'activité est en attente d\'approbation.');
       qc.invalidateQueries({ queryKey: ['activity', id] });
       qc.invalidateQueries({ queryKey: ['validations', id] });
     },
+    onError: () => toast.error('Erreur', 'Impossible de soumettre pour validation.'),
+  });
+
+  const { mutate: changeStatus, isPending: changingStatus } = useMutation({
+    mutationFn: (status: string) => activitiesApi.updateStatus(id, status),
+    onSuccess: () => {
+      toast.success('Statut mis à jour');
+      qc.invalidateQueries({ queryKey: ['activity', id] });
+    },
+    onError: () => toast.error('Erreur', 'Impossible de modifier le statut.'),
   });
 
   if (isLoading || !activity) {
@@ -96,8 +121,9 @@ export default function ActivityDetailPage() {
   const totalBudgetExecuted = budgets.reduce((s, b) => s + b.executed, 0);
   const budgetRate = totalBudgetPlanned > 0 ? Math.round((totalBudgetExecuted / totalBudgetPlanned) * 100) : 0;
 
-  const lastValidation = validations[validations.length - 1];
-  const completedSteps = validations.filter(v => v.decision === 'APPROUVE').map(v => v.step);
+  const validationList = Array.isArray(validations) ? validations : [];
+  const lastValidation = validationList[validationList.length - 1];
+  const completedSteps = validationList.filter(v => v.decision === 'APPROUVE').map(v => v.step);
 
   return (
     <div className="flex flex-col flex-1 min-h-0 overflow-auto">
@@ -114,7 +140,21 @@ export default function ActivityDetailPage() {
           <div className="flex flex-col md:flex-row md:items-start gap-4 justify-between">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 flex-wrap mb-3">
-                <StatusBadge status={activity.status} dot />
+                {isLocked ? (
+                  <StatusBadge status={activity.status} dot />
+                ) : (
+                  <select
+                    value={activity.status}
+                    disabled={changingStatus}
+                    onChange={e => changeStatus(e.target.value)}
+                    className="text-xs font-semibold rounded-full px-3 py-1 border border-slate-200 bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30 disabled:opacity-50"
+                  >
+                    <option value={activity.status}>{STATUS_LABELS[activity.status]}</option>
+                    {ALLOWED_TRANSITIONS[activity.status]?.map(s => (
+                      <option key={s} value={s}>{STATUS_LABELS[s]}</option>
+                    ))}
+                  </select>
+                )}
                 <span className={cn('text-xs font-semibold', PRIORITY_COLORS[activity.priority])}>
                   Priorité {PRIORITY_LABELS[activity.priority]}
                 </span>
@@ -194,8 +234,6 @@ export default function ActivityDetailPage() {
             onUpdateProgress={(itemId, progress) => updateProgress({ itemId, progress })}
             onDelete={deleteItem}
             onAdd={() => setAddItemOpen(true)}
-            activityId={id}
-            qc={qc}
           />
         )}
 
@@ -233,15 +271,13 @@ export default function ActivityDetailPage() {
 }
 
 function ChecklistTab({
-  items, isLocked, onUpdateProgress, onDelete, onAdd, activityId, qc,
+  items, isLocked, onUpdateProgress, onDelete, onAdd,
 }: {
   items: ChecklistItem[];
   isLocked: boolean;
   onUpdateProgress: (id: string, p: number) => void;
   onDelete: (id: string) => void;
   onAdd: () => void;
-  activityId: string;
-  qc: ReturnType<typeof useQueryClient>;
 }) {
   const mandatory = items.filter(i => i.isMandatory);
   const optional = items.filter(i => !i.isMandatory);
@@ -584,7 +620,7 @@ function AddChecklistItemModal({ open, onClose, activityId }: { open: boolean; o
   const [form, setForm] = useState({ label: '', isMandatory: true, dueDate: '' });
 
   const { mutate, isPending } = useMutation({
-    mutationFn: () => checklistApi.create(activityId, form),
+    mutationFn: () => checklistApi.create(activityId, { ...form, dueDate: form.dueDate || undefined }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['checklist', activityId] });
       qc.invalidateQueries({ queryKey: ['activity', activityId] });
@@ -677,8 +713,20 @@ function ValidateModal({ open, onClose, activityId, lastStep }: {
   const qc = useQueryClient();
   const [form, setForm] = useState({ decision: 'APPROUVE', comment: '' });
 
+  const NEXT_STEP: Record<string, string> = {
+    SOUMISSION:                'VERIFICATION_HIERARCHIQUE',
+    VERIFICATION_HIERARCHIQUE: 'VALIDATION_TECHNIQUE',
+    VALIDATION_TECHNIQUE:      'VALIDATION_ADMINISTRATIVE',
+    VALIDATION_ADMINISTRATIVE: 'CLOTURE',
+  };
+
   const { mutate, isPending } = useMutation({
-    mutationFn: () => validationsApi.transition(activityId, form),
+    mutationFn: () => {
+      const toStep = form.decision === 'APPROUVE'
+        ? (lastStep ? NEXT_STEP[lastStep] : 'VERIFICATION_HIERARCHIQUE')
+        : 'SOUMISSION';
+      return validationsApi.transition(activityId, { ...form, toStep });
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['validations', activityId] });
       qc.invalidateQueries({ queryKey: ['activity', activityId] });

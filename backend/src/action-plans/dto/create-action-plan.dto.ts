@@ -1,7 +1,8 @@
 import { Type } from 'class-transformer';
 import {
-  IsString, IsOptional, IsDateString, IsDecimal, MinLength, IsArray, ValidateNested,
+  IsString, IsOptional, IsDateString, IsEnum, MinLength, IsArray, ValidateNested,
 } from 'class-validator';
+import { PlanStatus } from '@prisma/client';
 
 export class CreateAxisDto {
   @IsString()
@@ -33,6 +34,10 @@ export class CreateActionPlanDto {
 
   @IsOptional()
   budgetPrevisional?: number;
+
+  @IsOptional()
+  @IsEnum(PlanStatus)
+  status?: PlanStatus;
 
   @IsOptional()
   @IsArray()

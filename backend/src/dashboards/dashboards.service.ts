@@ -76,8 +76,17 @@ export class DashboardsService {
       return acc;
     }, {});
 
-    const planned = Number(budgetSummary._sum.planned ?? 0);
+    let planned = Number(budgetSummary._sum.planned ?? 0);
     const executed = Number(budgetSummary._sum.executed ?? 0);
+
+    // Fallback : si aucune ligne budgétaire saisie, utiliser budgetPrevisional des plans actifs
+    if (planned === 0) {
+      const plans = await this.prisma.actionPlan.findMany({
+        where: { organizationId, status: { not: 'ARCHIVE' } },
+        select: { budgetPrevisional: true },
+      });
+      planned = plans.reduce((s, p) => s + Number(p.budgetPrevisional ?? 0), 0);
+    }
 
     return {
       activities: {

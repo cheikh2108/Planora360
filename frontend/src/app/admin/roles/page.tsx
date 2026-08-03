@@ -166,80 +166,74 @@ function RoleRow({ role, onEdit, onDelete }: {
       expanded ? 'bg-slate-50/60' : 'hover:bg-slate-50/40'
     )}>
       {/* Ligne principale */}
-      <div className="flex items-center gap-4 px-5 py-4">
+      <div className="flex items-start gap-3 px-4 py-4">
 
-        {/* Icône + nom */}
-        <div className="flex items-center gap-3 w-48 shrink-0">
-          <div className={cn(
-            'w-8 h-8 rounded-lg flex items-center justify-center shrink-0',
-            isSystem ? 'bg-slate-100' : 'bg-[#0f1e38]/8'
-          )}>
-            {isSystem
-              ? <Lock size={14} className="text-slate-400" />
-              : <Shield size={14} className="text-[#0f1e38]" />}
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-slate-900 truncate">{role.name}</p>
-            <div className="flex items-center gap-1.5 mt-0.5">
-              {isSystem && <span className="text-xs text-slate-400 font-medium">Système</span>}
-              <span className="text-xs text-slate-400 flex items-center gap-1">
-                <Users size={10} />{role._count?.users ?? 0}
-              </span>
-            </div>
-          </div>
+        {/* Icône */}
+        <div className={cn(
+          'w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5',
+          isSystem ? 'bg-slate-100' : 'bg-[#0f1e38]/8'
+        )}>
+          {isSystem
+            ? <Lock size={14} className="text-slate-400" />
+            : <Shield size={14} className="text-[#0f1e38]" />}
         </div>
 
-        {/* Permissions — zone centrale */}
+        {/* Contenu principal */}
         <div className="flex-1 min-w-0">
-          {hasStar ? (
-            <span className="text-xs font-medium bg-amber-50 text-amber-700 border border-amber-100 px-2.5 py-1 rounded-full">
-              Accès complet
-            </span>
-          ) : allGranted.length === 0 ? (
-            <span className="text-xs text-slate-400 italic">Aucune permission</span>
-          ) : (
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {visible.map(p => (
-                <span key={p.key} className={cn(
-                  'text-xs px-2 py-0.5 rounded-full font-medium border',
-                  GROUP_COLORS[p.group] ?? 'bg-slate-50 text-slate-600 border-slate-100'
-                )}>
-                  {p.label}
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-slate-900 truncate">{role.name}</p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                {isSystem && <span className="text-xs text-slate-400 font-medium">Système</span>}
+                <span className="text-xs text-slate-400 flex items-center gap-1">
+                  <Users size={10} />{role._count?.users ?? 0}
                 </span>
-              ))}
-              {hiddenCount > 0 && (
-                <button
-                  onClick={() => setExpanded(v => !v)}
-                  className="flex items-center gap-0.5 text-xs font-semibold text-[#2563eb] hover:text-[#1d4ed8] transition-colors"
-                >
-                  {expanded ? 'Réduire' : `+${hiddenCount} autre${hiddenCount > 1 ? 's' : ''}`}
-                  <ChevronDown size={11} className={cn('transition-transform', expanded && 'rotate-180')} />
-                </button>
-              )}
+              </div>
             </div>
-          )}
-        </div>
-
-        {/* Actions */}
-        {!isSystem && (
-          <div className="flex items-center gap-1 shrink-0">
-            <button
-              onClick={() => onEdit(role)}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-[#2563eb] hover:bg-[#2563eb]/8 transition-colors"
-              title="Modifier"
-            >
-              <Pencil size={14} />
-            </button>
-            <button
-              onClick={() => onDelete(role)}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
-              title="Supprimer"
-            >
-              <Trash2 size={14} />
-            </button>
+            {/* Actions */}
+            {!isSystem && (
+              <div className="flex items-center gap-1 shrink-0">
+                <button onClick={() => onEdit(role)} className="p-1.5 rounded-lg text-slate-400 hover:text-[#2563eb] hover:bg-[#2563eb]/8 transition-colors" title="Modifier">
+                  <Pencil size={14} />
+                </button>
+                <button onClick={() => onDelete(role)} className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors" title="Supprimer">
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            )}
           </div>
-        )}
-        {isSystem && <div className="w-16 shrink-0" />}
+
+          {/* Permissions */}
+          <div className="mt-2">
+            {hasStar ? (
+              <span className="text-xs font-medium bg-amber-50 text-amber-700 border border-amber-100 px-2.5 py-1 rounded-full">
+                Accès complet
+              </span>
+            ) : allGranted.length === 0 ? (
+              <span className="text-xs text-slate-400 italic">Aucune permission</span>
+            ) : (
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {visible.map(p => (
+                  <span key={p.key} className={cn(
+                    'text-xs px-2 py-0.5 rounded-full font-medium border',
+                    GROUP_COLORS[p.group] ?? 'bg-slate-50 text-slate-600 border-slate-100'
+                  )}>
+                    {p.label}
+                  </span>
+                ))}
+                {hiddenCount > 0 && (
+                  <button
+                    onClick={() => setExpanded(v => !v)}
+                    className="flex items-center gap-0.5 text-xs font-semibold text-[#2563eb] hover:text-[#1d4ed8] transition-colors"
+                  >
+                    {expanded ? 'Réduire' : `+${hiddenCount} autre${hiddenCount > 1 ? 's' : ''}`}
+                    <ChevronDown size={11} className={cn('transition-transform', expanded && 'rotate-180')} />
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Détail déplié — ne touche pas aux autres lignes */}
@@ -304,12 +298,6 @@ function RoleList({ roles, onEdit, onDelete, loading, emptyLabel, emptyAction }:
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-      {/* En-tête colonne */}
-      <div className="flex items-center gap-4 px-5 py-2.5 bg-slate-50 border-b border-slate-200">
-        <p className="w-48 shrink-0 text-xs font-semibold text-slate-500 uppercase tracking-wide">Rôle</p>
-        <p className="flex-1 text-xs font-semibold text-slate-500 uppercase tracking-wide">Permissions accordées</p>
-        <p className="w-16 shrink-0 text-xs font-semibold text-slate-500 uppercase tracking-wide text-right">Actions</p>
-      </div>
       {roles.map(r => (
         <RoleRow key={r.id} role={r} onEdit={onEdit} onDelete={onDelete} />
       ))}

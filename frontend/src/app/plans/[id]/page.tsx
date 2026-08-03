@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { plansApi, activitiesApi } from '@/lib/api';
 import api from '@/lib/api';
-import type { ActionPlan, Axis, Activity } from '@/lib/types';
+import type { ActionPlan, Axis, Activity, PlanStatus } from '@/lib/types';
 import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
@@ -14,11 +14,12 @@ import { StatusBadge } from '@/components/ui/status-badge';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { EmptyState } from '@/components/ui/empty-state';
 import { formatDate, formatCurrency, PRIORITY_LABELS, PRIORITY_COLORS } from '@/lib/utils';
-import { ArrowLeft, Plus, ChevronDown, ChevronRight, Calendar, User, BarChart3 } from 'lucide-react';
+import { ArrowLeft, Plus, ChevronDown, ChevronRight, Calendar, User, BarChart3, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { useToast } from '@/components/ui/toast';
 
-function AxisSection({ axis, planId }: { axis: Axis; planId: string }) {
+function AxisSection({ axis, planId, readonly }: { axis: Axis; planId: string; readonly?: boolean }) {
   const [open, setOpen] = useState(true);
   const [addActivityOpen, setAddActivityOpen] = useState(false);
   const qc = useQueryClient();
@@ -84,8 +85,9 @@ function AxisSection({ axis, planId }: { axis: Axis; planId: string }) {
           )}
           <div className="px-5 py-3 border-t border-slate-100 bg-slate-50/50">
             <button
+              disabled={readonly}
               onClick={(e) => { e.stopPropagation(); setAddActivityOpen(true); }}
-              className="flex items-center gap-1.5 text-xs font-medium text-[#2563eb] hover:text-[#1d4ed8] transition-colors"
+              className="flex items-center gap-1.5 text-xs font-medium text-[#2563eb] hover:text-[#1d4ed8] transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-[#2563eb]"
             >
               <Plus size={14} /> Ajouter une activité
             </button>
@@ -140,7 +142,7 @@ function AddActivityModal({
             <option value="CRITIQUE">Critique</option>
           </Select>
         </FormField>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField label="Date de début">
             <Input type="date" value={form.startDate} onChange={set('startDate')} />
           </FormField>
@@ -180,14 +182,55 @@ function AddAxisModal({ open, onClose, planId }: { open: boolean; onClose: () =>
   );
 }
 
+const PLAN_STATUS_META: Record<PlanStatus, { label: string; cls: string }> = {
+  BROUILLON: { label: 'Brouillon', cls: 'bg-slate-100 text-slate-500' },
+  EN_COURS:  { label: 'En cours',  cls: 'bg-blue-50 text-blue-600' },
+  TERMINE:   { label: 'Terminé',   cls: 'bg-teal-50 text-teal-600' },
+  ARCHIVE:   { label: 'Archivé',   cls: 'bg-slate-100 text-slate-400' },
+};
+
+const STATUS_LABELS: Record<PlanStatus, string> = {
+  BROUILLON: 'Brouillon', EN_COURS: 'En cours', TERMINE: 'Terminé', ARCHIVE: 'Archivé',
+};
+
 export default function PlanDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const qc = useQueryClient();
+  const toast = useToast();
   const [addAxisOpen, setAddAxisOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const { data: plan, isLoading } = useQuery<ActionPlan>({
     queryKey: ['plan', id],
     queryFn: async () => { const r = await plansApi.get(id); return r.data; },
+  });
+
+  const { mutate: deletePlan, isPending: deleting } = useMutation({
+    mutationFn: () => plansApi.delete(id),
+    onSuccess: () => {
+      toast.success('Plan supprimé', 'Le plan a été supprimé définitivement.');
+      qc.invalidateQueries({ queryKey: ['plans'] });
+      router.push('/plans');
+    },
+    onError: () => toast.error('Erreur', 'Impossible de supprimer ce plan.'),
+  });
+
+  const { mutate: changeStatus, isPending: changingStatus } = useMutation({
+    mutationFn: (status: PlanStatus) => plansApi.update(id, { status }),
+    onMutate: (status: PlanStatus) => {
+      qc.setQueryData(['plan', id], (old: ActionPlan | undefined) =>
+        old ? { ...old, status } : old
+      );
+    },
+    onSuccess: (_data, status) => {
+      toast.success('Statut mis à jour', `Le plan est maintenant "${STATUS_LABELS[status]}".`);
+      qc.invalidateQueries({ queryKey: ['plan', id] });
+      qc.invalidateQueries({ queryKey: ['plans'] });
+      qc.invalidateQueries({ queryKey: ['plans', 'active'] });
+      qc.invalidateQueries({ queryKey: ['plans-archives'] });
+    },
+    onError: () => toast.error('Erreur', 'Impossible de modifier le statut.'),
   });
 
   if (isLoading) {
@@ -205,6 +248,7 @@ export default function PlanDetailPage() {
 
   if (!plan) return null;
 
+  const isLocked = plan.status === 'TERMINE' || plan.status === 'ARCHIVE';
   const totalActivities = plan.axes?.reduce((n, a) => n + (a.activities?.length ?? 0), 0) ?? 0;
 
   return (
@@ -220,7 +264,29 @@ export default function PlanDetailPage() {
           >
             <ArrowLeft size={16} /> Retour aux plans
           </button>
-          <Button icon={<Plus size={16} />} onClick={() => setAddAxisOpen(true)}>Ajouter un axe</Button>
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            <select
+              value={plan.status}
+              disabled={changingStatus}
+              onChange={e => changeStatus(e.target.value as PlanStatus)}
+              className={cn(
+                'text-xs font-semibold rounded-full px-3 py-1.5 border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30 disabled:opacity-50',
+                PLAN_STATUS_META[plan.status]?.cls ?? 'bg-slate-100 text-slate-500'
+              )}
+            >
+              {(['BROUILLON', 'EN_COURS', 'TERMINE', 'ARCHIVE'] as PlanStatus[]).map(s => (
+                <option key={s} value={s}>{PLAN_STATUS_META[s].label}</option>
+              ))}
+            </select>
+            <Button icon={<Plus size={16} />} onClick={() => setAddAxisOpen(true)} disabled={isLocked}>Ajouter un axe</Button>
+            <button
+              onClick={() => setConfirmDelete(true)}
+              className="p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+              title="Supprimer le plan"
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
         </div>
 
         {/* Plan stats */}
@@ -228,8 +294,8 @@ export default function PlanDetailPage() {
           {[
             { label: 'Axes', value: plan.axes?.length ?? 0 },
             { label: 'Activités', value: totalActivities },
-            { label: 'Durée', value: `${Math.ceil((new Date(plan.periodEnd).getTime() - new Date(plan.periodStart).getTime()) / (1000 * 60 * 60 * 24 * 30))} mois` },
-            { label: 'Budget prévu', value: plan.budgetPrevisional ? formatCurrency(plan.budgetPrevisional) : '—' },
+            { label: 'Durée', value: (() => { const d = Math.round((new Date(plan.periodEnd).getTime() - new Date(plan.periodStart).getTime()) / 86400000); return d < 30 ? `${d} j` : `${Math.round(d / 30.44)} mois`; })() },
+            { label: 'Budget prévu', value: plan.budgetPrevisional ? formatCurrency(Number(plan.budgetPrevisional)) : '—' },
           ].map(s => (
             <div key={s.label} className="bg-white rounded-2xl border border-slate-200 p-4">
               <p className="text-xs text-slate-500 mb-1">{s.label}</p>
@@ -252,18 +318,32 @@ export default function PlanDetailPage() {
             icon={BarChart3}
             title="Aucun axe défini"
             description="Structurez votre plan en créant des axes thématiques."
-            action={<Button icon={<Plus size={16} />} onClick={() => setAddAxisOpen(true)}>Ajouter un axe</Button>}
+            action={<Button icon={<Plus size={16} />} onClick={() => setAddAxisOpen(true)} disabled={isLocked}>Ajouter un axe</Button>}
           />
         ) : (
           <div className="space-y-4">
             {plan.axes?.map(axis => (
-              <AxisSection key={axis.id} axis={axis} planId={id} />
+              <AxisSection key={axis.id} axis={axis} planId={id} readonly={isLocked} />
             ))}
           </div>
         )}
       </main>
 
       <AddAxisModal open={addAxisOpen} onClose={() => setAddAxisOpen(false)} planId={id} />
+
+      <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)} title="Supprimer le plan" size="sm">
+        <p className="text-sm text-slate-600 mb-6">Cette action est irréversible. Toutes les activités associées seront également supprimées.</p>
+        <div className="flex justify-end gap-3">
+          <Button variant="secondary" onClick={() => setConfirmDelete(false)}>Annuler</Button>
+          <Button
+            variant="danger"
+            loading={deleting}
+            onClick={() => deletePlan()}
+          >
+            Supprimer définitivement
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }

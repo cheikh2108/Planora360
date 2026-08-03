@@ -35,7 +35,7 @@ const ALLOWED_STATUS_TRANSITIONS: Partial<Record<ActivityStatus, ActivityStatus[
 export class ActivitiesService {
   constructor(private prisma: PrismaService) {}
 
-  async create(dto: CreateActivityDto, organizationId: string) {
+  async create(dto: CreateActivityDto, organizationId: string, currentUserId: string) {
     const axis = await this.prisma.axis.findFirst({
       where: { id: dto.axisId, actionPlan: { organizationId } },
     });
@@ -48,19 +48,22 @@ export class ActivitiesService {
       if (!parent) throw new NotFoundException('Activité parente introuvable');
     }
 
-    const responsible = await this.prisma.user.findFirst({
-      where: { id: dto.responsibleId, organizationId },
-    });
-    if (!responsible) throw new NotFoundException('Responsable introuvable');
+    if (dto.responsibleId) {
+      const responsible = await this.prisma.user.findFirst({
+        where: { id: dto.responsibleId, organizationId },
+      });
+      if (!responsible) throw new NotFoundException('Responsable introuvable');
+    }
 
-    const { collaboratorIds, ...data } = dto;
+    const { collaboratorIds, responsibleId, startDate, dueDate, ...rest } = dto;
 
     return this.prisma.activity.create({
       data: {
-        ...data,
-        startDate: new Date(dto.startDate),
-        dueDate: new Date(dto.dueDate),
+        ...rest,
         organizationId,
+        responsibleId: responsibleId ?? currentUserId,
+        startDate: startDate ? new Date(startDate) : new Date(),
+        dueDate: dueDate ? new Date(dueDate) : new Date(),
       },
       include: ACTIVITY_INCLUDE,
     });

@@ -16,13 +16,13 @@ const ALLOWED_TRANSITIONS: Record<ValidationStep, ValidationStep[]> = {
   CLOTURE: [],
 };
 
-// Rôles autorisés par étape de validation
+// Rôles pouvant approuver/rejeter chaque étape
 const STEP_ROLES: Record<ValidationStep, string[]> = {
-  SOUMISSION: ["Responsable d'activité"],
-  VERIFICATION_HIERARCHIQUE: ['Administrateur', 'Coordinateur', 'Responsable de projet', 'Chef de service'],
-  VALIDATION_TECHNIQUE: ['Administrateur', 'Coordinateur', 'Responsable de projet', 'Validateur'],
-  VALIDATION_ADMINISTRATIVE: ['Administrateur', 'Validateur', 'Responsable financier'],
-  CLOTURE: ['Administrateur', 'Coordinateur'],
+  SOUMISSION:                ['Administrateur', 'Coordinateur', 'Responsable de projet', 'Chef de service', 'Super administrateur'],
+  VERIFICATION_HIERARCHIQUE: ['Administrateur', 'Coordinateur', 'Responsable de projet', 'Chef de service', 'Super administrateur'],
+  VALIDATION_TECHNIQUE:      ['Administrateur', 'Coordinateur', 'Responsable de projet', 'Validateur', 'Super administrateur'],
+  VALIDATION_ADMINISTRATIVE: ['Administrateur', 'Validateur', 'Responsable financier', 'Super administrateur'],
+  CLOTURE:                   ['Administrateur', 'Coordinateur', 'Super administrateur'],
 };
 
 // Statut activité après chaque étape approuvée

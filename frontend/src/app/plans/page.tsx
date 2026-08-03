@@ -11,32 +11,41 @@ import { FormField, Input, Textarea } from '@/components/ui/form-field';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDate, formatCurrency } from '@/lib/utils';
+import type { PlanStatus } from '@/lib/types';
 import { FolderKanban, Plus, ChevronRight, Calendar, Target, Wallet, Activity } from 'lucide-react';
 import Link from 'next/link';
+import { useToast } from '@/components/ui/toast';
 
 /* ─── helpers ─────────────────────────────────────────────── */
 
-function planStatus(plan: ActionPlan): { label: string; cls: string } {
-  const now = new Date();
-  const start = new Date(plan.periodStart);
-  const end = new Date(plan.periodEnd);
-  if (now < start) return { label: 'À venir', cls: 'bg-slate-100 text-slate-500' };
-  if (now > end)   return { label: 'Terminé',  cls: 'bg-teal-50 text-teal-600' };
-  return { label: 'En cours', cls: 'bg-blue-50 text-blue-600' };
+const PLAN_STATUS_META: Record<PlanStatus, { label: string; cls: string }> = {
+  BROUILLON: { label: 'Brouillon', cls: 'bg-slate-100 text-slate-500' },
+  EN_COURS:  { label: 'En cours',  cls: 'bg-blue-50 text-blue-600' },
+  TERMINE:   { label: 'Terminé',   cls: 'bg-teal-50 text-teal-600' },
+  ARCHIVE:   { label: 'Archivé',   cls: 'bg-slate-100 text-slate-400' },
+};
+
+function duration(plan: ActionPlan) {
+  const days = Math.round(
+    (new Date(plan.periodEnd).getTime() - new Date(plan.periodStart).getTime()) / (1000 * 60 * 60 * 24)
+  );
+  if (days < 30) return `${days} j`;
+  const months = Math.round(days / 30.44);
+  return `${months} mois`;
 }
 
-function durationMonths(plan: ActionPlan) {
-  return Math.ceil(
-    (new Date(plan.periodEnd).getTime() - new Date(plan.periodStart).getTime()) / (1000 * 60 * 60 * 24 * 30)
-  );
+function formatBudget(amount: number) {
+  if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(amount % 1_000_000 === 0 ? 0 : 1)}M`;
+  if (amount >= 1_000) return `${Math.round(amount / 1_000)}K`;
+  return String(amount);
 }
 
 /* ─── PlanCard ─────────────────────────────────────────────── */
 
 function PlanCard({ plan }: { plan: ActionPlan }) {
   const total = plan.axes?.reduce((n, a) => n + (a.activities?.length ?? 0), 0) ?? 0;
-  const months = durationMonths(plan);
-  const status = planStatus(plan);
+  const dur = duration(plan);
+  const status = PLAN_STATUS_META[plan.status] ?? PLAN_STATUS_META.BROUILLON;
 
   return (
     <Link href={`/plans/${plan.id}`} className="block group">
@@ -68,7 +77,7 @@ function PlanCard({ plan }: { plan: ActionPlan }) {
             <Calendar size={11} className="shrink-0 text-slate-400" />
             <span>{formatDate(plan.periodStart)} – {formatDate(plan.periodEnd)}</span>
             <span className="text-slate-300">·</span>
-            <span className="font-medium text-slate-600">{months} mois</span>
+            <span className="font-medium text-slate-600">{dur}</span>
           </div>
         </div>
 
@@ -86,7 +95,7 @@ function PlanCard({ plan }: { plan: ActionPlan }) {
             <div className="flex items-center gap-1.5 text-xs text-slate-500 ml-auto">
               <Wallet size={11} className="text-slate-400" />
               <span className="font-semibold text-slate-700">
-                {(plan.budgetPrevisional / 1_000_000).toFixed(1)}M FCFA
+                {formatBudget(Number(plan.budgetPrevisional))} FCFA
               </span>
             </div>
           ) : null}
@@ -99,7 +108,7 @@ function PlanCard({ plan }: { plan: ActionPlan }) {
 
 /* ─── CreatePlanModal ──────────────────────────────────────── */
 
-function CreatePlanModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+function CreatePlanModal({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated?: () => void }) {
   const qc = useQueryClient();
   const [form, setForm] = useState({
     title: '', periodStart: '', periodEnd: '', strategicGoals: '', expectedResults: '', budgetPrevisional: '',
@@ -113,7 +122,9 @@ function CreatePlanModal({ open, onClose }: { open: boolean; onClose: () => void
     }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['plans'] });
+      qc.invalidateQueries({ queryKey: ['plans', 'active'] });
       onClose();
+      onCreated?.();
       setForm({ title: '', periodStart: '', periodEnd: '', strategicGoals: '', expectedResults: '', budgetPrevisional: '' });
     },
   });
@@ -143,7 +154,7 @@ function CreatePlanModal({ open, onClose }: { open: boolean; onClose: () => void
         <FormField label="Titre du plan" required error={errors.title}>
           <Input value={form.title} onChange={set('title')} placeholder="Plan d'action annuel 2025" error={!!errors.title} />
         </FormField>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField label="Date de début" required error={errors.periodStart}>
             <Input type="date" value={form.periodStart} onChange={set('periodStart')} error={!!errors.periodStart} />
           </FormField>
@@ -172,20 +183,20 @@ function CreatePlanModal({ open, onClose }: { open: boolean; onClose: () => void
 /* ─── Page ─────────────────────────────────────────────────── */
 
 export default function PlansPage() {
+  const toast = useToast();
   const [createOpen, setCreateOpen] = useState(false);
   const { data: plans = [], isLoading } = useQuery<ActionPlan[]>({
-    queryKey: ['plans'],
-    queryFn: async () => { const r = await plansApi.list(); return r.data; },
+    queryKey: ['plans', 'active'],
+    queryFn: async () => {
+      const r = await plansApi.list();
+      return (r.data as ActionPlan[]).filter(p => p.status !== 'ARCHIVE');
+    },
   });
 
   const totalActivities = plans.reduce(
     (n, p) => n + (p.axes?.reduce((m, a) => m + (a.activities?.length ?? 0), 0) ?? 0), 0
   );
-  const totalBudget = plans.reduce((n, p) => n + (p.budgetPrevisional ?? 0), 0);
-  const active = plans.filter(p => {
-    const now = new Date();
-    return new Date(p.periodStart) <= now && new Date(p.periodEnd) >= now;
-  }).length;
+  const active = plans.filter(p => p.status === 'EN_COURS').length;
 
   return (
     <div className="flex flex-col flex-1 min-h-0 overflow-auto">
@@ -194,16 +205,15 @@ export default function PlansPage() {
 
         {/* KPI strip */}
         {!isLoading && plans.length > 0 && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             {[
-              { label: 'Plans total', value: plans.length, display: String(plans.length), color: 'text-slate-900' },
+              { label: 'Total', value: plans.length, display: String(plans.length), color: 'text-slate-900' },
               { label: 'En cours', value: active, display: String(active), color: 'text-blue-600' },
               { label: 'Activités', value: totalActivities, display: String(totalActivities), color: 'text-indigo-600' },
-              { label: 'Budget total', value: totalBudget, display: totalBudget > 0 ? `${(totalBudget / 1_000_000).toFixed(0)}M` : '0', color: 'text-slate-700' },
             ].map(k => (
-              <div key={k.label} className="bg-white rounded-2xl border border-slate-200 p-4 flex flex-col gap-1">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">{k.label}</p>
-                <p className={`text-4xl font-bold tabular-nums ${k.color}`}>{k.display}</p>
+              <div key={k.label} className="bg-white rounded-2xl border border-slate-200 p-3 md:p-4 flex flex-col gap-1">
+                <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-wider text-slate-400 truncate">{k.label}</p>
+                <p className={`text-2xl md:text-4xl font-bold tabular-nums ${k.color}`}>{k.display}</p>
               </div>
             ))}
           </div>
@@ -237,7 +247,11 @@ export default function PlansPage() {
           </div>
         )}
       </main>
-      <CreatePlanModal open={createOpen} onClose={() => setCreateOpen(false)} />
+      <CreatePlanModal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        onCreated={() => toast.success('Plan créé', 'Votre nouveau plan d\'action est prêt.')}
+      />
     </div>
   );
 }

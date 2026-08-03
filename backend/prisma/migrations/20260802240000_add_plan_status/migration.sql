@@ -1,0 +1,3 @@
+CREATE TYPE "PlanStatus" AS ENUM ('BROUILLON', 'EN_COURS', 'TERMINE', 'ARCHIVE');
+
+ALTER TABLE "action_plans" ADD COLUMN "status" "PlanStatus" NOT NULL DEFAULT 'BROUILLON';

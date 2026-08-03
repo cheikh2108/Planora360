@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { activitiesApi } from '@/lib/api';
 import type { Activity, ActivityStatus } from '@/lib/types';
@@ -44,8 +45,14 @@ const PRIORITY_PILL: Record<string, string> = {
 };
 
 export default function ActivitiesPage() {
+  const searchParams = useSearchParams();
   const [statusFilter, setStatusFilter] = useState<ActivityStatus | 'ALL'>('ALL');
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(searchParams.get('search') ?? '');
+
+  useEffect(() => {
+    const q = searchParams.get('search');
+    if (q) setSearch(q);
+  }, [searchParams]);
 
   const { data: activities = [], isLoading } = useQuery<Activity[]>({
     queryKey: ['activities', statusFilter],
@@ -95,16 +102,16 @@ export default function ActivitiesPage() {
         {/* KPI strip + donut */}
         {!isLoading && allActivities.length > 0 && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="lg:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="lg:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-2 md:gap-3">
               {[
                 { label: 'Total', value: allActivities.length, color: 'text-slate-900', bg: 'bg-white' },
                 { label: 'En cours', value: enCours, color: 'text-indigo-600', bg: 'bg-white' },
                 { label: 'En retard', value: enRetard, color: 'text-red-600', bg: 'bg-red-50' },
                 { label: 'Terminées', value: terminees, color: 'text-teal-600', bg: 'bg-white' },
               ].map(k => (
-                <div key={k.label} className={cn('rounded-2xl border border-slate-200 p-4 flex flex-col gap-1', k.bg)}>
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">{k.label}</p>
-                  <p className={cn('text-4xl font-bold tabular-nums', k.color)}>{k.value}</p>
+                <div key={k.label} className={cn('rounded-2xl border border-slate-200 p-3 md:p-4 flex flex-col gap-1', k.bg)}>
+                  <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-widest text-slate-400">{k.label}</p>
+                  <p className={cn('text-2xl md:text-4xl font-bold tabular-nums', k.color)}>{k.value}</p>
                 </div>
               ))}
             </div>
@@ -213,11 +220,11 @@ export default function ActivitiesPage() {
                     <tr key={act.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors group">
                       <td className="px-4 py-3.5">
                         <Link href={`/activities/${act.id}`} className="block">
-                          <p className="text-sm font-medium text-slate-900 group-hover:text-[#2563eb] truncate max-w-xs transition-colors">
+                          <p className="text-sm font-medium text-slate-900 group-hover:text-[#2563eb] truncate transition-colors">
                             {act.title}
                           </p>
                           {act.axis && (
-                            <p className="text-xs text-slate-400 truncate max-w-xs mt-0.5">
+                            <p className="text-xs text-slate-400 truncate mt-0.5">
                               {act.axis.actionPlan?.title} › {act.axis.title}
                             </p>
                           )}

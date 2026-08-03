@@ -19,7 +19,7 @@ export class ActivitiesController {
   @Post()
   @Roles('Administrateur', 'Coordinateur', 'Responsable de projet', 'Chef de service')
   create(@Body() dto: CreateActivityDto, @CurrentUser() user: any) {
-    return this.activitiesService.create(dto, user.organizationId);
+    return this.activitiesService.create(dto, user.organizationId, user.id);
   }
 
   @Get()

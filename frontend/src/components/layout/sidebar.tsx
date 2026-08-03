@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, FolderKanban, CheckSquare, GitBranch,
   PiggyBank, FileText, Bell, BarChart3, Settings, LogOut,
-  ChevronDown, Users, Shield,
+  ChevronDown, Users, Shield, Archive,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth-context';
@@ -21,6 +21,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard',     label: 'Tableau de bord', icon: LayoutDashboard, permission: 'dashboard.view' },
   { href: '/plans',         label: "Plans d'action",  icon: FolderKanban,    permission: 'plan.read' },
+  { href: '/plans/archives', label: 'Archives',        icon: Archive,         permission: 'plan.read' },
   { href: '/activities',    label: 'Activités',       icon: CheckSquare,     permission: 'activity.read' },
   { href: '/validations',   label: 'Validations',     icon: GitBranch,       permission: 'validation.approve' },
   { href: '/budgets',       label: 'Budget',          icon: PiggyBank,       permission: 'budget.read' },
@@ -47,7 +48,9 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
   };
 
   const navLink = (item: NavItem) => {
-    const active = pathname === item.href || pathname.startsWith(item.href + '/');
+    const active = item.href === '/plans'
+      ? pathname === '/plans' || (pathname.startsWith('/plans/') && !pathname.startsWith('/plans/archives'))
+      : pathname === item.href || pathname.startsWith(item.href + '/');
     return (
       <Link
         key={item.href}
@@ -97,7 +100,7 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
 
       <div className="px-3 py-3 border-t border-white/10">
         <div className="flex items-center gap-3 px-3 py-2 rounded-lg">
-          <div className="w-8 h-8 rounded-full bg-[#2563eb]/30 flex items-center justify-center text-sm font-bold shrink-0">
+          <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 text-white" style={{ background: 'radial-gradient(circle at 35% 35%, #2a3f5f, #0a1628)', boxShadow: '0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08)' }}>
             {user?.firstName?.[0]}{user?.lastName?.[0]}
           </div>
           <div className="flex-1 min-w-0">

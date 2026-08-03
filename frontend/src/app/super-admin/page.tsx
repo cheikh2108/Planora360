@@ -46,19 +46,19 @@ export default function SuperAdminDashboard() {
           {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-2xl" />)}
         </div>
       ) : (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4">
           {[
             { label: 'Organisations',   value: orgs.length,  icon: Building2,    color: 'text-[#0f1e38]',  bg: 'bg-[#0f1e38]/8' },
             { label: 'Utilisateurs',    value: totalUsers,   icon: Users,        color: 'text-blue-600',   bg: 'bg-blue-50' },
             { label: "Plans d'action",  value: totalPlans,   icon: FolderKanban, color: 'text-indigo-600', bg: 'bg-indigo-50' },
             { label: 'Formules actives', value: orgs.length, icon: Star, color: 'text-amber-600', bg: 'bg-amber-50' },
           ].map(s => (
-            <div key={s.label} className="bg-white rounded-2xl border border-slate-200 p-5">
-              <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center mb-3', s.bg)}>
-                <s.icon size={18} className={s.color} />
+            <div key={s.label} className="bg-white rounded-2xl border border-slate-200 p-3 md:p-5">
+              <div className={cn('w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center mb-2 md:mb-3', s.bg)}>
+                <s.icon size={16} className={s.color} />
               </div>
-              <p className="text-3xl font-bold text-slate-900">{s.value}</p>
-              <p className="text-xs text-slate-500 mt-0.5">{s.label}</p>
+              <p className="text-2xl md:text-3xl font-bold text-slate-900">{s.value}</p>
+              <p className="text-[11px] md:text-xs text-slate-500 mt-0.5">{s.label}</p>
             </div>
           ))}
         </div>

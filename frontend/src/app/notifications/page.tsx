@@ -6,22 +6,63 @@ import type { AuditEntry } from '@/lib/types';
 import { Header } from '@/components/layout/header';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
-import { formatDate, cn } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import {
   Bell, CheckCircle2, XCircle, Upload, UserPlus, Edit3,
   AlertTriangle, GitBranch, Send, Shield,
 } from 'lucide-react';
 
-const ACTION_CONFIG: Record<string, { icon: React.ElementType; color: string; label: string }> = {
-  SUBMIT: { icon: Send, color: 'bg-blue-100 text-blue-600', label: 'Soumission' },
-  APPROVE: { icon: CheckCircle2, color: 'bg-green-100 text-green-600', label: 'Approuvé' },
-  REJECT: { icon: XCircle, color: 'bg-red-100 text-red-600', label: 'Rejeté' },
-  VALIDATE: { icon: GitBranch, color: 'bg-teal-100 text-teal-600', label: 'Validé' },
-  UPLOAD: { icon: Upload, color: 'bg-purple-100 text-purple-600', label: 'Document' },
-  CREATE_USER: { icon: UserPlus, color: 'bg-indigo-100 text-indigo-600', label: 'Utilisateur créé' },
-  UPDATE: { icon: Edit3, color: 'bg-slate-100 text-slate-500', label: 'Mise à jour' },
-  STATUS_CHANGE: { icon: AlertTriangle, color: 'bg-amber-100 text-amber-600', label: 'Changement de statut' },
+const ACTION_CONFIG: Record<string, { icon: React.ElementType; badge: string; dot: string; label: string }> = {
+  SUBMIT:                { icon: Send,         badge: 'bg-blue-500/15 text-blue-400',     dot: 'bg-blue-500',    label: 'Soumission' },
+  'validation.submitted':{ icon: Send,         badge: 'bg-blue-500/15 text-blue-400',     dot: 'bg-blue-500',    label: 'Soumission validation' },
+  APPROVE:               { icon: CheckCircle2, badge: 'bg-emerald-500/15 text-emerald-400', dot: 'bg-emerald-500', label: 'Approuvé' },
+  'validation.approuve': { icon: CheckCircle2, badge: 'bg-emerald-500/15 text-emerald-400', dot: 'bg-emerald-500', label: 'Validation approuvée' },
+  REJECT:                { icon: XCircle,      badge: 'bg-red-500/15 text-red-400',       dot: 'bg-red-500',     label: 'Rejeté' },
+  'validation.rejete':   { icon: XCircle,      badge: 'bg-red-500/15 text-red-400',       dot: 'bg-red-500',     label: 'Validation rejetée' },
+  VALIDATE:              { icon: GitBranch,    badge: 'bg-teal-500/15 text-teal-400',     dot: 'bg-teal-500',    label: 'Validé' },
+  UPLOAD:                { icon: Upload,       badge: 'bg-purple-500/15 text-purple-400', dot: 'bg-purple-500',  label: 'Document ajouté' },
+  CREATE_USER:           { icon: UserPlus,     badge: 'bg-indigo-500/15 text-indigo-400', dot: 'bg-indigo-500',  label: 'Utilisateur créé' },
+  CREATE:                { icon: UserPlus,     badge: 'bg-indigo-500/15 text-indigo-400', dot: 'bg-indigo-500',  label: 'Création' },
+  UPDATE:                { icon: Edit3,        badge: 'bg-slate-500/15 text-slate-400',   dot: 'bg-slate-400',   label: 'Mise à jour' },
+  DELETE:                { icon: XCircle,      badge: 'bg-red-500/15 text-red-400',       dot: 'bg-red-500',     label: 'Suppression' },
+  STATUS_CHANGE:         { icon: AlertTriangle,badge: 'bg-amber-500/15 text-amber-400',   dot: 'bg-amber-400',   label: 'Changement de statut' },
 };
+
+function humanAction(action: string): string {
+  const config = ACTION_CONFIG[action];
+  if (config) return config.label;
+  return action.replace(/[._]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+/* ─── Skeleton de timeline ───────────────────────────────────── */
+
+function TimelineSkeleton() {
+  return (
+    <div className="space-y-8">
+      {[1, 2].map(g => (
+        <div key={g}>
+          <div className="h-3 w-32 bg-slate-200 rounded-full mb-5 animate-pulse" />
+          <div className="space-y-0">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex items-start gap-4">
+                <div className="flex flex-col items-center shrink-0 w-7">
+                  <div className="w-7 h-7 rounded-full bg-slate-200 animate-pulse" />
+                  {i < 2 && <div className="w-px flex-1 bg-slate-200 mt-1 min-h-[28px]" />}
+                </div>
+                <div className={cn('flex-1 pt-1 space-y-2', i < 2 && 'pb-6')}>
+                  <div className="h-3.5 w-48 bg-slate-200 rounded animate-pulse" />
+                  <div className="h-3 w-28 bg-slate-100 rounded animate-pulse" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ─── Page ─────────────────────────────────────────────────── */
 
 export default function NotificationsPage() {
   const { data: entries = [], isLoading } = useQuery<AuditEntry[]>({
@@ -33,30 +74,23 @@ export default function NotificationsPage() {
     refetchInterval: 30_000,
   });
 
+  /* Group by calendar day */
   const grouped = entries.reduce<Record<string, AuditEntry[]>>((acc, e) => {
-    const day = new Date(e.createdAt).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+    const day = new Date(e.createdAt).toLocaleDateString('fr-FR', {
+      weekday: 'long', day: 'numeric', month: 'long',
+    });
     if (!acc[day]) acc[day] = [];
     acc[day].push(e);
     return acc;
   }, {});
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 overflow-auto">
+    <div className="flex flex-col flex-1 min-h-0 overflow-auto bg-slate-50">
       <Header title="Notifications" subtitle="Journal des événements de votre organisation" />
-      <main className="flex-1 px-4 md:px-6 py-6 max-w-3xl">
 
+      <main className="flex-1 px-4 md:px-8 py-8 max-w-2xl">
         {isLoading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="flex gap-3">
-                <Skeleton className="w-9 h-9 rounded-full shrink-0" />
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-4 w-3/4" />
-                  <Skeleton className="h-3 w-1/2" />
-                </div>
-              </div>
-            ))}
-          </div>
+          <TimelineSkeleton />
         ) : entries.length === 0 ? (
           <EmptyState
             icon={Bell}
@@ -64,44 +98,69 @@ export default function NotificationsPage() {
             description="Les événements de votre organisation apparaîtront ici."
           />
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-10">
             {Object.entries(grouped).map(([day, dayEntries]) => (
-              <div key={day}>
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-4 capitalize">{day}</p>
-                <div className="space-y-2">
-                  {dayEntries.map(entry => {
-                    const config = ACTION_CONFIG[entry.action] ?? { icon: Shield, color: 'bg-slate-100 text-slate-500', label: entry.action };
-                    const Icon = config.icon;
-                    const actor = entry.user ? `${entry.user.firstName} ${entry.user.lastName}` : 'Système';
-                    const target = (entry.metadata as Record<string, string>)?.title ?? entry.entityType;
-                    const time = new Date(entry.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+              <section key={day}>
+                {/* Day label */}
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-5 capitalize">
+                  {day}
+                </p>
+
+                {/* Timeline */}
+                <div className="space-y-0">
+                  {dayEntries.map((entry, idx) => {
+                    const rawLabel = entry.action.replace(/[._]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                    const config = ACTION_CONFIG[entry.action] ?? {
+                      icon: Shield, badge: 'bg-slate-500/10 text-slate-400', dot: 'bg-slate-400', label: rawLabel,
+                    };
+                    const Icon   = config.icon;
+                    const actor  = entry.user ? `${entry.user.firstName} ${entry.user.lastName}` : 'Système';
+                    const meta   = entry.metadata as Record<string, string> | null;
+                    const target = meta?.title ?? meta?.name ?? null;
+                    const time   = new Date(entry.createdAt).toLocaleTimeString('fr-FR', {
+                      hour: '2-digit', minute: '2-digit',
+                    });
+                    const isLast = idx === dayEntries.length - 1;
 
                     return (
-                      <div key={entry.id} className="flex items-start gap-3 p-4 bg-white rounded-xl border border-slate-200 hover:shadow-sm transition-shadow">
-                        <div className={cn('w-9 h-9 rounded-full flex items-center justify-center shrink-0', config.color)}>
-                          <Icon size={16} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <p className="text-sm text-slate-800">
-                              <span className="font-semibold">{actor}</span>
-                              {' — '}
-                              <span className="text-slate-600">{config.label}</span>
-                              {target && <span className="text-slate-500"> · {target}</span>}
-                            </p>
-                            <span className="text-xs text-slate-400 shrink-0">{time}</span>
+                      <div key={entry.id} className="flex items-start gap-4">
+
+                        {/* Left: dot + connecting line */}
+                        <div className="flex flex-col items-center shrink-0 w-7">
+                          <div className={cn(
+                            'w-7 h-7 rounded-full flex items-center justify-center shrink-0 ring-2 ring-slate-50 z-10',
+                            config.badge.replace('/15', '/20')
+                          )}>
+                            <Icon size={13} strokeWidth={2.2} />
                           </div>
-                          {entry.entityType && (
-                            <p className="text-xs text-slate-400 mt-0.5">
-                              {entry.entityType} #{entry.entityId.slice(0, 8)}
-                            </p>
+                          {!isLast && (
+                            <div className="w-px flex-1 bg-slate-200 mt-1 min-h-[28px]" />
                           )}
                         </div>
+
+                        {/* Content */}
+                        <div className={cn('flex-1 min-w-0 pt-1', !isLast && 'pb-6')}>
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold text-slate-900 leading-snug">
+                                {humanAction(entry.action)}
+                                {target && (
+                                  <span className="font-normal text-slate-500"> · {target}</span>
+                                )}
+                              </p>
+                              <p className="text-xs text-slate-400 mt-0.5">{actor}</p>
+                            </div>
+                            <span className="text-[11px] text-slate-400 tabular-nums shrink-0 mt-0.5">
+                              {time}
+                            </span>
+                          </div>
+                        </div>
+
                       </div>
                     );
                   })}
                 </div>
-              </div>
+              </section>
             ))}
           </div>
         )}

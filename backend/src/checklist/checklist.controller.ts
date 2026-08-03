@@ -22,7 +22,7 @@ export class ChecklistController {
     @Body() dto: CreateChecklistItemDto,
     @CurrentUser() user: any,
   ) {
-    return this.checklistService.create(activityId, dto, user.organizationId);
+    return this.checklistService.create(activityId, dto, user.organizationId, user.id);
   }
 
   @Get()

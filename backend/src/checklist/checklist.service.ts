@@ -18,20 +18,22 @@ export class ChecklistService {
     return activity;
   }
 
-  async create(activityId: string, dto: CreateChecklistItemDto, organizationId: string) {
+  async create(activityId: string, dto: CreateChecklistItemDto, organizationId: string, currentUserId: string) {
     await this.getActivity(activityId, organizationId);
 
-    const responsible = await this.prisma.user.findFirst({
-      where: { id: dto.responsibleId, organizationId },
-    });
-    if (!responsible) throw new NotFoundException('Responsable introuvable');
+    if (dto.responsibleId) {
+      const responsible = await this.prisma.user.findFirst({
+        where: { id: dto.responsibleId, organizationId },
+      });
+      if (!responsible) throw new NotFoundException('Responsable introuvable');
+    }
 
     const count = await this.prisma.checklistItem.count({ where: { activityId } });
 
     const item = await this.prisma.checklistItem.create({
       data: {
         label: dto.label,
-        responsibleId: dto.responsibleId,
+        responsibleId: dto.responsibleId !== undefined ? dto.responsibleId : currentUserId,
         dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
         isMandatory: dto.isMandatory ?? true,
         observations: dto.observations,

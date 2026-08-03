@@ -22,6 +22,13 @@ interface PendingValidation {
   pendingSince: string;
 }
 
+const NEXT_STEP: Record<string, string> = {
+  SOUMISSION:                'VERIFICATION_HIERARCHIQUE',
+  VERIFICATION_HIERARCHIQUE: 'VALIDATION_TECHNIQUE',
+  VALIDATION_TECHNIQUE:      'VALIDATION_ADMINISTRATIVE',
+  VALIDATION_ADMINISTRATIVE: 'CLOTURE',
+};
+
 /* ─── step badge colors ────────────────────────────────────── */
 const STEP_PILL: Record<string, string> = {
   SOUMISSION:                'bg-blue-50 text-blue-600',
@@ -40,12 +47,24 @@ export default function ValidationsPage() {
 
   const { data: pending = [], isLoading } = useQuery<PendingValidation[]>({
     queryKey: ['validations-pending'],
-    queryFn: async () => { const r = await validationsApi.getPending(); return r.data; },
+    queryFn: async () => {
+      const r = await validationsApi.getPending();
+      return (r.data as (Activity & { validations: { step: string; createdAt: string }[] })[]).map(act => ({
+        activity: act,
+        currentStep: act.validations?.[0]?.step ?? 'SOUMISSION',
+        pendingSince: act.validations?.[0]?.createdAt ?? (act as any).createdAt,
+      }));
+    },
     refetchInterval: 30_000,
   });
 
   const { mutate: process, isPending: processing } = useMutation({
-    mutationFn: () => validationsApi.transition(selected!.activity.id, form),
+    mutationFn: () => {
+      const toStep = form.decision === 'APPROUVE'
+        ? NEXT_STEP[selected!.currentStep]
+        : 'SOUMISSION';
+      return validationsApi.transition(selected!.activity.id, { ...form, toStep });
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['validations-pending'] });
       setSelected(null);
@@ -54,7 +73,7 @@ export default function ValidationsPage() {
   });
 
   const urgentCount = pending.filter(p => {
-    const d = p.activity.dueDate ? new Date(p.activity.dueDate) : null;
+    const d = p.activity?.dueDate ? new Date(p.activity.dueDate) : null;
     return d && d < new Date();
   }).length;
 
@@ -79,7 +98,7 @@ export default function ValidationsPage() {
       <main className="flex-1 px-4 md:px-6 py-6 space-y-5">
 
         {/* KPI strip */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
           {[
             { label: 'En attente', value: pending.length,  color: 'text-amber-600',  bg: 'bg-white border-slate-200' },
             { label: 'Urgentes',   value: urgentCount,     color: 'text-red-600',    bg: urgentCount > 0 ? 'bg-red-50 border-red-100' : 'bg-white border-slate-200' },
@@ -96,9 +115,9 @@ export default function ValidationsPage() {
               bg: 'bg-white border-slate-200',
             },
           ].map(s => (
-            <div key={s.label} className={cn('rounded-2xl border p-4 flex flex-col gap-1', s.bg)}>
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">{s.label}</p>
-              <p className={cn('text-4xl font-bold tabular-nums', s.color)}>{s.value}</p>
+            <div key={s.label} className={cn('rounded-2xl border p-3 md:p-4 flex flex-col gap-1', s.bg)}>
+              <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-widest text-slate-400">{s.label}</p>
+              <p className={cn('text-2xl md:text-4xl font-bold tabular-nums', s.color)}>{s.value}</p>
             </div>
           ))}
         </div>

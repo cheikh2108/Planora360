@@ -95,9 +95,12 @@ export interface AuthTokens {
   user: User;
 }
 
+export type PlanStatus = 'BROUILLON' | 'EN_COURS' | 'TERMINE' | 'ARCHIVE';
+
 export interface ActionPlan {
   id: string;
   title: string;
+  status: PlanStatus;
   periodStart: string;
   periodEnd: string;
   strategicGoals?: string;

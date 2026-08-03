@@ -100,6 +100,7 @@ export const plansApi = {
   get: (id: string) => api.get(`/action-plans/${id}`),
   create: (data: Record<string, unknown>) => api.post('/action-plans', data),
   update: (id: string, data: Record<string, unknown>) => api.patch(`/action-plans/${id}`, data),
+  delete: (id: string) => api.delete(`/action-plans/${id}`),
 };
 
 // Activities
@@ -134,7 +135,8 @@ export const validationsApi = {
 // Budgets
 export const budgetsApi = {
   list: (activityId: string) => api.get(`/activities/${activityId}/budgets`),
-  summary: (params?: Record<string, unknown>) => api.get('/budgets/summary', { params }),
+  summary: () => api.get('/budgets/summary'),
+  summaryByPlan: (planId: string) => api.get(`/budgets/summary/plan/${planId}`),
   create: (activityId: string, data: Record<string, unknown>) =>
     api.post(`/activities/${activityId}/budgets`, data),
   update: (id: string, data: Record<string, unknown>) => api.patch(`/budgets/${id}`, data),

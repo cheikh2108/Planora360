@@ -39,7 +39,7 @@ export class ActionPlansController {
   }
 
   @Delete(':id')
-  @Roles('Administrateur', 'Coordinateur')
+  @Roles('Super administrateur', 'Administrateur', 'Coordinateur')
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: string, @CurrentUser() user: any) {
     return this.actionPlansService.remove(id, user.organizationId);

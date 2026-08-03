@@ -53,66 +53,72 @@ export class BudgetsService {
     return this.prisma.budget.delete({ where: { id } });
   }
 
-  async getSummaryByPlan(planId: string, organizationId: string) {
-    const activities = await this.prisma.activity.findMany({
-      where: { organizationId, axis: { actionPlanId: planId } },
-      include: { budgets: true },
-    });
+  private buildSummary(activities: any[]) {
+    const totals = { planned: 0, committed: 0, disbursed: 0, executed: 0 };
 
-    const totals = activities.reduce(
-      (acc, act) => {
-        for (const b of act.budgets) {
-          acc.planned += Number(b.planned);
-          acc.committed += Number(b.committed);
-          acc.disbursed += Number(b.disbursed);
-          acc.executed += Number(b.executed);
-        }
-        return acc;
-      },
-      { planned: 0, committed: 0, disbursed: 0, executed: 0 },
-    );
+    const byActivity = activities
+      .filter(act => act.budgets.length > 0)
+      .map(act => {
+        const planned   = act.budgets.reduce((s, b) => s + Number(b.planned), 0);
+        const committed = act.budgets.reduce((s, b) => s + Number(b.committed), 0);
+        const executed  = act.budgets.reduce((s, b) => s + Number(b.executed), 0);
+        totals.planned   += planned;
+        totals.committed += committed;
+        totals.disbursed += act.budgets.reduce((s, b) => s + Number(b.disbursed), 0);
+        totals.executed  += executed;
+        return {
+          activityId: act.id,
+          title: act.title,
+          planned,
+          committed,
+          executed,
+          rate: planned > 0 ? Math.round((executed / planned) * 10000) / 100 : 0,
+          fundingSource: act.budgets[0]?.fundingSource ?? null,
+        };
+      });
 
     return {
-      planId,
-      ...totals,
-      balance: totals.planned - totals.executed,
-      executionRate: totals.planned > 0
+      totalPlanned:   totals.planned,
+      totalCommitted: totals.committed,
+      totalDisbursed: totals.disbursed,
+      totalExecuted:  totals.executed,
+      executionRate:  totals.planned > 0
         ? Math.round((totals.executed / totals.planned) * 10000) / 100
         : 0,
+      byActivity,
     };
   }
 
-  async getSummaryByOrganization(organizationId: string) {
-    const budgets = await this.prisma.budget.findMany({
-      where: { activity: { organizationId } },
-      select: { planned: true, committed: true, disbursed: true, executed: true, fundingSource: true },
-    });
-
-    const totals = budgets.reduce(
-      (acc, b) => {
-        acc.planned += Number(b.planned);
-        acc.committed += Number(b.committed);
-        acc.disbursed += Number(b.disbursed);
-        acc.executed += Number(b.executed);
-        return acc;
-      },
-      { planned: 0, committed: 0, disbursed: 0, executed: 0 },
-    );
-
-    // Agrégation par source de financement
-    const byFunding: Record<string, number> = {};
-    for (const b of budgets) {
-      const key = b.fundingSource ?? 'Non spécifié';
-      byFunding[key] = (byFunding[key] ?? 0) + Number(b.planned);
+  async getSummaryByPlan(planId: string, organizationId: string) {
+    const [plan, activities] = await Promise.all([
+      this.prisma.actionPlan.findFirst({ where: { id: planId, organizationId } }),
+      this.prisma.activity.findMany({
+        where: { organizationId, axis: { actionPlanId: planId } },
+        include: { budgets: true },
+      }),
+    ]);
+    const summary = this.buildSummary(activities);
+    // Si aucune ligne budget saisie, utiliser budgetPrevisional du plan comme enveloppe
+    if (summary.totalPlanned === 0 && plan?.budgetPrevisional) {
+      summary.totalPlanned = Number(plan.budgetPrevisional);
     }
+    return summary;
+  }
 
-    return {
-      ...totals,
-      balance: totals.planned - totals.executed,
-      executionRate: totals.planned > 0
-        ? Math.round((totals.executed / totals.planned) * 10000) / 100
-        : 0,
-      byFundingSource: byFunding,
-    };
+  async getSummaryByOrganization(organizationId: string) {
+    const [plans, activities] = await Promise.all([
+      this.prisma.actionPlan.findMany({
+        where: { organizationId, status: { not: 'ARCHIVE' } },
+      }),
+      this.prisma.activity.findMany({
+        where: { organizationId, axis: { actionPlan: { status: { not: 'ARCHIVE' } } } },
+        include: { budgets: true },
+      }),
+    ]);
+    const summary = this.buildSummary(activities);
+    if (summary.totalPlanned === 0) {
+      summary.totalPlanned = plans.reduce((s, p) => s + Number(p.budgetPrevisional ?? 0), 0);
+    }
+    return summary;
   }
 }

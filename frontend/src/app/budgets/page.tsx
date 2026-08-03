@@ -72,15 +72,19 @@ export default function BudgetsPage() {
   const [selectedPlan, setSelectedPlan] = useState<string>('');
 
   const { data: plans = [] } = useQuery<ActionPlan[]>({
-    queryKey: ['plans'],
-    queryFn: async () => { const r = await plansApi.list(); return r.data; },
+    queryKey: ['plans', 'active'],
+    queryFn: async () => {
+      const r = await plansApi.list();
+      return (r.data as ActionPlan[]).filter(p => p.status !== 'ARCHIVE');
+    },
   });
 
   const { data: summary, isLoading } = useQuery<BudgetSummary>({
     queryKey: ['budget-summary', selectedPlan],
     queryFn: async () => {
-      const params = selectedPlan ? { planId: selectedPlan } : {};
-      const r = await budgetsApi.summary(params);
+      const r = selectedPlan
+        ? await budgetsApi.summaryByPlan(selectedPlan)
+        : await budgetsApi.summary();
       return r.data;
     },
   });
@@ -130,19 +134,19 @@ export default function BudgetsPage() {
         ) : (
           <>
             {/* KPI Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
               {/* Budget prévu — dark card */}
-              <div className="bg-[#0f1e38] text-white rounded-2xl p-5 flex flex-col gap-1">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-white/50">Budget prévu</p>
-                <p className="text-4xl font-bold tabular-nums leading-none mt-1">{fmt(summary.totalPlanned)}</p>
-                <p className="text-xs text-white/40 mt-1">Enveloppe globale</p>
+              <div className="bg-[#0f1e38] text-white rounded-2xl p-3 md:p-5 flex flex-col gap-1">
+                <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-widest text-white/50">Budget prévu</p>
+                <p className="text-2xl md:text-4xl font-bold tabular-nums leading-none mt-1">{fmt(summary.totalPlanned)}</p>
+                <p className="text-[11px] md:text-xs text-white/40 mt-1">Enveloppe globale</p>
               </div>
 
               {/* Budget engagé */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 flex flex-col gap-1">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Budget engagé</p>
-                <p className="text-4xl font-bold tabular-nums text-blue-600 leading-none mt-1">{fmt(summary.totalCommitted)}</p>
-                <p className="text-xs text-slate-400 mt-1">
+              <div className="bg-white rounded-2xl border border-slate-200 p-3 md:p-5 flex flex-col gap-1">
+                <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-widest text-slate-400">Budget engagé</p>
+                <p className="text-2xl md:text-4xl font-bold tabular-nums text-blue-600 leading-none mt-1">{fmt(summary.totalCommitted)}</p>
+                <p className="text-[11px] md:text-xs text-slate-400 mt-1">
                   {summary.totalPlanned > 0
                     ? `${Math.round((summary.totalCommitted / summary.totalPlanned) * 100)}% du prévu`
                     : '—'}
@@ -150,15 +154,15 @@ export default function BudgetsPage() {
               </div>
 
               {/* Budget exécuté */}
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 flex flex-col gap-1">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Budget exécuté</p>
-                <p className="text-4xl font-bold tabular-nums text-green-600 leading-none mt-1">{fmt(summary.totalExecuted)}</p>
-                <p className="text-xs text-slate-400 mt-1">Dépenses effectives</p>
+              <div className="bg-white rounded-2xl border border-slate-200 p-3 md:p-5 flex flex-col gap-1">
+                <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-widest text-slate-400">Budget exécuté</p>
+                <p className="text-2xl md:text-4xl font-bold tabular-nums text-green-600 leading-none mt-1">{fmt(summary.totalExecuted)}</p>
+                <p className="text-[11px] md:text-xs text-slate-400 mt-1">Dépenses effectives</p>
               </div>
 
               {/* Taux d'exécution */}
               <div className={cn(
-                'rounded-2xl border p-5 flex flex-col gap-1',
+                'rounded-2xl border p-3 md:p-5 flex flex-col gap-1',
                 trend === 'up'      ? 'bg-green-50 border-green-200' :
                 trend === 'down'    ? 'bg-red-50 border-red-200'     :
                                       'bg-amber-50 border-amber-200'
@@ -172,7 +176,7 @@ export default function BudgetsPage() {
                     : <Minus size={16} className="text-amber-500" />}
                 </div>
                 <p className={cn(
-                  'text-4xl font-bold tabular-nums leading-none mt-1',
+                  'text-2xl md:text-4xl font-bold tabular-nums leading-none mt-1',
                   trend === 'up' ? 'text-green-700' : trend === 'down' ? 'text-red-700' : 'text-amber-700'
                 )}>
                   {rate}%

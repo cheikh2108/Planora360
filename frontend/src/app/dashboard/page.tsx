@@ -59,7 +59,7 @@ function FilterBar({
         {plans.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
       </select>
       {/* Période */}
-      <div className="flex items-center bg-white border border-slate-200 rounded-xl overflow-hidden">
+      <div className="flex items-center bg-white border border-slate-200 rounded-xl overflow-x-auto">
         {PERIODS.map(p => (
           <button
             key={p.value}
@@ -316,7 +316,20 @@ export default function DashboardPage() {
     queryKey: ['dashboard-overview', filters.planId],
     queryFn: async () => {
       const r = await dashboardApi.getOverview();
-      return r.data;
+      const d = r.data;
+      return {
+        ...d,
+        totalActivities:    d.activities?.total          ?? d.totalActivities    ?? 0,
+        pendingValidations: d.activities?.pendingValidations ?? d.pendingValidations ?? 0,
+        overdueActivities:  d.activities?.overdue        ?? d.overdueActivities  ?? 0,
+        completionRate:     d.activities?.avgCompletionRate ?? d.completionRate   ?? 0,
+        byStatus:           d.byStatus                   ?? {},
+        budgetPlanned:      d.budget?.planned             ?? d.budgetPlanned      ?? 0,
+        budgetExecuted:     d.budget?.executed            ?? d.budgetExecuted     ?? 0,
+        executionRate:      d.budget?.executionRate       ?? d.executionRate      ?? 0,
+        upcomingDeadlines:  d.upcomingDeadlines           ?? [],
+        recentAudit:        d.recentAuditLogs             ?? d.recentAudit        ?? [],
+      };
     },
     refetchInterval: 60_000,
   });
@@ -364,7 +377,7 @@ export default function DashboardPage() {
         <FilterBar filters={filters} onChange={setFilters} plans={plans} />
 
         {/* ── KPI Row ─────────────────────────────────── */}
-        <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <section className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4">
           {loadingOverview ? (
             Array.from({ length: 4 }).map((_, i) => <KpiSkeleton key={i} />)
           ) : (
@@ -627,7 +640,7 @@ export default function DashboardPage() {
                 Voir le détail <BarChart3 size={11} />
               </Link>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-white/[0.06]">
+            <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-white/[0.06]">
               <div className="px-5 md:px-6 py-5">
                 <p className="text-[10px] uppercase tracking-widest text-white/30 mb-2">Budget prévu</p>
                 <p className="text-xl font-bold tabular-nums">{formatCurrency(overview.budgetPlanned)}</p>
