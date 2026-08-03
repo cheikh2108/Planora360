@@ -168,7 +168,7 @@ export default function DocumentsPage() {
 
   const { data: plans = [] } = useQuery<ActionPlan[]>({
     queryKey: ['plans'],
-    queryFn: async () => { const r = await plansApi.list(); return r.data; },
+    queryFn: async () => { const r = await plansApi.list({ limit: 1000 }); return (r.data as any).data ?? []; },
   });
 
   // Activities for selected plan

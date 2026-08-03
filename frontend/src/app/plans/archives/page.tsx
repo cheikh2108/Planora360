@@ -59,8 +59,8 @@ export default function ArchivesPage() {
   const { data: plans = [], isLoading } = useQuery<ActionPlan[]>({
     queryKey: ['plans-archives'],
     queryFn: async () => {
-      const r = await plansApi.list();
-      return (r.data as ActionPlan[]).filter(p => p.status === 'ARCHIVE');
+      const r = await plansApi.list({ limit: 1000 });
+      return ((r.data as any).data as ActionPlan[] ?? []).filter(p => p.status === 'ARCHIVE');
     },
   });
 

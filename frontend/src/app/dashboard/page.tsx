@@ -309,7 +309,7 @@ export default function DashboardPage() {
 
   const { data: plans = [] } = useQuery<ActionPlan[]>({
     queryKey: ['plans'],
-    queryFn: async () => { const r = await plansApi.list(); return r.data; },
+    queryFn: async () => { const r = await plansApi.list({ limit: 1000 }); return (r.data as any).data ?? []; },
   });
 
   const { data: overview, isLoading: loadingOverview } = useQuery<DashboardOverview>({
@@ -345,8 +345,8 @@ export default function DashboardPage() {
       const params: Record<string, string> = {};
       if (filters.planId) params.planId = filters.planId;
       if (filters.status) params.status = filters.status;
-      const r = await activitiesApi.list(params);
-      return r.data;
+      const r = await activitiesApi.list({ ...params, limit: 1000 });
+      return (r.data as any).data ?? [];
     },
   });
 
