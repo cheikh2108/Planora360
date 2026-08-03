@@ -14,6 +14,7 @@ import { formatDate, cn } from '@/lib/utils';
 import {
   Building2, Plus, Search, Users, FolderKanban,
   ChevronRight, Trash2, AlertCircle, Sparkles, CheckCircle2,
+  Clock, CheckCheck, XCircle,
 } from 'lucide-react';
 
 const PLAN_ORDER: SubscriptionPlan[] = ['DECOUVERTE', 'PROFESSIONNELLE', 'SUR_MESURE'];
@@ -86,10 +87,35 @@ export default function SuperAdminOrganizationsPage() {
   const [planFilter, setPlanFilter] = useState<SubscriptionPlan | 'ALL'>('ALL');
   const [createOpen, setCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Organization | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<Organization | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
 
   const { data: orgs = [], isLoading } = useQuery<Organization[]>({
     queryKey: ['organizations'],
     queryFn: async () => { const r = await organizationsApi.list(); return r.data; },
+  });
+
+  const { data: pendingOrgs = [], isLoading: pendingLoading } = useQuery<Organization[]>({
+    queryKey: ['organizations-pending'],
+    queryFn: async () => { const r = await organizationsApi.listPending(); return r.data; },
+  });
+
+  const { mutate: approveOrg, isPending: approving } = useMutation({
+    mutationFn: (id: string) => organizationsApi.approve(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['organizations'] });
+      qc.invalidateQueries({ queryKey: ['organizations-pending'] });
+    },
+  });
+
+  const { mutate: rejectOrg, isPending: rejecting } = useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason?: string }) => organizationsApi.reject(id, reason),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['organizations'] });
+      qc.invalidateQueries({ queryKey: ['organizations-pending'] });
+      setRejectTarget(null);
+      setRejectReason('');
+    },
   });
 
   const { mutate: deleteOrg, isPending: deleting } = useMutation({
@@ -107,8 +133,64 @@ export default function SuperAdminOrganizationsPage() {
     <main className="px-4 md:px-8 py-8 space-y-6 max-w-7xl mx-auto">
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Organisations</h1>
-        <p className="text-sm text-slate-500 mt-0.5">{orgs.length} organisation{orgs.length > 1 ? 's' : ''} clientes</p>
+        <p className="text-sm text-slate-500 mt-0.5">{orgs.length} organisation{orgs.length > 1 ? 's' : ''} active{orgs.length > 1 ? 's' : ''}</p>
       </div>
+
+      {/* Pending registrations */}
+      {(pendingLoading || pendingOrgs.length > 0) && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl overflow-hidden">
+          <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-amber-200">
+            <Clock size={15} className="text-amber-600 shrink-0" />
+            <h2 className="text-sm font-semibold text-amber-800">
+              Demandes d&apos;inscription en attente
+              {pendingOrgs.length > 0 && (
+                <span className="ml-2 bg-amber-200 text-amber-800 text-xs font-bold px-2 py-0.5 rounded-full">{pendingOrgs.length}</span>
+              )}
+            </h2>
+          </div>
+          {pendingLoading ? (
+            <div className="p-4 space-y-2">{Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} className="h-14" />)}</div>
+          ) : (
+            <div>
+              {pendingOrgs.map(org => {
+                const contact = org.users?.[0];
+                return (
+                  <div key={org.id} className="flex items-center gap-3 px-5 py-3.5 border-b border-amber-100 last:border-0">
+                    <div className="w-9 h-9 rounded-xl bg-amber-200 flex items-center justify-center text-xs font-bold text-amber-800 shrink-0">
+                      {org.name.slice(0, 2).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-slate-900 truncate">{org.name}</p>
+                      {contact && (
+                        <p className="text-xs text-slate-500">{contact.firstName} {contact.lastName} — {contact.email}</p>
+                      )}
+                    </div>
+                    <PlanBadge plan={org.subscriptionPlan} />
+                    <p className="text-xs text-slate-400 hidden sm:block shrink-0">{new Date(org.createdAt).toLocaleDateString('fr-FR')}</p>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => approveOrg(org.id)}
+                        disabled={approving}
+                        className="flex items-center gap-1.5 h-8 px-3 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold transition-colors disabled:opacity-50 cursor-pointer"
+                      >
+                        <CheckCheck size={13} />
+                        Approuver
+                      </button>
+                      <button
+                        onClick={() => setRejectTarget(org)}
+                        className="flex items-center gap-1.5 h-8 px-3 rounded-lg bg-white border border-red-200 hover:bg-red-50 text-red-600 text-xs font-semibold transition-colors cursor-pointer"
+                      >
+                        <XCircle size={13} />
+                        Refuser
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {!isLoading && orgs.length > 0 && <StatsBar orgs={orgs} />}
 
@@ -214,6 +296,35 @@ export default function SuperAdminOrganizationsPage() {
       </div>
 
       <CreateOrgModal open={createOpen} onClose={() => setCreateOpen(false)} />
+
+      {/* Reject modal */}
+      <Modal open={!!rejectTarget} onClose={() => { setRejectTarget(null); setRejectReason(''); }} title="Refuser la demande" size="sm">
+        <div className="space-y-4">
+          <p className="text-sm text-slate-600">
+            Vous allez refuser la demande de <strong>{rejectTarget?.name}</strong>. Un motif optionnel peut être fourni.
+          </p>
+          <div>
+            <label className="block text-xs font-semibold text-slate-600 mb-1.5">Motif (optionnel)</label>
+            <textarea
+              value={rejectReason}
+              onChange={e => setRejectReason(e.target.value)}
+              rows={3}
+              placeholder="Ex: Informations insuffisantes, doublon..."
+              className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-400 transition-all resize-none"
+            />
+          </div>
+          <div className="flex justify-end gap-3">
+            <Button variant="secondary" onClick={() => { setRejectTarget(null); setRejectReason(''); }}>Annuler</Button>
+            <Button
+              variant="danger"
+              loading={rejecting}
+              onClick={() => rejectTarget && rejectOrg({ id: rejectTarget.id, reason: rejectReason || undefined })}
+            >
+              Confirmer le refus
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       <Modal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Supprimer l'organisation" size="sm">
         <div className="space-y-4">

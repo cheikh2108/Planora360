@@ -33,6 +33,10 @@ export default function LoginPage() {
       if (msg === 'TOTP_REQUIRED') {
         setShow2fa(true);
         setError("Entrez votre code d'authentification 2FA.");
+      } else if (msg === 'REGISTRATION_PENDING') {
+        setError('Votre inscription est en cours de validation. Vous recevrez un email dès que votre compte sera activé.');
+      } else if (msg === 'REGISTRATION_REJECTED') {
+        setError('Votre demande d\'inscription a été refusée. Contactez le support pour plus d\'informations.');
       } else {
         setError(typeof msg === 'string' ? msg : 'Email ou mot de passe incorrect.');
       }
@@ -213,8 +217,11 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="px-10 sm:px-16 xl:px-20 py-5 shrink-0">
+        <div className="px-10 sm:px-16 xl:px-20 py-5 shrink-0 flex items-center justify-between">
           <p className="text-[11px] text-slate-200 font-medium">© 2025 ATAABA Pilot</p>
+          <a href="/auth/register" className="text-[11px] text-[#2563eb] hover:underline font-medium">
+            Demander un accès →
+          </a>
         </div>
       </div>
     </div>

@@ -25,6 +25,11 @@ export class OrganizationsController {
     return this.organizationsService.findAll();
   }
 
+  @Get('pending')
+  findPending() {
+    return this.organizationsService.findPending();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.organizationsService.findOne(id);
@@ -33,6 +38,18 @@ export class OrganizationsController {
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdateOrganizationDto) {
     return this.organizationsService.update(id, dto);
+  }
+
+  @Patch(':id/approve')
+  @HttpCode(HttpStatus.OK)
+  approve(@Param('id') id: string) {
+    return this.organizationsService.approve(id);
+  }
+
+  @Patch(':id/reject')
+  @HttpCode(HttpStatus.OK)
+  reject(@Param('id') id: string, @Body() dto: { reason?: string }) {
+    return this.organizationsService.reject(id, dto.reason);
   }
 
   @Delete(':id')

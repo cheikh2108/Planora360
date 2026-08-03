@@ -1,4 +1,5 @@
 export type SubscriptionPlan = 'DECOUVERTE' | 'PROFESSIONNELLE' | 'SUR_MESURE';
+export type OrganizationStatus = 'PENDING' | 'ACTIVE' | 'REJECTED';
 
 export type ActivityStatus =
   | 'NON_DEMARREE'
@@ -27,9 +28,12 @@ export interface Organization {
   name: string;
   logoUrl?: string;
   subscriptionPlan: SubscriptionPlan;
+  status: OrganizationStatus;
+  rejectionReason?: string;
   createdAt: string;
   updatedAt?: string;
   _count?: { users: number; actionPlans: number };
+  users?: { email: string; firstName: string; lastName: string }[];
 }
 
 export interface Role {

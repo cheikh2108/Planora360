@@ -3,11 +3,13 @@ import {
   UnauthorizedException,
   BadRequestException,
   NotFoundException,
+  ConflictException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
+import { RegisterOrganizationDto } from './dto/register-organization.dto';
 import * as bcrypt from 'bcryptjs';
 import * as speakeasy from 'speakeasy';
 import * as QRCode from 'qrcode';
@@ -21,13 +23,66 @@ export class AuthService {
     private config: ConfigService,
   ) {}
 
+  async register(dto: RegisterOrganizationDto) {
+    const existing = await this.prisma.organization.findFirst({
+      where: { name: dto.organizationName },
+    });
+    if (existing) throw new ConflictException('Une organisation avec ce nom existe déjà');
+
+    const emailTaken = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    if (emailTaken) throw new ConflictException('Cet email est déjà utilisé');
+
+    const adminRole = await this.prisma.role.findFirst({
+      where: { name: 'Administrateur', organizationId: null },
+    });
+    if (!adminRole) throw new NotFoundException('Rôle Administrateur introuvable');
+
+    const isTrialPlan = !dto.subscriptionPlan || dto.subscriptionPlan === 'DECOUVERTE';
+    const trialEndsAt = isTrialPlan
+      ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+      : undefined;
+
+    const org = await this.prisma.organization.create({
+      data: {
+        name: dto.organizationName,
+        subscriptionPlan: dto.subscriptionPlan ?? 'DECOUVERTE',
+        status: 'PENDING',
+        trialEndsAt,
+      },
+    });
+
+    const passwordHash = await bcrypt.hash(dto.password, 12);
+    await this.prisma.user.create({
+      data: {
+        email: dto.email,
+        firstName: dto.firstName,
+        lastName: dto.lastName,
+        passwordHash,
+        organizationId: org.id,
+        roleId: adminRole.id,
+        isActive: false,
+      },
+    });
+
+    return { message: 'Votre demande a été enregistrée. Vous serez notifié par email après validation.' };
+  }
+
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
       include: { role: true, organization: true },
     });
 
-    if (!user || !user.isActive) throw new UnauthorizedException('Identifiants invalides');
+    if (!user) throw new UnauthorizedException('Identifiants invalides');
+
+    if (user.organization?.status === 'PENDING') {
+      throw new UnauthorizedException('REGISTRATION_PENDING');
+    }
+    if (user.organization?.status === 'REJECTED') {
+      throw new UnauthorizedException('REGISTRATION_REJECTED');
+    }
+
+    if (!user.isActive) throw new UnauthorizedException('Identifiants invalides');
 
     const passwordValid = await bcrypt.compare(dto.password, user.passwordHash);
     if (!passwordValid) throw new UnauthorizedException('Identifiants invalides');

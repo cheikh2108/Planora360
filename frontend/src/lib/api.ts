@@ -44,6 +44,14 @@ export default api;
 export const authApi = {
   login: (email: string, password: string, totp?: string) =>
     api.post('/auth/login', { email, password, totp }),
+  register: (data: {
+    organizationName: string;
+    subscriptionPlan?: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+  }) => api.post('/auth/register', data),
   logout: () => api.post('/auth/logout'),
   setup2fa: () => api.post('/auth/2fa/setup'),
   enable2fa: (token: string) => api.post('/auth/2fa/enable', { token }),
@@ -164,11 +172,14 @@ export const rolesApi = {
 // Organizations (super admin)
 export const organizationsApi = {
   list: () => api.get('/organizations'),
+  listPending: () => api.get('/organizations/pending'),
   get: (id: string) => api.get(`/organizations/${id}`),
   create: (data: { name: string; logoUrl?: string; subscriptionPlan?: string; adminFirstName: string; adminLastName: string; adminEmail: string }) =>
     api.post('/organizations', data),
   update: (id: string, data: { name?: string; logoUrl?: string; subscriptionPlan?: string }) =>
     api.patch(`/organizations/${id}`, data),
+  approve: (id: string) => api.patch(`/organizations/${id}/approve`),
+  reject: (id: string, reason?: string) => api.patch(`/organizations/${id}/reject`, { reason }),
   remove: (id: string) => api.delete(`/organizations/${id}`),
 };
 

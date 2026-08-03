@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
@@ -30,6 +30,7 @@ export class OrganizationsService {
         name: dto.name,
         logoUrl: dto.logoUrl,
         subscriptionPlan: dto.subscriptionPlan ?? 'DECOUVERTE',
+        status: 'ACTIVE',
         trialEndsAt,
       },
     });
@@ -64,11 +65,52 @@ export class OrganizationsService {
     return org;
   }
 
+  findPending() {
+    return this.prisma.organization.findMany({
+      where: { status: 'PENDING' },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        _count: { select: { users: true } },
+        users: { take: 1, orderBy: { createdAt: 'asc' }, select: { email: true, firstName: true, lastName: true } },
+      },
+    });
+  }
+
   findAll() {
     return this.prisma.organization.findMany({
+      where: { status: 'ACTIVE' },
       orderBy: { createdAt: 'desc' },
       include: { _count: { select: { users: true, actionPlans: true } } },
     });
+  }
+
+  async approve(id: string) {
+    const org = await this.findOne(id);
+    if (org.status !== 'PENDING') throw new BadRequestException('Organisation non en attente');
+
+    await this.prisma.organization.update({
+      where: { id },
+      data: { status: 'ACTIVE' },
+    });
+
+    await this.prisma.user.updateMany({
+      where: { organizationId: id },
+      data: { isActive: true },
+    });
+
+    return { message: 'Organisation approuvée' };
+  }
+
+  async reject(id: string, reason?: string) {
+    const org = await this.findOne(id);
+    if (org.status !== 'PENDING') throw new BadRequestException('Organisation non en attente');
+
+    await this.prisma.organization.update({
+      where: { id },
+      data: { status: 'REJECTED', rejectionReason: reason ?? null },
+    });
+
+    return { message: 'Organisation rejetée' };
   }
 
   async findOne(id: string) {

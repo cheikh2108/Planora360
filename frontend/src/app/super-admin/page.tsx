@@ -7,7 +7,7 @@ import type { Organization, SubscriptionPlan } from '@/lib/types';
 import { formatDate, cn } from '@/lib/utils';
 import {
   Building2, Users, ChevronRight,
-  FolderKanban, Star,
+  FolderKanban, Clock,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -22,6 +22,11 @@ export default function SuperAdminDashboard() {
   const { data: orgs = [], isLoading } = useQuery<Organization[]>({
     queryKey: ['organizations'],
     queryFn: async () => { const r = await organizationsApi.list(); return r.data; },
+  });
+
+  const { data: pendingOrgs = [] } = useQuery<Organization[]>({
+    queryKey: ['organizations-pending'],
+    queryFn: async () => { const r = await organizationsApi.listPending(); return r.data; },
   });
 
   const totalUsers   = orgs.reduce((s, o) => s + (o._count?.users ?? 0), 0);
@@ -51,7 +56,7 @@ export default function SuperAdminDashboard() {
             { label: 'Organisations',   value: orgs.length,  icon: Building2,    color: 'text-[#0f1e38]',  bg: 'bg-[#0f1e38]/8' },
             { label: 'Utilisateurs',    value: totalUsers,   icon: Users,        color: 'text-blue-600',   bg: 'bg-blue-50' },
             { label: "Plans d'action",  value: totalPlans,   icon: FolderKanban, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-            { label: 'Formules actives', value: orgs.length, icon: Star, color: 'text-amber-600', bg: 'bg-amber-50' },
+            { label: 'En attente', value: pendingOrgs.length, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
           ].map(s => (
             <div key={s.label} className="bg-white rounded-2xl border border-slate-200 p-3 md:p-5">
               <div className={cn('w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center mb-2 md:mb-3', s.bg)}>

@@ -19,6 +19,12 @@ enum SubscriptionPlan {
   SUR_MESURE
 }
 
+enum OrganizationStatus {
+  PENDING
+  ACTIVE
+  REJECTED
+}
+
 enum ActivityStatus {
   NON_DEMARREE
   EN_PREPARATION
@@ -46,12 +52,14 @@ enum ValidationDecision {
 }
 
 model Organization {
-  id               String           @id @default(cuid())
+  id               String             @id @default(cuid())
   name             String
   logoUrl          String?
-  subscriptionPlan SubscriptionPlan @default(DECOUVERTE)
+  subscriptionPlan SubscriptionPlan   @default(DECOUVERTE)
+  status           OrganizationStatus @default(ACTIVE)
+  rejectionReason  String?
   trialEndsAt      DateTime?
-  createdAt        DateTime         @default(now())
+  createdAt        DateTime           @default(now())
 
   users       User[]
   roles       Role[]
