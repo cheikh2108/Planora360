@@ -15,6 +15,7 @@ const REPORT_TYPES = [
   { value: 'activites', label: 'Activités', icon: BarChart3, description: 'Toutes les activités avec statuts et responsables' },
   { value: 'budget', label: 'Budget', icon: FileSpreadsheet, description: 'Suivi budgétaire prévu / exécuté par activité' },
   { value: 'retards', label: 'Activités en retard', icon: FileText, description: 'Liste des activités dépassant leur échéance' },
+  { value: 'indicateurs', label: 'Indicateurs', icon: BarChart3, description: 'Tableau de bord des indicateurs de performance' },
 ] as const;
 
 const FORMATS = [
@@ -86,7 +87,7 @@ export default function ReportsPage() {
           {/* Type selector */}
           <div className="bg-white rounded-2xl border border-slate-200 p-5 md:p-6">
             <p className="text-sm font-semibold text-slate-700 mb-4">Type de rapport</p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {REPORT_TYPES.map(r => {
                 const Icon = r.icon;
                 const isSelected = type === r.value;

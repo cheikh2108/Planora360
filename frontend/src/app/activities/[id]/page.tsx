@@ -166,7 +166,13 @@ export default function ActivityDetailPage() {
               </div>
               <h1 className="text-xl font-bold text-slate-900 mb-2">{activity.title}</h1>
               {activity.description && (
-                <p className="text-sm text-slate-600 mb-4">{activity.description}</p>
+                <p className="text-sm text-slate-600 mb-2">{activity.description}</p>
+              )}
+              {activity.expectedResults && (
+                <div className="mb-4 p-3 rounded-xl bg-teal-50 border border-teal-100">
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-teal-500 mb-1">Résultats attendus</p>
+                  <p className="text-sm text-teal-800">{activity.expectedResults}</p>
+                </div>
               )}
               <div className="flex flex-wrap gap-4 text-xs text-slate-500">
                 {activity.responsible && (
@@ -185,6 +191,17 @@ export default function ActivityDetailPage() {
                   <div className={cn('flex items-center gap-1.5', activity.status === 'EN_RETARD' && 'text-red-600 font-semibold')}>
                     <Calendar size={13} />
                     <span>Échéance : {formatDate(activity.dueDate)}</span>
+                  </div>
+                )}
+                {activity.collaborators && activity.collaborators.length > 0 && (
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <User size={13} />
+                    <span className="text-slate-400">Collaborateurs :</span>
+                    {activity.collaborators.map(c => (
+                      <span key={c.id} className="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-full text-xs">
+                        {c.user.firstName} {c.user.lastName}
+                      </span>
+                    ))}
                   </div>
                 )}
               </div>

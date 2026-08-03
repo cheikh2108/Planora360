@@ -316,7 +316,7 @@ export default function DashboardPage() {
     queryKey: ['dashboard-overview', filters.planId],
     queryFn: async () => {
       const r = await dashboardApi.getOverview();
-      const d = r.data;
+      const d = r.data as any;
       return {
         ...d,
         totalActivities:    d.activities?.total          ?? d.totalActivities    ?? 0,

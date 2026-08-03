@@ -8,6 +8,9 @@ import { UpdateActivityDto } from './dto/update-activity.dto';
 
 const ACTIVITY_INCLUDE = {
   responsible: { select: { id: true, firstName: true, lastName: true, email: true } },
+  collaborators: {
+    include: { user: { select: { id: true, firstName: true, lastName: true, email: true } } },
+  },
   axis: { select: { id: true, title: true, actionPlanId: true } },
   subActivities: {
     include: {
@@ -57,7 +60,7 @@ export class ActivitiesService {
 
     const { collaboratorIds, responsibleId, startDate, dueDate, ...rest } = dto;
 
-    return this.prisma.activity.create({
+    const activity = await this.prisma.activity.create({
       data: {
         ...rest,
         organizationId,
@@ -67,6 +70,16 @@ export class ActivitiesService {
       },
       include: ACTIVITY_INCLUDE,
     });
+
+    if (collaboratorIds?.length) {
+      await this.prisma.activityCollaborator.createMany({
+        data: collaboratorIds.map((userId: string) => ({ activityId: activity.id, userId })),
+        skipDuplicates: true,
+      });
+      return this.prisma.activity.findFirst({ where: { id: activity.id }, include: ACTIVITY_INCLUDE }) as any;
+    }
+
+    return activity;
   }
 
   findAll(organizationId: string, planId?: string) {
@@ -106,11 +119,24 @@ export class ActivitiesService {
     if (dto.startDate) updateData.startDate = new Date(dto.startDate);
     if (dto.dueDate) updateData.dueDate = new Date(dto.dueDate);
 
-    return this.prisma.activity.update({
+    const activity = await this.prisma.activity.update({
       where: { id },
       data: updateData,
       include: ACTIVITY_INCLUDE,
     });
+
+    if (Array.isArray(collaboratorIds)) {
+      await this.prisma.activityCollaborator.deleteMany({ where: { activityId: id } });
+      if (collaboratorIds.length) {
+        await this.prisma.activityCollaborator.createMany({
+          data: collaboratorIds.map((userId: string) => ({ activityId: id, userId })),
+          skipDuplicates: true,
+        });
+      }
+      return this.prisma.activity.findFirst({ where: { id }, include: ACTIVITY_INCLUDE }) as any;
+    }
+
+    return activity;
   }
 
   async updateStatus(id: string, newStatus: ActivityStatus, organizationId: string) {

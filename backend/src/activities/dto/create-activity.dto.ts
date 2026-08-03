@@ -11,6 +11,10 @@ export class CreateActivityDto {
   @IsString()
   description?: string;
 
+  @IsOptional()
+  @IsString()
+  expectedResults?: string;
+
   @IsString()
   axisId!: string;
 

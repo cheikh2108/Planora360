@@ -113,7 +113,7 @@ function AddActivityModal({
   loading: boolean;
 }) {
   const [form, setForm] = useState({
-    title: '', description: '', priority: 'NORMALE', startDate: '', dueDate: '',
+    title: '', description: '', expectedResults: '', priority: 'NORMALE', startDate: '', dueDate: '',
   });
 
   function handleSubmit(e: React.FormEvent) {
@@ -132,7 +132,10 @@ function AddActivityModal({
           <Input value={form.title} onChange={set('title')} placeholder="Titre de l'activité" />
         </FormField>
         <FormField label="Description">
-          <Textarea value={form.description} onChange={set('description')} rows={3} placeholder="Description..." />
+          <Textarea value={form.description} onChange={set('description')} rows={2} placeholder="Description..." />
+        </FormField>
+        <FormField label="Résultats attendus">
+          <Textarea value={form.expectedResults} onChange={set('expectedResults')} rows={2} placeholder="Quels résultats concrets sont attendus ?" />
         </FormField>
         <FormField label="Priorité">
           <Select value={form.priority} onChange={set('priority')}>

@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, FolderKanban, CheckSquare, GitBranch,
   PiggyBank, FileText, Bell, BarChart3, Settings, LogOut,
-  ChevronDown, Users, Shield, Archive,
+  ChevronDown, Users, Shield, Archive, Target,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth-context';
@@ -24,6 +24,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/plans/archives', label: 'Archives',        icon: Archive,         permission: 'plan.read' },
   { href: '/activities',    label: 'Activités',       icon: CheckSquare,     permission: 'activity.read' },
   { href: '/validations',   label: 'Validations',     icon: GitBranch,       permission: 'validation.approve' },
+  { href: '/indicators',    label: 'Indicateurs',     icon: Target,          permission: 'dashboard.view' },
   { href: '/budgets',       label: 'Budget',          icon: PiggyBank,       permission: 'budget.read' },
   { href: '/documents',     label: 'Documents',       icon: FileText,        permission: 'document.download' },
   { href: '/reports',       label: 'Rapports',        icon: BarChart3,       permission: 'report.generate' },

@@ -18,6 +18,7 @@ import { DashboardsModule } from './dashboards/dashboards.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
 import { ReportsModule } from './reports/reports.module';
 import { RolesModule } from './roles/roles.module';
+import { IndicatorsModule } from './indicators/indicators.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { RolesModule } from './roles/roles.module';
     SchedulerModule,
     ReportsModule,
     RolesModule,
+    IndicatorsModule,
   ],
 })
 export class AppModule {}

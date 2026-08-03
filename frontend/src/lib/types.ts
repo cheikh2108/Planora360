@@ -126,6 +126,7 @@ export interface Activity {
   id: string;
   title: string;
   description?: string;
+  expectedResults?: string;
   status: ActivityStatus;
   priority: Priority;
   startDate?: string;
@@ -133,14 +134,31 @@ export interface Activity {
   completionRate: number;
   budgetPlanned?: number;
   budgetExecuted?: number;
+  risks?: string;
   organizationId: string;
   axisId: string;
   parentActivityId?: string;
   responsible?: { id: string; firstName: string; lastName: string };
+  collaborators?: { id: string; user: { id: string; firstName: string; lastName: string; email: string } }[];
   axis?: { title: string; actionPlan?: { title: string } };
   budgets?: Budget[];
   _count?: { checklistItems: number };
   createdAt: string;
+}
+
+export interface Indicator {
+  id: string;
+  organizationId: string;
+  activityId?: string;
+  activity?: { id: string; title: string };
+  title: string;
+  unit?: string;
+  baseline: number;
+  target: number;
+  achieved: number;
+  dueDate?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ChecklistItem {

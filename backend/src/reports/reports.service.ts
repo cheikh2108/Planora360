@@ -12,12 +12,23 @@ export class ReportsService {
     const data = await this.fetchData(dto, organizationId);
 
     if (dto.format === ReportFormat.EXCEL) {
-      return this.generateExcel(dto.type, data);
+      return this.generateExcel(dto.type, data as any[]);
     }
-    return this.generatePdf(dto.type, data, organizationId);
+    return this.generatePdf(dto.type, data as any[], organizationId);
   }
 
   private async fetchData(dto: GenerateReportDto, organizationId: string) {
+    if (dto.type === ReportType.INDICATEURS) {
+      return this.prisma.indicator.findMany({
+        where: {
+          organizationId,
+          ...(dto.planId ? { activity: { axis: { actionPlanId: dto.planId } } } : {}),
+        },
+        orderBy: { createdAt: 'desc' },
+        include: { activity: { select: { title: true } } },
+      });
+    }
+
     const where: any = { organizationId, parentActivityId: null };
     if (dto.planId) where.axis = { actionPlanId: dto.planId };
     if (dto.dateFrom || dto.dateTo) {
@@ -41,11 +52,43 @@ export class ReportsService {
     return activities;
   }
 
-  private async generateExcel(type: ReportType, activities: any[]): Promise<Buffer> {
+  private async generateExcel(type: ReportType, data: any[]): Promise<Buffer> {
     const workbook = new ExcelJS.Workbook();
     workbook.creator = 'ATAABA Pilot';
     workbook.created = new Date();
 
+    if (type === ReportType.INDICATEURS) {
+      const sheet = workbook.addWorksheet('Indicateurs');
+      sheet.columns = [
+        { header: 'Indicateur', key: 'title', width: 35 },
+        { header: 'Activité liée', key: 'activity', width: 30 },
+        { header: 'Unité', key: 'unit', width: 12 },
+        { header: 'Valeur de base', key: 'baseline', width: 15 },
+        { header: 'Cible', key: 'target', width: 12 },
+        { header: 'Réalisé', key: 'achieved', width: 12 },
+        { header: 'Taux (%)', key: 'rate', width: 12 },
+        { header: 'Échéance', key: 'dueDate', width: 14 },
+      ];
+      sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+      sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E3A5F' } };
+      for (const ind of data) {
+        const rate = ind.target > 0 ? Math.round((ind.achieved / ind.target) * 10000) / 100 : 0;
+        sheet.addRow({
+          title: ind.title,
+          activity: ind.activity?.title ?? 'Global',
+          unit: ind.unit ?? '',
+          baseline: ind.baseline,
+          target: ind.target,
+          achieved: ind.achieved,
+          rate,
+          dueDate: ind.dueDate ? new Date(ind.dueDate) : '',
+        });
+      }
+      const buf = await workbook.xlsx.writeBuffer();
+      return Buffer.from(buf);
+    }
+
+    const activities = data;
     const sheet = workbook.addWorksheet('Activités');
 
     sheet.columns = [

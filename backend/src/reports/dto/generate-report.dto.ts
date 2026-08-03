@@ -5,6 +5,7 @@ export enum ReportType {
   BUDGET = 'budget',
   PERFORMANCE = 'performance',
   RETARDS = 'retards',
+  INDICATEURS = 'indicateurs',
 }
 
 export enum ReportFormat {

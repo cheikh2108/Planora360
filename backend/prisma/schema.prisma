@@ -101,9 +101,10 @@ model User {
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 
-  refreshTokens         RefreshToken[]
-  responsibleActivities Activity[]      @relation("ActivityResponsible")
-  checklistItems        ChecklistItem[] @relation("ChecklistResponsible")
+  refreshTokens           RefreshToken[]
+  responsibleActivities   Activity[]             @relation("ActivityResponsible")
+  checklistItems          ChecklistItem[]        @relation("ChecklistResponsible")
+  collaboratingActivities ActivityCollaborator[] @relation("ActivityCollaborators")
 
   @@index([organizationId])
   @@map("users")
@@ -163,6 +164,7 @@ model Activity {
   subActivities    Activity[]     @relation("SubActivities")
   title            String
   description      String?
+  expectedResults  String?
   responsibleId    String
   responsible      User           @relation("ActivityResponsible", fields: [responsibleId], references: [id])
   startDate        DateTime
@@ -176,15 +178,49 @@ model Activity {
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 
-  checklistItems ChecklistItem[]
-  validations    Validation[]
-  documents      Document[]
-  budgets        Budget[]
+  checklistItems  ChecklistItem[]
+  validations     Validation[]
+  documents       Document[]
+  budgets         Budget[]
+  collaborators   ActivityCollaborator[]
+  indicators      Indicator[]
 
   @@index([organizationId])
   @@index([organizationId, status])
   @@index([axisId])
   @@map("activities")
+}
+
+model ActivityCollaborator {
+  id         String   @id @default(cuid())
+  activityId String
+  activity   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation("ActivityCollaborators", fields: [userId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@unique([activityId, userId])
+  @@index([activityId])
+  @@map("activity_collaborators")
+}
+
+model Indicator {
+  id             String   @id @default(cuid())
+  organizationId String
+  activityId     String?
+  activity       Activity? @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  title          String
+  unit           String?
+  baseline       Float    @default(0)
+  target         Float
+  achieved       Float    @default(0)
+  dueDate        DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([activityId])
+  @@map("indicators")
 }
 
 model ChecklistItem {

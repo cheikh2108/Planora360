@@ -155,6 +155,15 @@ export const reportsApi = {
   generate: (data: Record<string, unknown>) => api.post('/reports/generate', data, { responseType: 'blob' }),
 };
 
+// Indicators
+export const indicatorsApi = {
+  list: (params?: Record<string, unknown>) => api.get('/indicators', { params }),
+  get: (id: string) => api.get(`/indicators/${id}`),
+  create: (data: Record<string, unknown>) => api.post('/indicators', data),
+  update: (id: string, data: Record<string, unknown>) => api.patch(`/indicators/${id}`, data),
+  remove: (id: string) => api.delete(`/indicators/${id}`),
+};
+
 // Audit
 export const auditApi = {
   list: (params?: Record<string, unknown>) => api.get('/audit', { params }),
