@@ -2,8 +2,8 @@
 
 import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api, { plansApi } from '@/lib/api';
-import type { ActionPlan } from '@/lib/types';
+import api, { plansApi, activitiesApi } from '@/lib/api';
+import type { ActionPlan, Activity } from '@/lib/types';
 import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -171,9 +171,17 @@ export default function DocumentsPage() {
     queryFn: async () => { const r = await plansApi.list({ limit: 1000 }); return (r.data as any).data ?? []; },
   });
 
+  const { data: allActivities = [] } = useQuery<Activity[]>({
+    queryKey: ['activities-docs-dropdown'],
+    queryFn: async () => { const r = await activitiesApi.list({ limit: 1000 }); return (r.data as any).data ?? []; },
+    staleTime: 60_000,
+  });
+
   // Activities for selected plan
   const selectedPlan = plans.find(p => p.id === filterPlan);
-  const planActivities = selectedPlan?.axes?.flatMap(a => a.activities ?? []) ?? [];
+  const planActivities = filterPlan
+    ? allActivities.filter(a => (a.axis as any)?.actionPlanId === filterPlan)
+    : allActivities;
 
   const { data: documents = [], isLoading } = useQuery<Document[]>({
     queryKey: ['documents', filterPlan, filterActivity, filterType],
@@ -185,9 +193,9 @@ export default function DocumentsPage() {
       }
       // Fetch all docs via activity list
       const activitiesRes = await api.get('/activities', {
-        params: filterPlan ? { planId: filterPlan } : {},
+        params: { ...(filterPlan ? { planId: filterPlan } : {}), limit: 1000 },
       });
-      const activities = activitiesRes.data ?? [];
+      const activities = (activitiesRes.data as any)?.data ?? [];
       const docs: Document[] = [];
       await Promise.allSettled(
         activities.slice(0, 30).map(async (act: { id: string }) => {
@@ -317,15 +325,11 @@ export default function DocumentsPage() {
                   className="w-full h-10 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563eb] bg-white"
                 >
                   <option value="">Sélectionner une activité</option>
-                  {plans.flatMap(p =>
-                    p.axes?.flatMap(a =>
-                      (a.activities ?? []).map(act => (
-                        <option key={act.id} value={act.id}>
-                          {p.title} › {a.title} › {act.title}
-                        </option>
-                      ))
-                    ) ?? []
-                  )}
+                  {(filterPlan ? planActivities : allActivities).map(act => (
+                    <option key={act.id} value={act.id}>
+                      {act.axis?.title ? `${act.axis.title} › ` : ''}{act.title}
+                    </option>
+                  ))}
                 </select>
               </FormField>
               <FormField label="Type de document">
