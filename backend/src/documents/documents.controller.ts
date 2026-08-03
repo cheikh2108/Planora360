@@ -7,6 +7,7 @@ import { memoryStorage } from 'multer';
 import { DocumentsService } from './documents.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { validateFile } from './file-validator';
 
 const upload = { storage: memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } };
 
@@ -17,13 +18,14 @@ export class DocumentsController {
 
   @Post('activities/:activityId/documents')
   @UseInterceptors(FileInterceptor('file', upload))
-  uploadToActivity(
+  async uploadToActivity(
     @Param('activityId') activityId: string,
     @UploadedFile() file: Express.Multer.File,
     @Body('type') type: string,
     @CurrentUser() user: any,
   ) {
     if (!file) throw new BadRequestException('Fichier manquant');
+    await validateFile(file);
     return this.documentsService.uploadToActivity(activityId, file, type, user.organizationId, user.id);
   }
 
@@ -34,13 +36,14 @@ export class DocumentsController {
 
   @Post('checklist-items/:itemId/documents')
   @UseInterceptors(FileInterceptor('file', upload))
-  uploadToChecklist(
+  async uploadToChecklist(
     @Param('itemId') itemId: string,
     @UploadedFile() file: Express.Multer.File,
     @Body('type') type: string,
     @CurrentUser() user: any,
   ) {
     if (!file) throw new BadRequestException('Fichier manquant');
+    await validateFile(file);
     return this.documentsService.uploadToChecklistItem(itemId, file, type, user.organizationId, user.id);
   }
 
