@@ -36,6 +36,7 @@ export default function RegisterPage() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [plan, setPlan] = useState<Plan>('DECOUVERTE');
   const [orgName, setOrgName] = useState('');
+  const [brandColor, setBrandColor] = useState('#2563eb');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -49,7 +50,7 @@ export default function RegisterPage() {
     setError('');
     setLoading(true);
     try {
-      await authApi.register({ organizationName: orgName, subscriptionPlan: plan, firstName, lastName, email, password });
+      await authApi.register({ organizationName: orgName, subscriptionPlan: plan, brandColor, firstName, lastName, email, password });
       setDone(true);
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
@@ -137,6 +138,41 @@ export default function RegisterPage() {
                     placeholder="Ex: Ministère de l'Agriculture"
                     className="w-full h-11 px-4 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20 focus:border-[#2563eb] transition-all"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                    Couleur de marque
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap gap-2">
+                      {['#2563eb','#7c3aed','#db2777','#dc2626','#ea580c','#16a34a','#0891b2','#0f172a'].map(c => (
+                        <button
+                          key={c}
+                          type="button"
+                          onClick={() => setBrandColor(c)}
+                          className={cn(
+                            'w-7 h-7 rounded-full transition-all border-2',
+                            brandColor === c ? 'border-slate-700 scale-110' : 'border-transparent hover:scale-105'
+                          )}
+                          style={{ background: c }}
+                          aria-label={c}
+                        />
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-2 ml-auto">
+                      <div className="w-7 h-7 rounded-full border-2 border-slate-200 overflow-hidden shrink-0">
+                        <input
+                          type="color"
+                          value={brandColor}
+                          onChange={e => setBrandColor(e.target.value)}
+                          className="w-10 h-10 -translate-x-1 -translate-y-1 cursor-pointer"
+                        />
+                      </div>
+                      <span className="text-xs font-mono text-slate-500">{brandColor}</span>
+                    </div>
+                  </div>
+                  <div className="mt-2 h-1.5 rounded-full" style={{ background: brandColor }} />
                 </div>
 
                 <div>

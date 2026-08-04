@@ -127,6 +127,17 @@ export class OrganizationsService {
     return this.prisma.organization.update({ where: { id }, data: dto });
   }
 
+  async updateBrandColor(organizationId: string, brandColor: string) {
+    if (!/^#[0-9a-fA-F]{6}$/.test(brandColor)) {
+      throw new BadRequestException('Couleur invalide — format attendu : #rrggbb');
+    }
+    return this.prisma.organization.update({
+      where: { id: organizationId },
+      data: { brandColor },
+      select: { id: true, brandColor: true },
+    });
+  }
+
   async remove(id: string) {
     await this.findOne(id);
     return this.prisma.organization.delete({ where: { id } });

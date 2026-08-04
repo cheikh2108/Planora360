@@ -27,6 +27,7 @@ export interface Organization {
   id: string;
   name: string;
   logoUrl?: string;
+  brandColor?: string;
   subscriptionPlan: SubscriptionPlan;
   status: OrganizationStatus;
   rejectionReason?: string;

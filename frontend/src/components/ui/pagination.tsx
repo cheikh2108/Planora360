@@ -39,11 +39,12 @@ export function Pagination({ page, total, limit, onChange, className }: Paginati
       className={cn(
         'min-w-[2rem] h-8 px-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-center',
         active
-          ? 'bg-[#0f1e38] text-white'
+          ? 'text-white'
           : disabled
           ? 'text-slate-300 cursor-not-allowed'
           : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900',
       )}
+      style={active ? { backgroundColor: 'var(--color-brand)' } : undefined}
     >
       {content}
     </button>

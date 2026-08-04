@@ -11,6 +11,22 @@ interface AuthContextType {
   logout: () => Promise<void>;
   hasPermission: (permission: string) => boolean;
   hasRole: (...roles: string[]) => boolean;
+  setBrandColor: (color: string) => void;
+}
+
+function applyBrandColor(color?: string | null) {
+  const c = color && /^#[0-9a-fA-F]{6}$/.test(color) ? color : '#2563eb';
+  document.documentElement.style.setProperty('--color-brand', c);
+  // version assombrie pour la sidebar
+  document.documentElement.style.setProperty('--color-brand-dark', darken(c, 0.35));
+}
+
+function darken(hex: string, amount: number): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  const d = (v: number) => Math.max(0, Math.round(v * (1 - amount))).toString(16).padStart(2, '0');
+  return `#${d(r)}${d(g)}${d(b)}`;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -24,7 +40,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const stored = localStorage.getItem('user');
     if (token && stored) {
       try {
-        setUser(JSON.parse(stored));
+        const u = JSON.parse(stored);
+        setUser(u);
+        applyBrandColor(u?.organization?.brandColor);
       } catch {
         localStorage.clear();
       }
@@ -38,6 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('refreshToken', data.refreshToken);
     localStorage.setItem('user', JSON.stringify(data.user));
     setUser(data.user);
+    applyBrandColor(data.user?.organization?.brandColor);
     return data.user as import('./types').User;
   }
 
@@ -58,8 +77,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return roles.includes(user.role?.name);
   }
 
+  function setBrandColor(color: string) {
+    applyBrandColor(color);
+    if (user) {
+      const updated = { ...user, organization: { ...user.organization, brandColor: color } };
+      setUser(updated as User);
+      localStorage.setItem('user', JSON.stringify(updated));
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, hasPermission, hasRole }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, hasPermission, hasRole, setBrandColor }}>
       {children}
     </AuthContext.Provider>
   );

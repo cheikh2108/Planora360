@@ -55,6 +55,7 @@ model Organization {
   id               String             @id @default(cuid())
   name             String
   logoUrl          String?
+  brandColor       String?            @default("#2563eb")
   subscriptionPlan SubscriptionPlan   @default(DECOUVERTE)
   status           OrganizationStatus @default(ACTIVE)
   rejectionReason  String?

@@ -46,6 +46,7 @@ export class AuthService {
       data: {
         name: dto.organizationName,
         subscriptionPlan: dto.subscriptionPlan ?? 'DECOUVERTE',
+        brandColor: dto.brandColor ?? '#2563eb',
         status: 'PENDING',
         trialEndsAt,
       },
@@ -238,7 +239,7 @@ export class AuthService {
           permissions: user.role?.permissions ?? [],
         },
         organization: user.organization
-          ? { id: user.organization.id, name: user.organization.name }
+          ? { id: user.organization.id, name: user.organization.name, brandColor: user.organization.brandColor ?? '#2563eb' }
           : undefined,
       },
     };

@@ -1,4 +1,4 @@
-import { IsEmail, IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsEnum, IsOptional, IsString, MinLength, Matches } from 'class-validator';
 import { SubscriptionPlan } from '@prisma/client';
 
 export class RegisterOrganizationDto {
@@ -9,6 +9,11 @@ export class RegisterOrganizationDto {
   @IsOptional()
   @IsEnum(SubscriptionPlan)
   subscriptionPlan?: SubscriptionPlan;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^#[0-9a-fA-F]{6}$/, { message: 'brandColor doit être au format #rrggbb' })
+  brandColor?: string;
 
   @IsString()
   @MinLength(2)

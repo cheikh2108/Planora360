@@ -47,6 +47,7 @@ export const authApi = {
   register: (data: {
     organizationName: string;
     subscriptionPlan?: string;
+    brandColor?: string;
     firstName: string;
     lastName: string;
     email: string;

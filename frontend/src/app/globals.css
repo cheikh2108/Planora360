@@ -7,7 +7,40 @@ html, body {
 :root {
   --background: #f8fafc;
   --foreground: #0f172a;
+  --color-brand: #2563eb;
+  --color-brand-dark: #0f1e38;
 }
+
+/* Focus rings dynamiques via couleur de marque */
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-brand, #2563eb) 30%, transparent) !important;
+  border-color: var(--color-brand, #2563eb) !important;
+}
+
+/* Classes utilitaires de marque — utilisées là où Tailwind JIT ne peut pas être dynamique */
+.bg-brand     { background-color: var(--color-brand, #2563eb) !important; }
+.text-brand   { color: var(--color-brand, #2563eb) !important; }
+.border-brand { border-color: var(--color-brand, #2563eb) !important; }
+.ring-brand   { box-shadow: 0 0 0 2px var(--color-brand, #2563eb) !important; }
+
+/* Override global des éléments qui utilisaient les couleurs hardcodées */
+.bg-\[\#2563eb\]         { background-color: var(--color-brand, #2563eb) !important; }
+.text-\[\#2563eb\]       { color: var(--color-brand, #2563eb) !important; }
+.border-\[\#2563eb\]     { border-color: var(--color-brand, #2563eb) !important; }
+.hover\:bg-\[\#2563eb\]:hover { background-color: var(--color-brand, #2563eb) !important; }
+.hover\:text-\[\#2563eb\]:hover { color: var(--color-brand, #2563eb) !important; }
+.focus\:ring-\[\#2563eb\]:focus { box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-brand, #2563eb) 30%, transparent) !important; }
+.focus\:border-\[\#2563eb\]:focus { border-color: var(--color-brand, #2563eb) !important; }
+.bg-\[\#0f1e38\]         { background-color: var(--color-brand-dark, #0f1e38) !important; }
+.text-\[\#0f1e38\]       { color: var(--color-brand-dark, #0f1e38) !important; }
+.hover\:bg-\[\#0f1e38\]:hover { background-color: var(--color-brand-dark, #0f1e38) !important; }
+.bg-\[\#1d4ed8\]         { background-color: color-mix(in srgb, var(--color-brand, #2563eb) 85%, black) !important; }
+.hover\:bg-\[\#1d4ed8\]:hover { background-color: color-mix(in srgb, var(--color-brand, #2563eb) 85%, black) !important; }
+.hover\:bg-\[\#1a2e52\]:hover { background-color: var(--color-brand-dark, #0f1e38) !important; }
+.bg-\[\#1a2e52\]         { background-color: var(--color-brand-dark, #0f1e38) !important; }
+.bg-\[\#162d52\]         { background-color: var(--color-brand-dark, #0f1e38) !important; }
+.hover\:bg-\[\#162d52\]:hover { background-color: var(--color-brand-dark, #0f1e38) !important; }
 
 @theme inline {
   --color-background: var(--background);

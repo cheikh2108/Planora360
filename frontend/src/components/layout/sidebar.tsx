@@ -59,10 +59,9 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
         onClick={onClose}
         className={cn(
           'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
-          active
-            ? 'bg-[#2563eb] text-white'
-            : 'text-white/60 hover:bg-white/8 hover:text-white'
+          active ? 'text-white' : 'text-white/60 hover:bg-white/8 hover:text-white'
         )}
+        style={active ? { backgroundColor: 'var(--color-brand)' } : undefined}
       >
         <item.icon size={18} className="shrink-0" />
         <span className="flex-1 truncate">{item.label}</span>
@@ -73,9 +72,9 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
   const visibleAdmin = ORG_ADMIN_ITEMS.filter(canSee);
 
   return (
-    <aside className="flex flex-col h-full bg-[#0f1e38] text-white w-64 shrink-0">
+    <aside className="flex flex-col h-full text-white w-64 shrink-0" style={{ backgroundColor: 'var(--color-brand-dark, #0f1e38)' }}>
       <div className="flex items-center gap-3 px-5 py-5 border-b border-white/10">
-        <div className="w-8 h-8 rounded-lg bg-[#2563eb] flex items-center justify-center font-bold text-sm">A</div>
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm" style={{ backgroundColor: 'var(--color-brand)' }}>A</div>
         <div>
           <p className="font-semibold text-sm leading-tight">ATAABA Pilot</p>
           <p className="text-xs text-white/40 truncate max-w-35">{user?.organization?.name ?? '—'}</p>

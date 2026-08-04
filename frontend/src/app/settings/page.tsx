@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
 import { authApi } from '@/lib/api';
+import api from '@/lib/api';
 import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { FormField, Input } from '@/components/ui/form-field';
@@ -11,12 +12,12 @@ import { Modal } from '@/components/ui/modal';
 import {
   Shield, Key, User, Bell, CheckCircle2, QrCode, CreditCard,
   Check, Zap, MessageSquare, Users, FolderKanban, ArrowRight, Star,
-  LayoutGrid, X,
+  LayoutGrid, X, Palette,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { SubscriptionPlan } from '@/lib/types';
 
-const ALL_SECTIONS = ['Profil', 'Sécurité', 'Notifications', 'Abonnement'] as const;
+const ALL_SECTIONS = ['Profil', 'Apparence', 'Sécurité', 'Notifications', 'Abonnement'] as const;
 type Section = typeof ALL_SECTIONS[number];
 
 /* ─── Données formules ───────────────────────────────────────── */
@@ -283,7 +284,7 @@ function SubscriptionSection({ currentPlan }: { currentPlan: SubscriptionPlan })
 /* ─── Page principale ────────────────────────────────────────── */
 
 export default function SettingsPage() {
-  const { user } = useAuth();
+  const { user, setBrandColor } = useAuth();
   const isAdmin = ['Administrateur', 'Super administrateur'].includes(user?.role?.name ?? '');
   const SECTIONS = ALL_SECTIONS.filter(s => s !== 'Abonnement' || isAdmin);
   const [section, setSection] = useState<Section>('Profil');
@@ -303,8 +304,23 @@ export default function SettingsPage() {
     onSuccess: () => { setEnabled(true); setQrModal(false); },
   });
 
+  const [brandColorLocal, setBrandColorLocal] = useState(user?.organization?.brandColor ?? '#2563eb');
+  const [colorSaved, setColorSaved] = useState(false);
+
+  const { mutate: saveBrandColor, isPending: savingColor } = useMutation({
+    mutationFn: (color: string) => api.patch('/organizations/my/brand-color', { brandColor: color }),
+    onSuccess: (_, color) => {
+      setBrandColor(color);
+      setColorSaved(true);
+      setTimeout(() => setColorSaved(false), 2000);
+    },
+  });
+
+  const PRESET_COLORS = ['#2563eb','#7c3aed','#db2777','#dc2626','#ea580c','#16a34a','#0891b2','#0f172a','#64748b','#b45309'];
+
   const SECTION_CONFIG: Record<Section, { icon: React.ElementType; desc: string }> = {
     Profil:        { icon: User,       desc: 'Identité & informations' },
+    Apparence:     { icon: Palette,    desc: 'Couleur de marque' },
     Sécurité:      { icon: Shield,     desc: '2FA & mot de passe' },
     Notifications: { icon: Bell,       desc: 'Alertes & préférences' },
     Abonnement:    { icon: CreditCard, desc: 'Formule & limites' },
@@ -389,6 +405,100 @@ export default function SettingsPage() {
                     </FormField>
                   </div>
                   <p className="text-xs text-slate-400 pt-1">Pour modifier ces informations, contactez votre administrateur.</p>
+                </div>
+              </div>
+            )}
+
+            {/* Apparence */}
+            {section === 'Apparence' && (
+              <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100">
+                  <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
+                    <Palette size={16} className="text-slate-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">Couleur de marque</p>
+                    <p className="text-xs text-slate-500">Personnalise la sidebar, les boutons et les éléments actifs</p>
+                  </div>
+                </div>
+
+                <div className="p-5 space-y-5">
+                  {/* Aperçu */}
+                  <div className="rounded-xl overflow-hidden border border-slate-200 flex h-24">
+                    <div className="w-16 flex flex-col items-center justify-center gap-2 shrink-0" style={{ backgroundColor: brandColorLocal }}>
+                      <div className="w-6 h-1.5 rounded-full bg-white/40" />
+                      <div className="w-6 h-1.5 rounded-full bg-white/70" />
+                      <div className="w-6 h-1.5 rounded-full bg-white/40" />
+                    </div>
+                    <div className="flex-1 bg-slate-50 flex items-center px-4 gap-3">
+                      <div className="h-8 px-4 rounded-xl text-white text-xs flex items-center font-medium" style={{ backgroundColor: brandColorLocal }}>
+                        Bouton
+                      </div>
+                      <div className="text-xs font-medium" style={{ color: brandColorLocal }}>Lien actif</div>
+                      <div className="h-2 w-24 rounded-full" style={{ backgroundColor: brandColorLocal, opacity: 0.2 }} />
+                    </div>
+                  </div>
+
+                  {/* Palette prédéfinie */}
+                  <div>
+                    <p className="text-xs font-semibold text-slate-500 mb-2.5">Couleurs prédéfinies</p>
+                    <div className="flex flex-wrap gap-2">
+                      {PRESET_COLORS.map(c => (
+                        <button
+                          key={c}
+                          type="button"
+                          onClick={() => setBrandColorLocal(c)}
+                          className={cn(
+                            'w-8 h-8 rounded-full transition-all border-2',
+                            brandColorLocal === c ? 'border-slate-700 scale-110 shadow-md' : 'border-transparent hover:scale-105'
+                          )}
+                          style={{ background: c }}
+                          aria-label={c}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Couleur personnalisée */}
+                  <div>
+                    <p className="text-xs font-semibold text-slate-500 mb-2.5">Couleur personnalisée</p>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl border-2 border-slate-200 overflow-hidden shrink-0">
+                        <input
+                          type="color"
+                          value={brandColorLocal}
+                          onChange={e => setBrandColorLocal(e.target.value)}
+                          className="w-14 h-14 -translate-x-2 -translate-y-2 cursor-pointer"
+                        />
+                      </div>
+                      <input
+                        type="text"
+                        value={brandColorLocal}
+                        onChange={e => /^#[0-9a-fA-F]{0,6}$/.test(e.target.value) && setBrandColorLocal(e.target.value)}
+                        className="w-28 h-10 px-3 rounded-xl border border-slate-200 text-sm font-mono focus:outline-none"
+                        maxLength={7}
+                        placeholder="#2563eb"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-3 pt-1">
+                    <Button
+                      loading={savingColor}
+                      onClick={() => saveBrandColor(brandColorLocal)}
+                      disabled={brandColorLocal.length !== 7}
+                    >
+                      {colorSaved ? <><CheckCircle2 size={14} /> Enregistré</> : 'Appliquer'}
+                    </Button>
+                    <button
+                      type="button"
+                      onClick={() => setBrandColorLocal(user?.organization?.brandColor ?? '#2563eb')}
+                      className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
+                    >
+                      Réinitialiser
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
