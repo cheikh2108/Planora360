@@ -15,8 +15,17 @@ async function bootstrap() {
     }),
   );
 
+  const allowedOrigins = (process.env.FRONTEND_URL ?? 'http://localhost:3001')
+    .split(',')
+    .map(o => o.trim());
   app.enableCors({
-    origin: process.env.FRONTEND_URL ?? 'http://localhost:3001',
+    origin: (origin, cb) => {
+      if (!origin || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+        cb(null, true);
+      } else {
+        cb(new Error(`CORS: origin ${origin} not allowed`));
+      }
+    },
     credentials: true,
   });
 
