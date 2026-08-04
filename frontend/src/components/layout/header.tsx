@@ -61,7 +61,7 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
         href="/settings"
         title="Paramètres du compte"
         className="relative w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-white text-xs font-bold transition-transform hover:scale-105 active:scale-95"
-        style={{ background: 'radial-gradient(circle at 35% 35%, #2a3f5f, #0a1628)', boxShadow: '0 2px 8px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08)' }}
+        style={{ backgroundColor: 'var(--color-brand)', opacity: 0.9 }}
       >
         {user?.firstName?.[0]}{user?.lastName?.[0]}
       </Link>

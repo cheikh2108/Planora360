@@ -376,7 +376,7 @@ export default function SettingsPage() {
               <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
                 {/* Bandeau identité */}
                 <div className="bg-[#0f1e38] px-5 py-6 flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-white text-xl font-bold shrink-0" style={{ background: 'radial-gradient(circle at 35% 35%, #2a3f5f, #0a1628)', boxShadow: '0 4px 16px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08)' }}>
+                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-white text-xl font-bold shrink-0" style={{ backgroundColor: 'var(--color-brand)', opacity: 0.85 }}>
                     {user?.firstName?.[0]}{user?.lastName?.[0]}
                   </div>
                   <div className="min-w-0">
@@ -618,10 +618,7 @@ export default function SettingsPage() {
                       ? 'text-white'
                       : 'bg-white text-slate-700 border border-slate-200'
                   )}
-                  style={active ? {
-                    background: 'radial-gradient(circle at 35% 30%, #1e3560, #0a1628)',
-                    boxShadow: '0 4px 16px rgba(0,0,0,0.35)',
-                  } : undefined}
+                  style={active ? { backgroundColor: 'var(--color-brand)' } : undefined}
                 >
                   <Icon size={14} />
                   {s}
