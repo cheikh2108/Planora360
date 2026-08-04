@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { GenerateReportDto, ReportType, ReportFormat } from './dto/generate-report.dto';
 import * as ExcelJS from 'exceljs';
-import * as puppeteer from 'puppeteer';
+import PDFDocument = require('pdfkit');
 
 @Injectable()
 export class ReportsService {
@@ -105,8 +105,6 @@ export class ReportsService {
       { header: 'Budget exécuté', key: 'budgetExecuted', width: 16 },
     ];
 
-    // En-tête en gras
-    sheet.getRow(1).font = { bold: true };
     sheet.getRow(1).fill = {
       type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E3A5F' },
     };
@@ -131,7 +129,6 @@ export class ReportsService {
       });
     }
 
-    // Feuille budget si applicable
     if (type === ReportType.BUDGET) {
       const budgetSheet = workbook.addWorksheet('Budget');
       budgetSheet.columns = [
@@ -172,56 +169,66 @@ export class ReportsService {
       select: { name: true },
     });
 
-    const rows = activities.map((a) => `
-      <tr>
-        <td>${a.axis?.actionPlan?.title ?? ''}</td>
-        <td>${a.title}</td>
-        <td>${a.responsible.firstName} ${a.responsible.lastName}</td>
-        <td><span class="status status-${a.status.toLowerCase()}">${a.status}</span></td>
-        <td>${a.completionRate}%</td>
-        <td>${a.dueDate ? new Date(a.dueDate).toLocaleDateString('fr-FR') : ''}</td>
-      </tr>
-    `).join('');
+    return new Promise((resolve, reject) => {
+      const doc = new PDFDocument({ margin: 40, size: 'A4' });
+      const chunks: Buffer[] = [];
 
-    const html = `
-      <!DOCTYPE html>
-      <html lang="fr">
-      <head>
-        <meta charset="UTF-8">
-        <style>
-          body { font-family: Arial, sans-serif; margin: 40px; color: #1a1a2e; font-size: 12px; }
-          h1 { color: #1E3A5F; border-bottom: 2px solid #1E3A5F; padding-bottom: 8px; }
-          .meta { color: #666; margin-bottom: 20px; }
-          table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-          th { background: #1E3A5F; color: white; padding: 8px; text-align: left; font-size: 11px; }
-          td { padding: 7px 8px; border-bottom: 1px solid #e5e7eb; font-size: 11px; }
-          tr:nth-child(even) { background: #f8fafc; }
-          .status { padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: bold; }
-          .status-en_retard { background: #fee2e2; color: #dc2626; }
-          .status-validee { background: #dcfce7; color: #16a34a; }
-          .status-en_cours { background: #dbeafe; color: #2563eb; }
-          .status-terminee { background: #e0f2fe; color: #0369a1; }
-        </style>
-      </head>
-      <body>
-        <h1>Rapport des activités — ${org?.name ?? ''}</h1>
-        <p class="meta">Généré le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}</p>
-        <table>
-          <thead>
-            <tr><th>Plan</th><th>Activité</th><th>Responsable</th><th>Statut</th><th>Avancement</th><th>Échéance</th></tr>
-          </thead>
-          <tbody>${rows}</tbody>
-        </table>
-      </body>
-      </html>
-    `;
+      doc.on('data', (chunk) => chunks.push(chunk));
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', reject);
 
-    const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
-    const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'load' });
-    const pdf = await page.pdf({ format: 'A4', margin: { top: '20mm', bottom: '20mm', left: '15mm', right: '15mm' }, printBackground: true });
-    await browser.close();
+      // En-tête
+      doc.fontSize(18).fillColor('#1E3A5F').text(`Rapport — ${org?.name ?? ''}`, { align: 'left' });
+      doc.fontSize(10).fillColor('#666666').text(
+        `Généré le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}`,
+      );
+      doc.moveDown();
 
-    return Buffer.from(pdf);
+      // En-têtes colonnes
+      const colWidths = [120, 150, 100, 80, 60, 70];
+      const headers = ['Plan', 'Activité', 'Responsable', 'Statut', 'Avancement', 'Échéance'];
+      const startX = 40;
+      let y = doc.y;
+
+      doc.rect(startX, y, 512, 18).fill('#1E3A5F');
+      doc.fillColor('#FFFFFF').fontSize(9);
+      let x = startX + 4;
+      for (let i = 0; i < headers.length; i++) {
+        doc.text(headers[i], x, y + 4, { width: colWidths[i], lineBreak: false });
+        x += colWidths[i];
+      }
+      y += 18;
+
+      // Lignes
+      doc.fillColor('#1a1a2e').fontSize(9);
+      for (let idx = 0; idx < activities.length; idx++) {
+        const a = activities[idx];
+        if (idx % 2 === 0) {
+          doc.rect(startX, y, 512, 16).fill('#f8fafc');
+        }
+        doc.fillColor('#1a1a2e');
+        x = startX + 4;
+        const cols = [
+          a.axis?.actionPlan?.title ?? '',
+          a.title,
+          `${a.responsible.firstName} ${a.responsible.lastName}`,
+          a.status,
+          `${a.completionRate}%`,
+          a.dueDate ? new Date(a.dueDate).toLocaleDateString('fr-FR') : '',
+        ];
+        for (let i = 0; i < cols.length; i++) {
+          doc.text(String(cols[i]).substring(0, 30), x, y + 3, { width: colWidths[i] - 4, lineBreak: false });
+          x += colWidths[i];
+        }
+        y += 16;
+
+        if (y > 760) {
+          doc.addPage();
+          y = 40;
+        }
+      }
+
+      doc.end();
+    });
   }
 }
