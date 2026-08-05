@@ -1,0 +1,104 @@
+import { PrismaService } from '../common/prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
+import { CreateOrganizationDto } from './dto/create-organization.dto';
+import { UpdateOrganizationDto } from './dto/update-organization.dto';
+export declare class OrganizationsService {
+    private prisma;
+    private notifications;
+    constructor(prisma: PrismaService, notifications: NotificationsService);
+    create(dto: CreateOrganizationDto): Promise<{
+        id: string;
+        name: string;
+        logoUrl: string | null;
+        brandColor: string | null;
+        subscriptionPlan: import(".prisma/client").$Enums.SubscriptionPlan;
+        status: import(".prisma/client").$Enums.OrganizationStatus;
+        rejectionReason: string | null;
+        trialEndsAt: Date | null;
+        createdAt: Date;
+    }>;
+    findPending(): import(".prisma/client").Prisma.PrismaPromise<({
+        users: {
+            email: string;
+            firstName: string;
+            lastName: string;
+        }[];
+        _count: {
+            users: number;
+        };
+    } & {
+        id: string;
+        name: string;
+        logoUrl: string | null;
+        brandColor: string | null;
+        subscriptionPlan: import(".prisma/client").$Enums.SubscriptionPlan;
+        status: import(".prisma/client").$Enums.OrganizationStatus;
+        rejectionReason: string | null;
+        trialEndsAt: Date | null;
+        createdAt: Date;
+    })[]>;
+    findAll(): import(".prisma/client").Prisma.PrismaPromise<({
+        _count: {
+            users: number;
+            actionPlans: number;
+        };
+    } & {
+        id: string;
+        name: string;
+        logoUrl: string | null;
+        brandColor: string | null;
+        subscriptionPlan: import(".prisma/client").$Enums.SubscriptionPlan;
+        status: import(".prisma/client").$Enums.OrganizationStatus;
+        rejectionReason: string | null;
+        trialEndsAt: Date | null;
+        createdAt: Date;
+    })[]>;
+    approve(id: string): Promise<{
+        message: string;
+    }>;
+    reject(id: string, reason?: string): Promise<{
+        message: string;
+    }>;
+    findOne(id: string): Promise<{
+        _count: {
+            users: number;
+            actionPlans: number;
+        };
+    } & {
+        id: string;
+        name: string;
+        logoUrl: string | null;
+        brandColor: string | null;
+        subscriptionPlan: import(".prisma/client").$Enums.SubscriptionPlan;
+        status: import(".prisma/client").$Enums.OrganizationStatus;
+        rejectionReason: string | null;
+        trialEndsAt: Date | null;
+        createdAt: Date;
+    }>;
+    update(id: string, dto: UpdateOrganizationDto): Promise<{
+        id: string;
+        name: string;
+        logoUrl: string | null;
+        brandColor: string | null;
+        subscriptionPlan: import(".prisma/client").$Enums.SubscriptionPlan;
+        status: import(".prisma/client").$Enums.OrganizationStatus;
+        rejectionReason: string | null;
+        trialEndsAt: Date | null;
+        createdAt: Date;
+    }>;
+    updateBrandColor(organizationId: string, brandColor: string): Promise<{
+        id: string;
+        brandColor: string | null;
+    }>;
+    remove(id: string): Promise<{
+        id: string;
+        name: string;
+        logoUrl: string | null;
+        brandColor: string | null;
+        subscriptionPlan: import(".prisma/client").$Enums.SubscriptionPlan;
+        status: import(".prisma/client").$Enums.OrganizationStatus;
+        rejectionReason: string | null;
+        trialEndsAt: Date | null;
+        createdAt: Date;
+    }>;
+}

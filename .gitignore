@@ -2,9 +2,9 @@
 node_modules/
 
 # Build outputs
-dist/
+frontend/.next/
+frontend/dist/
 build/
-.next/
 
 # Environment
 .env

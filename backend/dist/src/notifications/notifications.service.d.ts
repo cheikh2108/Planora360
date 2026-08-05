@@ -1,0 +1,31 @@
+import { ConfigService } from '@nestjs/config';
+import { PrismaService } from '../common/prisma/prisma.service';
+export declare class NotificationsService {
+    private prisma;
+    private readonly logger;
+    private resend;
+    constructor(prisma: PrismaService, config: ConfigService);
+    private sendEmail;
+    sendWelcomeCredentials(params: {
+        email: string;
+        firstName: string;
+        orgName: string;
+        tempPassword: string;
+    }): Promise<void>;
+    notifyValidationPending(params: {
+        activityId: string;
+        activityTitle: string;
+        step: string;
+        validatorId: string;
+        organizationId: string;
+    }): Promise<void>;
+    notifyValidationResult(params: {
+        activityTitle: string;
+        step: string;
+        decision: string;
+        comment: string | null;
+        responsibleId: string;
+    }): Promise<void>;
+    notifyOverdueActivities(organizationId: string): Promise<void>;
+    notifyUpcomingDeadlines(organizationId: string, daysAhead?: number): Promise<void>;
+}
