@@ -112,8 +112,8 @@ export declare class ActivitiesController {
             activityId: string;
             label: string;
             isMandatory: boolean;
-            progress: number;
             observations: string | null;
+            progress: number;
             isValidated: boolean;
         })[];
         axis: {
@@ -162,8 +162,8 @@ export declare class ActivitiesController {
             step: import(".prisma/client").$Enums.ValidationStep;
             activityId: string;
             decision: import(".prisma/client").$Enums.ValidationDecision;
-            validatorId: string;
             comment: string | null;
+            validatorId: string;
         }[];
         collaborators: ({
             user: {
