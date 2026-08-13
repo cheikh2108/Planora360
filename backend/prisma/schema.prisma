@@ -62,10 +62,14 @@ model Organization {
   trialEndsAt      DateTime?
   createdAt        DateTime           @default(now())
 
-  users       User[]
-  roles       Role[]
-  actionPlans ActionPlan[]
-  auditLogs   AuditLog[]
+  users                 User[]
+  roles                 Role[]
+  actionPlans           ActionPlan[]
+  auditLogs             AuditLog[]
+  participants          Participant[]
+  capitalizationRecords CapitalizationRecord[]
+  annualWorkPlans       AnnualWorkPlan[]
+  resultsMatrix         ResultsMatrix?
 
   @@map("organizations")
 }
@@ -308,4 +312,109 @@ model AuditLog {
   @@index([organizationId])
   @@index([organizationId, createdAt])
   @@map("audit_logs")
+}
+
+// ==================== MODULES ADDITIONNELS ====================
+
+// MODULE PARTICIPANTS
+model Participant {
+  id            String       @id @default(cuid())
+  organizationId String
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  activityId    String
+
+  firstName     String
+  lastName      String
+  phone         String
+  paymentMode   String       // "WAVE" | "ORANGE_MONEY"
+  amount        Float
+
+  createdBy     String
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@unique([phone, activityId])
+  @@index([organizationId])
+  @@index([activityId])
+  @@map("participants")
+}
+
+// MODULE CAPITALISATION
+model CapitalizationRecord {
+  id            String       @id @default(cuid())
+  organizationId String
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  type          String       // "BONNE_PRATIQUE" | "RECIT_CHANGEMENT" | "GUIDE"
+  title         String
+  context       String       @db.Text
+  challenges    String       @db.Text
+  solutions     String       @db.Text
+  results       String       @db.Text
+  lessons       String       @db.Text
+
+  tags          String[]
+  status        String       @default("BROUILLON") // "BROUILLON" | "PUBLIE"
+
+  authorId      String
+
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  media         Media[]
+
+  @@index([organizationId])
+  @@index([authorId])
+  @@map("capitalization_records")
+}
+
+model Media {
+  id                    String               @id @default(cuid())
+  capitalizationId      String
+  capitalization        CapitalizationRecord @relation(fields: [capitalizationId], references: [id], onDelete: Cascade)
+
+  type                  String               // "PHOTO" | "VIDEO" | "DOCUMENT"
+  filename              String
+  url                   String               // Backblaze B2
+  size                  Int
+
+  uploadedAt            DateTime             @default(now())
+
+  @@index([capitalizationId])
+  @@map("media")
+}
+
+// MODULE PLANIFICATION
+model AnnualWorkPlan {
+  id            String       @id @default(cuid())
+  organizationId String
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  year          Int
+  title         String
+  objectives    Json         // Structure flexible
+
+  status        String       @default("BROUILLON") // "BROUILLON" | "VALIDE"
+  validatedBy   String?
+  validatedAt   DateTime?
+
+  createdBy     String
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([organizationId])
+  @@index([year])
+  @@map("annual_work_plans")
+}
+
+model ResultsMatrix {
+  id            String       @id @default(cuid())
+  organizationId String      @unique
+  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  data          Json         // Objectifs → Résultats → Indicateurs
+
+  updatedAt     DateTime     @updatedAt
+
+  @@map("results_matrices")
 }
