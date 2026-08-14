@@ -18,7 +18,7 @@ export default function NewParticipantPage() {
     firstName: '',
     lastName: '',
     phone: '',
-    paymentMethod: 'WAVE',
+    paymentMode: 'WAVE',
     amount: '',
     activityId: '',
   });
@@ -117,12 +117,12 @@ export default function NewParticipantPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-2">
-                <label htmlFor="paymentMethod" className="text-sm font-medium text-slate-900">
+                <label htmlFor="paymentMode" className="text-sm font-medium text-slate-900">
                   Mode de paiement *
                 </label>
                 <Select
-                  value={formData.paymentMethod}
-                  onValueChange={(value) => setFormData({ ...formData, paymentMethod: value })}
+                  value={formData.paymentMode}
+                  onValueChange={(value) => setFormData({ ...formData, paymentMode: value })}
                 >
                   <SelectTrigger>
                     <SelectValue />
