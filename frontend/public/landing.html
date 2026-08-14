@@ -129,7 +129,7 @@ filter: blur(0px);
 
       <main class="">
         <section class="overflow-hidden sm:px-8 lg:px-10 pr-5 pl-5 pt-20 pb-20 sm:pt-28 sm:pb-28 lg:pt-32 lg:pb-32 min-h-[calc(100vh-4rem)] flex items-center relative" id="blueprint">
-          <canvas id="webgl-canvas" class="absolute inset-0 z-0 pointer-events-none opacity-60 mix-blend-screen w-full h-full hidden lg:block"></canvas>
+          <canvas id="webgl-canvas" class="absolute inset-0 z-0 pointer-events-none opacity-60 mix-blend-screen w-full h-full"></canvas>
           <div class="pointer-events-none absolute left-1/2 top-24 h-72 w-72 -translate-x-1/2 rounded-full bg-cyan-200/10 blur-3xl"></div>
           <div class="grid gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16 w-full max-w-[1280px] mr-auto ml-auto items-center">
             <!-- Left content -->
@@ -161,7 +161,7 @@ filter: blur(0px);
             </div>
 
             <!-- Right dashboard visual -->
-            <div class="reveal transition-all duration-700 ease-out group [animation:animationIn_0.8s_ease-out_0.1s_both] w-full h-[min(70vh,40rem)] max-w-[44rem] mr-auto ml-auto relative" style="perspective: 1200px;" id="heroObject">
+            <div class="hidden lg:block reveal transition-all duration-700 ease-out group [animation:animationIn_0.8s_ease-out_0.1s_both] w-full h-[min(70vh,40rem)] max-w-[44rem] mr-auto ml-auto relative" style="perspective: 1200px;" id="heroObject">
               <!-- Soft background glows (Hidden from screen readers) -->
               <div aria-hidden="true" class="absolute left-1/2 top-1/2 h-[34rem] w-[34rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan-400/[0.08] blur-[100px] transition-all duration-500 group-hover:bg-cyan-400/[0.12]"></div>
               <div aria-hidden="true" class="absolute left-[62%] top-[22%] h-44 w-44 -translate-x-1/2 rounded-full bg-emerald-400/[0.06] blur-[80px]"></div>
