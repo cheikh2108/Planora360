@@ -94,15 +94,42 @@ filter: blur(0px);
             </a>
           </div>
 
-          <button aria-label="Open menu" class="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-slate-300 md:hidden">
+          <button id="mobile-menu-btn" aria-label="Open menu" class="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-slate-300 md:hidden">
             <iconify-icon icon="solar:hamburger-menu-linear" width="20" height="20"></iconify-icon>
           </button>
         </nav>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="fixed inset-0 z-50 hidden md:hidden">
+          <div class="absolute inset-0 bg-[#080c14]/98 backdrop-blur-xl" id="mobile-menu-overlay"></div>
+          <div class="relative h-full flex flex-col p-6">
+            <div class="flex items-center justify-between mb-8">
+              <span class="text-lg font-bold text-white">Menu</span>
+              <button id="mobile-menu-close" class="p-2 text-slate-400 hover:text-white">
+                <iconify-icon icon="solar:close-circle-linear" width="24" height="24"></iconify-icon>
+              </button>
+            </div>
+            <nav class="flex flex-col gap-6">
+              <a href="#problem" class="text-lg text-slate-300 hover:text-white transition mobile-link">Problème</a>
+              <a href="#how" class="text-lg text-slate-300 hover:text-white transition mobile-link">Fonctionnement</a>
+              <a href="#reviews" class="text-lg text-slate-300 hover:text-white transition mobile-link">Témoignages</a>
+              <a href="/auth/login" class="text-lg text-slate-300 hover:text-white transition mobile-link">Tarifs</a>
+              <div class="pt-6 mt-6 border-t border-white/10 flex flex-col gap-3">
+                <a href="/auth/login" class="px-4 py-3 text-center text-slate-300 hover:text-white transition mobile-link">
+                  Se connecter
+                </a>
+                <a href="/auth/register" class="px-4 py-3 bg-cyan-100 text-slate-950 text-center font-medium rounded-full transition mobile-link">
+                  Commencer
+                </a>
+              </div>
+            </nav>
+          </div>
+        </div>
       </header>
 
       <main class="">
         <section class="overflow-hidden sm:px-8 lg:px-10 pr-5 pl-5 pt-20 pb-20 sm:pt-28 sm:pb-28 lg:pt-32 lg:pb-32 min-h-[calc(100vh-4rem)] flex items-center relative" id="blueprint">
-          <canvas id="webgl-canvas" class="absolute inset-0 z-0 pointer-events-none opacity-60 mix-blend-screen w-full h-full"></canvas>
+          <canvas id="webgl-canvas" class="absolute inset-0 z-0 pointer-events-none opacity-60 mix-blend-screen w-full h-full hidden lg:block"></canvas>
           <div class="pointer-events-none absolute left-1/2 top-24 h-72 w-72 -translate-x-1/2 rounded-full bg-cyan-200/10 blur-3xl"></div>
           <div class="grid gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16 w-full max-w-[1280px] mr-auto ml-auto items-center">
             <!-- Left content -->
@@ -113,11 +140,11 @@ filter: blur(0px);
               </div>
 
               <h1 class="text-[2.4rem] sm:text-5xl lg:text-[4rem] xl:text-[4.5rem] font-medium text-white tracking-tighter font-jakarta max-w-xl leading-[1.08]" style=" transition: opacity 900ms ease-out 300ms, transform 900ms ease-out; will-change: auto;">
-                Gérez vos plans d'action sans complexité.
+                Pilotez vos plans d'action stratégiques avec efficacité.
               </h1>
 
               <p class="mt-6 max-w-md text-base leading-7 text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: auto;">
-                Action Pilot aide les organisations à piloter leurs plans d'action, suivre les délais et centraliser le travail dans un espace unique, sans configuration complexe.
+                Planifiez, suivez et validez vos activités. Gérez votre budget en cascade (Prévu → Engagé → Exécuté). Générez des rapports automatisés. Tout dans un seul espace centralisé.
               </p>
 
               <div class="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -3174,9 +3201,42 @@ filter: blur(0px);
     });
   });
   const btn = document.getElementById('back-to-top');
-  lenis.on('scroll', ({ scroll }) => {
-    if (scroll > 400) btn.classList.add('visible');
-    else btn.classList.remove('visible');
+  if (btn) {
+    lenis.on('scroll', ({ scroll }) => {
+      if (scroll > 400) btn.classList.add('visible');
+      else btn.classList.remove('visible');
+    });
+  }
+
+  // Mobile Menu
+  const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+  const mobileMenu = document.getElementById('mobile-menu');
+  const mobileMenuClose = document.getElementById('mobile-menu-close');
+  const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+  const mobileLinks = document.querySelectorAll('.mobile-link');
+
+  function openMobileMenu() {
+    mobileMenu.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeMobileMenu() {
+    mobileMenu.classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+
+  mobileMenuBtn.addEventListener('click', openMobileMenu);
+  mobileMenuClose.addEventListener('click', closeMobileMenu);
+  mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+
+  mobileLinks.forEach(link => {
+    link.addEventListener('click', closeMobileMenu);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !mobileMenu.classList.contains('hidden')) {
+      closeMobileMenu();
+    }
   });
 </script>
 
