@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { PlusIcon, CalendarIcon, CheckCircle2Icon, FileTextIcon } from 'lucide-react';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Plus, Calendar, FileText, CheckCircle2, FileSpreadsheet } from 'lucide-react';
 import api from '@/lib/api';
+import Link from 'next/link';
 
 export default function PlanificationPage() {
   const router = useRouter();
@@ -29,83 +31,98 @@ export default function PlanificationPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Planification</h1>
-          <p className="text-muted-foreground mt-1">
-            Plans de Travail Annuels et Matrice de résultats
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="secondary" onClick={() => router.push('/planification/results-matrix')}>
-            <FileTextIcon className="w-4 h-4 mr-2" />
-            Matrice de résultats
-          </Button>
-          <Button onClick={() => router.push('/planification/new')}>
-            <PlusIcon className="w-4 h-4 mr-2" />
-            Nouveau PTA
-          </Button>
-        </div>
-      </div>
-
-      {loading ? (
-        <p className="text-center py-12 text-muted-foreground">Chargement...</p>
-      ) : plans.length === 0 ? (
-        <Card>
-          <CardContent className="text-center py-12">
-            <CalendarIcon className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">Aucun Plan de Travail Annuel</h3>
-            <p className="text-muted-foreground mb-4">
-              Commencez par créer votre premier PTA
-            </p>
-            <Button onClick={() => router.push('/planification/new')}>
-              <PlusIcon className="w-4 h-4 mr-2" />
-              Créer un PTA
+    <>
+      <Header
+        title="Planification"
+        description="Plans de Travail Annuels et Matrice de résultats"
+        action={
+          <div className="flex gap-2">
+            <Button variant="ghost" onClick={() => router.push('/planification/results-matrix')}>
+              <FileSpreadsheet size={14} className="mr-1.5" />
+              Matrice de résultats
             </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {plans.map((plan) => (
-            <Card
-              key={plan.id}
-              className="cursor-pointer hover:shadow-lg transition-shadow"
-              onClick={() => router.push(`/planification/${plan.id}`)}
-            >
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <Badge variant="secondary">
-                    <CalendarIcon className="w-3 h-3 mr-1" />
-                    {plan.year}
-                  </Badge>
-                  <Badge variant={plan.status === 'VALIDE' ? 'default' : 'outline'}>
-                    {plan.status === 'VALIDE' ? (
-                      <>
-                        <CheckCircle2Icon className="w-3 h-3 mr-1" />
-                        Validé
-                      </>
-                    ) : (
-                      'Brouillon'
-                    )}
-                  </Badge>
-                </div>
-                <CardTitle className="mt-4">{plan.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-sm text-muted-foreground">
-                  Créé le {new Date(plan.createdAt).toLocaleDateString('fr-FR')}
-                </div>
-                {plan.validatedAt && (
-                  <div className="text-sm text-green-600 mt-2">
-                    Validé le {new Date(plan.validatedAt).toLocaleDateString('fr-FR')}
+            <Button onClick={() => router.push('/planification/new')}>
+              <Plus size={14} className="mr-1.5" />
+              Nouveau PTA
+            </Button>
+          </div>
+        }
+      />
+
+      <div className="space-y-5">
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[...Array(3)].map((_, i) => (
+              <Skeleton key={i} className="h-40 rounded-2xl" />
+            ))}
+          </div>
+        ) : plans.length === 0 ? (
+          <EmptyState
+            icon={Calendar}
+            title="Aucun Plan de Travail Annuel"
+            description="Créez votre premier PTA avec vos objectifs stratégiques"
+            action={
+              <Button onClick={() => router.push('/planification/new')}>
+                <Plus size={14} className="mr-1.5" />
+                Créer un PTA
+              </Button>
+            }
+          />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {plans.map((plan) => (
+              <Link
+                key={plan.id}
+                href={`/planification/${plan.id}`}
+                className="block group"
+              >
+                <div className="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-md hover:border-[#2563eb]/30 transition-all flex flex-col gap-4">
+                  {/* Header */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-[#0f1e38] flex items-center justify-center shrink-0">
+                        <Calendar size={16} className="text-white" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                            {plan.year}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 flex items-center gap-1 ${
+                      plan.status === 'VALIDE' ? 'bg-teal-50 text-teal-600' : 'bg-slate-100 text-slate-500'
+                    }`}>
+                      {plan.status === 'VALIDE' && <CheckCircle2 size={10} />}
+                      {plan.status === 'VALIDE' ? 'Validé' : 'Brouillon'}
+                    </span>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
+
+                  {/* Title */}
+                  <h3 className="font-semibold text-slate-900 text-sm line-clamp-2 leading-snug -mt-2">
+                    {plan.title}
+                  </h3>
+
+                  {/* Meta */}
+                  <div className="flex flex-col gap-1 pt-2 border-t border-slate-100 text-xs text-slate-500">
+                    <div className="flex items-center gap-1.5">
+                      <Calendar size={10} className="text-slate-400" />
+                      Créé le {new Date(plan.createdAt).toLocaleDateString('fr-FR')}
+                    </div>
+                    {plan.validatedAt && (
+                      <div className="flex items-center gap-1.5 text-teal-600">
+                        <CheckCircle2 size={10} />
+                        Validé le {new Date(plan.validatedAt).toLocaleDateString('fr-FR')}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    </>
   );
 }

@@ -1,83 +1,85 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
-import { PlusIcon, UploadIcon } from 'lucide-react';
+import { EmptyState } from '@/components/ui/empty-state';
+import { UserPlus, Upload, FileSpreadsheet, Phone, CreditCard, DollarSign } from 'lucide-react';
 
 export default function ParticipantsPage() {
   const router = useRouter();
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Participants</h1>
-          <p className="text-muted-foreground mt-1">
-            Gérez les participants de vos activités
-          </p>
-        </div>
-        <Button onClick={() => router.push('/participants/import')}>
-          <UploadIcon className="w-4 h-4 mr-2" />
-          Importer Excel
-        </Button>
-      </div>
+    <>
+      <Header
+        title="Participants"
+        description="Gérez les participants de vos activités"
+        action={
+          <Button onClick={() => router.push('/participants/import')}>
+            <Upload size={14} className="mr-1.5" />
+            Importer Excel
+          </Button>
+        }
+      />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Importer des participants</CardTitle>
-          <CardDescription>
-            Importez une liste de participants depuis un fichier Excel
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-12">
-            <UploadIcon className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">Aucun participant importé</h3>
-            <p className="text-muted-foreground mb-4">
-              Commencez par importer un fichier Excel avec la liste des participants
-            </p>
+      <div className="space-y-5">
+        <EmptyState
+          icon={UserPlus}
+          title="Aucun participant importé"
+          description="Importez une liste de participants depuis un fichier Excel"
+          action={
             <Button onClick={() => router.push('/participants/import')}>
-              <UploadIcon className="w-4 h-4 mr-2" />
+              <Upload size={14} className="mr-1.5" />
               Importer maintenant
             </Button>
-          </div>
-        </CardContent>
-      </Card>
+          }
+        />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Format du fichier Excel</CardTitle>
-          <CardDescription>
-            Votre fichier Excel doit contenir les colonnes suivantes
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <div className="w-32 font-medium">Prénom</div>
-              <div className="text-muted-foreground">Prénom du participant</div>
+        {/* Format attendu */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-6">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-9 h-9 rounded-xl bg-[#0f1e38] flex items-center justify-center shrink-0">
+              <FileSpreadsheet size={16} className="text-white" />
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-32 font-medium">Nom</div>
-              <div className="text-muted-foreground">Nom du participant</div>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-32 font-medium">Téléphone</div>
-              <div className="text-muted-foreground">Numéro de téléphone</div>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-32 font-medium">Mode de paiement</div>
-              <div className="text-muted-foreground">WAVE ou ORANGE_MONEY</div>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-32 font-medium">Montant</div>
-              <div className="text-muted-foreground">Montant en FCFA</div>
+            <div>
+              <h3 className="font-semibold text-slate-900 text-sm">Format du fichier Excel</h3>
+              <p className="text-xs text-slate-400 mt-0.5">Votre fichier doit contenir les colonnes suivantes</p>
             </div>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+
+          <div className="space-y-3">
+            <div className="flex items-start gap-3 text-sm">
+              <div className="w-32 shrink-0 font-medium text-slate-700">Prénom</div>
+              <div className="text-slate-500">Prénom du participant</div>
+            </div>
+            <div className="flex items-start gap-3 text-sm">
+              <div className="w-32 shrink-0 font-medium text-slate-700">Nom</div>
+              <div className="text-slate-500">Nom du participant</div>
+            </div>
+            <div className="flex items-start gap-3 text-sm">
+              <div className="w-32 shrink-0 font-medium text-slate-700 flex items-center gap-1.5">
+                <Phone size={12} className="text-slate-400" />
+                Téléphone
+              </div>
+              <div className="text-slate-500">Numéro de téléphone</div>
+            </div>
+            <div className="flex items-start gap-3 text-sm">
+              <div className="w-32 shrink-0 font-medium text-slate-700 flex items-center gap-1.5">
+                <CreditCard size={12} className="text-slate-400" />
+                Mode de paiement
+              </div>
+              <div className="text-slate-500">WAVE ou ORANGE_MONEY</div>
+            </div>
+            <div className="flex items-start gap-3 text-sm">
+              <div className="w-32 shrink-0 font-medium text-slate-700 flex items-center gap-1.5">
+                <DollarSign size={12} className="text-slate-400" />
+                Montant
+              </div>
+              <div className="text-slate-500">Montant en FCFA</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
