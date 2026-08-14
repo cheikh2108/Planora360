@@ -1,4 +1,4 @@
-# ATAABA Pilot
+# Action Pilot
 
 Plateforme de pilotage des plans d'action pour organisations publiques et privées — suivi des activités, des budgets, des validations et des documents en un espace unifié.
 

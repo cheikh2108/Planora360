@@ -91,7 +91,7 @@ export default function ChangePasswordPage() {
             {/* Logo mobile */}
             <div className="flex items-center gap-2.5 mb-10 lg:hidden">
               <div className="w-8 h-8 rounded-lg bg-[#0b1629] flex items-center justify-center font-extrabold text-white text-sm">A</div>
-              <span className="font-semibold text-slate-900 text-sm">ATAABA Pilot</span>
+              <span className="font-semibold text-slate-900 text-sm">Action Pilot</span>
             </div>
 
             <p className="text-[10px] font-bold text-[#2563eb] uppercase tracking-[0.2em] mb-3 border-l-2 border-[#2563eb] pl-2.5 leading-none py-0.5">
@@ -184,7 +184,7 @@ export default function ChangePasswordPage() {
         </div>
 
         <div className="px-10 sm:px-16 xl:px-20 py-5 shrink-0">
-          <p className="text-[11px] text-slate-200 font-medium">© 2025 ATAABA Pilot</p>
+          <p className="text-[11px] text-slate-200 font-medium">© 2025 Action Pilot</p>
         </div>
       </div>
     </div>

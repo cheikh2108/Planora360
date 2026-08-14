@@ -232,7 +232,7 @@ function SubscriptionSection({ currentPlan }: { currentPlan: SubscriptionPlan })
           </div>
           <div>
             <p className="text-sm font-semibold text-slate-900">Formule maximale active</p>
-            <p className="text-xs text-slate-500 mt-0.5">Pour toute modification, contactez l'équipe ATAABA Pilot.</p>
+            <p className="text-xs text-slate-500 mt-0.5">Pour toute modification, contactez l'équipe Action Pilot.</p>
           </div>
         </div>
       )}
@@ -266,7 +266,7 @@ function SubscriptionSection({ currentPlan }: { currentPlan: SubscriptionPlan })
           ) : (
             <p className="text-sm text-slate-600">
               Votre demande de passage à la formule <strong>{targetPlan?.label}</strong> sera
-              transmise à l'équipe ATAABA Pilot. Confirmation par e-mail sous 24h.
+              transmise à l'équipe Action Pilot. Confirmation par e-mail sous 24h.
             </p>
           )}
           <div className="flex justify-end gap-3 pt-1 border-t border-slate-100">

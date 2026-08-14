@@ -87,7 +87,7 @@ export default function RegisterPage() {
       {/* Header */}
       <div className="px-6 py-5 flex items-center gap-3">
         <div className="w-8 h-8 rounded-lg bg-[#0b1629] flex items-center justify-center font-extrabold text-white text-sm">A</div>
-        <span className="font-semibold text-slate-900 text-sm">ATAABA Pilot</span>
+        <span className="font-semibold text-slate-900 text-sm">Action Pilot</span>
       </div>
 
       {/* Form container */}

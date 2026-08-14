@@ -54,7 +54,7 @@ export class ReportsService {
 
   private async generateExcel(type: ReportType, data: any[]): Promise<Buffer> {
     const workbook = new ExcelJS.Workbook();
-    workbook.creator = 'ATAABA Pilot';
+    workbook.creator = 'Action Pilot';
     workbook.created = new Date();
 
     if (type === ReportType.INDICATEURS) {

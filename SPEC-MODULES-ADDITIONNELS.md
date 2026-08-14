@@ -1,6 +1,6 @@
 # SPEC — Modules additionnels ActionPilot
 
-> **Base** : ActionPilot (ATAABA Pilot existant)  
+> **Base** : ActionPilot (Action Pilot existant)  
 > **Approche** : Extension modulaire — beaucoup existe déjà, on ajoute les nouveautés  
 > **Sources** : 2 cahiers des charges (Gestion Activités/Paiements + Planification/S&E/Capitalisation)
 

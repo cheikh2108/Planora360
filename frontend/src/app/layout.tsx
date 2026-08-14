@@ -6,7 +6,7 @@ import { Providers } from "@/components/providers";
 const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], weight: ["300","400","500","600","700","800"] });
 
 export const metadata: Metadata = {
-  title: "ATAABA Pilot",
+  title: "Action Pilot",
   description: "Plateforme de gestion des plans d'action",
 };
 

@@ -42,7 +42,7 @@ export default function SuperAdminDashboard() {
     <main className="px-4 md:px-8 py-8 space-y-8 max-w-6xl mx-auto">
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Vue d'ensemble</h1>
-        <p className="text-sm text-slate-500 mt-0.5">Tableau de bord de la plateforme ATAABA Pilot</p>
+        <p className="text-sm text-slate-500 mt-0.5">Tableau de bord de la plateforme Action Pilot</p>
       </div>
 
       {/* KPIs */}

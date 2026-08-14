@@ -135,7 +135,7 @@ export class AuthService {
     const otpAuthUrl = speakeasy.otpauthURL({
       secret: secret.base32,
       label: user.email,
-      issuer: 'ATAABA Pilot',
+      issuer: 'Action Pilot',
       encoding: 'base32',
     });
     const qrCode = await QRCode.toDataURL(otpAuthUrl);
