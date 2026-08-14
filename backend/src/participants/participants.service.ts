@@ -7,6 +7,29 @@ import * as XLSX from 'xlsx';
 export class ParticipantsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async create(dto: CreateParticipantDto, organizationId: string, userId: string) {
+    const activity = await this.prisma.activity.findFirst({
+      where: { id: dto.activityId, organizationId },
+    });
+
+    if (!activity) {
+      throw new NotFoundException('Activité non trouvée');
+    }
+
+    return this.prisma.participant.create({
+      data: {
+        firstName: dto.firstName,
+        lastName: dto.lastName,
+        phone: dto.phone,
+        paymentMode: dto.paymentMode,
+        amount: dto.amount,
+        activityId: dto.activityId,
+        organizationId,
+        createdBy: userId,
+      },
+    });
+  }
+
   async importFromExcel(
     file: Express.Multer.File,
     activityId: string,

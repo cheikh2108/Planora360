@@ -13,12 +13,18 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ParticipantsService } from './participants.service';
 import { ImportParticipantsDto } from './dto/import-participants.dto';
+import { CreateParticipantDto } from './dto/create-participant.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 
 @Controller('participants')
 @UseGuards(JwtAuthGuard)
 export class ParticipantsController {
   constructor(private readonly participantsService: ParticipantsService) {}
+
+  @Post()
+  async create(@Body() dto: CreateParticipantDto, @Request() req) {
+    return this.participantsService.create(dto, req.user.organizationId, req.user.sub);
+  }
 
   @Post('import')
   @UseInterceptors(FileInterceptor('file'))
