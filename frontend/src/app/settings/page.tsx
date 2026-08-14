@@ -12,7 +12,7 @@ import { Modal } from '@/components/ui/modal';
 import {
   Shield, Key, User, Bell, CheckCircle2, QrCode, CreditCard,
   Check, Zap, MessageSquare, Users, FolderKanban, ArrowRight, Star,
-  LayoutGrid, X, Palette,
+  LayoutGrid, X, Palette, XCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { SubscriptionPlan } from '@/lib/types';
@@ -281,6 +281,32 @@ function SubscriptionSection({ currentPlan }: { currentPlan: SubscriptionPlan })
   );
 }
 
+/* ─── Validation couleur ─────────────────────────────────────── */
+
+function isColorInvalid(hex: string): string | null {
+  if (hex.length !== 7 || !hex.startsWith('#')) return null;
+
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+
+  if (isNaN(r) || isNaN(g) || isNaN(b)) return null;
+
+  const luminosity = (r + g + b) / (3 * 255);
+  const maxDiff = Math.max(Math.abs(r - g), Math.abs(g - b), Math.abs(r - b));
+
+  // Trop sombre (noir)
+  if (luminosity < 0.15) return 'Les couleurs trop sombres rendent l\'interface illisible';
+
+  // Trop clair (blanc)
+  if (luminosity > 0.85) return 'Les couleurs trop claires rendent l\'interface illisible';
+
+  // Gris (désaturé)
+  if (maxDiff < 30) return 'Les couleurs grises rendent l\'interface illisible';
+
+  return null;
+}
+
 /* ─── Page principale ────────────────────────────────────────── */
 
 export default function SettingsPage() {
@@ -306,17 +332,27 @@ export default function SettingsPage() {
 
   const [brandColorLocal, setBrandColorLocal] = useState(user?.organization?.brandColor ?? '#2563eb');
   const [colorSaved, setColorSaved] = useState(false);
+  const [colorError, setColorError] = useState<string | null>(null);
 
   const { mutate: saveBrandColor, isPending: savingColor } = useMutation({
-    mutationFn: (color: string) => api.patch('/organizations/my/brand-color', { brandColor: color }),
+    mutationFn: (color: string) => {
+      const error = isColorInvalid(color);
+      if (error) throw new Error(error);
+      return api.patch('/organizations/my/brand-color', { brandColor: color });
+    },
     onSuccess: (_, color) => {
       setBrandColor(color);
       setColorSaved(true);
+      setColorError(null);
       setTimeout(() => setColorSaved(false), 2000);
+    },
+    onError: (error: Error) => {
+      setColorError(error.message);
+      setTimeout(() => setColorError(null), 4000);
     },
   });
 
-  const PRESET_COLORS = ['#2563eb','#7c3aed','#db2777','#dc2626','#ea580c','#16a34a','#0891b2','#0f172a','#64748b','#b45309'];
+  const PRESET_COLORS = ['#2563eb','#7c3aed','#db2777','#dc2626','#ea580c','#16a34a','#0891b2','#b45309'];
 
   const SECTION_CONFIG: Record<Section, { icon: React.ElementType; desc: string }> = {
     Profil:        { icon: User,       desc: 'Identité & informations' },
@@ -447,7 +483,10 @@ export default function SettingsPage() {
                         <button
                           key={c}
                           type="button"
-                          onClick={() => setBrandColorLocal(c)}
+                          onClick={() => {
+                            setBrandColorLocal(c);
+                            setColorError(null);
+                          }}
                           className={cn(
                             'w-8 h-8 rounded-full transition-all border-2',
                             brandColorLocal === c ? 'border-slate-700 scale-110 shadow-md' : 'border-transparent hover:scale-105'
@@ -467,19 +506,43 @@ export default function SettingsPage() {
                         <input
                           type="color"
                           value={brandColorLocal}
-                          onChange={e => setBrandColorLocal(e.target.value)}
+                          onChange={e => {
+                            const color = e.target.value;
+                            const error = isColorInvalid(color);
+                            if (!error) {
+                              setBrandColorLocal(color);
+                              setColorError(null);
+                            } else {
+                              setColorError(error);
+                            }
+                          }}
                           className="w-14 h-14 -translate-x-2 -translate-y-2 cursor-pointer"
                         />
                       </div>
                       <input
                         type="text"
                         value={brandColorLocal}
-                        onChange={e => /^#[0-9a-fA-F]{0,6}$/.test(e.target.value) && setBrandColorLocal(e.target.value)}
+                        onChange={e => {
+                          const value = e.target.value;
+                          if (/^#[0-9a-fA-F]{0,6}$/.test(value)) {
+                            setBrandColorLocal(value);
+                            if (value.length === 7) {
+                              const error = isColorInvalid(value);
+                              setColorError(error);
+                            }
+                          }
+                        }}
                         className="w-28 h-10 px-3 rounded-xl border border-slate-200 text-sm font-mono focus:outline-none"
                         maxLength={7}
                         placeholder="#2563eb"
                       />
                     </div>
+                    {colorError && (
+                      <p className="text-xs text-red-600 mt-2 flex items-center gap-1.5">
+                        <XCircle size={12} className="shrink-0" />
+                        {colorError}
+                      </p>
+                    )}
                   </div>
 
                   {/* Actions */}
@@ -487,13 +550,16 @@ export default function SettingsPage() {
                     <Button
                       loading={savingColor}
                       onClick={() => saveBrandColor(brandColorLocal)}
-                      disabled={brandColorLocal.length !== 7}
+                      disabled={brandColorLocal.length !== 7 || !!isColorInvalid(brandColorLocal)}
                     >
                       {colorSaved ? <><CheckCircle2 size={14} /> Enregistré</> : 'Appliquer'}
                     </Button>
                     <button
                       type="button"
-                      onClick={() => setBrandColorLocal(user?.organization?.brandColor ?? '#2563eb')}
+                      onClick={() => {
+                        setBrandColorLocal(user?.organization?.brandColor ?? '#2563eb');
+                        setColorError(null);
+                      }}
                       className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
                     >
                       Réinitialiser

@@ -2,17 +2,21 @@
 
 import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
-import { activitiesApi } from '@/lib/api';
-import type { Activity, ActivityStatus } from '@/lib/types';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { activitiesApi, plansApi } from '@/lib/api';
+import type { Activity, ActivityStatus, ActionPlan } from '@/lib/types';
 import { Pagination } from '@/components/ui/pagination';
 import { Header } from '@/components/layout/header';
+import { Button } from '@/components/ui/button';
+import { Modal } from '@/components/ui/modal';
+import { FormField, Input, Textarea, Select } from '@/components/ui/form-field';
+import { useToast } from '@/components/ui/toast';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDate, PRIORITY_LABELS, STATUS_LABELS, cn } from '@/lib/utils';
-import { CheckSquare, Search, Filter, Calendar, ChevronRight } from 'lucide-react';
+import { CheckSquare, Search, Filter, Calendar, ChevronRight, Plus } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip } from 'recharts';
 import Link from 'next/link';
 
@@ -50,6 +54,7 @@ function ActivitiesContent() {
   const [statusFilter, setStatusFilter] = useState<ActivityStatus | 'ALL'>('ALL');
   const [search, setSearch] = useState(searchParams.get('search') ?? '');
   const [page, setPage] = useState(1);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
 
   useEffect(() => {
     const q = searchParams.get('search');
@@ -103,7 +108,15 @@ function ActivitiesContent() {
 
   return (
     <div className="flex flex-col flex-1 min-h-0 overflow-auto">
-      <Header title="Activités" subtitle={`${displayTotal} activité${displayTotal > 1 ? 's' : ''}`} />
+      <Header
+        title="Activités"
+        subtitle={`${displayTotal} activité${displayTotal > 1 ? 's' : ''}`}
+        actions={
+          <Button icon={<Plus size={16} />} onClick={() => setCreateModalOpen(true)}>
+            Nouvelle activité
+          </Button>
+        }
+      />
       <main className="flex-1 px-4 md:px-6 py-6 space-y-5">
 
         {/* KPI strip + donut */}
@@ -286,7 +299,208 @@ function ActivitiesContent() {
           )}
         </div>
       </main>
+
+      <CreateActivityModal
+        open={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+      />
     </div>
+  );
+}
+
+function CreateActivityModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const qc = useQueryClient();
+  const toast = useToast();
+  const [form, setForm] = useState({
+    title: '',
+    description: '',
+    expectedResults: '',
+    priority: 'NORMALE',
+    startDate: '',
+    dueDate: '',
+    planId: '',
+    axisId: '',
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Charger les plans actifs
+  const { data: plansData } = useQuery({
+    queryKey: ['plans', 'active'],
+    queryFn: async () => {
+      const r = await plansApi.list({ limit: 100 });
+      const result = r.data as { data: ActionPlan[] };
+      return result.data.filter(p => p.status !== 'ARCHIVE' && p.status !== 'TERMINE');
+    },
+    enabled: open,
+  });
+  const plans = plansData ?? [];
+
+  // Plan sélectionné
+  const selectedPlan = plans.find(p => p.id === form.planId);
+  const axes = selectedPlan?.axes ?? [];
+
+  const { mutate: createActivity, isPending } = useMutation({
+    mutationFn: (data: Record<string, unknown>) => activitiesApi.create(data),
+    onSuccess: () => {
+      toast.success('Activité créée', 'La nouvelle activité a été ajoutée.');
+      qc.invalidateQueries({ queryKey: ['activities'] });
+      qc.invalidateQueries({ queryKey: ['activities-overview'] });
+      qc.invalidateQueries({ queryKey: ['plan', form.planId] });
+      onClose();
+      setForm({
+        title: '',
+        description: '',
+        expectedResults: '',
+        priority: 'NORMALE',
+        startDate: '',
+        dueDate: '',
+        planId: '',
+        axisId: '',
+      });
+      setErrors({});
+    },
+    onError: () => toast.error('Erreur', 'Impossible de créer l\'activité.'),
+  });
+
+  function validate() {
+    const e: Record<string, string> = {};
+    if (!form.title.trim()) e.title = 'Titre requis';
+    if (!form.planId) e.planId = 'Plan d\'action requis';
+    if (!form.axisId) e.axisId = 'Axe requis';
+
+    // Validation : échéance après date de début
+    if (form.startDate && form.dueDate && form.dueDate < form.startDate) {
+      e.dueDate = 'L\'échéance doit être après la date de début';
+    }
+
+    // Validation : dates dans la période du plan
+    if (selectedPlan) {
+      if (form.startDate && form.startDate < selectedPlan.periodStart) {
+        e.startDate = 'Date au plus tôt : ' + new Date(selectedPlan.periodStart).toLocaleDateString('fr-FR');
+      }
+      if (form.startDate && form.startDate > selectedPlan.periodEnd) {
+        e.startDate = 'Date au plus tard : ' + new Date(selectedPlan.periodEnd).toLocaleDateString('fr-FR');
+      }
+      if (form.dueDate && form.dueDate < selectedPlan.periodStart) {
+        e.dueDate = 'Échéance au plus tôt : ' + new Date(selectedPlan.periodStart).toLocaleDateString('fr-FR');
+      }
+      if (form.dueDate && form.dueDate > selectedPlan.periodEnd) {
+        e.dueDate = 'Échéance au plus tard : ' + new Date(selectedPlan.periodEnd).toLocaleDateString('fr-FR');
+      }
+    }
+
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!validate()) return;
+
+    // Ne pas envoyer planId au backend (seulement axisId)
+    const { planId, ...activityData } = form;
+
+    createActivity({
+      ...activityData,
+      startDate: form.startDate || undefined,
+      dueDate: form.dueDate || undefined,
+    });
+  }
+
+  const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const newValue = e.target.value;
+    setForm(f => {
+      const updated = { ...f, [k]: newValue };
+      // Reset axisId si le plan change
+      if (k === 'planId') updated.axisId = '';
+      return updated;
+    });
+    if (errors[k]) setErrors(err => ({ ...err, [k]: '' }));
+  };
+
+  return (
+    <Modal open={open} onClose={onClose} title="Nouvelle activité" size="lg">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Plan d'action */}
+        <FormField label="Plan d'action" required error={errors.planId}>
+          <Select value={form.planId} onChange={set('planId')} error={!!errors.planId}>
+            <option value="">Sélectionner un plan</option>
+            {plans.map(p => (
+              <option key={p.id} value={p.id}>
+                {p.title} ({new Date(p.periodStart).toLocaleDateString('fr-FR')} → {new Date(p.periodEnd).toLocaleDateString('fr-FR')})
+              </option>
+            ))}
+          </Select>
+        </FormField>
+
+        {/* Axe */}
+        <FormField label="Axe stratégique" required error={errors.axisId}>
+          <Select value={form.axisId} onChange={set('axisId')} disabled={!form.planId} error={!!errors.axisId}>
+            <option value="">Sélectionner un axe</option>
+            {axes.map(a => (
+              <option key={a.id} value={a.id}>
+                {a.title}
+              </option>
+            ))}
+          </Select>
+        </FormField>
+
+        {/* Titre */}
+        <FormField label="Titre" required error={errors.title}>
+          <Input value={form.title} onChange={set('title')} placeholder="Titre de l'activité" error={!!errors.title} />
+        </FormField>
+
+        {/* Description */}
+        <FormField label="Description">
+          <Textarea value={form.description} onChange={set('description')} rows={2} placeholder="Description..." />
+        </FormField>
+
+        {/* Résultats attendus */}
+        <FormField label="Résultats attendus">
+          <Textarea value={form.expectedResults} onChange={set('expectedResults')} rows={2} placeholder="Quels résultats concrets sont attendus ?" />
+        </FormField>
+
+        {/* Priorité */}
+        <FormField label="Priorité">
+          <Select value={form.priority} onChange={set('priority')}>
+            <option value="BASSE">Basse</option>
+            <option value="NORMALE">Normale</option>
+            <option value="HAUTE">Haute</option>
+            <option value="CRITIQUE">Critique</option>
+          </Select>
+        </FormField>
+
+        {/* Dates */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <FormField label="Date de début" error={errors.startDate}>
+            <Input
+              type="date"
+              value={form.startDate}
+              onChange={set('startDate')}
+              min={selectedPlan?.periodStart}
+              max={selectedPlan?.periodEnd}
+              error={!!errors.startDate}
+            />
+          </FormField>
+          <FormField label="Échéance" error={errors.dueDate}>
+            <Input
+              type="date"
+              value={form.dueDate}
+              onChange={set('dueDate')}
+              min={selectedPlan?.periodStart}
+              max={selectedPlan?.periodEnd}
+              error={!!errors.dueDate}
+            />
+          </FormField>
+        </div>
+
+        {/* Actions */}
+        <div className="flex justify-end gap-3 pt-2">
+          <Button type="button" variant="secondary" onClick={onClose}>Annuler</Button>
+          <Button type="submit" loading={isPending}>Créer l'activité</Button>
+        </div>
+      </form>
+    </Modal>
   );
 }
 

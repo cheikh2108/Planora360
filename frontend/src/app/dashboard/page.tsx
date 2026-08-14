@@ -325,7 +325,11 @@ export default function DashboardPage() {
         completionRate:     d.activities?.avgCompletionRate ?? d.completionRate   ?? 0,
         byStatus:           d.byStatus                   ?? {},
         budgetPlanned:      d.budget?.planned             ?? d.budgetPlanned      ?? 0,
+        budgetCommitted:    d.budget?.committed           ?? d.budgetCommitted    ?? 0,
         budgetExecuted:     d.budget?.executed            ?? d.budgetExecuted     ?? 0,
+        availableBalance:   d.budget?.availableBalance    ?? d.availableBalance   ?? 0,
+        remainingToPay:     d.budget?.remainingToPay      ?? d.remainingToPay     ?? 0,
+        commitmentRate:     d.budget?.commitmentRate      ?? d.commitmentRate     ?? 0,
         executionRate:      d.budget?.executionRate       ?? d.executionRate      ?? 0,
         upcomingDeadlines:  d.upcomingDeadlines           ?? [],
         recentAudit:        d.recentAuditLogs             ?? d.recentAudit        ?? [],
@@ -446,7 +450,11 @@ export default function DashboardPage() {
               <Wallet size={16} className="text-blue-500" />
             </div>
             {loadingOverview ? <div className="h-24 bg-slate-100 rounded-xl animate-pulse" /> : (
-              <BudgetChart planned={overview?.budgetPlanned ?? 0} executed={overview?.budgetExecuted ?? 0} />
+              <BudgetChart
+                planned={overview?.budgetPlanned ?? 0}
+                committed={overview?.budgetCommitted ?? 0}
+                executed={overview?.budgetExecuted ?? 0}
+              />
             )}
           </div>
 
@@ -640,22 +648,34 @@ export default function DashboardPage() {
                 Voir le détail <BarChart3 size={11} />
               </Link>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-white/[0.06]">
-              <div className="px-5 md:px-6 py-5">
-                <p className="text-[10px] uppercase tracking-widest text-white/30 mb-2">Budget prévu</p>
-                <p className="text-xl font-bold tabular-nums">{formatCurrency(overview.budgetPlanned)}</p>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 divide-y md:divide-y-0 md:divide-x divide-white/[0.06]">
+              <div className="px-4 md:px-5 py-4">
+                <p className="text-[10px] uppercase tracking-widest text-white/30 mb-2">Prévu</p>
+                <p className="text-xl md:text-2xl font-bold tabular-nums">{formatCurrency(overview.budgetPlanned)}</p>
               </div>
-              <div className="px-5 md:px-6 py-5">
-                <p className="text-[10px] uppercase tracking-widest text-white/30 mb-2">Budget exécuté</p>
-                <p className="text-xl font-bold tabular-nums text-emerald-400">{formatCurrency(overview.budgetExecuted)}</p>
+              <div className="px-4 md:px-5 py-4">
+                <p className="text-[10px] uppercase tracking-widest text-white/30 mb-2">Engagé</p>
+                <p className="text-xl md:text-2xl font-bold tabular-nums text-blue-400">{formatCurrency(overview.budgetCommitted)}</p>
+                <p className="text-[10px] text-white/20 mt-1">{overview.commitmentRate}%</p>
               </div>
-              <div className="px-5 md:px-6 py-5">
-                <p className="text-[10px] uppercase tracking-widest text-white/30 mb-2">Solde disponible</p>
-                <p className="text-xl font-bold tabular-nums text-blue-300">{formatCurrency((overview.budgetPlanned ?? 0) - (overview.budgetExecuted ?? 0))}</p>
+              <div className="px-4 md:px-5 py-4">
+                <p className="text-[10px] uppercase tracking-widest text-white/30 mb-2">Disponible</p>
+                <p className="text-xl md:text-2xl font-bold tabular-nums text-indigo-400">{formatCurrency(overview.availableBalance)}</p>
+                <p className="text-[10px] text-white/20 mt-1">Prévu - Engagé</p>
               </div>
-              <div className="px-5 md:px-6 py-5">
-                <p className="text-[10px] uppercase tracking-widest text-white/30 mb-2">Taux d'exécution</p>
-                <p className="text-xl font-bold tabular-nums text-amber-300">{overview.executionRate}%</p>
+              <div className="px-4 md:px-5 py-4">
+                <p className="text-[10px] uppercase tracking-widest text-white/30 mb-2">Exécuté</p>
+                <p className="text-xl md:text-2xl font-bold tabular-nums text-emerald-400">{formatCurrency(overview.budgetExecuted)}</p>
+                <p className="text-[10px] text-white/20 mt-1">{overview.executionRate}%</p>
+              </div>
+              <div className="px-4 md:px-5 py-4">
+                <p className="text-[10px] uppercase tracking-widest text-white/30 mb-2">Reste à payer</p>
+                <p className="text-xl md:text-2xl font-bold tabular-nums text-orange-400">{formatCurrency(overview.remainingToPay)}</p>
+                <p className="text-[10px] text-white/20 mt-1">Engagé - Exécuté</p>
+              </div>
+              <div className="px-4 md:px-5 py-4">
+                <p className="text-[10px] uppercase tracking-widest text-white/30 mb-2">Taux exéc.</p>
+                <p className="text-xl md:text-2xl font-bold tabular-nums text-amber-300">{overview.executionRate}%</p>
               </div>
             </div>
           </section>

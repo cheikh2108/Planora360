@@ -102,7 +102,7 @@ export function NotificationsDropdown() {
             {/* Header */}
             <div className="flex items-center justify-between px-4 pt-4 pb-3">
               <div className="flex items-center gap-2">
-                <Bell size={14} className="text-slate-400" />
+                <Bell size={14} className="text-slate-300" />
                 <span className="text-sm font-bold text-white tracking-[-0.01em]">Notifications</span>
                 {unread > 0 && (
                   <span className="text-[9px] font-bold bg-red-500 text-white px-1.5 py-0.5 rounded-full leading-none">
@@ -113,7 +113,7 @@ export function NotificationsDropdown() {
               {unread > 0 && (
                 <button
                   onClick={markAllRead}
-                  className="flex items-center gap-1 text-[11px] font-medium text-slate-500 hover:text-white transition-colors"
+                  className="flex items-center gap-1 text-[11px] font-medium text-slate-300 hover:text-white transition-colors"
                 >
                   <CheckCheck size={12} />
                   Tout lire
@@ -129,9 +129,9 @@ export function NotificationsDropdown() {
               {entries.length === 0 ? (
                 <div className="py-12 text-center">
                   <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-3">
-                    <Bell size={18} className="text-slate-600" />
+                    <Bell size={18} className="text-slate-400" />
                   </div>
-                  <p className="text-sm font-medium text-slate-500">Aucune notification</p>
+                  <p className="text-sm font-medium text-slate-300">Aucune notification</p>
                 </div>
               ) : (
                 <div className="py-1">
@@ -170,17 +170,17 @@ export function NotificationsDropdown() {
                           <div className="flex items-baseline justify-between gap-2">
                             <p className={cn(
                               'text-xs leading-snug truncate',
-                              isRead ? 'font-medium text-slate-400' : 'font-semibold text-white'
+                              isRead ? 'font-medium text-slate-300' : 'font-semibold text-white'
                             )}>
                               {humanAction(entry.action)}
                             </p>
-                            <span className="text-[10px] text-slate-600 shrink-0 tabular-nums">
+                            <span className="text-[10px] text-slate-400 shrink-0 tabular-nums">
                               {relativeTime(entry.createdAt)}
                             </span>
                           </div>
                           {(target || actor) && (
-                            <p className="text-[11px] text-slate-600 mt-0.5 truncate">
-                              {target ? <><span className="text-slate-400 font-medium">{target}</span> · </> : ''}{actor}
+                            <p className="text-[11px] text-slate-400 mt-0.5 truncate">
+                              {target ? <><span className="text-slate-300 font-medium">{target}</span> · </> : ''}{actor}
                             </p>
                           )}
                         </div>
@@ -201,7 +201,7 @@ export function NotificationsDropdown() {
             <Link
               href="/notifications"
               onClick={() => setOpen(false)}
-              className="flex items-center justify-center gap-1.5 py-3 text-xs font-semibold text-slate-500 hover:text-white hover:bg-white/5 transition-colors"
+              className="flex items-center justify-center gap-1.5 py-3 text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/5 transition-colors"
             >
               Voir toute l'activité →
             </Link>

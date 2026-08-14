@@ -22,13 +22,16 @@ export class RolesGuard implements CanActivate {
     const { user } = context.switchToHttp().getRequest();
     if (!user) throw new ForbiddenException();
 
+    // Super Admin avec permission wildcard "*" a accès à tout
+    const userPermissions: string[] = user.role?.permissions ?? [];
+    if (userPermissions.includes('*')) return true;
+
     if (requiredRoles?.length) {
       const hasRole = requiredRoles.includes(user.role?.name);
       if (!hasRole) throw new ForbiddenException('Rôle insuffisant');
     }
 
     if (requiredPermissions?.length) {
-      const userPermissions: string[] = user.role?.permissions ?? [];
       const hasAll = requiredPermissions.every((p) =>
         userPermissions.includes(p),
       );

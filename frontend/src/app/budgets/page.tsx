@@ -20,6 +20,9 @@ interface BudgetSummary {
   totalDisbursed: number;
   totalExecuted: number;
   executionRate: number;
+  commitmentRate: number;
+  availableBalance: number;
+  remainingToPay: number;
   byActivity: {
     activityId: string;
     title: string;
@@ -134,30 +137,42 @@ export default function BudgetsPage() {
         ) : (
           <>
             {/* KPI Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-4">
               {/* Budget prévu — dark card */}
               <div className="bg-[#0f1e38] text-white rounded-2xl p-3 md:p-5 flex flex-col gap-1">
                 <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-widest text-white/50">Budget prévu</p>
-                <p className="text-2xl md:text-4xl font-bold tabular-nums leading-none mt-1">{fmt(summary.totalPlanned)}</p>
-                <p className="text-[11px] md:text-xs text-white/40 mt-1">Enveloppe globale</p>
+                <p className="text-2xl md:text-3xl font-bold tabular-nums leading-none mt-1">{fmt(summary.totalPlanned)}</p>
+                <p className="text-[11px] md:text-xs text-white/40 mt-1">Enveloppe</p>
               </div>
 
               {/* Budget engagé */}
               <div className="bg-white rounded-2xl border border-slate-200 p-3 md:p-5 flex flex-col gap-1">
-                <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-widest text-slate-400">Budget engagé</p>
-                <p className="text-2xl md:text-4xl font-bold tabular-nums text-blue-600 leading-none mt-1">{fmt(summary.totalCommitted)}</p>
+                <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-widest text-slate-400">Engagé</p>
+                <p className="text-2xl md:text-3xl font-bold tabular-nums text-blue-600 leading-none mt-1">{fmt(summary.totalCommitted)}</p>
                 <p className="text-[11px] md:text-xs text-slate-400 mt-1">
-                  {summary.totalPlanned > 0
-                    ? `${Math.round((summary.totalCommitted / summary.totalPlanned) * 100)}% du prévu`
-                    : '—'}
+                  {summary.commitmentRate}% du prévu
                 </p>
+              </div>
+
+              {/* Solde disponible */}
+              <div className="bg-white rounded-2xl border border-slate-200 p-3 md:p-5 flex flex-col gap-1">
+                <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-widest text-slate-400">Disponible</p>
+                <p className="text-2xl md:text-3xl font-bold tabular-nums text-indigo-600 leading-none mt-1">{fmt(summary.availableBalance)}</p>
+                <p className="text-[11px] md:text-xs text-slate-400 mt-1">Peut encore engager</p>
               </div>
 
               {/* Budget exécuté */}
               <div className="bg-white rounded-2xl border border-slate-200 p-3 md:p-5 flex flex-col gap-1">
-                <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-widest text-slate-400">Budget exécuté</p>
-                <p className="text-2xl md:text-4xl font-bold tabular-nums text-green-600 leading-none mt-1">{fmt(summary.totalExecuted)}</p>
-                <p className="text-[11px] md:text-xs text-slate-400 mt-1">Dépenses effectives</p>
+                <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-widest text-slate-400">Exécuté</p>
+                <p className="text-2xl md:text-3xl font-bold tabular-nums text-green-600 leading-none mt-1">{fmt(summary.totalExecuted)}</p>
+                <p className="text-[11px] md:text-xs text-slate-400 mt-1">{rate}% du prévu</p>
+              </div>
+
+              {/* Reste à payer */}
+              <div className="bg-white rounded-2xl border border-slate-200 p-3 md:p-5 flex flex-col gap-1">
+                <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-widest text-slate-400">Reste à payer</p>
+                <p className="text-2xl md:text-3xl font-bold tabular-nums text-orange-600 leading-none mt-1">{fmt(summary.remainingToPay)}</p>
+                <p className="text-[11px] md:text-xs text-slate-400 mt-1">Engagé non payé</p>
               </div>
 
               {/* Taux d'exécution */}
@@ -168,19 +183,20 @@ export default function BudgetsPage() {
                                       'bg-amber-50 border-amber-200'
               )}>
                 <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Taux d'exécution</p>
+                  <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-widest text-slate-400">Taux</p>
                   {trend === 'up'
-                    ? <TrendingUp size={16} className="text-green-500" />
+                    ? <TrendingUp size={14} className="text-green-500" />
                     : trend === 'down'
-                    ? <TrendingDown size={16} className="text-red-500" />
-                    : <Minus size={16} className="text-amber-500" />}
+                    ? <TrendingDown size={14} className="text-red-500" />
+                    : <Minus size={14} className="text-amber-500" />}
                 </div>
                 <p className={cn(
-                  'text-2xl md:text-4xl font-bold tabular-nums leading-none mt-1',
+                  'text-2xl md:text-3xl font-bold tabular-nums leading-none mt-1',
                   trend === 'up' ? 'text-green-700' : trend === 'down' ? 'text-red-700' : 'text-amber-700'
                 )}>
                   {rate}%
                 </p>
+                <p className="text-[11px] md:text-xs text-slate-400 mt-1">Exécution</p>
               </div>
             </div>
 

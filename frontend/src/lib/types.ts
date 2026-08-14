@@ -199,7 +199,11 @@ export interface DashboardOverview {
   byStatus: Partial<Record<ActivityStatus, number>>;
   completionRate: number;
   budgetPlanned: number;
+  budgetCommitted: number;
   budgetExecuted: number;
+  availableBalance: number;
+  remainingToPay: number;
+  commitmentRate: number;
   executionRate: number;
   pendingValidations: number;
   overdueActivities: number;

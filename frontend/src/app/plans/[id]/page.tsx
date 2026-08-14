@@ -19,7 +19,13 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/toast';
 
-function AxisSection({ axis, planId, readonly }: { axis: Axis; planId: string; readonly?: boolean }) {
+function AxisSection({ axis, planId, planPeriodStart, planPeriodEnd, readonly }: {
+  axis: Axis;
+  planId: string;
+  planPeriodStart: string;
+  planPeriodEnd: string;
+  readonly?: boolean;
+}) {
   const [open, setOpen] = useState(true);
   const [addActivityOpen, setAddActivityOpen] = useState(false);
   const qc = useQueryClient();
@@ -100,36 +106,72 @@ function AxisSection({ axis, planId, readonly }: { axis: Axis; planId: string; r
         onClose={() => setAddActivityOpen(false)}
         onCreate={createActivity}
         loading={isPending}
+        planPeriodStart={planPeriodStart}
+        planPeriodEnd={planPeriodEnd}
       />
     </div>
   );
 }
 
 function AddActivityModal({
-  open, onClose, onCreate, loading
+  open, onClose, onCreate, loading, planPeriodStart, planPeriodEnd
 }: {
   open: boolean; onClose: () => void;
   onCreate: (data: Record<string, unknown>) => void;
   loading: boolean;
+  planPeriodStart: string;
+  planPeriodEnd: string;
 }) {
   const [form, setForm] = useState({
     title: '', description: '', expectedResults: '', priority: 'NORMALE', startDate: '', dueDate: '',
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  function validate() {
+    const e: Record<string, string> = {};
+    if (!form.title.trim()) e.title = 'Titre requis';
+
+    // Validation : échéance après date de début
+    if (form.startDate && form.dueDate && form.dueDate < form.startDate) {
+      e.dueDate = 'L\'échéance doit être après la date de début';
+    }
+
+    // Validation : date de début dans la période du plan
+    if (form.startDate && form.startDate < planPeriodStart) {
+      e.startDate = 'Date au plus tôt : ' + new Date(planPeriodStart).toLocaleDateString('fr-FR');
+    }
+    if (form.startDate && form.startDate > planPeriodEnd) {
+      e.startDate = 'Date au plus tard : ' + new Date(planPeriodEnd).toLocaleDateString('fr-FR');
+    }
+
+    // Validation : échéance dans la période du plan
+    if (form.dueDate && form.dueDate < planPeriodStart) {
+      e.dueDate = 'Échéance au plus tôt : ' + new Date(planPeriodStart).toLocaleDateString('fr-FR');
+    }
+    if (form.dueDate && form.dueDate > planPeriodEnd) {
+      e.dueDate = 'Échéance au plus tard : ' + new Date(planPeriodEnd).toLocaleDateString('fr-FR');
+    }
+
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.title.trim()) return;
+    if (!validate()) return;
     onCreate({ ...form, startDate: form.startDate || undefined, dueDate: form.dueDate || undefined });
   }
 
-  const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+  const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm(f => ({ ...f, [k]: e.target.value }));
+    if (errors[k]) setErrors(e => ({ ...e, [k]: '' }));
+  };
 
   return (
     <Modal open={open} onClose={onClose} title="Nouvelle activité" size="md">
       <form onSubmit={handleSubmit} className="space-y-4">
-        <FormField label="Titre" required>
-          <Input value={form.title} onChange={set('title')} placeholder="Titre de l'activité" />
+        <FormField label="Titre" required error={errors.title}>
+          <Input value={form.title} onChange={set('title')} placeholder="Titre de l'activité" error={!!errors.title} />
         </FormField>
         <FormField label="Description">
           <Textarea value={form.description} onChange={set('description')} rows={2} placeholder="Description..." />
@@ -146,11 +188,25 @@ function AddActivityModal({
           </Select>
         </FormField>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <FormField label="Date de début">
-            <Input type="date" value={form.startDate} onChange={set('startDate')} />
+          <FormField label="Date de début" error={errors.startDate}>
+            <Input
+              type="date"
+              value={form.startDate}
+              onChange={set('startDate')}
+              min={planPeriodStart}
+              max={planPeriodEnd}
+              error={!!errors.startDate}
+            />
           </FormField>
-          <FormField label="Échéance">
-            <Input type="date" value={form.dueDate} onChange={set('dueDate')} />
+          <FormField label="Échéance" error={errors.dueDate}>
+            <Input
+              type="date"
+              value={form.dueDate}
+              onChange={set('dueDate')}
+              min={planPeriodStart}
+              max={planPeriodEnd}
+              error={!!errors.dueDate}
+            />
           </FormField>
         </div>
         <div className="flex justify-end gap-3 pt-2">
@@ -326,7 +382,14 @@ export default function PlanDetailPage() {
         ) : (
           <div className="space-y-4">
             {plan.axes?.map(axis => (
-              <AxisSection key={axis.id} axis={axis} planId={id} readonly={isLocked} />
+              <AxisSection
+                key={axis.id}
+                axis={axis}
+                planId={id}
+                planPeriodStart={plan.periodStart}
+                planPeriodEnd={plan.periodEnd}
+                readonly={isLocked}
+              />
             ))}
           </div>
         )}

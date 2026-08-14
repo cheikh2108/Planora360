@@ -42,6 +42,8 @@ export default function ActivityDetailPage() {
   const [tab, setTab] = useState<Tab>('Checklist');
   const [addItemOpen, setAddItemOpen] = useState(false);
   const [addBudgetOpen, setAddBudgetOpen] = useState(false);
+  const [recordCommittedOpen, setRecordCommittedOpen] = useState(false);
+  const [recordExecutedOpen, setRecordExecutedOpen] = useState(false);
   const [validateOpen, setValidateOpen] = useState(false);
 
   const { data: activity, isLoading } = useQuery<Activity>({
@@ -118,8 +120,11 @@ export default function ActivityDetailPage() {
   const canSubmit = activity.status === 'TERMINEE' && activity.completionRate >= 100;
 
   const totalBudgetPlanned = budgets.reduce((s, b) => s + b.planned, 0);
+  const totalBudgetCommitted = budgets.reduce((s, b) => s + b.committed, 0);
   const totalBudgetExecuted = budgets.reduce((s, b) => s + b.executed, 0);
   const budgetRate = totalBudgetPlanned > 0 ? Math.round((totalBudgetExecuted / totalBudgetPlanned) * 100) : 0;
+  const availableBalance = totalBudgetPlanned - totalBudgetCommitted;
+  const remainingToPay = totalBudgetCommitted - totalBudgetExecuted;
 
   const validationList = Array.isArray(validations) ? validations : [];
   const lastValidation = validationList[validationList.length - 1];
@@ -268,9 +273,14 @@ export default function ActivityDetailPage() {
           <BudgetTab
             budgets={budgets}
             totalPlanned={totalBudgetPlanned}
+            totalCommitted={totalBudgetCommitted}
             totalExecuted={totalBudgetExecuted}
+            availableBalance={availableBalance}
+            remainingToPay={remainingToPay}
             rate={budgetRate}
             onAdd={() => setAddBudgetOpen(true)}
+            onRecordCommitted={() => setRecordCommittedOpen(true)}
+            onRecordExecuted={() => setRecordExecutedOpen(true)}
             isLocked={isLocked}
           />
         )}
@@ -282,6 +292,8 @@ export default function ActivityDetailPage() {
 
       <AddChecklistItemModal open={addItemOpen} onClose={() => setAddItemOpen(false)} activityId={id} />
       <AddBudgetModal open={addBudgetOpen} onClose={() => setAddBudgetOpen(false)} activityId={id} />
+      <RecordCommittedBudgetModal open={recordCommittedOpen} onClose={() => setRecordCommittedOpen(false)} activityId={id} budgets={budgets} />
+      <RecordExecutedBudgetModal open={recordExecutedOpen} onClose={() => setRecordExecutedOpen(false)} activityId={id} budgets={budgets} />
       <ValidateModal open={validateOpen} onClose={() => setValidateOpen(false)} activityId={id} lastStep={lastValidation?.step} />
     </div>
   );
@@ -464,30 +476,78 @@ function ValidationTab({
 }
 
 function BudgetTab({
-  budgets, totalPlanned, totalExecuted, rate, onAdd, isLocked,
+  budgets, totalPlanned, totalCommitted, totalExecuted, availableBalance, remainingToPay, rate, onAdd, onRecordCommitted, onRecordExecuted, isLocked,
 }: {
   budgets: Budget[];
   totalPlanned: number;
+  totalCommitted: number;
   totalExecuted: number;
+  availableBalance: number;
+  remainingToPay: number;
   rate: number;
   onAdd: () => void;
+  onRecordCommitted: () => void;
+  onRecordExecuted: () => void;
   isLocked: boolean;
 }) {
   return (
     <div className="space-y-5">
-      {/* Summary */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: 'Budget prévu', value: formatCurrency(totalPlanned), color: 'text-slate-900' },
-          { label: 'Budget exécuté', value: formatCurrency(totalExecuted), color: 'text-green-600' },
-          { label: 'Solde disponible', value: formatCurrency(totalPlanned - totalExecuted), color: 'text-blue-600' },
-          { label: "Taux d'exécution", value: `${rate}%`, color: rate >= 80 ? 'text-green-600' : rate >= 50 ? 'text-amber-600' : 'text-red-600' },
-        ].map(s => (
-          <div key={s.label} className="bg-white rounded-2xl border border-slate-200 p-4">
-            <p className="text-xs text-slate-500 mb-1">{s.label}</p>
-            <p className={cn('text-lg font-bold', s.color)}>{s.value}</p>
-          </div>
-        ))}
+      {/* Action buttons */}
+      {!isLocked && budgets.length > 0 && (
+        <div className="flex flex-wrap gap-3">
+          <Button
+            size="sm"
+            variant="secondary"
+            icon={<Wallet size={14} />}
+            onClick={onRecordCommitted}
+          >
+            Enregistrer budget engagé
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            icon={<FileTextIcon size={14} />}
+            onClick={onRecordExecuted}
+          >
+            Enregistrer budget exécuté
+          </Button>
+        </div>
+      )}
+
+      {/* Summary - Logique en cascade */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="bg-[#0f1e38] text-white rounded-2xl p-4">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-white/50 mb-1">Prévu</p>
+          <p className="text-xl font-bold tabular-nums">{formatCurrency(totalPlanned)}</p>
+        </div>
+        <div className="bg-white rounded-2xl border border-slate-200 p-4">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">Engagé</p>
+          <p className="text-xl font-bold tabular-nums text-blue-600">{formatCurrency(totalCommitted)}</p>
+        </div>
+        <div className="bg-white rounded-2xl border border-slate-200 p-4">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">Disponible</p>
+          <p className="text-xl font-bold tabular-nums text-indigo-600">{formatCurrency(availableBalance)}</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">Prévu - Engagé</p>
+        </div>
+        <div className="bg-white rounded-2xl border border-slate-200 p-4">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">Exécuté</p>
+          <p className="text-xl font-bold tabular-nums text-green-600">{formatCurrency(totalExecuted)}</p>
+        </div>
+        <div className="bg-white rounded-2xl border border-slate-200 p-4">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">Reste à payer</p>
+          <p className="text-xl font-bold tabular-nums text-orange-600">{formatCurrency(remainingToPay)}</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">Engagé - Exécuté</p>
+        </div>
+        <div className={cn(
+          'rounded-2xl border p-4',
+          rate >= 80 ? 'bg-green-50 border-green-200' : rate >= 50 ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'
+        )}>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">Taux exéc.</p>
+          <p className={cn(
+            'text-xl font-bold tabular-nums',
+            rate >= 80 ? 'text-green-700' : rate >= 50 ? 'text-amber-700' : 'text-red-700'
+          )}>{rate}%</p>
+        </div>
       </div>
 
       {/* Budget lines */}
@@ -782,6 +842,339 @@ function ValidateModal({ open, onClose, activityId, lastStep }: {
             icon={form.decision === 'APPROUVE' ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
           >
             {form.decision === 'APPROUVE' ? 'Approuver' : 'Rejeter'}
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function RecordCommittedBudgetModal({
+  open, onClose, activityId, budgets,
+}: {
+  open: boolean;
+  onClose: () => void;
+  activityId: string;
+  budgets: Budget[];
+}) {
+  const qc = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const toast = useToast();
+  const [selectedBudgetId, setSelectedBudgetId] = useState('');
+  const [amount, setAmount] = useState('');
+  const [files, setFiles] = useState<File[]>([]);
+  const [uploadingDocs, setUploadingDocs] = useState(false);
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: async () => {
+      if (!selectedBudgetId || !amount) throw new Error('Champs requis');
+
+      const budget = budgets.find(b => b.id === selectedBudgetId);
+      if (!budget) throw new Error('Budget introuvable');
+
+      // 1. Mettre à jour le budget
+      await budgetsApi.update(selectedBudgetId, {
+        committed: Number(budget.committed) + Number(amount),
+      });
+
+      // 2. Uploader les documents justificatifs si présents
+      if (files.length > 0) {
+        setUploadingDocs(true);
+        for (const file of files) {
+          const fd = new FormData();
+          fd.append('file', file);
+          fd.append('type', 'ENGAGEMENT');
+          fd.append('activityId', activityId);
+          await (await import('@/lib/api')).default.post('/documents/upload', fd, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
+        }
+      }
+    },
+    onSuccess: () => {
+      toast.success('Budget engagé enregistré', 'Les documents justificatifs ont été ajoutés.');
+      qc.invalidateQueries({ queryKey: ['budgets', activityId] });
+      qc.invalidateQueries({ queryKey: ['documents-activity', activityId] });
+      onClose();
+      setSelectedBudgetId('');
+      setAmount('');
+      setFiles([]);
+      setUploadingDocs(false);
+    },
+    onError: () => {
+      toast.error('Erreur', 'Impossible d\'enregistrer le budget engagé.');
+      setUploadingDocs(false);
+    },
+  });
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    if (e.target.files) {
+      setFiles(Array.from(e.target.files));
+    }
+  }
+
+  function removeFile(index: number) {
+    setFiles(files.filter((_, i) => i !== index));
+  }
+
+  return (
+    <Modal open={open} onClose={onClose} title="Enregistrer budget engagé" size="md">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          mutate();
+        }}
+        className="space-y-4"
+      >
+        <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+          <p className="text-sm text-blue-800">
+            <strong>Budget engagé</strong> : montant réservé ou contractuellement engagé pour cette activité.
+          </p>
+        </div>
+
+        <FormField label="Ligne budgétaire" required>
+          <Select
+            value={selectedBudgetId}
+            onChange={(e) => setSelectedBudgetId(e.target.value)}
+            required
+          >
+            <option value="">Sélectionner une ligne</option>
+            {budgets.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.fundingSource || 'Non spécifié'} - Prévu: {formatCurrency(b.planned)}
+              </option>
+            ))}
+          </Select>
+        </FormField>
+
+        <FormField label="Montant engagé (FCFA)" required>
+          <Input
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="0"
+            min="0"
+            step="0.01"
+            required
+          />
+        </FormField>
+
+        <FormField label="Documents justificatifs">
+          <input
+            ref={fileInputRef}
+            type="file"
+            onChange={handleFileChange}
+            multiple
+            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+            className="hidden"
+          />
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            icon={<Upload size={14} />}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            Ajouter des fichiers
+          </Button>
+          {files.length > 0 && (
+            <div className="mt-2 space-y-2">
+              {files.map((file, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2 text-sm"
+                >
+                  <span className="text-slate-700 truncate">{file.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeFile(idx)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <XCircle size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </FormField>
+
+        <div className="flex justify-end gap-3">
+          <Button type="button" variant="secondary" onClick={onClose}>
+            Annuler
+          </Button>
+          <Button
+            type="submit"
+            loading={isPending || uploadingDocs}
+            disabled={!selectedBudgetId || !amount}
+          >
+            Enregistrer
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function RecordExecutedBudgetModal({
+  open, onClose, activityId, budgets,
+}: {
+  open: boolean;
+  onClose: () => void;
+  activityId: string;
+  budgets: Budget[];
+}) {
+  const qc = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const toast = useToast();
+  const [selectedBudgetId, setSelectedBudgetId] = useState('');
+  const [amount, setAmount] = useState('');
+  const [files, setFiles] = useState<File[]>([]);
+  const [uploadingDocs, setUploadingDocs] = useState(false);
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: async () => {
+      if (!selectedBudgetId || !amount) throw new Error('Champs requis');
+
+      const budget = budgets.find(b => b.id === selectedBudgetId);
+      if (!budget) throw new Error('Budget introuvable');
+
+      // 1. Mettre à jour le budget
+      await budgetsApi.update(selectedBudgetId, {
+        executed: Number(budget.executed) + Number(amount),
+      });
+
+      // 2. Uploader les documents justificatifs (factures, etc.) si présents
+      if (files.length > 0) {
+        setUploadingDocs(true);
+        for (const file of files) {
+          const fd = new FormData();
+          fd.append('file', file);
+          fd.append('type', 'FACTURE');
+          fd.append('activityId', activityId);
+          await (await import('@/lib/api')).default.post('/documents/upload', fd, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
+        }
+      }
+    },
+    onSuccess: () => {
+      toast.success('Budget exécuté enregistré', 'Les factures et justificatifs ont été ajoutés.');
+      qc.invalidateQueries({ queryKey: ['budgets', activityId] });
+      qc.invalidateQueries({ queryKey: ['documents-activity', activityId] });
+      onClose();
+      setSelectedBudgetId('');
+      setAmount('');
+      setFiles([]);
+      setUploadingDocs(false);
+    },
+    onError: () => {
+      toast.error('Erreur', 'Impossible d\'enregistrer le budget exécuté.');
+      setUploadingDocs(false);
+    },
+  });
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    if (e.target.files) {
+      setFiles(Array.from(e.target.files));
+    }
+  }
+
+  function removeFile(index: number) {
+    setFiles(files.filter((_, i) => i !== index));
+  }
+
+  return (
+    <Modal open={open} onClose={onClose} title="Enregistrer budget exécuté" size="md">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          mutate();
+        }}
+        className="space-y-4"
+      >
+        <div className="bg-green-50 border border-green-100 rounded-xl px-4 py-3">
+          <p className="text-sm text-green-800">
+            <strong>Budget exécuté</strong> : dépenses effectivement réalisées avec justificatifs
+            (factures, reçus, etc.).
+          </p>
+        </div>
+
+        <FormField label="Ligne budgétaire" required>
+          <Select
+            value={selectedBudgetId}
+            onChange={(e) => setSelectedBudgetId(e.target.value)}
+            required
+          >
+            <option value="">Sélectionner une ligne</option>
+            {budgets.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.fundingSource || 'Non spécifié'} - Prévu: {formatCurrency(b.planned)}
+              </option>
+            ))}
+          </Select>
+        </FormField>
+
+        <FormField label="Montant exécuté (FCFA)" required>
+          <Input
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="0"
+            min="0"
+            step="0.01"
+            required
+          />
+        </FormField>
+
+        <FormField label="Justificatifs (factures, reçus...)">
+          <input
+            ref={fileInputRef}
+            type="file"
+            onChange={handleFileChange}
+            multiple
+            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+            className="hidden"
+          />
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            icon={<Upload size={14} />}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            Ajouter des fichiers
+          </Button>
+          {files.length > 0 && (
+            <div className="mt-2 space-y-2">
+              {files.map((file, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2 text-sm"
+                >
+                  <span className="text-slate-700 truncate">{file.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeFile(idx)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    <XCircle size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </FormField>
+
+        <div className="flex justify-end gap-3">
+          <Button type="button" variant="secondary" onClick={onClose}>
+            Annuler
+          </Button>
+          <Button
+            type="submit"
+            loading={isPending || uploadingDocs}
+            disabled={!selectedBudgetId || !amount}
+          >
+            Enregistrer
           </Button>
         </div>
       </form>
