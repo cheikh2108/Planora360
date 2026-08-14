@@ -10,28 +10,40 @@ export default function ParticipantsPage() {
   const router = useRouter();
 
   return (
-    <>
+    <div className="flex flex-col flex-1 min-h-0 overflow-auto">
       <Header
         title="Participants"
-        description="Gérez les participants de vos activités"
-        action={
-          <Button onClick={() => router.push('/participants/import')}>
-            <Upload size={14} className="mr-1.5" />
-            Importer Excel
-          </Button>
+        subtitle="Gérez les participants de vos activités"
+        actions={
+          <>
+            <Button variant="ghost" onClick={() => router.push('/participants/import')}>
+              <Upload size={14} className="mr-1.5" />
+              Importer Excel
+            </Button>
+            <Button onClick={() => router.push('/participants/new')}>
+              <UserPlus size={14} className="mr-1.5" />
+              Ajouter
+            </Button>
+          </>
         }
       />
 
-      <div className="space-y-5">
+      <main className="flex-1 px-4 md:px-6 py-6 space-y-5">
         <EmptyState
           icon={UserPlus}
-          title="Aucun participant importé"
-          description="Importez une liste de participants depuis un fichier Excel"
+          title="Aucun participant"
+          description="Ajoutez des participants manuellement ou importez une liste Excel"
           action={
-            <Button onClick={() => router.push('/participants/import')}>
-              <Upload size={14} className="mr-1.5" />
-              Importer maintenant
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={() => router.push('/participants/new')}>
+                <UserPlus size={14} className="mr-1.5" />
+                Ajouter un participant
+              </Button>
+              <Button variant="secondary" onClick={() => router.push('/participants/import')}>
+                <Upload size={14} className="mr-1.5" />
+                Importer Excel
+              </Button>
+            </div>
           }
         />
 
@@ -79,7 +91,7 @@ export default function ParticipantsPage() {
             </div>
           </div>
         </div>
-      </div>
-    </>
+      </main>
+    </div>
   );
 }

@@ -2,13 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ArrowLeftIcon, UploadIcon, CheckCircle2Icon, XCircleIcon } from 'lucide-react';
+import { Upload, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 import api from '@/lib/api';
 
 export default function ImportParticipantsPage() {
@@ -53,42 +50,39 @@ export default function ImportParticipantsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" onClick={() => router.back()} className="w-8 h-8 p-0">
-          <ArrowLeftIcon className="w-4 h-4" />
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold">Importer des participants</h1>
-          <p className="text-muted-foreground mt-1">
-            Importez une liste de participants depuis un fichier Excel
-          </p>
-        </div>
-      </div>
+    <div className="flex flex-col flex-1 min-h-0 overflow-auto">
+      <Header
+        title="Importer des participants"
+        subtitle="Importez une liste depuis un fichier Excel"
+        actions={
+          <Button variant="ghost" onClick={() => router.back()}>
+            Annuler
+          </Button>
+        }
+      />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Sélectionner l'activité et le fichier</CardTitle>
-          <CardDescription>
-            Choisissez l'activité concernée et uploadez votre fichier Excel
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <main className="flex-1 px-4 md:px-6 py-6 space-y-5">
+        {/* Form */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-5">
           <div className="space-y-2">
-            <Label htmlFor="activityId">Activité</Label>
+            <label htmlFor="activityId" className="text-sm font-medium text-slate-900">
+              ID de l'activité *
+            </label>
             <Input
               id="activityId"
-              placeholder="ID de l'activité"
+              placeholder="Entrez l'ID de l'activité"
               value={activityId}
               onChange={(e) => setActivityId(e.target.value)}
             />
-            <p className="text-sm text-muted-foreground">
-              Entrez l'ID de l'activité pour laquelle vous importez les participants
+            <p className="text-xs text-slate-500">
+              L'ID de l'activité à laquelle ces participants seront rattachés
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="file">Fichier Excel</Label>
+            <label htmlFor="file" className="text-sm font-medium text-slate-900">
+              Fichier Excel *
+            </label>
             <Input
               id="file"
               type="file"
@@ -96,8 +90,8 @@ export default function ImportParticipantsPage() {
               onChange={handleFileChange}
             />
             {file && (
-              <p className="text-sm text-muted-foreground">
-                Fichier sélectionné : {file.name}
+              <p className="text-xs text-slate-500">
+                Fichier sélectionné : <span className="font-medium text-slate-700">{file.name}</span>
               </p>
             )}
           </div>
@@ -106,52 +100,59 @@ export default function ImportParticipantsPage() {
             onClick={handleImport}
             disabled={!file || !activityId || loading}
             className="w-full"
+            loading={loading}
           >
-            <UploadIcon className="w-4 h-4 mr-2" />
+            <Upload size={14} className="mr-1.5" />
             {loading ? 'Import en cours...' : 'Importer'}
           </Button>
-        </CardContent>
-      </Card>
+        </div>
 
-      {result && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+        {/* Result */}
+        {result && (
+          <div className="bg-white rounded-2xl border border-slate-200 p-6">
+            <div className="flex items-center gap-3 mb-4">
               {result.success ? (
                 <>
-                  <CheckCircle2Icon className="w-5 h-5 text-green-600" />
-                  Import réussi
+                  <div className="w-9 h-9 rounded-xl bg-green-50 flex items-center justify-center shrink-0">
+                    <CheckCircle2 size={16} className="text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-slate-900 text-sm">Import réussi</h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {result.imported} participants importés sur {result.total}
+                    </p>
+                  </div>
                 </>
               ) : (
                 <>
-                  <XCircleIcon className="w-5 h-5 text-red-600" />
-                  Erreurs d'import
+                  <div className="w-9 h-9 rounded-xl bg-red-50 flex items-center justify-center shrink-0">
+                    <XCircle size={16} className="text-red-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-slate-900 text-sm">Erreurs d'import</h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Des erreurs ont été détectées dans le fichier
+                    </p>
+                  </div>
                 </>
               )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {result.success ? (
-              <Alert>
-                <AlertDescription>
-                  {result.imported} participants importés sur {result.total}
-                </AlertDescription>
-              </Alert>
-            ) : (
-              <div className="space-y-2">
-                <p className="font-medium">Erreurs trouvées :</p>
+            </div>
+
+            {!result.success && result.errors && (
+              <div className="space-y-2 mt-4">
                 {result.errors.map((error: any, idx: number) => (
-                  <Alert key={idx} variant="destructive">
-                    <AlertDescription>
-                      Ligne {error.line} : {error.error}
-                    </AlertDescription>
-                  </Alert>
+                  <div key={idx} className="flex items-start gap-2 p-3 rounded-lg bg-red-50 border border-red-100">
+                    <AlertCircle size={14} className="text-red-600 shrink-0 mt-0.5" />
+                    <p className="text-xs text-red-700">
+                      <span className="font-semibold">Ligne {error.line}</span> : {error.error}
+                    </p>
+                  </div>
                 ))}
               </div>
             )}
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        )}
+      </main>
     </div>
   );
 }

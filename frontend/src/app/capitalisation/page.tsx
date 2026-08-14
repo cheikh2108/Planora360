@@ -6,7 +6,7 @@ import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, Search, BookOpen, Lightbulb, FileText, Eye } from 'lucide-react';
+import { Plus, Search, BookOpen, Lightbulb, FileText } from 'lucide-react';
 import api from '@/lib/api';
 import Link from 'next/link';
 
@@ -43,11 +43,11 @@ export default function CapitalisationPage() {
   );
 
   return (
-    <>
+    <div className="flex flex-col flex-1 min-h-0 overflow-auto">
       <Header
         title="Capitalisation"
-        description="Bibliothèque de savoirs et bonnes pratiques"
-        action={
+        subtitle="Bibliothèque de savoirs et bonnes pratiques"
+        actions={
           <Button onClick={() => router.push('/capitalisation/new')}>
             <Plus size={14} className="mr-1.5" />
             Nouvelle fiche
@@ -55,7 +55,7 @@ export default function CapitalisationPage() {
         }
       />
 
-      <div className="space-y-5">
+      <main className="flex-1 px-4 md:px-6 py-6 space-y-5">
         {/* Search bar */}
         <div className="relative">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -146,7 +146,7 @@ export default function CapitalisationPage() {
             })}
           </div>
         )}
-      </div>
-    </>
+      </main>
+    </div>
   );
 }

@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeftIcon, SaveIcon } from 'lucide-react';
+import { Save, Info } from 'lucide-react';
 import api from '@/lib/api';
 
 export default function ResultsMatrixPage() {
@@ -57,40 +57,54 @@ export default function ResultsMatrixPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <p className="text-muted-foreground">Chargement...</p>
+      <div className="flex flex-col flex-1 min-h-0 overflow-auto">
+        <Header title="Chargement..." subtitle="Matrice de Résultats" />
+        <main className="flex-1 px-4 md:px-6 py-6">
+          <div className="text-center text-slate-500">Chargement...</div>
+        </main>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" onClick={() => router.back()} className="w-8 h-8 p-0">
-          <ArrowLeftIcon className="w-4 h-4" />
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold">Matrice de Résultats</h1>
-          <p className="text-muted-foreground mt-1">
-            Objectifs → Résultats → Indicateurs
-          </p>
-        </div>
-      </div>
+    <div className="flex flex-col flex-1 min-h-0 overflow-auto">
+      <Header
+        title="Matrice de Résultats"
+        subtitle="Objectifs → Résultats → Indicateurs"
+        actions={
+          <Button variant="ghost" onClick={() => router.back()}>
+            Retour
+          </Button>
+        }
+      />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Éditeur de matrice</CardTitle>
-          <CardDescription>
-            Modifiez votre matrice de résultats au format JSON
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Textarea
-            rows={20}
-            value={data}
-            onChange={(e) => setData(e.target.value)}
-            className="font-mono text-sm"
-            placeholder={`{
+      <main className="flex-1 px-4 md:px-6 py-6">
+        <div className="max-w-4xl space-y-5">
+          {/* Info */}
+          <div className="bg-blue-50 rounded-xl p-4 flex gap-3">
+            <Info size={18} className="text-blue-600 shrink-0 mt-0.5" />
+            <div className="text-sm text-blue-900">
+              <p className="font-medium mb-1">Structure attendue :</p>
+              <ul className="list-disc list-inside space-y-0.5 ml-2">
+                <li>Chaque objectif contient un titre et une liste de résultats</li>
+                <li>Chaque résultat contient un titre et une liste d'indicateurs</li>
+                <li>Chaque indicateur : nom, cible, atteint (valeur actuelle)</li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Éditeur */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-900">
+                Données de la matrice (format JSON)
+              </label>
+              <Textarea
+                rows={20}
+                value={data}
+                onChange={(e) => setData(e.target.value)}
+                className="font-mono text-sm"
+                placeholder={`{
   "objectif1": {
     "titre": "Améliorer la santé communautaire",
     "resultats": [
@@ -103,28 +117,22 @@ export default function ResultsMatrixPage() {
     ]
   }
 }`}
-          />
+              />
+            </div>
 
-          <div className="flex gap-2">
-            <Button onClick={handleSave} disabled={saving}>
-              <SaveIcon className="w-4 h-4 mr-2" />
-              {saving ? 'Enregistrement...' : 'Enregistrer'}
-            </Button>
-            <Button variant="secondary" onClick={() => router.back()}>
-              Retour
-            </Button>
+            <div className="flex gap-3">
+              <Button onClick={handleSave} loading={saving}>
+                <Save size={14} className="mr-1.5" />
+                Enregistrer
+              </Button>
+              <Button variant="secondary" onClick={() => router.back()}>
+                Annuler
+              </Button>
+            </div>
           </div>
-
-          <div className="text-sm text-muted-foreground space-y-1">
-            <p><strong>Structure attendue :</strong></p>
-            <ul className="list-disc list-inside space-y-1 ml-2">
-              <li>Chaque objectif contient un titre et une liste de résultats</li>
-              <li>Chaque résultat contient un titre et une liste d'indicateurs</li>
-              <li>Chaque indicateur contient : nom, cible, atteint (valeur actuelle)</li>
-            </ul>
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+      </main>
     </div>
   );
 }
+

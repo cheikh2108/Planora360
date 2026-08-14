@@ -13,7 +13,7 @@ import { PlanningService } from './planning.service';
 import { CreateAnnualWorkPlanDto } from './dto/create-annual-work-plan.dto';
 import { UpdateAnnualWorkPlanDto } from './dto/update-annual-work-plan.dto';
 import { UpdateResultsMatrixDto } from './dto/update-results-matrix.dto';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 
 @Controller('planning')
 @UseGuards(JwtAuthGuard)
@@ -28,7 +28,7 @@ export class PlanningController {
     return this.planningService.createAnnualWorkPlan(
       dto,
       req.user.organizationId,
-      req.user.sub,
+      req.user.id,
     );
   }
 
@@ -60,7 +60,7 @@ export class PlanningController {
     return this.planningService.validateAnnualWorkPlan(
       id,
       req.user.organizationId,
-      req.user.sub,
+      req.user.id,
     );
   }
 

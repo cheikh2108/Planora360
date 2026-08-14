@@ -70,9 +70,9 @@ export declare class DashboardsService {
     } & {
         id: string;
         organizationId: string;
-        status: import(".prisma/client").$Enums.PlanStatus;
         createdAt: Date;
         updatedAt: Date;
+        status: import(".prisma/client").$Enums.PlanStatus;
         title: string;
         expectedResults: string | null;
         periodStart: Date;

@@ -114,7 +114,7 @@ export class CapitalizationService {
 
     for (const file of media) {
       try {
-        await this.storage.deleteFile(file.url);
+        await this.storage.delete(file.url);
       } catch (error) {
         console.error(`Erreur suppression média ${file.id}:`, error);
       }
@@ -133,18 +133,16 @@ export class CapitalizationService {
   ) {
     await this.findOne(capitalizationId, organizationId);
 
-    const uploadedFile = await this.storage.uploadFile(
-      file.buffer,
-      file.originalname,
-      `capitalization/${organizationId}/${capitalizationId}`,
-    );
+    const storageKey = `capitalization/${organizationId}/${capitalizationId}/${Date.now()}-${file.originalname}`;
+    const uploadedKey = await this.storage.upload(storageKey, file);
+    const url = await this.storage.getSignedUrl(uploadedKey);
 
     return this.prisma.media.create({
       data: {
         capitalizationId,
         type,
         filename: file.originalname,
-        url: uploadedFile.url,
+        url: uploadedKey,
         size: file.size,
       },
     });
@@ -165,7 +163,7 @@ export class CapitalizationService {
       throw new NotFoundException('Média non trouvé');
     }
 
-    await this.storage.deleteFile(media.url);
+    await this.storage.delete(media.url);
 
     return this.prisma.media.delete({
       where: { id: mediaId },

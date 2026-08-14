@@ -28,6 +28,9 @@ const scheduler_module_1 = require("./scheduler/scheduler.module");
 const reports_module_1 = require("./reports/reports.module");
 const roles_module_1 = require("./roles/roles.module");
 const indicators_module_1 = require("./indicators/indicators.module");
+const participants_module_1 = require("./participants/participants.module");
+const capitalization_module_1 = require("./capitalization/capitalization.module");
+const planning_module_1 = require("./planning/planning.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -54,6 +57,9 @@ exports.AppModule = AppModule = __decorate([
             reports_module_1.ReportsModule,
             roles_module_1.RolesModule,
             indicators_module_1.IndicatorsModule,
+            participants_module_1.ParticipantsModule,
+            capitalization_module_1.CapitalizationModule,
+            planning_module_1.PlanningModule,
         ],
     })
 ], AppModule);

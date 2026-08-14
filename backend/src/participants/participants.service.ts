@@ -26,8 +26,8 @@ export class ParticipantsService {
       throw new BadRequestException('Le fichier Excel est vide');
     }
 
-    const errors = [];
-    const participants = [];
+    const errors: Array<{ line: number; error: string }> = [];
+    const participants: Array<any> = [];
 
     for (let i = 0; i < data.length; i++) {
       const row = data[i];

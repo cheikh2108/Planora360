@@ -15,9 +15,9 @@ export declare class ActionPlansController {
     } & {
         id: string;
         organizationId: string;
-        status: import(".prisma/client").$Enums.PlanStatus;
         createdAt: Date;
         updatedAt: Date;
+        status: import(".prisma/client").$Enums.PlanStatus;
         title: string;
         expectedResults: string | null;
         periodStart: Date;
@@ -43,9 +43,9 @@ export declare class ActionPlansController {
         } & {
             id: string;
             organizationId: string;
-            status: import(".prisma/client").$Enums.PlanStatus;
             createdAt: Date;
             updatedAt: Date;
+            status: import(".prisma/client").$Enums.PlanStatus;
             title: string;
             expectedResults: string | null;
             periodStart: Date;
@@ -73,9 +73,9 @@ export declare class ActionPlansController {
             } & {
                 id: string;
                 organizationId: string;
-                status: import(".prisma/client").$Enums.ActivityStatus;
                 createdAt: Date;
                 updatedAt: Date;
+                status: import(".prisma/client").$Enums.ActivityStatus;
                 axisId: string;
                 parentActivityId: string | null;
                 title: string;
@@ -99,9 +99,9 @@ export declare class ActionPlansController {
     } & {
         id: string;
         organizationId: string;
-        status: import(".prisma/client").$Enums.PlanStatus;
         createdAt: Date;
         updatedAt: Date;
+        status: import(".prisma/client").$Enums.PlanStatus;
         title: string;
         expectedResults: string | null;
         periodStart: Date;
@@ -119,9 +119,9 @@ export declare class ActionPlansController {
     } & {
         id: string;
         organizationId: string;
-        status: import(".prisma/client").$Enums.PlanStatus;
         createdAt: Date;
         updatedAt: Date;
+        status: import(".prisma/client").$Enums.PlanStatus;
         title: string;
         expectedResults: string | null;
         periodStart: Date;
@@ -132,9 +132,9 @@ export declare class ActionPlansController {
     remove(id: string, user: any): Promise<{
         id: string;
         organizationId: string;
-        status: import(".prisma/client").$Enums.PlanStatus;
         createdAt: Date;
         updatedAt: Date;
+        status: import(".prisma/client").$Enums.PlanStatus;
         title: string;
         expectedResults: string | null;
         periodStart: Date;

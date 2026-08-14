@@ -17,7 +17,7 @@ import { CapitalizationService } from './capitalization.service';
 import { CreateCapitalizationDto } from './dto/create-capitalization.dto';
 import { UpdateCapitalizationDto } from './dto/update-capitalization.dto';
 import { FilterCapitalizationDto } from './dto/filter-capitalization.dto';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 
 @Controller('capitalization')
 @UseGuards(JwtAuthGuard)

@@ -31,25 +31,25 @@ export default function PlanificationPage() {
   };
 
   return (
-    <>
+    <div className="flex flex-col flex-1 min-h-0 overflow-auto">
       <Header
         title="Planification"
-        description="Plans de Travail Annuels et Matrice de résultats"
-        action={
-          <div className="flex gap-2">
+        subtitle="Plans de Travail Annuels et Matrice de résultats"
+        actions={
+          <>
             <Button variant="ghost" onClick={() => router.push('/planification/results-matrix')}>
               <FileSpreadsheet size={14} className="mr-1.5" />
-              Matrice de résultats
+              Matrice
             </Button>
             <Button onClick={() => router.push('/planification/new')}>
               <Plus size={14} className="mr-1.5" />
               Nouveau PTA
             </Button>
-          </div>
+          </>
         }
       />
 
-      <div className="space-y-5">
+      <main className="flex-1 px-4 md:px-6 py-6 space-y-5">
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {[...Array(3)].map((_, i) => (
@@ -122,7 +122,7 @@ export default function PlanificationPage() {
             ))}
           </div>
         )}
-      </div>
-    </>
+      </main>
+    </div>
   );
 }

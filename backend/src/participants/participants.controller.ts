@@ -13,7 +13,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ParticipantsService } from './participants.service';
 import { ImportParticipantsDto } from './dto/import-participants.dto';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 
 @Controller('participants')
 @UseGuards(JwtAuthGuard)

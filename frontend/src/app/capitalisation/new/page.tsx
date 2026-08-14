@@ -2,13 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeftIcon, SaveIcon } from 'lucide-react';
+import { Save } from 'lucide-react';
 import api from '@/lib/api';
 
 export default function NewCapitalisationPage() {
@@ -47,28 +46,25 @@ export default function NewCapitalisationPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" onClick={() => router.back()} className="w-8 h-8 p-0">
-          <ArrowLeftIcon className="w-4 h-4" />
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold">Nouvelle fiche de capitalisation</h1>
-          <p className="text-muted-foreground mt-1">
-            Documentez vos bonnes pratiques et enseignements
-          </p>
-        </div>
-      </div>
+    <div className="flex flex-col flex-1 min-h-0 overflow-auto">
+      <Header
+        title="Nouvelle fiche de capitalisation"
+        subtitle="Documentez vos bonnes pratiques et enseignements"
+        actions={
+          <Button variant="ghost" onClick={() => router.back()}>
+            Annuler
+          </Button>
+        }
+      />
 
-      <form onSubmit={handleSubmit}>
-        <Card>
-          <CardHeader>
-            <CardTitle>Informations générales</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+      <main className="flex-1 px-4 md:px-6 py-6">
+        <form onSubmit={handleSubmit} className="max-w-3xl">
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="space-y-2">
-                <Label htmlFor="type">Type</Label>
+                <label htmlFor="type" className="text-sm font-medium text-slate-900">
+                  Type *
+                </label>
                 <Select
                   value={formData.type}
                   onValueChange={(value) => setFormData({ ...formData, type: value })}
@@ -85,7 +81,9 @@ export default function NewCapitalisationPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="status">Statut</Label>
+                <label htmlFor="status" className="text-sm font-medium text-slate-900">
+                  Statut *
+                </label>
                 <Select
                   value={formData.status}
                   onValueChange={(value) => setFormData({ ...formData, status: value })}
@@ -102,72 +100,92 @@ export default function NewCapitalisationPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="title">Titre *</Label>
+              <label htmlFor="title" className="text-sm font-medium text-slate-900">
+                Titre *
+              </label>
               <Input
                 id="title"
                 required
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                placeholder="Ex: Stratégie de communication efficace"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="context">Contexte *</Label>
+              <label htmlFor="context" className="text-sm font-medium text-slate-900">
+                Contexte *
+              </label>
               <Textarea
                 id="context"
                 required
                 rows={4}
                 value={formData.context}
                 onChange={(e) => setFormData({ ...formData, context: e.target.value })}
+                placeholder="Décrivez le contexte dans lequel cette pratique a été mise en œuvre"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="challenges">Défis et contraintes *</Label>
+              <label htmlFor="challenges" className="text-sm font-medium text-slate-900">
+                Défis et contraintes *
+              </label>
               <Textarea
                 id="challenges"
                 required
                 rows={4}
                 value={formData.challenges}
                 onChange={(e) => setFormData({ ...formData, challenges: e.target.value })}
+                placeholder="Quels défis avez-vous rencontrés ?"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="solutions">Solutions mises en œuvre *</Label>
+              <label htmlFor="solutions" className="text-sm font-medium text-slate-900">
+                Solutions mises en œuvre *
+              </label>
               <Textarea
                 id="solutions"
                 required
                 rows={4}
                 value={formData.solutions}
                 onChange={(e) => setFormData({ ...formData, solutions: e.target.value })}
+                placeholder="Quelles solutions avez-vous appliquées ?"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="results">Résultats obtenus *</Label>
+              <label htmlFor="results" className="text-sm font-medium text-slate-900">
+                Résultats obtenus *
+              </label>
               <Textarea
                 id="results"
                 required
                 rows={4}
                 value={formData.results}
                 onChange={(e) => setFormData({ ...formData, results: e.target.value })}
+                placeholder="Quels résultats ont été atteints ?"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="lessons">Leçons apprises *</Label>
+              <label htmlFor="lessons" className="text-sm font-medium text-slate-900">
+                Leçons apprises *
+              </label>
               <Textarea
                 id="lessons"
                 required
                 rows={4}
                 value={formData.lessons}
                 onChange={(e) => setFormData({ ...formData, lessons: e.target.value })}
+                placeholder="Quelles leçons en tirez-vous ?"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="tags">Tags (séparés par des virgules)</Label>
+              <label htmlFor="tags" className="text-sm font-medium text-slate-900">
+                Tags (séparés par des virgules)
+              </label>
               <Input
                 id="tags"
                 placeholder="Ex: santé, communication, sensibilisation"
@@ -176,18 +194,18 @@ export default function NewCapitalisationPage() {
               />
             </div>
 
-            <div className="flex gap-2 pt-4">
-              <Button type="submit" disabled={loading}>
-                <SaveIcon className="w-4 h-4 mr-2" />
-                {loading ? 'Enregistrement...' : 'Enregistrer'}
+            <div className="flex gap-3 pt-4">
+              <Button type="submit" loading={loading}>
+                <Save size={14} className="mr-1.5" />
+                Enregistrer
               </Button>
               <Button type="button" variant="secondary" onClick={() => router.back()}>
                 Annuler
               </Button>
             </div>
-          </CardContent>
-        </Card>
-      </form>
+          </div>
+        </form>
+      </main>
     </div>
   );
 }

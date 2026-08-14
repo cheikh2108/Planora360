@@ -36,7 +36,7 @@ let NotificationsService = NotificationsService_1 = class NotificationsService {
         }
         try {
             await this.resend.emails.send({
-                from: 'ATAABA Pilot <noreply@ataaba.com>',
+                from: 'ATAABA Pilot <noreply@ataabaentreprise.org>',
                 to,
                 subject,
                 html,
