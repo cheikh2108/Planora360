@@ -12,9 +12,8 @@ export declare class UsersService {
             permissions: import("@prisma/client/runtime/client").JsonValue;
         };
         id: string;
-        organizationId: string;
-        createdAt: Date;
         email: string;
+        organizationId: string;
         roleId: string;
         firstName: string;
         lastName: string;
@@ -22,6 +21,7 @@ export declare class UsersService {
         isActive: boolean;
         mustChangePassword: boolean;
         lastLoginAt: Date | null;
+        createdAt: Date;
         updatedAt: Date;
     }>;
     findAll(organizationId: string, page?: number, limit?: number): Promise<{
@@ -33,9 +33,8 @@ export declare class UsersService {
                 permissions: import("@prisma/client/runtime/client").JsonValue;
             };
             id: string;
-            organizationId: string;
-            createdAt: Date;
             email: string;
+            organizationId: string;
             roleId: string;
             firstName: string;
             lastName: string;
@@ -43,6 +42,7 @@ export declare class UsersService {
             isActive: boolean;
             mustChangePassword: boolean;
             lastLoginAt: Date | null;
+            createdAt: Date;
             updatedAt: Date;
         }[];
         total: number;
@@ -57,9 +57,8 @@ export declare class UsersService {
             permissions: import("@prisma/client/runtime/client").JsonValue;
         };
         id: string;
-        organizationId: string;
-        createdAt: Date;
         email: string;
+        organizationId: string;
         roleId: string;
         firstName: string;
         lastName: string;
@@ -67,6 +66,7 @@ export declare class UsersService {
         isActive: boolean;
         mustChangePassword: boolean;
         lastLoginAt: Date | null;
+        createdAt: Date;
         updatedAt: Date;
     }>;
     update(id: string, dto: UpdateUserDto, organizationId: string): Promise<{
@@ -77,9 +77,8 @@ export declare class UsersService {
             permissions: import("@prisma/client/runtime/client").JsonValue;
         };
         id: string;
-        organizationId: string;
-        createdAt: Date;
         email: string;
+        organizationId: string;
         roleId: string;
         firstName: string;
         lastName: string;
@@ -87,6 +86,7 @@ export declare class UsersService {
         isActive: boolean;
         mustChangePassword: boolean;
         lastLoginAt: Date | null;
+        createdAt: Date;
         updatedAt: Date;
     }>;
     remove(id: string, organizationId: string): Promise<void>;

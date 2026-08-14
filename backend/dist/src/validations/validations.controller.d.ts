@@ -9,8 +9,8 @@ export declare class ValidationsController {
         step: import(".prisma/client").$Enums.ValidationStep;
         activityId: string;
         decision: import(".prisma/client").$Enums.ValidationDecision;
-        comment: string | null;
         validatorId: string;
+        comment: string | null;
     }>;
     transition(activityId: string, dto: TransitionDto, user: any): Promise<{
         id: string;
@@ -18,8 +18,8 @@ export declare class ValidationsController {
         step: import(".prisma/client").$Enums.ValidationStep;
         activityId: string;
         decision: import(".prisma/client").$Enums.ValidationDecision;
-        comment: string | null;
         validatorId: string;
+        comment: string | null;
     }>;
     getHistory(activityId: string, user: any): Promise<{
         id: string;
@@ -27,16 +27,16 @@ export declare class ValidationsController {
         step: import(".prisma/client").$Enums.ValidationStep;
         activityId: string;
         decision: import(".prisma/client").$Enums.ValidationDecision;
-        comment: string | null;
         validatorId: string;
+        comment: string | null;
     }[]>;
     getCurrentStep(activityId: string, user: any): Promise<{
         activity: {
             id: string;
             organizationId: string;
-            status: import(".prisma/client").$Enums.ActivityStatus;
             createdAt: Date;
             updatedAt: Date;
+            status: import(".prisma/client").$Enums.ActivityStatus;
             axisId: string;
             parentActivityId: string | null;
             title: string;
@@ -58,8 +58,8 @@ export declare class ValidationsController {
             step: import(".prisma/client").$Enums.ValidationStep;
             activityId: string;
             decision: import(".prisma/client").$Enums.ValidationDecision;
-            comment: string | null;
             validatorId: string;
+            comment: string | null;
         } | null;
     }>;
     getPending(user: any, page?: string, limit?: string): Promise<{
@@ -78,15 +78,15 @@ export declare class ValidationsController {
                 step: import(".prisma/client").$Enums.ValidationStep;
                 activityId: string;
                 decision: import(".prisma/client").$Enums.ValidationDecision;
-                comment: string | null;
                 validatorId: string;
+                comment: string | null;
             }[];
         } & {
             id: string;
             organizationId: string;
-            status: import(".prisma/client").$Enums.ActivityStatus;
             createdAt: Date;
             updatedAt: Date;
+            status: import(".prisma/client").$Enums.ActivityStatus;
             axisId: string;
             parentActivityId: string | null;
             title: string;

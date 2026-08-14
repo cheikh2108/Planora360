@@ -1,0 +1,41 @@
+import { ParticipantsService } from './participants.service';
+import { ImportParticipantsDto } from './dto/import-participants.dto';
+export declare class ParticipantsController {
+    private readonly participantsService;
+    constructor(participantsService: ParticipantsService);
+    import(file: Express.Multer.File, dto: ImportParticipantsDto, req: any): Promise<{
+        success: boolean;
+        errors: {
+            line: number;
+            error: string;
+        }[];
+        imported: number;
+        total: number;
+    }>;
+    findByActivity(activityId: string, req: any): Promise<{
+        id: string;
+        organizationId: string;
+        firstName: string;
+        lastName: string;
+        createdAt: Date;
+        updatedAt: Date;
+        activityId: string;
+        phone: string;
+        paymentMode: string;
+        amount: number;
+        createdBy: string;
+    }[]>;
+    remove(id: string, req: any): Promise<{
+        id: string;
+        organizationId: string;
+        firstName: string;
+        lastName: string;
+        createdAt: Date;
+        updatedAt: Date;
+        activityId: string;
+        phone: string;
+        paymentMode: string;
+        amount: number;
+        createdBy: string;
+    }>;
+}

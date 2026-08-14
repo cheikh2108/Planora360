@@ -19,6 +19,9 @@ import { SchedulerModule } from './scheduler/scheduler.module';
 import { ReportsModule } from './reports/reports.module';
 import { RolesModule } from './roles/roles.module';
 import { IndicatorsModule } from './indicators/indicators.module';
+import { ParticipantsModule } from './participants/participants.module';
+import { CapitalizationModule } from './capitalization/capitalization.module';
+import { PlanningModule } from './planning/planning.module';
 
 @Module({
   imports: [
@@ -42,6 +45,9 @@ import { IndicatorsModule } from './indicators/indicators.module';
     ReportsModule,
     RolesModule,
     IndicatorsModule,
+    ParticipantsModule,
+    CapitalizationModule,
+    PlanningModule,
   ],
 })
 export class AppModule {}

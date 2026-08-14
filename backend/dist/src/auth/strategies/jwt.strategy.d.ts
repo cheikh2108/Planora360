@@ -14,14 +14,9 @@ export declare class JwtStrategy extends JwtStrategy_base {
     private prisma;
     constructor(config: ConfigService, prisma: PrismaService);
     validate(payload: JwtPayload): Promise<{
-        role: {
-            id: string;
-            organizationId: string | null;
-            name: string;
-            permissions: import("@prisma/client/runtime/client").JsonValue;
-        };
         organization: {
             id: string;
+            createdAt: Date;
             name: string;
             logoUrl: string | null;
             brandColor: string | null;
@@ -29,13 +24,17 @@ export declare class JwtStrategy extends JwtStrategy_base {
             status: import(".prisma/client").$Enums.OrganizationStatus;
             rejectionReason: string | null;
             trialEndsAt: Date | null;
-            createdAt: Date;
+        };
+        role: {
+            id: string;
+            organizationId: string | null;
+            name: string;
+            permissions: import("@prisma/client/runtime/client").JsonValue;
         };
     } & {
         id: string;
-        organizationId: string;
-        createdAt: Date;
         email: string;
+        organizationId: string;
         roleId: string;
         firstName: string;
         lastName: string;
@@ -45,6 +44,7 @@ export declare class JwtStrategy extends JwtStrategy_base {
         isActive: boolean;
         mustChangePassword: boolean;
         lastLoginAt: Date | null;
+        createdAt: Date;
         updatedAt: Date;
     }>;
 }

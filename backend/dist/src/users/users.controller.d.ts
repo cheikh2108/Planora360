@@ -18,9 +18,8 @@ export declare class UsersController {
             permissions: import("@prisma/client/runtime/client").JsonValue;
         };
         id: string;
-        organizationId: string;
-        createdAt: Date;
         email: string;
+        organizationId: string;
         roleId: string;
         firstName: string;
         lastName: string;
@@ -28,6 +27,7 @@ export declare class UsersController {
         isActive: boolean;
         mustChangePassword: boolean;
         lastLoginAt: Date | null;
+        createdAt: Date;
         updatedAt: Date;
     }>;
     findAll(user: any, page?: string, limit?: string): Promise<{
@@ -39,9 +39,8 @@ export declare class UsersController {
                 permissions: import("@prisma/client/runtime/client").JsonValue;
             };
             id: string;
-            organizationId: string;
-            createdAt: Date;
             email: string;
+            organizationId: string;
             roleId: string;
             firstName: string;
             lastName: string;
@@ -49,6 +48,7 @@ export declare class UsersController {
             isActive: boolean;
             mustChangePassword: boolean;
             lastLoginAt: Date | null;
+            createdAt: Date;
             updatedAt: Date;
         }[];
         total: number;
@@ -63,9 +63,8 @@ export declare class UsersController {
             permissions: import("@prisma/client/runtime/client").JsonValue;
         };
         id: string;
-        organizationId: string;
-        createdAt: Date;
         email: string;
+        organizationId: string;
         roleId: string;
         firstName: string;
         lastName: string;
@@ -73,6 +72,7 @@ export declare class UsersController {
         isActive: boolean;
         mustChangePassword: boolean;
         lastLoginAt: Date | null;
+        createdAt: Date;
         updatedAt: Date;
     }>;
     update(id: string, dto: UpdateUserDto, user: any): Promise<{
@@ -83,9 +83,8 @@ export declare class UsersController {
             permissions: import("@prisma/client/runtime/client").JsonValue;
         };
         id: string;
-        organizationId: string;
-        createdAt: Date;
         email: string;
+        organizationId: string;
         roleId: string;
         firstName: string;
         lastName: string;
@@ -93,6 +92,7 @@ export declare class UsersController {
         isActive: boolean;
         mustChangePassword: boolean;
         lastLoginAt: Date | null;
+        createdAt: Date;
         updatedAt: Date;
     }>;
     remove(id: string, user: any): Promise<void>;
