@@ -6,7 +6,7 @@ import { getHelpForPage } from '@/lib/help-content';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 
-const springConfig = { stiffness: 100, damping: 20 };
+const customEasing = 'cubic-bezier(0.32, 0.72, 0, 1)'; // iOS-like drawer curve
 
 /**
  * Sidebar d'aide DISTINCTIVE avec respect des couleurs custom
@@ -54,10 +54,10 @@ export function HelpSidebar() {
 
           {/* Sidebar - DESIGN DISTINCTIF DIAGONAL */}
           <motion.aside
-            initial={{ x: '100%', opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: '100%', opacity: 0 }}
-            transition={{ type: 'spring', ...springConfig }}
+            initial={{ transform: 'translateX(100%)', opacity: 0 }}
+            animate={{ transform: 'translateX(0)', opacity: 1 }}
+            exit={{ transform: 'translateX(100%)', opacity: 0 }}
+            transition={{ duration: 0.4, ease: customEasing }}
             className="fixed top-0 right-0 h-full w-full md:w-[560px] z-50 flex flex-col overflow-hidden"
             style={{
               background: 'linear-gradient(168deg, #0d1117 0%, #0a0e14 100%)',
@@ -73,23 +73,6 @@ export function HelpSidebar() {
               }}
             />
 
-            {/* VERTICAL DYNAMIC ACCENT */}
-            <motion.div
-              animate={{
-                opacity: [0.4, 0.8, 0.4],
-                scaleY: [1, 1.05, 1],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
-              className="absolute left-0 top-20 w-[3px] h-56"
-              style={{
-                background: `linear-gradient(180deg, var(--color-brand, #2563eb), transparent)`,
-              }}
-            />
-
             {/* Header - LAYOUT ASYMÉTRIQUE AUDACIEUX */}
             <div className="relative px-8 pt-8 pb-6">
               <button
@@ -101,22 +84,13 @@ export function HelpSidebar() {
               </button>
 
               <motion.div
-                initial={{ opacity: 0, y: -15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1, type: 'spring', ...springConfig }}
+                initial={{ opacity: 0, transform: 'translateY(-15px)' }}
+                animate={{ opacity: 1, transform: 'translateY(0)' }}
+                transition={{ delay: 0.1, duration: 0.3, ease: customEasing }}
               >
                 {/* Live Indicator avec couleur brand */}
                 <div className="flex items-center gap-2.5 mb-5">
-                  <motion.div
-                    animate={{
-                      scale: [1, 1.4, 1],
-                      opacity: [0.6, 1, 0.6],
-                    }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      ease: 'easeInOut',
-                    }}
+                  <div
                     className="w-2 h-2 rounded-full"
                     style={{ backgroundColor: 'var(--color-brand, #2563eb)' }}
                   />
@@ -143,14 +117,12 @@ export function HelpSidebar() {
                     Aide
                   </h2>
                   <div className="flex items-center gap-3">
-                    <motion.div
-                      animate={{ rotate: [0, 5, -5, 0] }}
-                      transition={{ duration: 4, repeat: Infinity }}
+                    <div
                       className="w-8 h-8 rounded-lg flex items-center justify-center"
                       style={{ backgroundColor: 'var(--color-brand, #2563eb)' }}
                     >
                       <Zap size={18} className="text-white" fill="white" />
-                    </motion.div>
+                    </div>
                     <p className="text-white/40 text-sm font-semibold">
                       Réponses instantanées
                     </p>
@@ -184,7 +156,7 @@ export function HelpSidebar() {
             >
               <div className="flex items-center gap-3">
                 <div
-                  className="w-2 h-2 rounded-full animate-pulse"
+                  className="w-2 h-2 rounded-full"
                   style={{ backgroundColor: 'var(--color-brand, #2563eb)' }}
                 />
                 <p className="text-white/50 text-xs font-medium">
@@ -227,10 +199,10 @@ function LoadingState() {
 function ErrorState() {
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ type: 'spring', ...springConfig }}
+      initial={{ opacity: 0, transform: 'scale(0.98)' }}
+      animate={{ opacity: 1, transform: 'scale(1)' }}
+      exit={{ opacity: 0, transform: 'scale(0.98)' }}
+      transition={{ duration: 0.2, ease: customEasing }}
       className="flex flex-col items-center justify-center py-20"
     >
       <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mb-4 border border-red-500/20">
@@ -247,19 +219,15 @@ function ErrorState() {
 function EmptyState() {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      transition={{ type: 'spring', ...springConfig }}
+      initial={{ opacity: 0, transform: 'translateY(10px)' }}
+      animate={{ opacity: 1, transform: 'translateY(0)' }}
+      exit={{ opacity: 0, transform: 'translateY(-10px)' }}
+      transition={{ duration: 0.2, ease: customEasing }}
       className="flex flex-col items-center justify-center py-20 text-center"
     >
-      <motion.div
-        animate={{ y: [0, -10, 0] }}
-        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-        className="w-20 h-20 rounded-2xl bg-white/[0.03] flex items-center justify-center mb-4 border border-white/[0.08]"
-      >
+      <div className="w-20 h-20 rounded-2xl bg-white/[0.03] flex items-center justify-center mb-4 border border-white/[0.08]">
         <span className="text-3xl">💡</span>
-      </motion.div>
+      </div>
       <p className="text-white/60 text-sm font-medium max-w-xs">
         Aucune aide disponible pour cette page.
       </p>
@@ -273,14 +241,14 @@ function ArticlesList({ articles }: { articles: any[] }) {
       {articles.map((article, index) => (
         <motion.article
           key={article.id}
-          initial={{ opacity: 0, x: 30, rotateX: -10 }}
-          animate={{ opacity: 1, x: 0, rotateX: 0 }}
+          initial={{ opacity: 0, transform: 'translateX(20px)' }}
+          animate={{ opacity: 1, transform: 'translateX(0)' }}
           transition={{
-            delay: index * 0.1,
-            type: 'spring',
-            ...springConfig,
+            delay: index * 0.05,
+            duration: 0.25,
+            ease: customEasing,
           }}
-          whileHover={{ scale: 1.015, x: -4 }}
+          whileHover={{ transform: 'translateX(-4px) scale(1.01)' }}
           className="group relative"
         >
           {/* Accent latéral avec couleur brand */}
@@ -300,15 +268,14 @@ function ArticlesList({ articles }: { articles: any[] }) {
           >
             {/* Number Badge - DÉCALÉ AUDACIEUSEMENT */}
             <motion.div
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
+              initial={{ opacity: 0, transform: 'scale(0.8) rotate(-12deg)' }}
+              animate={{ opacity: 1, transform: 'scale(1) rotate(-12deg)' }}
               transition={{
-                delay: index * 0.1 + 0.2,
-                type: 'spring',
-                stiffness: 200,
-                damping: 12
+                delay: index * 0.05 + 0.1,
+                duration: 0.2,
+                ease: customEasing,
               }}
-              className="absolute -left-3 top-4 w-8 h-8 rounded-xl flex items-center justify-center text-white text-sm font-black shadow-2xl transform -rotate-12"
+              className="absolute -left-3 top-4 w-8 h-8 rounded-xl flex items-center justify-center text-white text-sm font-black shadow-2xl"
               style={{
                 background: `linear-gradient(135deg, var(--color-brand, #2563eb) 0%, var(--color-brand-dark, #1e40af) 100%)`,
                 boxShadow: `0 8px 24px -8px var(--color-brand, #2563eb)`,

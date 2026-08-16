@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 
-const springConfig = { stiffness: 100, damping: 20 };
+const customEasing = 'cubic-bezier(0.23, 1, 0.32, 1)'; // Strong ease-out
 
 /**
  * Bouton d'aide flottant DISTINCTIF
@@ -38,26 +38,17 @@ export function FloatingHelpButton() {
   return (
     <motion.div
       className="fixed bottom-6 right-6 z-30"
-      initial={{ scale: 0, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
+      initial={{ transform: 'scale(0)', opacity: 0 }}
+      animate={{ transform: 'scale(1)', opacity: 1 }}
       transition={{
         delay: 0.5,
-        type: 'spring',
-        ...springConfig,
+        duration: 0.3,
+        ease: customEasing,
       }}
     >
-      {/* Glow effect avec couleur brand */}
-      <motion.div
-        animate={{
-          opacity: [0.15, 0.4, 0.15],
-          scale: [1, 1.2, 1],
-        }}
-        transition={{
-          duration: 4,
-          repeat: Infinity,
-          ease: 'easeInOut',
-        }}
-        className="absolute inset-0 rounded-full blur-2xl"
+      {/* Glow effect avec couleur brand - static */}
+      <div
+        className="absolute inset-0 rounded-full blur-2xl opacity-20"
         style={{
           background: 'var(--color-brand, #2563eb)',
         }}
@@ -68,8 +59,9 @@ export function FloatingHelpButton() {
         onClick={() => toggleHelp(getPageId())}
         onHoverStart={() => setIsHovered(true)}
         onHoverEnd={() => setIsHovered(false)}
-        whileHover={{ scale: 1.08 }}
-        whileTap={{ scale: 0.95 }}
+        whileHover={{ transform: 'scale(1.08)' }}
+        whileTap={{ transform: 'scale(0.95)' }}
+        transition={{ duration: 0.16, ease: customEasing }}
         className="relative w-14 h-14 rounded-full flex items-center justify-center group"
         style={{
           background: `linear-gradient(135deg, var(--color-brand, #2563eb) 0%, var(--color-brand-dark, #1e40af) 100%)`,
@@ -79,9 +71,9 @@ export function FloatingHelpButton() {
       >
         <motion.div
           animate={{
-            rotate: isOpen ? 180 : 0,
+            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
           }}
-          transition={{ type: 'spring', stiffness: 150, damping: 15 }}
+          transition={{ duration: 0.3, ease: customEasing }}
         >
           <HelpCircle
             size={24}
@@ -90,29 +82,16 @@ export function FloatingHelpButton() {
           />
         </motion.div>
 
-        {/* Pulse ring avec couleur brand */}
-        <AnimatePresence>
-          {isHovered && (
-            <motion.div
-              initial={{ scale: 1, opacity: 0.6 }}
-              animate={{ scale: 1.6, opacity: 0 }}
-              exit={{ scale: 1, opacity: 0 }}
-              transition={{ duration: 1, repeat: Infinity }}
-              className="absolute inset-0 rounded-full border-2"
-              style={{ borderColor: 'var(--color-brand, #2563eb)' }}
-            />
-          )}
-        </AnimatePresence>
       </motion.button>
 
       {/* Tooltip asymétrique */}
       <AnimatePresence>
         {isHovered && (
           <motion.div
-            initial={{ opacity: 0, x: 10, y: 5 }}
-            animate={{ opacity: 1, x: 0, y: 0 }}
-            exit={{ opacity: 0, x: 10, y: 5 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+            initial={{ opacity: 0, transform: 'translate(10px, 5px)' }}
+            animate={{ opacity: 1, transform: 'translate(0, 0)' }}
+            exit={{ opacity: 0, transform: 'translate(10px, 5px)' }}
+            transition={{ duration: 0.15, ease: customEasing }}
             className="absolute bottom-full right-2 mb-3 px-4 py-2 rounded-xl bg-slate-900/95 backdrop-blur-md text-white text-xs font-semibold whitespace-nowrap shadow-xl border border-white/10"
           >
             Besoin d'aide ?
@@ -121,17 +100,8 @@ export function FloatingHelpButton() {
         )}
       </AnimatePresence>
 
-      {/* Floating indicator avec couleur brand */}
-      <motion.div
-        animate={{
-          y: [0, -5, 0],
-          opacity: [0.5, 1, 0.5],
-        }}
-        transition={{
-          duration: 2.5,
-          repeat: Infinity,
-          ease: 'easeInOut',
-        }}
+      {/* Notification indicator avec couleur brand - static */}
+      <div
         className="absolute -top-1 -right-1 w-3 h-3 rounded-full shadow-lg"
         style={{
           backgroundColor: 'var(--color-brand, #2563eb)',

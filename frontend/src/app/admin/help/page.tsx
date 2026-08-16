@@ -6,7 +6,7 @@ import { HELP_CONTENT } from '@/lib/help-content';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Header } from '@/components/layout/header';
 
-const springConfig = { stiffness: 100, damping: 20 };
+const customEasing = 'cubic-bezier(0.23, 1, 0.32, 1)'; // Strong ease-out
 
 const PAGE_LABELS: Record<string, string> = {
   dashboard: 'Tableau de bord',
@@ -47,9 +47,9 @@ export default function HelpCenterPage() {
       <main className="flex-1 px-4 md:px-6 py-6 space-y-6">
         {/* Search Bar DISTINCTIF */}
         <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ type: 'spring', ...springConfig }}
+          initial={{ opacity: 0, transform: 'translateY(-10px)' }}
+          animate={{ opacity: 1, transform: 'translateY(0)' }}
+          transition={{ duration: 0.25, ease: customEasing }}
           className="relative max-w-2xl"
         >
           {/* Diagonal accent */}
@@ -83,18 +83,15 @@ export default function HelpCenterPage() {
           {searchTerm && filteredContent.length === 0 ? (
             <motion.div
               key="empty"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, transform: 'scale(0.98)' }}
+              animate={{ opacity: 1, transform: 'scale(1)' }}
+              exit={{ opacity: 0, transform: 'scale(0.98)' }}
+              transition={{ duration: 0.2, ease: customEasing }}
               className="text-center py-16 bg-white rounded-2xl border border-slate-200"
             >
-              <motion.div
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 3, repeat: Infinity }}
-                className="w-20 h-20 rounded-2xl bg-slate-50 border-2 border-slate-200 flex items-center justify-center mx-auto mb-4"
-              >
+              <div className="w-20 h-20 rounded-2xl bg-slate-50 border-2 border-slate-200 flex items-center justify-center mx-auto mb-4">
                 <Search size={32} className="text-slate-400" />
-              </motion.div>
+              </div>
               <p className="text-slate-600 font-medium">
                 Aucun résultat pour "{searchTerm}"
               </p>
@@ -110,12 +107,12 @@ export default function HelpCenterPage() {
               {(searchTerm ? filteredContent : HELP_CONTENT).map((pageHelp, groupIndex) => (
                 <motion.div
                   key={pageHelp.page}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, transform: 'translateY(20px)' }}
+                  animate={{ opacity: 1, transform: 'translateY(0)' }}
                   transition={{
-                    delay: groupIndex * 0.05,
-                    type: 'spring',
-                    ...springConfig,
+                    delay: groupIndex * 0.04,
+                    duration: 0.3,
+                    ease: customEasing,
                   }}
                   className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
                 >
@@ -123,15 +120,16 @@ export default function HelpCenterPage() {
                   <div className="relative px-5 py-4 border-b border-slate-100 bg-slate-50/50">
                     <motion.div
                       className="absolute left-0 top-0 w-1 h-full"
-                      initial={{ scaleY: 0 }}
-                      animate={{ scaleY: 1 }}
-                      transition={{ delay: groupIndex * 0.05 + 0.1, duration: 0.3 }}
-                      style={{ backgroundColor: 'var(--color-brand, #2563eb)' }}
+                      initial={{ transform: 'scaleY(0)' }}
+                      animate={{ transform: 'scaleY(1)' }}
+                      transition={{ delay: groupIndex * 0.04 + 0.1, duration: 0.25, ease: customEasing }}
+                      style={{ backgroundColor: 'var(--color-brand, #2563eb)', transformOrigin: 'top' }}
                     />
                     <div className="flex items-center justify-between">
                       <h2 className="font-bold text-lg text-slate-900 flex items-center gap-3">
                         <motion.span
-                          whileHover={{ scale: 1.1, rotate: 5 }}
+                          whileHover={{ transform: 'scale(1.05)' }}
+                          transition={{ duration: 0.16, ease: customEasing }}
                           className="text-sm font-black px-2.5 py-1 rounded-lg text-white shadow-sm"
                           style={{ backgroundColor: 'var(--color-brand, #2563eb)' }}
                         >
@@ -148,15 +146,15 @@ export default function HelpCenterPage() {
                         key={article.id}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        transition={{ delay: index * 0.03 }}
-                        whileHover={{ x: 4, backgroundColor: 'rgba(248, 250, 252, 1)' }}
+                        transition={{ delay: index * 0.02, duration: 0.2, ease: customEasing }}
+                        whileHover={{ transform: 'translateX(4px)', backgroundColor: 'rgba(248, 250, 252, 1)' }}
                         className="p-5 transition-all group cursor-default"
                       >
                         <div className="flex items-start gap-4">
                           {/* Number badge avec couleur brand */}
                           <motion.div
-                            whileHover={{ rotate: 360, scale: 1.15 }}
-                            transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+                            whileHover={{ transform: 'scale(1.08)' }}
+                            transition={{ duration: 0.16, ease: customEasing }}
                             className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-white text-sm font-bold shadow-sm"
                             style={{
                               background: `linear-gradient(135deg, var(--color-brand, #2563eb) 0%, var(--color-brand-dark, #1e40af) 100%)`,
@@ -191,9 +189,9 @@ export default function HelpCenterPage() {
 
         {/* CTA Footer */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, type: 'spring', ...springConfig }}
+          initial={{ opacity: 0, transform: 'translateY(20px)' }}
+          animate={{ opacity: 1, transform: 'translateY(0)' }}
+          transition={{ delay: 0.3, duration: 0.3, ease: customEasing }}
           className="relative overflow-hidden rounded-2xl border border-slate-200 p-8 text-center bg-white shadow-sm"
         >
           <div
@@ -203,14 +201,12 @@ export default function HelpCenterPage() {
             }}
           />
           <div className="relative">
-            <motion.div
-              animate={{ scale: [1, 1.05, 1] }}
-              transition={{ duration: 3, repeat: Infinity }}
+            <div
               className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg"
               style={{ backgroundColor: 'var(--color-brand, #2563eb)' }}
             >
               <Zap size={28} className="text-white" fill="white" />
-            </motion.div>
+            </div>
             <h3 className="text-xl font-bold text-slate-900 mb-2">
               Besoin d'aide supplémentaire ?
             </h3>
@@ -218,8 +214,9 @@ export default function HelpCenterPage() {
               Notre équipe est disponible 24/7 pour vous accompagner
             </p>
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ transform: 'scale(1.05)' }}
+              whileTap={{ transform: 'scale(0.97)' }}
+              transition={{ duration: 0.16, ease: customEasing }}
               className="px-8 py-3 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-shadow"
               style={{
                 background: `linear-gradient(135deg, var(--color-brand, #2563eb) 0%, var(--color-brand-dark, #1e40af) 100%)`,
