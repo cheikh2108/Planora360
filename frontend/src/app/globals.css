@@ -8,6 +8,20 @@ html, body {
   height: 100%;
 }
 
+/* Prévenir le flash de couleur au chargement avec un fade-in rapide */
+body {
+  animation: fadeIn 0.12s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 :root {
   --background: #f8fafc;
   --foreground: #0f172a;
