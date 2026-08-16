@@ -6,7 +6,7 @@ import {
   LayoutDashboard, FolderKanban, CheckSquare, GitBranch,
   PiggyBank, FileText, Bell, BarChart3, Settings, LogOut,
   ChevronDown, Users, Shield, Archive, Target, UserPlus,
-  BookOpen, Calendar,
+  BookOpen, Calendar, HelpCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth-context';
@@ -36,9 +36,10 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 const ORG_ADMIN_ITEMS: NavItem[] = [
-  { href: '/admin/users',  label: 'Utilisateurs', icon: Users,  permission: 'user.read' },
-  { href: '/admin/roles',  label: 'Rôles',        icon: Shield, permission: 'user.create' },
-  { href: '/settings',     label: 'Paramètres',   icon: Settings },
+  { href: '/admin/users',  label: 'Utilisateurs',  icon: Users,       permission: 'user.read' },
+  { href: '/admin/roles',  label: 'Rôles',         icon: Shield,      permission: 'user.create' },
+  { href: '/admin/help',   label: 'Centre d\'aide', icon: HelpCircle, permission: 'user.create' },
+  { href: '/settings',     label: 'Paramètres',    icon: Settings },
 ];
 
 export function Sidebar({ onClose }: { onClose?: () => void }) {

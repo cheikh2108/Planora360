@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { AuthProvider } from '@/lib/auth-context';
 import { HelpProvider } from '@/contexts/help-context';
 import { HelpSidebar } from '@/components/help/help-sidebar';
+import { FloatingHelpButton } from '@/components/help/floating-help-button';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [client] = useState(() => new QueryClient({
@@ -17,6 +18,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <HelpProvider>
           {children}
           <HelpSidebar />
+          <FloatingHelpButton />
         </HelpProvider>
       </AuthProvider>
     </QueryClientProvider>
