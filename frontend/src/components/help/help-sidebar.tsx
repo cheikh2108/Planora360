@@ -1,6 +1,6 @@
 'use client';
 
-import { X, Loader2, AlertCircle } from 'lucide-react';
+import { X, Loader2, AlertCircle, Zap } from 'lucide-react';
 import { useHelp } from '@/contexts/help-context';
 import { getHelpForPage } from '@/lib/help-content';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,6 +8,10 @@ import { useState, useEffect } from 'react';
 
 const springConfig = { stiffness: 100, damping: 20 };
 
+/**
+ * Sidebar d'aide DISTINCTIVE avec respect des couleurs custom
+ * Design NON-CONVENTIONNEL : diagonal, asymétrique, mémorable
+ */
 export function HelpSidebar() {
   const { isOpen, currentPage, closeHelp } = useHelp();
   const [articles, setArticles] = useState<any[]>([]);
@@ -19,7 +23,6 @@ export function HelpSidebar() {
       setLoading(true);
       setError(false);
 
-      // Simulate async load (même si c'est synchrone, pour avoir un vrai loading state)
       const timer = setTimeout(() => {
         try {
           const data = getHelpForPage(currentPage);
@@ -45,83 +48,119 @@ export function HelpSidebar() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-40"
+            className="fixed inset-0 bg-slate-950/50 backdrop-blur-sm z-40"
             onClick={closeHelp}
           />
 
-          {/* Sidebar - Ultra Premium Design */}
+          {/* Sidebar - DESIGN DISTINCTIF DIAGONAL */}
           <motion.aside
             initial={{ x: '100%', opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: '100%', opacity: 0 }}
             transition={{ type: 'spring', ...springConfig }}
-            className="fixed top-0 right-0 h-full w-full md:w-[540px] z-50 flex flex-col"
+            className="fixed top-0 right-0 h-full w-full md:w-[560px] z-50 flex flex-col overflow-hidden"
             style={{
-              background: 'linear-gradient(165deg, #0a0e1a 0%, #151b2e 50%, #0f1419 100%)',
+              background: 'linear-gradient(168deg, #0d1117 0%, #0a0e14 100%)',
             }}
           >
-            {/* Accent Elements - Asymmetric */}
-            <div className="absolute top-0 left-0 w-[2px] h-72 bg-gradient-to-b from-blue-500/60 via-blue-400/30 to-transparent" />
+            {/* DIAGONAL ACCENT STRIP - Utilise couleur brand */}
+            <div
+              className="absolute top-0 left-0 w-full h-[180px] origin-top-left"
+              style={{
+                transform: 'skewY(-3deg)',
+                background: `linear-gradient(135deg, var(--color-brand, #2563eb) 0%, transparent 100%)`,
+                opacity: 0.08,
+              }}
+            />
+
+            {/* VERTICAL DYNAMIC ACCENT */}
             <motion.div
               animate={{
-                opacity: [0.3, 0.6, 0.3],
-                scale: [1, 1.05, 1],
+                opacity: [0.4, 0.8, 0.4],
+                scaleY: [1, 1.05, 1],
               }}
               transition={{
-                duration: 4,
+                duration: 3,
                 repeat: Infinity,
                 ease: 'easeInOut',
               }}
-              className="absolute top-32 -right-24 w-96 h-96 rounded-full bg-blue-500/5 blur-3xl pointer-events-none"
+              className="absolute left-0 top-20 w-[3px] h-56"
+              style={{
+                background: `linear-gradient(180deg, var(--color-brand, #2563eb), transparent)`,
+              }}
             />
 
-            {/* Header - Expressive Typography */}
-            <div className="relative px-8 pt-10 pb-6 border-b border-white/5">
+            {/* Header - LAYOUT ASYMÉTRIQUE AUDACIEUX */}
+            <div className="relative px-8 pt-8 pb-6">
               <button
                 onClick={closeHelp}
-                className="absolute top-6 right-6 p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors group"
+                className="absolute top-6 right-6 p-2 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] transition-all group border border-white/[0.05]"
                 aria-label="Fermer"
               >
-                <X size={18} className="text-white/40 group-hover:text-white/80 transition-colors" />
+                <X size={18} className="text-white/50 group-hover:text-white/90 transition-colors" />
               </button>
 
               <motion.div
-                initial={{ opacity: 0, y: -10 }}
+                initial={{ opacity: 0, y: -15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1, type: 'spring', ...springConfig }}
               >
-                {/* Pulsing Indicator */}
-                <div className="flex items-center gap-2 mb-4">
+                {/* Live Indicator avec couleur brand */}
+                <div className="flex items-center gap-2.5 mb-5">
                   <motion.div
                     animate={{
-                      scale: [1, 1.3, 1],
-                      opacity: [0.5, 1, 0.5],
+                      scale: [1, 1.4, 1],
+                      opacity: [0.6, 1, 0.6],
                     }}
                     transition={{
                       duration: 2,
                       repeat: Infinity,
                       ease: 'easeInOut',
                     }}
-                    className="w-2 h-2 rounded-full bg-blue-400"
+                    className="w-2 h-2 rounded-full"
+                    style={{ backgroundColor: 'var(--color-brand, #2563eb)' }}
                   />
-                  <span className="text-blue-400/80 text-[10px] font-semibold uppercase tracking-widest">
-                    Guide en direct
+                  <span
+                    className="text-xs font-bold uppercase tracking-[0.25em] opacity-80"
+                    style={{ color: 'var(--color-brand, #2563eb)' }}
+                  >
+                    AIDE EN DIRECT
                   </span>
                 </div>
 
-                <h2 className="text-white font-outfit text-[2.2rem] font-bold leading-[0.9] tracking-tight mb-2">
-                  Comment
-                  <br />
-                  vous aider ?
-                </h2>
-                <p className="text-white/40 text-sm font-medium">
-                  Aide contextuelle pour cette page
-                </p>
+                {/* Typography ultra-expressive - DÉCALÉE */}
+                <div className="relative">
+                  <h2
+                    className="font-outfit font-extrabold leading-[0.85] tracking-tighter mb-1"
+                    style={{
+                      fontSize: 'clamp(2.5rem, 5vw, 3rem)',
+                      background: `linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.6) 100%)`,
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text',
+                    }}
+                  >
+                    Aide
+                  </h2>
+                  <div className="flex items-center gap-3">
+                    <motion.div
+                      animate={{ rotate: [0, 5, -5, 0] }}
+                      transition={{ duration: 4, repeat: Infinity }}
+                      className="w-8 h-8 rounded-lg flex items-center justify-center"
+                      style={{ backgroundColor: 'var(--color-brand, #2563eb)' }}
+                    >
+                      <Zap size={18} className="text-white" fill="white" />
+                    </motion.div>
+                    <p className="text-white/40 text-sm font-semibold">
+                      Réponses instantanées
+                    </p>
+                  </div>
+                </div>
               </motion.div>
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 overflow-y-auto px-8 py-6">
+            <div className="flex-1 overflow-y-auto px-8 py-4">
               <AnimatePresence mode="wait">
                 {loading ? (
                   <LoadingState key="loading" />
@@ -135,18 +174,25 @@ export function HelpSidebar() {
               </AnimatePresence>
             </div>
 
-            {/* Footer - Minimal */}
+            {/* Footer - Minimaliste avec accent brand */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
-              className="px-8 py-5 border-t border-white/5 bg-white/[0.02]"
+              className="px-8 py-5 border-t bg-white/[0.01]"
+              style={{ borderColor: 'rgba(255,255,255,0.05)' }}
             >
-              <div className="flex items-center gap-2.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <p className="text-white/40 text-xs font-medium">
-                  Support disponible —{' '}
-                  <button className="text-blue-400 hover:text-blue-300 transition-colors font-semibold">
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-2 h-2 rounded-full animate-pulse"
+                  style={{ backgroundColor: 'var(--color-brand, #2563eb)' }}
+                />
+                <p className="text-white/50 text-xs font-medium">
+                  Support disponible 24/7 —{' '}
+                  <button
+                    className="font-bold hover:opacity-70 transition-opacity"
+                    style={{ color: 'var(--color-brand, #2563eb)' }}
+                  >
                     Contactez-nous
                   </button>
                 </p>
@@ -171,9 +217,9 @@ function LoadingState() {
         animate={{ rotate: 360 }}
         transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
       >
-        <Loader2 size={32} className="text-blue-400" strokeWidth={2} />
+        <Loader2 size={32} className="opacity-60" style={{ color: 'var(--color-brand, #2563eb)' }} strokeWidth={2} />
       </motion.div>
-      <p className="text-white/60 text-sm font-medium mt-4">Chargement de l'aide...</p>
+      <p className="text-white/60 text-sm font-medium mt-4">Chargement...</p>
     </motion.div>
   );
 }
@@ -187,12 +233,12 @@ function ErrorState() {
       transition={{ type: 'spring', ...springConfig }}
       className="flex flex-col items-center justify-center py-20"
     >
-      <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mb-4">
+      <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mb-4 border border-red-500/20">
         <AlertCircle size={32} className="text-red-400" />
       </div>
       <p className="text-white/80 font-semibold mb-2">Erreur de chargement</p>
       <p className="text-white/50 text-sm text-center max-w-xs">
-        Impossible de charger l'aide pour le moment. Réessayez plus tard.
+        Impossible de charger l'aide. Réessayez.
       </p>
     </motion.div>
   );
@@ -208,20 +254,14 @@ function EmptyState() {
       className="flex flex-col items-center justify-center py-20 text-center"
     >
       <motion.div
-        animate={{
-          y: [0, -8, 0],
-        }}
-        transition={{
-          duration: 3,
-          repeat: Infinity,
-          ease: 'easeInOut',
-        }}
-        className="w-16 h-16 rounded-2xl bg-white/5 backdrop-blur-sm flex items-center justify-center mb-4 border border-white/10"
+        animate={{ y: [0, -10, 0] }}
+        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+        className="w-20 h-20 rounded-2xl bg-white/[0.03] flex items-center justify-center mb-4 border border-white/[0.08]"
       >
-        <span className="text-2xl">📚</span>
+        <span className="text-3xl">💡</span>
       </motion.div>
       <p className="text-white/60 text-sm font-medium max-w-xs">
-        Aucune aide disponible pour cette page pour le moment.
+        Aucune aide disponible pour cette page.
       </p>
     </motion.div>
   );
@@ -229,44 +269,60 @@ function EmptyState() {
 
 function ArticlesList({ articles }: { articles: any[] }) {
   return (
-    <motion.div className="space-y-3">
+    <motion.div className="space-y-4">
       {articles.map((article, index) => (
         <motion.article
           key={article.id}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
+          initial={{ opacity: 0, x: 30, rotateX: -10 }}
+          animate={{ opacity: 1, x: 0, rotateX: 0 }}
           transition={{
-            delay: index * 0.08,
+            delay: index * 0.1,
             type: 'spring',
             ...springConfig,
           }}
-          whileHover={{ scale: 1.01 }}
+          whileHover={{ scale: 1.015, x: -4 }}
           className="group relative"
         >
-          {/* Hover accent */}
+          {/* Accent latéral avec couleur brand */}
           <motion.div
-            className="absolute left-0 top-0 w-[2px] h-0 bg-gradient-to-b from-blue-400 to-transparent"
+            className="absolute left-0 top-0 w-[3px] h-0 rounded-full"
+            style={{ background: `var(--color-brand, #2563eb)` }}
             whileHover={{ height: '100%' }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.3 }}
           />
 
-          <div className="relative bg-white/[0.04] backdrop-blur-sm rounded-2xl p-6 border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.12] transition-all">
-            {/* Number Badge - Asymmetric */}
+          <div
+            className="relative pl-6 pr-5 py-5 rounded-2xl border transition-all"
+            style={{
+              background: 'rgba(255,255,255,0.02)',
+              borderColor: 'rgba(255,255,255,0.06)',
+            }}
+          >
+            {/* Number Badge - DÉCALÉ AUDACIEUSEMENT */}
             <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: index * 0.08 + 0.15, type: 'spring', stiffness: 200, damping: 15 }}
-              className="absolute -left-2.5 -top-2.5 w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xs font-bold shadow-lg shadow-blue-500/30"
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{
+                delay: index * 0.1 + 0.2,
+                type: 'spring',
+                stiffness: 200,
+                damping: 12
+              }}
+              className="absolute -left-3 top-4 w-8 h-8 rounded-xl flex items-center justify-center text-white text-sm font-black shadow-2xl transform -rotate-12"
+              style={{
+                background: `linear-gradient(135deg, var(--color-brand, #2563eb) 0%, var(--color-brand-dark, #1e40af) 100%)`,
+                boxShadow: `0 8px 24px -8px var(--color-brand, #2563eb)`,
+              }}
             >
               {index + 1}
             </motion.div>
 
-            <h3 className="text-white font-semibold text-base leading-snug mb-3 pr-4">
+            <h3 className="text-white font-bold text-base leading-snug mb-3 pr-2">
               {article.title}
             </h3>
 
             <div
-              className="prose-help text-white/60 text-[0.875rem] leading-relaxed"
+              className="prose-help-custom text-white/60 text-sm leading-relaxed"
               dangerouslySetInnerHTML={{ __html: article.content }}
             />
           </div>

@@ -9,15 +9,14 @@ import { useState } from 'react';
 const springConfig = { stiffness: 100, damping: 20 };
 
 /**
- * Bouton d'aide flottant - Premium avec Framer Motion
- * Design variance: 8/10, Motion intensity: 6/10
+ * Bouton d'aide flottant DISTINCTIF
+ * Respect total des couleurs custom de l'organisation
  */
 export function FloatingHelpButton() {
   const { toggleHelp, isOpen } = useHelp();
   const pathname = usePathname();
   const [isHovered, setIsHovered] = useState(false);
 
-  // Extraire l'identifiant de page depuis le pathname
   const getPageId = () => {
     if (pathname === '/dashboard') return 'dashboard';
     if (pathname.startsWith('/plans')) return 'plans';
@@ -34,7 +33,6 @@ export function FloatingHelpButton() {
     return 'dashboard';
   };
 
-  // Ne pas afficher sur les pages d'auth
   if (pathname.startsWith('/auth')) return null;
 
   return (
@@ -48,28 +46,35 @@ export function FloatingHelpButton() {
         ...springConfig,
       }}
     >
-      {/* Glow effect - perpetual micro-animation */}
+      {/* Glow effect avec couleur brand */}
       <motion.div
         animate={{
-          opacity: [0.15, 0.35, 0.15],
-          scale: [1, 1.15, 1],
+          opacity: [0.15, 0.4, 0.15],
+          scale: [1, 1.2, 1],
         }}
         transition={{
           duration: 4,
           repeat: Infinity,
           ease: 'easeInOut',
         }}
-        className="absolute inset-0 rounded-full bg-gradient-to-tr from-blue-500 via-blue-400 to-blue-300 blur-2xl"
+        className="absolute inset-0 rounded-full blur-2xl"
+        style={{
+          background: 'var(--color-brand, #2563eb)',
+        }}
       />
 
-      {/* Main button */}
+      {/* Main button avec gradient brand */}
       <motion.button
         onClick={() => toggleHelp(getPageId())}
         onHoverStart={() => setIsHovered(true)}
         onHoverEnd={() => setIsHovered(false)}
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.95 }}
-        className="relative w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 shadow-xl shadow-blue-500/40 flex items-center justify-center group"
+        className="relative w-14 h-14 rounded-full flex items-center justify-center group"
+        style={{
+          background: `linear-gradient(135deg, var(--color-brand, #2563eb) 0%, var(--color-brand-dark, #1e40af) 100%)`,
+          boxShadow: `0 8px 24px -4px var(--color-brand, #2563eb)`,
+        }}
         aria-label="Ouvrir l'aide"
       >
         <motion.div
@@ -85,21 +90,22 @@ export function FloatingHelpButton() {
           />
         </motion.div>
 
-        {/* Pulse ring on hover */}
+        {/* Pulse ring avec couleur brand */}
         <AnimatePresence>
           {isHovered && (
             <motion.div
               initial={{ scale: 1, opacity: 0.6 }}
-              animate={{ scale: 1.5, opacity: 0 }}
+              animate={{ scale: 1.6, opacity: 0 }}
               exit={{ scale: 1, opacity: 0 }}
               transition={{ duration: 1, repeat: Infinity }}
-              className="absolute inset-0 rounded-full border-2 border-blue-300"
+              className="absolute inset-0 rounded-full border-2"
+              style={{ borderColor: 'var(--color-brand, #2563eb)' }}
             />
           )}
         </AnimatePresence>
       </motion.button>
 
-      {/* Tooltip - asymmetric placement */}
+      {/* Tooltip asymétrique */}
       <AnimatePresence>
         {isHovered && (
           <motion.div
@@ -115,18 +121,22 @@ export function FloatingHelpButton() {
         )}
       </AnimatePresence>
 
-      {/* Floating indicator - perpetual animation */}
+      {/* Floating indicator avec couleur brand */}
       <motion.div
         animate={{
-          y: [0, -4, 0],
-          opacity: [0.4, 1, 0.4],
+          y: [0, -5, 0],
+          opacity: [0.5, 1, 0.5],
         }}
         transition={{
           duration: 2.5,
           repeat: Infinity,
           ease: 'easeInOut',
         }}
-        className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-yellow-400 shadow-lg shadow-yellow-400/50"
+        className="absolute -top-1 -right-1 w-3 h-3 rounded-full shadow-lg"
+        style={{
+          backgroundColor: 'var(--color-brand, #2563eb)',
+          boxShadow: `0 4px 12px -2px var(--color-brand, #2563eb)`,
+        }}
       />
     </motion.div>
   );

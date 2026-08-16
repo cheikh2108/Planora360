@@ -34,46 +34,55 @@ input:focus, textarea:focus, select:focus {
 .text-\[\#2563eb\]       { color: var(--color-brand, #2563eb) !important; }
 .border-\[\#2563eb\]     { border-color: var(--color-brand, #2563eb) !important; }
 
-/* Prose styling for help sidebar - Premium */
-.prose-help {
+/* Prose styling for help sidebar - CUSTOM DISTINCTIVE */
+.prose-help-custom {
   font-size: 0.875rem;
-  line-height: 1.6;
+  line-height: 1.65;
   color: rgba(255, 255, 255, 0.6);
 }
 
-.prose-help strong {
-  color: rgba(255, 255, 255, 0.9);
-  font-weight: 600;
+.prose-help-custom strong {
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 700;
 }
 
-.prose-help p {
+.prose-help-custom p {
   margin-top: 0;
   margin-bottom: 0.75rem;
 }
 
-.prose-help p:last-child {
+.prose-help-custom p:last-child {
   margin-bottom: 0;
 }
 
-.prose-help ul,
-.prose-help ol {
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
+.prose-help-custom ul,
+.prose-help-custom ol {
+  margin-top: 0.65rem;
+  margin-bottom: 0.65rem;
   padding-left: 1.5rem;
+  list-style-position: outside;
 }
 
-.prose-help li {
-  margin-top: 0.25rem;
-  color: rgba(255, 255, 255, 0.65);
+.prose-help-custom li {
+  margin-top: 0.35rem;
+  color: rgba(255, 255, 255, 0.7);
+  padding-left: 0.25rem;
 }
 
-.prose-help code {
-  background: rgba(255, 255, 255, 0.08);
-  padding: 0.125rem 0.375rem;
-  border-radius: 0.375rem;
-  color: #60a5fa;
+.prose-help-custom li::marker {
+  color: var(--color-brand, #2563eb);
+  font-weight: 600;
+}
+
+.prose-help-custom code {
+  background: rgba(255, 255, 255, 0.06);
+  padding: 0.15rem 0.45rem;
+  border-radius: 0.5rem;
+  color: var(--color-brand, #60a5fa);
   font-size: 0.85em;
+  font-weight: 600;
   font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 .hover\:bg-\[\#2563eb\]:hover { background-color: var(--color-brand, #2563eb) !important; }
 .hover\:text-\[\#2563eb\]:hover { color: var(--color-brand, #2563eb) !important; }
