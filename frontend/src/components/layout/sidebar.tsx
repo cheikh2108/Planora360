@@ -80,7 +80,7 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
       <div className="flex items-center gap-3 px-5 py-5 border-b border-white/10">
         <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm" style={{ backgroundColor: 'var(--color-brand)' }}>A</div>
         <div>
-          <p className="font-semibold text-sm leading-tight">Action Pilot</p>
+          <p className="font-semibold text-sm leading-tight">PLANORA 360</p>
           <p className="text-xs text-white/40 truncate max-w-35">{user?.organization?.name ?? '—'}</p>
         </div>
       </div>

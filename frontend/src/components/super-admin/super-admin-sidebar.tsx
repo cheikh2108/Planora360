@@ -28,7 +28,7 @@ export function SuperAdminSidebar({ onClose }: { onClose?: () => void }) {
           A
         </div>
         <div>
-          <p className="font-semibold text-sm leading-tight">Action Pilot</p>
+          <p className="font-semibold text-sm leading-tight">PLANORA 360</p>
           <p className="text-xs font-semibold text-amber-400/90">Super Admin</p>
         </div>
       </div>

@@ -69,10 +69,10 @@ export default function LoginPage() {
         <div className="relative px-10 pt-10 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-[#0b1629] flex items-center justify-center font-extrabold text-white text-sm tracking-tight">
-              A
+              P
             </div>
             <div>
-              <p className="text-[13px] font-bold text-[#0b1629] leading-none tracking-tight">Action Pilot</p>
+              <p className="text-[13px] font-bold text-[#0b1629] leading-none tracking-tight">PLANORA 360</p>
               <p className="text-[10px] text-[#2563eb]/60 leading-none mt-0.5">Gestion des plans d&apos;action</p>
             </div>
           </div>
@@ -117,8 +117,8 @@ export default function LoginPage() {
 
           {/* Logo mobile */}
           <div className="flex items-center gap-2.5 mb-10 lg:hidden">
-            <div className="w-8 h-8 rounded-lg bg-[#0b1629] flex items-center justify-center font-extrabold text-white text-sm">A</div>
-            <span className="font-semibold text-slate-900 text-sm">Action Pilot</span>
+            <div className="w-8 h-8 rounded-lg bg-[#0b1629] flex items-center justify-center font-extrabold text-white text-sm">P</div>
+            <span className="font-semibold text-slate-900 text-sm">PLANORA 360</span>
           </div>
 
           <div className="w-full max-w-[340px]">
@@ -218,7 +218,7 @@ export default function LoginPage() {
         </div>
 
         <div className="px-10 sm:px-16 xl:px-20 py-5 shrink-0 flex items-center justify-between">
-          <p className="text-[11px] text-slate-200 font-medium">© 2025 Action Pilot</p>
+          <p className="text-[11px] text-slate-200 font-medium">© 2025 PLANORA 360</p>
           <a href="/auth/register" className="text-[11px] text-[#2563eb] hover:underline font-medium">
             Demander un accès →
           </a>
