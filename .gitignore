@@ -35,3 +35,12 @@ coverage/
 
 # Uploads
 uploads/
+
+# Debug scripts (contain sensitive data)
+check-*.js
+check-*.ts
+backend/check-*.js
+backend/check-*.ts
+backend/dist/check-*.js
+backend/dist/check-*.d.ts
+backend/dist/check-*.js.map
