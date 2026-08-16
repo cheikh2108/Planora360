@@ -1,199 +1,277 @@
 'use client';
 
-import { X, Sparkles } from 'lucide-react';
+import { X, Loader2, AlertCircle } from 'lucide-react';
 import { useHelp } from '@/contexts/help-context';
 import { getHelpForPage } from '@/lib/help-content';
-import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from 'react';
+
+const springConfig = { stiffness: 100, damping: 20 };
 
 export function HelpSidebar() {
   const { isOpen, currentPage, closeHelp } = useHelp();
-  const [mounted, setMounted] = useState(false);
+  const [articles, setArticles] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
-      setMounted(true);
+      setLoading(true);
+      setError(false);
+
+      // Simulate async load (même si c'est synchrone, pour avoir un vrai loading state)
+      const timer = setTimeout(() => {
+        try {
+          const data = getHelpForPage(currentPage);
+          setArticles(data);
+          setLoading(false);
+        } catch {
+          setError(true);
+          setLoading(false);
+        }
+      }, 300);
+
+      return () => clearTimeout(timer);
     }
-  }, [isOpen]);
-
-  if (!isOpen && !mounted) return null;
-
-  const articles = getHelpForPage(currentPage);
+  }, [isOpen, currentPage]);
 
   return (
-    <>
-      {/* Overlay */}
-      <div
-        className={`fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 transition-opacity duration-300 ${
-          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`}
-        onClick={closeHelp}
-      />
-
-      {/* Sidebar - Distinctive Design */}
-      <div
-        className={`fixed top-0 right-0 h-full w-full md:w-[520px] z-50 flex flex-col transition-transform duration-500 ease-out ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
-        style={{
-          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-        }}
-      >
-        {/* Accent Line - Asymmetric */}
-        <div
-          className="absolute top-0 left-0 w-1 h-64 opacity-80"
-          style={{
-            background: 'linear-gradient(180deg, #3b82f6 0%, transparent 100%)',
-          }}
-        />
-
-        {/* Header - Bold, Expressive Typography */}
-        <div className="relative px-8 pt-12 pb-8">
-          <button
+    <AnimatePresence mode="wait">
+      {isOpen && (
+        <>
+          {/* Overlay */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-slate-950/40 backdrop-blur-md z-40"
             onClick={closeHelp}
-            className="absolute top-6 right-6 p-2.5 rounded-lg bg-white/5 hover:bg-white/10 transition-all group"
-            aria-label="Fermer"
+          />
+
+          {/* Sidebar - Ultra Premium Design */}
+          <motion.aside
+            initial={{ x: '100%', opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: '100%', opacity: 0 }}
+            transition={{ type: 'spring', ...springConfig }}
+            className="fixed top-0 right-0 h-full w-full md:w-[540px] z-50 flex flex-col"
+            style={{
+              background: 'linear-gradient(165deg, #0a0e1a 0%, #151b2e 50%, #0f1419 100%)',
+            }}
           >
-            <X size={20} className="text-white/60 group-hover:text-white transition-colors" />
-          </button>
+            {/* Accent Elements - Asymmetric */}
+            <div className="absolute top-0 left-0 w-[2px] h-72 bg-gradient-to-b from-blue-500/60 via-blue-400/30 to-transparent" />
+            <motion.div
+              animate={{
+                opacity: [0.3, 0.6, 0.3],
+                scale: [1, 1.05, 1],
+              }}
+              transition={{
+                duration: 4,
+                repeat: Infinity,
+                ease: 'easeInOut',
+              }}
+              className="absolute top-32 -right-24 w-96 h-96 rounded-full bg-blue-500/5 blur-3xl pointer-events-none"
+            />
 
-          <div className="flex items-start gap-4 mb-3">
-            <div className="relative">
-              <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse" />
-              <div className="absolute inset-0 w-3 h-3 rounded-full bg-blue-400 animate-ping opacity-75" />
-            </div>
-            <div className="flex-1">
-              <p className="text-blue-400 text-xs font-bold uppercase tracking-[0.2em] mb-2">
-                Guide contextuel
-              </p>
-              <h2
-                className="text-white font-bold leading-[0.95] tracking-tight"
-                style={{
-                  fontSize: 'clamp(1.75rem, 4vw, 2.25rem)',
-                  fontFamily: 'var(--font-jakarta)',
-                  fontWeight: 800,
-                }}
+            {/* Header - Expressive Typography */}
+            <div className="relative px-8 pt-10 pb-6 border-b border-white/5">
+              <button
+                onClick={closeHelp}
+                className="absolute top-6 right-6 p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors group"
+                aria-label="Fermer"
               >
-                Comment puis-je
-                <br />
-                vous aider ?
-              </h2>
-            </div>
-          </div>
-        </div>
-
-        {/* Content - Asymmetric Layout */}
-        <div className="flex-1 overflow-y-auto px-8 pb-8">
-          {articles.length === 0 ? (
-            <div className="py-16 text-center">
-              <div className="w-16 h-16 rounded-2xl bg-white/5 backdrop-blur-sm flex items-center justify-center mx-auto mb-4">
-                <Sparkles size={24} className="text-blue-400" />
-              </div>
-              <p className="text-white/60 text-sm">
-                Aucune aide disponible pour cette page.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {articles.map((article, index) => (
-                <article
-                  key={article.id}
-                  className="group relative"
-                  style={{
-                    animation: `slideInRight 0.4s ease-out ${index * 0.1}s both`,
-                  }}
-                >
-                  {/* Accent bar - appears on hover */}
-                  <div className="absolute left-0 top-0 w-0.5 h-full bg-gradient-to-b from-blue-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-
-                  <div className="relative bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:bg-white/8 hover:border-white/20 transition-all">
-                    {/* Number indicator - asymmetric placement */}
-                    <div className="absolute -left-2 -top-2 w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center text-white text-xs font-bold shadow-lg shadow-blue-500/50">
-                      {index + 1}
-                    </div>
-
-                    <h3 className="text-white font-bold text-lg mb-3 pr-8 leading-snug">
-                      {article.title}
-                    </h3>
-
-                    <div
-                      className="prose prose-sm prose-invert max-w-none"
-                      style={{
-                        fontSize: '0.9rem',
-                        lineHeight: '1.6',
-                      }}
-                      dangerouslySetInnerHTML={{ __html: article.content }}
-                    />
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Footer - Subtle CTA */}
-        <div className="px-8 py-6 border-t border-white/10 bg-white/5 backdrop-blur-sm">
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-            <p className="text-white/60 text-xs">
-              Support disponible —{' '}
-              <button className="text-blue-400 hover:text-blue-300 font-medium transition-colors">
-                Contactez l'équipe
+                <X size={18} className="text-white/40 group-hover:text-white/80 transition-colors" />
               </button>
-            </p>
-          </div>
-        </div>
+
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1, type: 'spring', ...springConfig }}
+              >
+                {/* Pulsing Indicator */}
+                <div className="flex items-center gap-2 mb-4">
+                  <motion.div
+                    animate={{
+                      scale: [1, 1.3, 1],
+                      opacity: [0.5, 1, 0.5],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: 'easeInOut',
+                    }}
+                    className="w-2 h-2 rounded-full bg-blue-400"
+                  />
+                  <span className="text-blue-400/80 text-[10px] font-semibold uppercase tracking-widest">
+                    Guide en direct
+                  </span>
+                </div>
+
+                <h2 className="text-white font-outfit text-[2.2rem] font-bold leading-[0.9] tracking-tight mb-2">
+                  Comment
+                  <br />
+                  vous aider ?
+                </h2>
+                <p className="text-white/40 text-sm font-medium">
+                  Aide contextuelle pour cette page
+                </p>
+              </motion.div>
+            </div>
+
+            {/* Content Area */}
+            <div className="flex-1 overflow-y-auto px-8 py-6">
+              <AnimatePresence mode="wait">
+                {loading ? (
+                  <LoadingState key="loading" />
+                ) : error ? (
+                  <ErrorState key="error" />
+                ) : articles.length === 0 ? (
+                  <EmptyState key="empty" />
+                ) : (
+                  <ArticlesList key="articles" articles={articles} />
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Footer - Minimal */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className="px-8 py-5 border-t border-white/5 bg-white/[0.02]"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <p className="text-white/40 text-xs font-medium">
+                  Support disponible —{' '}
+                  <button className="text-blue-400 hover:text-blue-300 transition-colors font-semibold">
+                    Contactez-nous
+                  </button>
+                </p>
+              </div>
+            </motion.div>
+          </motion.aside>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+
+function LoadingState() {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="flex flex-col items-center justify-center py-20"
+    >
+      <motion.div
+        animate={{ rotate: 360 }}
+        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+      >
+        <Loader2 size={32} className="text-blue-400" strokeWidth={2} />
+      </motion.div>
+      <p className="text-white/60 text-sm font-medium mt-4">Chargement de l'aide...</p>
+    </motion.div>
+  );
+}
+
+function ErrorState() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ type: 'spring', ...springConfig }}
+      className="flex flex-col items-center justify-center py-20"
+    >
+      <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mb-4">
+        <AlertCircle size={32} className="text-red-400" />
       </div>
+      <p className="text-white/80 font-semibold mb-2">Erreur de chargement</p>
+      <p className="text-white/50 text-sm text-center max-w-xs">
+        Impossible de charger l'aide pour le moment. Réessayez plus tard.
+      </p>
+    </motion.div>
+  );
+}
 
-      <style jsx>{`
-        @keyframes slideInRight {
-          from {
-            opacity: 0;
-            transform: translateX(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
+function EmptyState() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ type: 'spring', ...springConfig }}
+      className="flex flex-col items-center justify-center py-20 text-center"
+    >
+      <motion.div
+        animate={{
+          y: [0, -8, 0],
+        }}
+        transition={{
+          duration: 3,
+          repeat: Infinity,
+          ease: 'easeInOut',
+        }}
+        className="w-16 h-16 rounded-2xl bg-white/5 backdrop-blur-sm flex items-center justify-center mb-4 border border-white/10"
+      >
+        <span className="text-2xl">📚</span>
+      </motion.div>
+      <p className="text-white/60 text-sm font-medium max-w-xs">
+        Aucune aide disponible pour cette page pour le moment.
+      </p>
+    </motion.div>
+  );
+}
 
-        .prose-invert {
-          color: rgba(255, 255, 255, 0.7);
-        }
+function ArticlesList({ articles }: { articles: any[] }) {
+  return (
+    <motion.div className="space-y-3">
+      {articles.map((article, index) => (
+        <motion.article
+          key={article.id}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{
+            delay: index * 0.08,
+            type: 'spring',
+            ...springConfig,
+          }}
+          whileHover={{ scale: 1.01 }}
+          className="group relative"
+        >
+          {/* Hover accent */}
+          <motion.div
+            className="absolute left-0 top-0 w-[2px] h-0 bg-gradient-to-b from-blue-400 to-transparent"
+            whileHover={{ height: '100%' }}
+            transition={{ duration: 0.2 }}
+          />
 
-        .prose-invert strong {
-          color: rgba(255, 255, 255, 0.95);
-          font-weight: 700;
-        }
+          <div className="relative bg-white/[0.04] backdrop-blur-sm rounded-2xl p-6 border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.12] transition-all">
+            {/* Number Badge - Asymmetric */}
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: index * 0.08 + 0.15, type: 'spring', stiffness: 200, damping: 15 }}
+              className="absolute -left-2.5 -top-2.5 w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-xs font-bold shadow-lg shadow-blue-500/30"
+            >
+              {index + 1}
+            </motion.div>
 
-        .prose-invert ul,
-        .prose-invert ol {
-          margin-top: 0.75rem;
-          margin-bottom: 0;
-          padding-left: 1.5rem;
-        }
+            <h3 className="text-white font-semibold text-base leading-snug mb-3 pr-4">
+              {article.title}
+            </h3>
 
-        .prose-invert li {
-          margin-top: 0.25rem;
-          color: rgba(255, 255, 255, 0.7);
-        }
-
-        .prose-invert p {
-          margin-top: 0;
-          margin-bottom: 0.75rem;
-        }
-
-        .prose-invert p:last-child {
-          margin-bottom: 0;
-        }
-
-        .prose-invert code {
-          background: rgba(255, 255, 255, 0.1);
-          padding: 0.125rem 0.375rem;
-          border-radius: 0.25rem;
-          color: #60a5fa;
-          font-size: 0.85em;
-        }
-      `}</style>
-    </>
+            <div
+              className="prose-help text-white/60 text-[0.875rem] leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: article.content }}
+            />
+          </div>
+        </motion.article>
+      ))}
+    </motion.div>
   );
 }

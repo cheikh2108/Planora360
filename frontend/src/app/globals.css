@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+@theme {
+  --font-outfit: 'Outfit', system-ui, sans-serif;
+}
+
 html, body {
   height: 100%;
 }
@@ -9,6 +13,7 @@ html, body {
   --foreground: #0f172a;
   --color-brand: #2563eb;
   --color-brand-dark: #0f1e38;
+  --font-outfit: 'Outfit', system-ui, sans-serif;
 }
 
 /* Focus rings dynamiques via couleur de marque */
@@ -28,6 +33,48 @@ input:focus, textarea:focus, select:focus {
 .bg-\[\#2563eb\]         { background-color: var(--color-brand, #2563eb) !important; }
 .text-\[\#2563eb\]       { color: var(--color-brand, #2563eb) !important; }
 .border-\[\#2563eb\]     { border-color: var(--color-brand, #2563eb) !important; }
+
+/* Prose styling for help sidebar - Premium */
+.prose-help {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.prose-help strong {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+}
+
+.prose-help p {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+}
+
+.prose-help p:last-child {
+  margin-bottom: 0;
+}
+
+.prose-help ul,
+.prose-help ol {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  padding-left: 1.5rem;
+}
+
+.prose-help li {
+  margin-top: 0.25rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.prose-help code {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.375rem;
+  color: #60a5fa;
+  font-size: 0.85em;
+  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+}
 .hover\:bg-\[\#2563eb\]:hover { background-color: var(--color-brand, #2563eb) !important; }
 .hover\:text-\[\#2563eb\]:hover { color: var(--color-brand, #2563eb) !important; }
 .focus\:ring-\[\#2563eb\]:focus { box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-brand, #2563eb) 30%, transparent) !important; }

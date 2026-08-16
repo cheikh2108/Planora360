@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Outfit } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 
-const jakarta = Plus_Jakarta_Sans({
+const outfit = Outfit({
   subsets: ["latin"],
-  weight: ["400","600","700"],
+  weight: ["400","500","600","700","800"],
   display: 'swap',
-  preload: true
+  preload: true,
+  variable: '--font-outfit',
 });
 
 export const metadata: Metadata = {
@@ -22,7 +23,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className="h-full" suppressHydrationWarning>
-      <body className={`${jakarta.className} h-full antialiased`}>
+      <body className={`${outfit.variable} font-outfit h-full antialiased`}>
         <script
           dangerouslySetInnerHTML={{
             __html: `
