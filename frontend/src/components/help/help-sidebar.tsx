@@ -6,7 +6,7 @@ import { getHelpForPage } from '@/lib/help-content';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 
-const customEasing = 'cubic-bezier(0.32, 0.72, 0, 1)'; // iOS-like drawer curve
+const easeOut = "easeOut"; // Framer Motion preset for drawer animations
 
 /**
  * Sidebar d'aide DISTINCTIVE avec respect des couleurs custom
@@ -57,7 +57,7 @@ export function HelpSidebar() {
             initial={{ transform: 'translateX(100%)', opacity: 0 }}
             animate={{ transform: 'translateX(0)', opacity: 1 }}
             exit={{ transform: 'translateX(100%)', opacity: 0 }}
-            transition={{ duration: 0.4, ease: customEasing }}
+            transition={{ duration: 0.4, ease: easeOut }}
             className="fixed top-0 right-0 h-full w-full md:w-[560px] z-50 flex flex-col overflow-hidden"
             style={{
               background: 'linear-gradient(168deg, #0d1117 0%, #0a0e14 100%)',
@@ -86,7 +86,7 @@ export function HelpSidebar() {
               <motion.div
                 initial={{ opacity: 0, transform: 'translateY(-15px)' }}
                 animate={{ opacity: 1, transform: 'translateY(0)' }}
-                transition={{ delay: 0.1, duration: 0.3, ease: customEasing }}
+                transition={{ delay: 0.1, duration: 0.3, ease: easeOut }}
               >
                 {/* Live Indicator avec couleur brand */}
                 <div className="flex items-center gap-2.5 mb-5">
@@ -202,7 +202,7 @@ function ErrorState() {
       initial={{ opacity: 0, transform: 'scale(0.98)' }}
       animate={{ opacity: 1, transform: 'scale(1)' }}
       exit={{ opacity: 0, transform: 'scale(0.98)' }}
-      transition={{ duration: 0.2, ease: customEasing }}
+      transition={{ duration: 0.2, ease: easeOut }}
       className="flex flex-col items-center justify-center py-20"
     >
       <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mb-4 border border-red-500/20">
@@ -222,7 +222,7 @@ function EmptyState() {
       initial={{ opacity: 0, transform: 'translateY(10px)' }}
       animate={{ opacity: 1, transform: 'translateY(0)' }}
       exit={{ opacity: 0, transform: 'translateY(-10px)' }}
-      transition={{ duration: 0.2, ease: customEasing }}
+      transition={{ duration: 0.2, ease: easeOut }}
       className="flex flex-col items-center justify-center py-20 text-center"
     >
       <div className="w-20 h-20 rounded-2xl bg-white/[0.03] flex items-center justify-center mb-4 border border-white/[0.08]">
@@ -246,7 +246,7 @@ function ArticlesList({ articles }: { articles: any[] }) {
           transition={{
             delay: index * 0.05,
             duration: 0.25,
-            ease: customEasing,
+            ease: easeOut,
           }}
           whileHover={{ transform: 'translateX(-4px) scale(1.01)' }}
           className="group relative"
@@ -273,7 +273,7 @@ function ArticlesList({ articles }: { articles: any[] }) {
               transition={{
                 delay: index * 0.05 + 0.1,
                 duration: 0.2,
-                ease: customEasing,
+                ease: easeOut,
               }}
               className="absolute -left-3 top-4 w-8 h-8 rounded-xl flex items-center justify-center text-white text-sm font-black shadow-2xl"
               style={{

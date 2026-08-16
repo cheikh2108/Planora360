@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 
-const customEasing = 'cubic-bezier(0.23, 1, 0.32, 1)'; // Strong ease-out
+const easeOut = "easeOut"; // Framer Motion preset for button interactions
 
 /**
  * Bouton d'aide flottant DISTINCTIF
@@ -43,7 +43,7 @@ export function FloatingHelpButton() {
       transition={{
         delay: 0.5,
         duration: 0.3,
-        ease: customEasing,
+        ease: easeOut,
       }}
     >
       {/* Glow effect avec couleur brand - static */}
@@ -61,7 +61,7 @@ export function FloatingHelpButton() {
         onHoverEnd={() => setIsHovered(false)}
         whileHover={{ transform: 'scale(1.08)' }}
         whileTap={{ transform: 'scale(0.95)' }}
-        transition={{ duration: 0.16, ease: customEasing }}
+        transition={{ duration: 0.16, ease: easeOut }}
         className="relative w-14 h-14 rounded-full flex items-center justify-center group"
         style={{
           background: `linear-gradient(135deg, var(--color-brand, #2563eb) 0%, var(--color-brand-dark, #1e40af) 100%)`,
@@ -73,7 +73,7 @@ export function FloatingHelpButton() {
           animate={{
             transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
           }}
-          transition={{ duration: 0.3, ease: customEasing }}
+          transition={{ duration: 0.3, ease: easeOut }}
         >
           <HelpCircle
             size={24}
@@ -91,7 +91,7 @@ export function FloatingHelpButton() {
             initial={{ opacity: 0, transform: 'translate(10px, 5px)' }}
             animate={{ opacity: 1, transform: 'translate(0, 0)' }}
             exit={{ opacity: 0, transform: 'translate(10px, 5px)' }}
-            transition={{ duration: 0.15, ease: customEasing }}
+            transition={{ duration: 0.15, ease: easeOut }}
             className="absolute bottom-full right-2 mb-3 px-4 py-2 rounded-xl bg-slate-900/95 backdrop-blur-md text-white text-xs font-semibold whitespace-nowrap shadow-xl border border-white/10"
           >
             Besoin d'aide ?

@@ -6,7 +6,7 @@ import { HELP_CONTENT } from '@/lib/help-content';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Header } from '@/components/layout/header';
 
-const customEasing = 'cubic-bezier(0.23, 1, 0.32, 1)'; // Strong ease-out
+const easeOut = "easeOut"; // Framer Motion preset for UI interactions
 
 const PAGE_LABELS: Record<string, string> = {
   dashboard: 'Tableau de bord',
@@ -49,7 +49,7 @@ export default function HelpCenterPage() {
         <motion.div
           initial={{ opacity: 0, transform: 'translateY(-10px)' }}
           animate={{ opacity: 1, transform: 'translateY(0)' }}
-          transition={{ duration: 0.25, ease: customEasing }}
+          transition={{ duration: 0.25, ease: easeOut }}
           className="relative max-w-2xl"
         >
           {/* Diagonal accent */}
@@ -86,7 +86,7 @@ export default function HelpCenterPage() {
               initial={{ opacity: 0, transform: 'scale(0.98)' }}
               animate={{ opacity: 1, transform: 'scale(1)' }}
               exit={{ opacity: 0, transform: 'scale(0.98)' }}
-              transition={{ duration: 0.2, ease: customEasing }}
+              transition={{ duration: 0.2, ease: easeOut }}
               className="text-center py-16 bg-white rounded-2xl border border-slate-200"
             >
               <div className="w-20 h-20 rounded-2xl bg-slate-50 border-2 border-slate-200 flex items-center justify-center mx-auto mb-4">
@@ -112,7 +112,7 @@ export default function HelpCenterPage() {
                   transition={{
                     delay: groupIndex * 0.04,
                     duration: 0.3,
-                    ease: customEasing,
+                    ease: easeOut,
                   }}
                   className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
                 >
@@ -122,14 +122,14 @@ export default function HelpCenterPage() {
                       className="absolute left-0 top-0 w-1 h-full"
                       initial={{ transform: 'scaleY(0)' }}
                       animate={{ transform: 'scaleY(1)' }}
-                      transition={{ delay: groupIndex * 0.04 + 0.1, duration: 0.25, ease: customEasing }}
+                      transition={{ delay: groupIndex * 0.04 + 0.1, duration: 0.25, ease: easeOut }}
                       style={{ backgroundColor: 'var(--color-brand, #2563eb)', transformOrigin: 'top' }}
                     />
                     <div className="flex items-center justify-between">
                       <h2 className="font-bold text-lg text-slate-900 flex items-center gap-3">
                         <motion.span
                           whileHover={{ transform: 'scale(1.05)' }}
-                          transition={{ duration: 0.16, ease: customEasing }}
+                          transition={{ duration: 0.16, ease: easeOut }}
                           className="text-sm font-black px-2.5 py-1 rounded-lg text-white shadow-sm"
                           style={{ backgroundColor: 'var(--color-brand, #2563eb)' }}
                         >
@@ -146,7 +146,7 @@ export default function HelpCenterPage() {
                         key={article.id}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        transition={{ delay: index * 0.02, duration: 0.2, ease: customEasing }}
+                        transition={{ delay: index * 0.02, duration: 0.2, ease: easeOut }}
                         whileHover={{ transform: 'translateX(4px)', backgroundColor: 'rgba(248, 250, 252, 1)' }}
                         className="p-5 transition-all group cursor-default"
                       >
@@ -154,7 +154,7 @@ export default function HelpCenterPage() {
                           {/* Number badge avec couleur brand */}
                           <motion.div
                             whileHover={{ transform: 'scale(1.08)' }}
-                            transition={{ duration: 0.16, ease: customEasing }}
+                            transition={{ duration: 0.16, ease: easeOut }}
                             className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-white text-sm font-bold shadow-sm"
                             style={{
                               background: `linear-gradient(135deg, var(--color-brand, #2563eb) 0%, var(--color-brand-dark, #1e40af) 100%)`,
@@ -191,7 +191,7 @@ export default function HelpCenterPage() {
         <motion.div
           initial={{ opacity: 0, transform: 'translateY(20px)' }}
           animate={{ opacity: 1, transform: 'translateY(0)' }}
-          transition={{ delay: 0.3, duration: 0.3, ease: customEasing }}
+          transition={{ delay: 0.3, duration: 0.3, ease: easeOut }}
           className="relative overflow-hidden rounded-2xl border border-slate-200 p-8 text-center bg-white shadow-sm"
         >
           <div
@@ -216,7 +216,7 @@ export default function HelpCenterPage() {
             <motion.button
               whileHover={{ transform: 'scale(1.05)' }}
               whileTap={{ transform: 'scale(0.97)' }}
-              transition={{ duration: 0.16, ease: customEasing }}
+              transition={{ duration: 0.16, ease: easeOut }}
               className="px-8 py-3 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-shadow"
               style={{
                 background: `linear-gradient(135deg, var(--color-brand, #2563eb) 0%, var(--color-brand-dark, #1e40af) 100%)`,
