@@ -35,15 +35,22 @@ export class SubscriptionGuard implements CanActivate {
     if (!requiredPlans?.length) return true;
 
     const { user } = context.switchToHttp().getRequest();
-    if (!user) throw new ForbiddenException();
+    if (!user) throw new ForbiddenException('Accès refusé. Veuillez vous reconnecter.');
 
     const orgPlan: SubscriptionPlan = user.organization?.subscriptionPlan ?? 'DECOUVERTE';
     const orgRank = PLAN_RANK[orgPlan];
     const hasAccess = requiredPlans.some((p) => orgRank >= PLAN_RANK[p]);
 
     if (!hasAccess) {
+      const planNames = {
+        DECOUVERTE: 'Découverte',
+        PROFESSIONNELLE: 'Professionnelle',
+        SUR_MESURE: 'Sur mesure',
+      };
       throw new ForbiddenException(
-        `Cette fonctionnalité nécessite la formule ${requiredPlans.join(' ou ')}. Votre formule actuelle : ${orgPlan}.`,
+        `Cette fonctionnalité nécessite la formule ${requiredPlans.map(p => planNames[p]).join(' ou ')}. ` +
+        `Votre formule actuelle : ${planNames[orgPlan]}. ` +
+        `Passez à une formule supérieure dans Paramètres > Abonnement.`,
       );
     }
 

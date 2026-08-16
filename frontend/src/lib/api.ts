@@ -11,10 +11,26 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Messages d'erreur conviviaux
+const ERROR_MESSAGES: Record<number, string> = {
+  400: 'Les informations fournies sont incorrectes. Veuillez vérifier et réessayer.',
+  401: 'Votre session a expiré. Veuillez vous reconnecter.',
+  403: 'Vous n\'avez pas les autorisations nécessaires pour effectuer cette action.',
+  404: 'La ressource demandée est introuvable.',
+  409: 'Cette action ne peut pas être effectuée car elle entre en conflit avec des données existantes.',
+  422: 'Les données fournies ne sont pas valides.',
+  429: 'Trop de requêtes. Veuillez patienter quelques instants avant de réessayer.',
+  500: 'Une erreur est survenue sur le serveur. Veuillez réessayer plus tard.',
+  502: 'Le serveur est temporairement indisponible. Veuillez réessayer dans quelques instants.',
+  503: 'Le service est temporairement indisponible. Veuillez réessayer plus tard.',
+};
+
 api.interceptors.response.use(
   (res) => res,
   async (err) => {
     const original = err.config;
+
+    // Gestion du 401 (token expiré)
     if (err.response?.status === 401 && !original._retry) {
       original._retry = true;
       const refreshToken = localStorage.getItem('refreshToken');
@@ -34,6 +50,24 @@ api.interceptors.response.use(
         }
       }
     }
+
+    // Transformer les erreurs techniques en messages conviviaux
+    if (err.response?.status) {
+      const status = err.response.status;
+      const backendMessage = err.response.data?.message;
+
+      // Si le backend renvoie un message clair, on l'utilise
+      // Sinon on utilise notre message convivial par défaut
+      if (backendMessage && typeof backendMessage === 'string') {
+        err.message = backendMessage;
+      } else if (ERROR_MESSAGES[status]) {
+        err.message = ERROR_MESSAGES[status];
+      }
+    } else if (!err.response) {
+      // Erreur réseau (pas de réponse du serveur)
+      err.message = 'Impossible de contacter le serveur. Vérifiez votre connexion internet.';
+    }
+
     return Promise.reject(err);
   },
 );
