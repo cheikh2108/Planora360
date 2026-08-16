@@ -54,7 +54,7 @@ export class ReportsService {
 
   private async generateExcel(type: ReportType, data: any[]): Promise<Buffer> {
     const workbook = new ExcelJS.Workbook();
-    workbook.creator = 'Action Pilot';
+    workbook.creator = 'PLANORA 360';
     workbook.created = new Date();
 
     if (type === ReportType.INDICATEURS) {

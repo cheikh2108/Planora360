@@ -9,8 +9,8 @@ export declare class CapitalizationService {
     constructor(prisma: PrismaService, storage: StorageService);
     create(dto: CreateCapitalizationDto, organizationId: string, userId: string): Promise<{
         media: {
-            url: string;
             id: string;
+            url: string;
             type: string;
             size: number;
             capitalizationId: string;
@@ -35,8 +35,8 @@ export declare class CapitalizationService {
     }>;
     findAll(organizationId: string, filters?: FilterCapitalizationDto): Promise<({
         media: {
-            url: string;
             id: string;
+            url: string;
             type: string;
             size: number;
             capitalizationId: string;
@@ -61,8 +61,8 @@ export declare class CapitalizationService {
     })[]>;
     findOne(id: string, organizationId: string): Promise<{
         media: {
-            url: string;
             id: string;
+            url: string;
             type: string;
             size: number;
             capitalizationId: string;
@@ -87,8 +87,8 @@ export declare class CapitalizationService {
     }>;
     update(id: string, dto: UpdateCapitalizationDto, organizationId: string, userId: string): Promise<{
         media: {
-            url: string;
             id: string;
+            url: string;
             type: string;
             size: number;
             capitalizationId: string;
@@ -128,8 +128,8 @@ export declare class CapitalizationService {
         authorId: string;
     }>;
     uploadMedia(capitalizationId: string, file: Express.Multer.File, type: string, organizationId: string): Promise<{
-        url: string;
         id: string;
+        url: string;
         type: string;
         size: number;
         capitalizationId: string;
@@ -137,8 +137,8 @@ export declare class CapitalizationService {
         uploadedAt: Date;
     }>;
     deleteMedia(mediaId: string, capitalizationId: string, organizationId: string): Promise<{
-        url: string;
         id: string;
+        url: string;
         type: string;
         size: number;
         capitalizationId: string;

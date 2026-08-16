@@ -1,6 +1,8 @@
-# Action Pilot
+# PLANORA 360
 
-Plateforme de pilotage des plans d'action pour organisations publiques et privées — suivi des activités, des budgets, des validations et des documents en un espace unifié.
+**Plateforme intégrée de planification, suivi-évaluation, gestion financière et pilotage de la performance.**
+
+> *« Planifiez. Suivez. Évaluez. Agissez. Performez. »*
 
 ## Stack
 

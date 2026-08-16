@@ -12,9 +12,9 @@ export declare class UsersService {
             permissions: import("@prisma/client/runtime/client").JsonValue;
         };
         id: string;
-        email: string;
         organizationId: string;
         roleId: string;
+        email: string;
         firstName: string;
         lastName: string;
         isTwoFactorEnabled: boolean;
@@ -33,9 +33,9 @@ export declare class UsersService {
                 permissions: import("@prisma/client/runtime/client").JsonValue;
             };
             id: string;
-            email: string;
             organizationId: string;
             roleId: string;
+            email: string;
             firstName: string;
             lastName: string;
             isTwoFactorEnabled: boolean;
@@ -57,9 +57,9 @@ export declare class UsersService {
             permissions: import("@prisma/client/runtime/client").JsonValue;
         };
         id: string;
-        email: string;
         organizationId: string;
         roleId: string;
+        email: string;
         firstName: string;
         lastName: string;
         isTwoFactorEnabled: boolean;
@@ -77,9 +77,9 @@ export declare class UsersService {
             permissions: import("@prisma/client/runtime/client").JsonValue;
         };
         id: string;
-        email: string;
         organizationId: string;
         roleId: string;
+        email: string;
         firstName: string;
         lastName: string;
         isTwoFactorEnabled: boolean;

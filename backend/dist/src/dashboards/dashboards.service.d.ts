@@ -20,7 +20,9 @@ export declare class DashboardsService {
             committed: number;
             disbursed: number;
             executed: number;
-            balance: number;
+            availableBalance: number;
+            remainingToPay: number;
+            commitmentRate: number;
             executionRate: number;
         };
         upcomingDeadlines: {

@@ -33,9 +33,9 @@ export declare class JwtStrategy extends JwtStrategy_base {
         };
     } & {
         id: string;
-        email: string;
         organizationId: string;
         roleId: string;
+        email: string;
         firstName: string;
         lastName: string;
         passwordHash: string;

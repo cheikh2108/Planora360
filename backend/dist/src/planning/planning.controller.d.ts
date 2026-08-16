@@ -84,15 +84,15 @@ export declare class PlanningController {
         validatedAt: Date | null;
     }>;
     getResultsMatrix(req: any): Promise<{
-        data: import("@prisma/client/runtime/client").JsonValue;
         id: string;
         organizationId: string;
         updatedAt: Date;
+        data: import("@prisma/client/runtime/client").JsonValue;
     }>;
     updateResultsMatrix(dto: UpdateResultsMatrixDto, req: any): Promise<{
-        data: import("@prisma/client/runtime/client").JsonValue;
         id: string;
         organizationId: string;
         updatedAt: Date;
+        data: import("@prisma/client/runtime/client").JsonValue;
     }>;
 }

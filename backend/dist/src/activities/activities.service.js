@@ -68,8 +68,8 @@ let ActivitiesService = class ActivitiesService {
                 ...rest,
                 organizationId,
                 responsibleId: responsibleId ?? currentUserId,
-                startDate: startDate ? new Date(startDate) : new Date(),
-                dueDate: dueDate ? new Date(dueDate) : new Date(),
+                startDate: startDate && startDate.trim() ? new Date(startDate) : new Date(),
+                dueDate: dueDate && dueDate.trim() ? new Date(dueDate) : new Date(),
             },
             include: ACTIVITY_INCLUDE,
         });

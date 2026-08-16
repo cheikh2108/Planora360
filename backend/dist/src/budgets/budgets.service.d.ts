@@ -5,6 +5,7 @@ export declare class BudgetsService {
     private prisma;
     constructor(prisma: PrismaService);
     private verifyActivity;
+    private validateBudgetCascade;
     createForActivity(activityId: string, dto: CreateBudgetDto, organizationId: string): Promise<{
         id: string;
         createdAt: Date;
@@ -56,6 +57,9 @@ export declare class BudgetsService {
         totalDisbursed: number;
         totalExecuted: number;
         executionRate: number;
+        commitmentRate: number;
+        availableBalance: number;
+        remainingToPay: number;
         byActivity: {
             activityId: any;
             title: any;
@@ -72,6 +76,9 @@ export declare class BudgetsService {
         totalDisbursed: number;
         totalExecuted: number;
         executionRate: number;
+        commitmentRate: number;
+        availableBalance: number;
+        remainingToPay: number;
         byActivity: {
             activityId: any;
             title: any;

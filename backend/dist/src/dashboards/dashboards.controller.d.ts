@@ -16,7 +16,9 @@ export declare class DashboardsController {
             committed: number;
             disbursed: number;
             executed: number;
-            balance: number;
+            availableBalance: number;
+            remainingToPay: number;
+            commitmentRate: number;
             executionRate: number;
         };
         upcomingDeadlines: {

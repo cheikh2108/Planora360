@@ -97,7 +97,7 @@ let ReportsService = class ReportsService {
     }
     async generateExcel(type, data) {
         const workbook = new ExcelJS.Workbook();
-        workbook.creator = 'ATAABA Pilot';
+        workbook.creator = 'Action Pilot';
         workbook.created = new Date();
         if (type === generate_report_dto_1.ReportType.INDICATEURS) {
             const sheet = workbook.addWorksheet('Indicateurs');

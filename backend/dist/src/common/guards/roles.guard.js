@@ -29,13 +29,15 @@ let RolesGuard = class RolesGuard {
         const { user } = context.switchToHttp().getRequest();
         if (!user)
             throw new common_1.ForbiddenException();
+        const userPermissions = user.role?.permissions ?? [];
+        if (userPermissions.includes('*'))
+            return true;
         if (requiredRoles?.length) {
             const hasRole = requiredRoles.includes(user.role?.name);
             if (!hasRole)
                 throw new common_1.ForbiddenException('Rôle insuffisant');
         }
         if (requiredPermissions?.length) {
-            const userPermissions = user.role?.permissions ?? [];
             const hasAll = requiredPermissions.every((p) => userPermissions.includes(p));
             if (!hasAll)
                 throw new common_1.ForbiddenException('Permission insuffisante');

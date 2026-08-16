@@ -17,11 +17,15 @@ const common_1 = require("@nestjs/common");
 const platform_express_1 = require("@nestjs/platform-express");
 const participants_service_1 = require("./participants.service");
 const import_participants_dto_1 = require("./dto/import-participants.dto");
+const create_participant_dto_1 = require("./dto/create-participant.dto");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
 let ParticipantsController = class ParticipantsController {
     participantsService;
     constructor(participantsService) {
         this.participantsService = participantsService;
+    }
+    async create(dto, req) {
+        return this.participantsService.create(dto, req.user.organizationId, req.user.sub);
     }
     async import(file, dto, req) {
         return this.participantsService.importFromExcel(file, dto.activityId, req.user.organizationId, req.user.sub);
@@ -34,6 +38,14 @@ let ParticipantsController = class ParticipantsController {
     }
 };
 exports.ParticipantsController = ParticipantsController;
+__decorate([
+    (0, common_1.Post)(),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [create_participant_dto_1.CreateParticipantDto, Object]),
+    __metadata("design:returntype", Promise)
+], ParticipantsController.prototype, "create", null);
 __decorate([
     (0, common_1.Post)('import'),
     (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file')),

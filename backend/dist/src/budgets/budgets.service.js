@@ -25,15 +25,30 @@ let BudgetsService = class BudgetsService {
             throw new common_1.NotFoundException('Activité introuvable');
         return activity;
     }
+    validateBudgetCascade(data) {
+        const planned = data.planned ?? 0;
+        const committed = data.committed ?? 0;
+        const executed = data.executed ?? 0;
+        if (committed > planned) {
+            throw new common_1.BadRequestException(`Le montant engagé (${committed}) ne peut pas dépasser le budget prévu (${planned})`);
+        }
+        if (executed > committed) {
+            throw new common_1.BadRequestException(`Le montant exécuté (${executed}) ne peut pas dépasser le montant engagé (${committed}). Vous devez d'abord engager un contrat avant de payer.`);
+        }
+    }
     async createForActivity(activityId, dto, organizationId) {
         await this.verifyActivity(activityId, organizationId);
+        const data = {
+            planned: dto.planned,
+            committed: dto.committed ?? 0,
+            executed: dto.executed ?? 0,
+        };
+        this.validateBudgetCascade(data);
         return this.prisma.budget.create({
             data: {
                 activityId,
-                planned: dto.planned,
-                committed: dto.committed ?? 0,
+                ...data,
                 disbursed: dto.disbursed ?? 0,
-                executed: dto.executed ?? 0,
                 fundingSource: dto.fundingSource,
             },
         });
@@ -51,6 +66,12 @@ let BudgetsService = class BudgetsService {
         });
         if (!budget)
             throw new common_1.NotFoundException('Budget introuvable');
+        const data = {
+            planned: dto.planned ?? Number(budget.planned),
+            committed: dto.committed ?? Number(budget.committed),
+            executed: dto.executed ?? Number(budget.executed),
+        };
+        this.validateBudgetCascade(data);
         return this.prisma.budget.update({ where: { id }, data: dto });
     }
     async remove(id, organizationId) {
@@ -91,6 +112,11 @@ let BudgetsService = class BudgetsService {
             executionRate: totals.planned > 0
                 ? Math.round((totals.executed / totals.planned) * 10000) / 100
                 : 0,
+            commitmentRate: totals.planned > 0
+                ? Math.round((totals.committed / totals.planned) * 10000) / 100
+                : 0,
+            availableBalance: Math.max(0, totals.planned - totals.committed),
+            remainingToPay: Math.max(0, totals.committed - totals.executed),
             byActivity,
         };
     }
@@ -103,7 +129,7 @@ let BudgetsService = class BudgetsService {
             }),
         ]);
         const summary = this.buildSummary(activities);
-        if (summary.totalPlanned === 0 && plan?.budgetPrevisional) {
+        if (plan?.budgetPrevisional) {
             summary.totalPlanned = Number(plan.budgetPrevisional);
         }
         return summary;
@@ -119,9 +145,7 @@ let BudgetsService = class BudgetsService {
             }),
         ]);
         const summary = this.buildSummary(activities);
-        if (summary.totalPlanned === 0) {
-            summary.totalPlanned = plans.reduce((s, p) => s + Number(p.budgetPrevisional ?? 0), 0);
-        }
+        summary.totalPlanned = plans.reduce((s, p) => s + Number(p.budgetPrevisional ?? 0), 0);
         return summary;
     }
 };

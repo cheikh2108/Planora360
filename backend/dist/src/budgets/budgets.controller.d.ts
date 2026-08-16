@@ -54,6 +54,9 @@ export declare class BudgetsController {
         totalDisbursed: number;
         totalExecuted: number;
         executionRate: number;
+        commitmentRate: number;
+        availableBalance: number;
+        remainingToPay: number;
         byActivity: {
             activityId: any;
             title: any;
@@ -70,6 +73,9 @@ export declare class BudgetsController {
         totalDisbursed: number;
         totalExecuted: number;
         executionRate: number;
+        commitmentRate: number;
+        availableBalance: number;
+        remainingToPay: number;
         byActivity: {
             activityId: any;
             title: any;

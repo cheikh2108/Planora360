@@ -51,6 +51,26 @@ let ParticipantsService = class ParticipantsService {
     constructor(prisma) {
         this.prisma = prisma;
     }
+    async create(dto, organizationId, userId) {
+        const activity = await this.prisma.activity.findFirst({
+            where: { id: dto.activityId, organizationId },
+        });
+        if (!activity) {
+            throw new common_1.NotFoundException('Activité non trouvée');
+        }
+        return this.prisma.participant.create({
+            data: {
+                firstName: dto.firstName,
+                lastName: dto.lastName,
+                phone: dto.phone,
+                paymentMode: dto.paymentMode,
+                amount: dto.amount,
+                activityId: dto.activityId,
+                organizationId,
+                createdBy: userId,
+            },
+        });
+    }
     async importFromExcel(file, activityId, organizationId, userId) {
         if (!file) {
             throw new common_1.BadRequestException('Aucun fichier fourni');

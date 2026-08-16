@@ -27,7 +27,7 @@ export class NotificationsService {
     }
     try {
       await this.resend.emails.send({
-        from: 'Action Pilot <noreply@ataabaentreprise.org>',
+        from: 'PLANORA 360 <noreply@ataabaentreprise.org>',
         to,
         subject,
         html,
@@ -50,14 +50,14 @@ export class NotificationsService {
     }
     await this.sendEmail(
       params.email,
-      `[Action Pilot] Votre accès à ${params.orgName}`,
+      `[PLANORA 360] Votre accès à ${params.orgName}`,
       `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 24px">
         <div style="background:#0b1629;border-radius:12px;padding:24px;text-align:center;margin-bottom:28px">
-          <span style="color:white;font-size:22px;font-weight:800;letter-spacing:-0.5px">Action Pilot</span>
+          <span style="color:white;font-size:22px;font-weight:800;letter-spacing:-0.5px">PLANORA 360</span>
         </div>
         <p style="color:#0f172a;font-size:16px">Bonjour <strong>${params.firstName}</strong>,</p>
         <p style="color:#475569;font-size:14px;line-height:1.6">
-          Un compte a été créé pour vous sur <strong>Action Pilot</strong> dans l'organisation <strong>${params.orgName}</strong>.
+          Un compte a été créé pour vous sur <strong>PLANORA 360</strong> dans l'organisation <strong>${params.orgName}</strong>.
           Voici vos identifiants de connexion :
         </p>
         <div style="background:#f1f5f9;border-radius:10px;padding:20px 24px;margin:24px 0">
@@ -69,7 +69,7 @@ export class NotificationsService {
         <p style="color:#ef4444;font-size:13px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px 16px">
           Vous serez invité à choisir un nouveau mot de passe lors de votre première connexion.
         </p>
-        <p style="color:#94a3b8;font-size:12px;margin-top:32px">© 2025 Action Pilot — Ne pas répondre à cet email.</p>
+        <p style="color:#94a3b8;font-size:12px;margin-top:32px">© 2025 PLANORA 360 — Ne pas répondre à cet email.</p>
       </div>`,
     );
   }
@@ -89,10 +89,10 @@ export class NotificationsService {
 
     await this.sendEmail(
       validator.email,
-      `[Action Pilot] Validation requise — ${params.activityTitle}`,
+      `[PLANORA 360] Validation requise — ${params.activityTitle}`,
       `<p>Bonjour ${validator.firstName},</p>
        <p>L'activité <strong>${params.activityTitle}</strong> est en attente de votre validation (étape : ${params.step}).</p>
-       <p>Connectez-vous sur Action Pilot pour traiter cette demande.</p>`,
+       <p>Connectez-vous sur PLANORA 360 pour traiter cette demande.</p>`,
     );
   }
 
@@ -112,7 +112,7 @@ export class NotificationsService {
     const label = params.decision === 'APPROUVE' ? '✅ Approuvée' : '❌ Rejetée';
     await this.sendEmail(
       responsible.email,
-      `[Action Pilot] Activité ${label} — ${params.activityTitle}`,
+      `[PLANORA 360] Activité ${label} — ${params.activityTitle}`,
       `<p>Bonjour ${responsible.firstName},</p>
        <p>L'activité <strong>${params.activityTitle}</strong> a été <strong>${label}</strong> à l'étape ${params.step}.</p>
        ${params.comment ? `<p>Commentaire : ${params.comment}</p>` : ''}`,
@@ -138,7 +138,7 @@ export class NotificationsService {
       });
       await this.sendEmail(
         activity.responsible.email,
-        `[Action Pilot] Activité en retard — ${activity.title}`,
+        `[PLANORA 360] Activité en retard — ${activity.title}`,
         `<p>Bonjour ${activity.responsible.firstName},</p>
          <p>L'activité <strong>${activity.title}</strong> est en retard (échéance : ${activity.dueDate.toLocaleDateString('fr-FR')}).</p>`,
       );
@@ -161,7 +161,7 @@ export class NotificationsService {
     for (const activity of upcoming) {
       await this.sendEmail(
         activity.responsible.email,
-        `[Action Pilot] Échéance proche — ${activity.title}`,
+        `[PLANORA 360] Échéance proche — ${activity.title}`,
         `<p>Bonjour ${activity.responsible.firstName},</p>
          <p>L'activité <strong>${activity.title}</strong> arrive à échéance le ${activity.dueDate.toLocaleDateString('fr-FR')}.</p>`,
       );

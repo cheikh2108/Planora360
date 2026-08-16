@@ -11,8 +11,8 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Action Pilot",
-  description: "Plateforme de gestion des plans d'action",
+  title: "PLANORA 360",
+  description: "Plateforme intégrée de planification, suivi-évaluation, gestion financière et pilotage de la performance",
 };
 
 export default function RootLayout({
