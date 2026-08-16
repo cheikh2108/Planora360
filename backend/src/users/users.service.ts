@@ -3,11 +3,13 @@ import {
   NotFoundException,
   ConflictException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcryptjs';
+import { PLAN_LIMITS } from '../common/guards/subscription.guard';
 
 @Injectable()
 export class UsersService {
@@ -26,6 +28,28 @@ export class UsersService {
 
     if (actorRole !== 'Super administrateur' && role.name === 'Super administrateur') {
       throw new ForbiddenException('Vous ne pouvez pas créer un super admin');
+    }
+
+    // Vérifier la limite d'utilisateurs du plan
+    const organization = await this.prisma.organization.findUnique({
+      where: { id: orgId },
+      select: { subscriptionPlan: true },
+    });
+
+    if (!organization) throw new NotFoundException('Organisation introuvable');
+
+    const currentUserCount = await this.prisma.user.count({
+      where: { organizationId: orgId },
+    });
+
+    const planLimit = PLAN_LIMITS[organization.subscriptionPlan];
+
+    if (currentUserCount >= planLimit.maxUsers) {
+      throw new BadRequestException(
+        `Limite d'utilisateurs atteinte pour votre formule ${organization.subscriptionPlan}. ` +
+        `Maximum autorisé : ${planLimit.maxUsers} utilisateurs. ` +
+        `Passez à une formule supérieure pour ajouter plus d'utilisateurs.`
+      );
     }
 
     const passwordHash = await bcrypt.hash(dto.password, 12);
