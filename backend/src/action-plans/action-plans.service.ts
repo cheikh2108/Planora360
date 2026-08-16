@@ -1,10 +1,11 @@
 import {
-  Injectable, NotFoundException, ForbiddenException,
+  Injectable, NotFoundException, ForbiddenException, BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { CreateActionPlanDto } from './dto/create-action-plan.dto';
 import { UpdateActionPlanDto } from './dto/update-action-plan.dto';
 import { CreateAxisDto, UpdateAxisDto } from './dto/create-axis.dto';
+import { PLAN_LIMITS } from '../common/guards/subscription.guard';
 
 @Injectable()
 export class ActionPlansService {
@@ -12,6 +13,32 @@ export class ActionPlansService {
 
   async create(dto: CreateActionPlanDto, organizationId: string) {
     const { axes, ...planData } = dto;
+
+    // Vérifier la limite de plans d'action selon le plan tarifaire
+    const organization = await this.prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: { subscriptionPlan: true },
+    });
+
+    if (!organization) throw new NotFoundException('Organisation introuvable');
+
+    // Compter uniquement les plans ACTIFS (status !== 'ARCHIVE')
+    const activePlansCount = await this.prisma.actionPlan.count({
+      where: {
+        organizationId,
+        status: { not: 'ARCHIVE' },
+      },
+    });
+
+    const planLimit = PLAN_LIMITS[organization.subscriptionPlan];
+
+    if (activePlansCount >= planLimit.maxPlans) {
+      throw new BadRequestException(
+        `Limite de plans d'action atteinte pour votre formule ${organization.subscriptionPlan}. ` +
+        `Maximum autorisé : ${planLimit.maxPlans} plans actifs. ` +
+        `Archivez des plans existants ou passez à une formule supérieure.`
+      );
+    }
 
     return this.prisma.actionPlan.create({
       data: {
