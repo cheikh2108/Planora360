@@ -16,7 +16,7 @@ export class OrganizationsController {
   constructor(private organizationsService: OrganizationsService) {}
 
   @Patch('my/brand-color')
-  @Roles('Super administrateur', 'Administrateur', 'Coordinateur', 'Responsable de projet', 'Chef de service')
+  @Roles('Super administrateur', 'Administrateur')
   updateBrandColor(@Body('brandColor') brandColor: string, @CurrentUser() user: any) {
     return this.organizationsService.updateBrandColor(user.organizationId, brandColor);
   }

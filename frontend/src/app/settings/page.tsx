@@ -312,7 +312,11 @@ function isColorInvalid(hex: string): string | null {
 export default function SettingsPage() {
   const { user, setBrandColor } = useAuth();
   const isAdmin = ['Administrateur', 'Super administrateur'].includes(user?.role?.name ?? '');
-  const SECTIONS = ALL_SECTIONS.filter(s => s !== 'Abonnement' || isAdmin);
+  const SECTIONS = ALL_SECTIONS.filter(s => {
+    if (s === 'Abonnement' && !isAdmin) return false;
+    if (s === 'Apparence' && !isAdmin) return false;
+    return true;
+  });
   const [section, setSection] = useState<Section>('Profil');
   const [menuOpen, setMenuOpen] = useState(false);
   const [qrModal, setQrModal] = useState(false);
@@ -445,8 +449,8 @@ export default function SettingsPage() {
               </div>
             )}
 
-            {/* Apparence */}
-            {section === 'Apparence' && (
+            {/* Apparence (Admin uniquement) */}
+            {section === 'Apparence' && isAdmin && (
               <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
                 <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100">
                   <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
