@@ -54,9 +54,9 @@ export function HelpSidebar() {
 
           {/* Sidebar - DESIGN DISTINCTIF DIAGONAL */}
           <motion.aside
-            initial={{ transform: 'translateX(100%)', opacity: 0 }}
-            animate={{ transform: 'translateX(0)', opacity: 1 }}
-            exit={{ transform: 'translateX(100%)', opacity: 0 }}
+            initial={{ x: '100%', opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: '100%', opacity: 0 }}
             transition={{ duration: 0.4, ease: easeOut }}
             className="fixed top-0 right-0 h-full w-full md:w-[560px] z-50 flex flex-col overflow-hidden"
             style={{
@@ -84,8 +84,8 @@ export function HelpSidebar() {
               </button>
 
               <motion.div
-                initial={{ opacity: 0, transform: 'translateY(-15px)' }}
-                animate={{ opacity: 1, transform: 'translateY(0)' }}
+                initial={{ opacity: 0, y: -15 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1, duration: 0.3, ease: easeOut }}
               >
                 {/* Live Indicator avec couleur brand */}
@@ -199,9 +199,9 @@ function LoadingState() {
 function ErrorState() {
   return (
     <motion.div
-      initial={{ opacity: 0, transform: 'scale(0.98)' }}
-      animate={{ opacity: 1, transform: 'scale(1)' }}
-      exit={{ opacity: 0, transform: 'scale(0.98)' }}
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.98 }}
       transition={{ duration: 0.2, ease: easeOut }}
       className="flex flex-col items-center justify-center py-20"
     >
@@ -219,9 +219,9 @@ function ErrorState() {
 function EmptyState() {
   return (
     <motion.div
-      initial={{ opacity: 0, transform: 'translateY(10px)' }}
-      animate={{ opacity: 1, transform: 'translateY(0)' }}
-      exit={{ opacity: 0, transform: 'translateY(-10px)' }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.2, ease: easeOut }}
       className="flex flex-col items-center justify-center py-20 text-center"
     >
@@ -241,14 +241,14 @@ function ArticlesList({ articles }: { articles: any[] }) {
       {articles.map((article, index) => (
         <motion.article
           key={article.id}
-          initial={{ opacity: 0, transform: 'translateX(20px)' }}
-          animate={{ opacity: 1, transform: 'translateX(0)' }}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
           transition={{
             delay: index * 0.05,
             duration: 0.25,
             ease: easeOut,
           }}
-          whileHover={{ transform: 'translateX(-4px) scale(1.01)' }}
+          whileHover={{ x: -4, scale: 1.01 }}
           className="group relative"
         >
           {/* Accent latéral avec couleur brand */}
@@ -268,8 +268,8 @@ function ArticlesList({ articles }: { articles: any[] }) {
           >
             {/* Number Badge - DÉCALÉ AUDACIEUSEMENT */}
             <motion.div
-              initial={{ opacity: 0, transform: 'scale(0.8) rotate(-12deg)' }}
-              animate={{ opacity: 1, transform: 'scale(1) rotate(-12deg)' }}
+              initial={{ opacity: 0, scale: 0.8, rotate: -12 }}
+              animate={{ opacity: 1, scale: 1, rotate: -12 }}
               transition={{
                 delay: index * 0.05 + 0.1,
                 duration: 0.2,

@@ -33,15 +33,16 @@ export function FloatingHelpButton() {
     return 'dashboard';
   };
 
-  if (pathname.startsWith('/auth')) return null;
+  // Ne pas afficher sur les pages auth
+  if (pathname?.startsWith('/auth')) return null;
 
   return (
+    <div className="fixed bottom-6 right-6 z-[9999]">
     <motion.div
-      className="fixed bottom-6 right-6 z-30"
-      initial={{ transform: 'scale(0)', opacity: 0 }}
-      animate={{ transform: 'scale(1)', opacity: 1 }}
+      initial={{ scale: 0.8, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
       transition={{
-        delay: 0.5,
+        delay: 0.2,
         duration: 0.3,
         ease: easeOut,
       }}
@@ -59,8 +60,8 @@ export function FloatingHelpButton() {
         onClick={() => toggleHelp(getPageId())}
         onHoverStart={() => setIsHovered(true)}
         onHoverEnd={() => setIsHovered(false)}
-        whileHover={{ transform: 'scale(1.08)' }}
-        whileTap={{ transform: 'scale(0.95)' }}
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.95 }}
         transition={{ duration: 0.16, ease: easeOut }}
         className="relative w-14 h-14 rounded-full flex items-center justify-center group"
         style={{
@@ -71,7 +72,7 @@ export function FloatingHelpButton() {
       >
         <motion.div
           animate={{
-            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+            rotate: isOpen ? 180 : 0,
           }}
           transition={{ duration: 0.3, ease: easeOut }}
         >
@@ -88,9 +89,9 @@ export function FloatingHelpButton() {
       <AnimatePresence>
         {isHovered && (
           <motion.div
-            initial={{ opacity: 0, transform: 'translate(10px, 5px)' }}
-            animate={{ opacity: 1, transform: 'translate(0, 0)' }}
-            exit={{ opacity: 0, transform: 'translate(10px, 5px)' }}
+            initial={{ opacity: 0, x: 10, y: 5 }}
+            animate={{ opacity: 1, x: 0, y: 0 }}
+            exit={{ opacity: 0, x: 10, y: 5 }}
             transition={{ duration: 0.15, ease: easeOut }}
             className="absolute bottom-full right-2 mb-3 px-4 py-2 rounded-xl bg-slate-900/95 backdrop-blur-md text-white text-xs font-semibold whitespace-nowrap shadow-xl border border-white/10"
           >
@@ -109,5 +110,6 @@ export function FloatingHelpButton() {
         }}
       />
     </motion.div>
+    </div>
   );
 }
