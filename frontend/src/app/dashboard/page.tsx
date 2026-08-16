@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { dashboardApi, activitiesApi, plansApi } from '@/lib/api';
 import type { DashboardOverview, Activity, ActionPlan } from '@/lib/types';
 import { Header } from '@/components/layout/header';
+import { HelpButton } from '@/components/help/help-button';
 import { KpiCard } from '@/components/dashboard/kpi-card';
 import { ActivityStatusChart } from '@/components/dashboard/activity-status-chart';
 import { BudgetChart } from '@/components/dashboard/budget-chart';
@@ -373,6 +374,7 @@ export default function DashboardPage() {
       <Header
         title="Tableau de bord"
         subtitle={`${greeting}, ${firstName} — ${new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}`}
+        actions={<HelpButton page="dashboard" />}
       />
 
       <main className="flex-1 px-4 md:px-6 py-6 space-y-6">

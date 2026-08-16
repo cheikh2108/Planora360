@@ -78,7 +78,7 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
   return (
     <aside className="flex flex-col h-full text-white w-64 shrink-0" style={{ backgroundColor: 'var(--color-brand-dark, #0f1e38)' }}>
       <div className="flex items-center gap-3 px-5 py-5 border-b border-white/10">
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm" style={{ backgroundColor: 'var(--color-brand)' }}>A</div>
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm" style={{ backgroundColor: 'var(--color-brand)' }}>P</div>
         <div>
           <p className="font-semibold text-sm leading-tight">PLANORA 360</p>
           <p className="text-xs text-white/40 truncate max-w-35">{user?.organization?.name ?? '—'}</p>
