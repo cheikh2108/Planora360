@@ -23,7 +23,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className="h-full" suppressHydrationWarning>
-      <body className={`${outfit.variable} font-outfit h-full antialiased`}>
+      <head>
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -48,6 +48,8 @@ export default function RootLayout({
             `,
           }}
         />
+      </head>
+      <body className={`${outfit.variable} font-outfit h-full antialiased`} suppressHydrationWarning>
         <Providers>{children}</Providers>
       </body>
     </html>
