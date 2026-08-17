@@ -9,7 +9,7 @@ build/
 # Environment
 .env
 .env.local
-.env.production
+# .env.production - on le commit pour Hostinger
 
 # Logs
 *.log
