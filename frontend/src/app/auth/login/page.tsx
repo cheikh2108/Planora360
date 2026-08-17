@@ -29,7 +29,17 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      const user = await login(email, password, totp || undefined);
+      const result = await login(email, password, totp || undefined);
+
+      // Vérifier si le 2FA est requis (le backend renvoie requiresTwoFactor: true)
+      if ((result as any).requiresTwoFactor) {
+        setShow2fa(true);
+        setError("Entrez votre code d'authentification 2FA.");
+        setLoading(false);
+        return;
+      }
+
+      const user = result;
       if (user.mustChangePassword) {
         router.replace('/auth/change-password');
         return;

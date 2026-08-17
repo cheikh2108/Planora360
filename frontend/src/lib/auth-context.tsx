@@ -52,6 +52,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function login(email: string, password: string, totp?: string) {
     const { data } = await authApi.login(email, password, totp);
+
+    // Si le 2FA est requis, retourner la réponse sans sauvegarder
+    if ((data as any).requiresTwoFactor) {
+      return data as any;
+    }
+
+    // Sinon, connexion réussie - sauvegarder les tokens
     localStorage.setItem('accessToken', data.accessToken);
     localStorage.setItem('refreshToken', data.refreshToken);
     localStorage.setItem('user', JSON.stringify(data.user));
