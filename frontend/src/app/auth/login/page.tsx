@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
@@ -15,6 +15,14 @@ export default function LoginPage() {
   const [show2fa, setShow2fa] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [today, setToday] = useState('');
+
+  // Calculer la date côté client uniquement pour éviter l'erreur d'hydration
+  useEffect(() => {
+    setToday(new Date().toLocaleDateString('fr-FR', {
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    }));
+  }, []);
 
   async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -44,10 +52,6 @@ export default function LoginPage() {
       setLoading(false);
     }
   }
-
-  const today = new Date().toLocaleDateString('fr-FR', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-  });
 
   return (
     <div className="h-screen flex overflow-hidden">
