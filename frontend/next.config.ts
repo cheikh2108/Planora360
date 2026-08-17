@@ -1,8 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'standalone',
-  // Configuration pour Hostinger
+  // Configuration optimisée pour production
   compress: true,
   poweredByHeader: false,
 };
