@@ -217,7 +217,7 @@ function CreateRecommendationModal({ open, onClose }: { open: boolean; onClose: 
           />
         </FormField>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField label="Source" required>
             <Select
               value={form.source}
@@ -247,7 +247,7 @@ function CreateRecommendationModal({ open, onClose }: { open: boolean; onClose: 
           </FormField>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField label="Date d'émission" required>
             <Input
               type="date"
@@ -377,13 +377,13 @@ export default function RecommendationsPage() {
         )}
 
         {/* Filters */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-4 mb-6 flex flex-wrap gap-3">
+        <div className="bg-white rounded-2xl border border-slate-200 p-4 mb-6 flex flex-col sm:flex-row sm:flex-wrap gap-3">
           <Select
             value={filters.status || ''}
             onChange={(e) =>
               setFilters((f) => ({ ...f, status: e.target.value as RecommendationStatus | undefined }))
             }
-            className="w-48"
+            className="flex-1 min-w-[200px]"
           >
             <option value="">Tous les statuts</option>
             {Object.entries(RECOMMENDATION_STATUS_LABELS).map(([key, label]) => (
@@ -398,7 +398,7 @@ export default function RecommendationsPage() {
             onChange={(e) =>
               setFilters((f) => ({ ...f, priority: e.target.value as RecommendationPriority | undefined }))
             }
-            className="w-48"
+            className="flex-1 min-w-[200px]"
           >
             <option value="">Toutes les priorités</option>
             {Object.entries(RECOMMENDATION_PRIORITY_LABELS).map(([key, label]) => (
@@ -413,7 +413,7 @@ export default function RecommendationsPage() {
             onChange={(e) =>
               setFilters((f) => ({ ...f, source: e.target.value as RecommendationSource | undefined }))
             }
-            className="w-56"
+            className="flex-1 min-w-[200px]"
           >
             <option value="">Toutes les sources</option>
             {Object.entries(RECOMMENDATION_SOURCE_LABELS).map(([key, label]) => (
