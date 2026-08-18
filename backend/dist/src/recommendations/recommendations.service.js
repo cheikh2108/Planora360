@@ -140,6 +140,9 @@ let RecommendationsService = class RecommendationsService {
         return recommendation;
     }
     async findAll(organizationId, filters) {
+        const limit = filters?.limit ? parseInt(filters.limit) : 20;
+        const page = filters?.page ? parseInt(filters.page) : 1;
+        const skip = (page - 1) * limit;
         const where = { organizationId };
         if (filters?.status)
             where.status = filters.status;
@@ -160,11 +163,17 @@ let RecommendationsService = class RecommendationsService {
                 { description: { contains: filters.search, mode: 'insensitive' } },
             ];
         }
-        return this.prisma.recommendation.findMany({
-            where,
-            include: RECOMMENDATION_INCLUDE,
-            orderBy: { createdAt: 'desc' },
-        });
+        const [recommendations, total] = await Promise.all([
+            this.prisma.recommendation.findMany({
+                where,
+                include: RECOMMENDATION_INCLUDE,
+                orderBy: { createdAt: 'desc' },
+                take: limit,
+                skip,
+            }),
+            this.prisma.recommendation.count({ where }),
+        ]);
+        return { recommendations, total, page, limit };
     }
     async findOne(id, organizationId) {
         const recommendation = await this.prisma.recommendation.findFirst({

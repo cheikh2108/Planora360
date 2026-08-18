@@ -154,6 +154,10 @@ export class RecommendationsService {
   }
 
   async findAll(organizationId: string, filters?: any) {
+    const limit = filters?.limit ? parseInt(filters.limit) : 20;
+    const page = filters?.page ? parseInt(filters.page) : 1;
+    const skip = (page - 1) * limit;
+
     const where: any = { organizationId };
 
     if (filters?.status) where.status = filters.status;
@@ -170,11 +174,18 @@ export class RecommendationsService {
       ];
     }
 
-    return this.prisma.recommendation.findMany({
-      where,
-      include: RECOMMENDATION_INCLUDE,
-      orderBy: { createdAt: 'desc' },
-    });
+    const [recommendations, total] = await Promise.all([
+      this.prisma.recommendation.findMany({
+        where,
+        include: RECOMMENDATION_INCLUDE,
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+        skip,
+      }),
+      this.prisma.recommendation.count({ where }),
+    ]);
+
+    return { recommendations, total, page, limit };
   }
 
   async findOne(id: string, organizationId: string) {

@@ -187,10 +187,11 @@ export default function PlansPage() {
   const toast = useToast();
   const [createOpen, setCreateOpen] = useState(false);
   const [page, setPage] = useState(1);
+  const limit = 15;
   const { data: plansPage, isLoading } = useQuery({
     queryKey: ['plans', 'active', page],
     queryFn: async () => {
-      const r = await plansApi.list({ page, limit: 10 });
+      const r = await plansApi.list({ page, limit });
       const result = r.data as { data: ActionPlan[]; total: number; page: number; limit: number };
       // Guard défensif
       const dataArray = Array.isArray(result.data) ? result.data : [];
@@ -255,7 +256,7 @@ export default function PlansPage() {
               {plans.map(plan => <PlanCard key={plan.id} plan={plan} />)}
             </div>
             {total > 10 && (
-              <Pagination page={page} total={total} limit={10} onChange={setPage} />
+              <Pagination page={page} total={total} limit={limit} onChange={setPage} />
             )}
           </>
         )}

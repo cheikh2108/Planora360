@@ -99,93 +99,98 @@ export declare class RecommendationsService {
         isRecurrent: boolean;
         recurrenceNote: string | null;
     }>;
-    findAll(organizationId: string, filters?: any): Promise<({
-        _count: {
-            comments: number;
-            actions: number;
-            evidences: number;
-            history: number;
-        };
-        actionPlan: {
-            id: string;
-            title: string;
-        } | null;
-        activity: {
-            id: string;
-            title: string;
-        } | null;
-        responsible: {
-            id: string;
-            email: string;
-            firstName: string;
-            lastName: string;
-        };
-        issuer: {
-            id: string;
-            email: string;
-            firstName: string;
-            lastName: string;
-        } | null;
-        createdBy: {
-            id: string;
-            email: string;
-            firstName: string;
-            lastName: string;
-        };
-        validator: {
-            id: string;
-            email: string;
-            firstName: string;
-            lastName: string;
-        } | null;
-        contributors: ({
-            user: {
+    findAll(organizationId: string, filters?: any): Promise<{
+        recommendations: ({
+            _count: {
+                comments: number;
+                actions: number;
+                evidences: number;
+                history: number;
+            };
+            actionPlan: {
+                id: string;
+                title: string;
+            } | null;
+            activity: {
+                id: string;
+                title: string;
+            } | null;
+            responsible: {
                 id: string;
                 email: string;
                 firstName: string;
                 lastName: string;
             };
+            issuer: {
+                id: string;
+                email: string;
+                firstName: string;
+                lastName: string;
+            } | null;
+            createdBy: {
+                id: string;
+                email: string;
+                firstName: string;
+                lastName: string;
+            };
+            validator: {
+                id: string;
+                email: string;
+                firstName: string;
+                lastName: string;
+            } | null;
+            contributors: ({
+                user: {
+                    id: string;
+                    email: string;
+                    firstName: string;
+                    lastName: string;
+                };
+            } & {
+                id: string;
+                createdAt: Date;
+                role: string | null;
+                userId: string;
+                recommendationId: string;
+            })[];
         } & {
             id: string;
+            organizationId: string;
             createdAt: Date;
-            role: string | null;
-            userId: string;
-            recommendationId: string;
+            updatedAt: Date;
+            status: import(".prisma/client").$Enums.RecommendationStatus;
+            title: string;
+            description: string;
+            responsibleId: string;
+            dueDate: Date;
+            priority: import(".prisma/client").$Enums.RecommendationPriority;
+            actionPlanId: string | null;
+            activityId: string | null;
+            progress: number;
+            validatorId: string | null;
+            source: import(".prisma/client").$Enums.RecommendationSource;
+            validatedAt: Date | null;
+            sourceReference: string | null;
+            sourceDocumentUrl: string | null;
+            issuedAt: Date;
+            issuerId: string | null;
+            issuerExternal: string | null;
+            code: string;
+            completedAt: Date | null;
+            createdById: string;
+            suspendedReason: string | null;
+            suspendedAt: Date | null;
+            suspendedBy: string | null;
+            reopenedReason: string | null;
+            reopenedAt: Date | null;
+            reopenedBy: string | null;
+            isRecurrent: boolean;
+            recurrenceNote: string | null;
         })[];
-    } & {
-        id: string;
-        organizationId: string;
-        createdAt: Date;
-        updatedAt: Date;
-        status: import(".prisma/client").$Enums.RecommendationStatus;
-        title: string;
-        description: string;
-        responsibleId: string;
-        dueDate: Date;
-        priority: import(".prisma/client").$Enums.RecommendationPriority;
-        actionPlanId: string | null;
-        activityId: string | null;
-        progress: number;
-        validatorId: string | null;
-        source: import(".prisma/client").$Enums.RecommendationSource;
-        validatedAt: Date | null;
-        sourceReference: string | null;
-        sourceDocumentUrl: string | null;
-        issuedAt: Date;
-        issuerId: string | null;
-        issuerExternal: string | null;
-        code: string;
-        completedAt: Date | null;
-        createdById: string;
-        suspendedReason: string | null;
-        suspendedAt: Date | null;
-        suspendedBy: string | null;
-        reopenedReason: string | null;
-        reopenedAt: Date | null;
-        reopenedBy: string | null;
-        isRecurrent: boolean;
-        recurrenceNote: string | null;
-    })[]>;
+        total: number;
+        page: number;
+        limit: number;
+    }>;
     findOne(id: string, organizationId: string): Promise<{
         comments: ({
             author: {

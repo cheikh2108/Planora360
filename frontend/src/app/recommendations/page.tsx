@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export const dynamic = 'force-dynamic';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -12,6 +12,7 @@ import { Modal } from '@/components/ui/modal';
 import { FormField, Input, Textarea, Select } from '@/components/ui/form-field';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Pagination } from '@/components/ui/pagination';
 import {
   formatDate,
   RECOMMENDATION_STATUS_LABELS,
@@ -314,6 +315,7 @@ function CreateRecommendationModal({ open, onClose }: { open: boolean; onClose: 
 
 export default function RecommendationsPage() {
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<{
     status?: RecommendationStatus;
     priority?: RecommendationPriority;
@@ -321,15 +323,23 @@ export default function RecommendationsPage() {
     search?: string;
   }>({});
 
+  const limit = 20;
+
   const { data: rawRecommendations, isLoading } = useQuery({
-    queryKey: ['recommendations', filters],
+    queryKey: ['recommendations', filters, page],
     queryFn: async () => {
-      const res = await recommendationsApi.getAll(filters);
-      return res.data as Recommendation[];
+      const res = await recommendationsApi.getAll({ ...filters, limit, page });
+      return res.data as { recommendations: Recommendation[]; total: number; page: number; limit: number };
     },
   });
   // Guard défensif absolu : s'assurer que recommendations est TOUJOURS un tableau
-  const recommendations = Array.isArray(rawRecommendations) ? rawRecommendations : [];
+  const recommendations = Array.isArray(rawRecommendations?.recommendations) ? rawRecommendations.recommendations : [];
+  const total = rawRecommendations?.total ?? 0;
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [filters]);
 
   const { data: stats } = useQuery({
     queryKey: ['recommendations', 'stats'],
@@ -447,11 +457,25 @@ export default function RecommendationsPage() {
             }
           />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {recommendations.map((rec) => (
-              <RecommendationCard key={rec.id} rec={rec} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {recommendations.map((rec) => (
+                <RecommendationCard key={rec.id} rec={rec} />
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {!isLoading && total > limit && (
+              <div className="bg-white rounded-2xl border border-slate-200 p-4 mt-6">
+                <Pagination
+                  page={page}
+                  total={total}
+                  limit={limit}
+                  onChange={setPage}
+                />
+              </div>
+            )}
+          </>
         )}
       </div>
 
