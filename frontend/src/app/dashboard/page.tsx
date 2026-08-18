@@ -102,14 +102,17 @@ interface PerfEntry {
 }
 
 function PerformanceByResponsable({ data }: { data: PerfEntry[] }) {
-  if (!data?.length) return (
+  // Guard défensif absolu : forcer data à être un tableau
+  const safeData = Array.isArray(data) ? data : [];
+
+  if (!safeData.length) return (
     <div className="flex items-center justify-center h-32 text-slate-400 text-sm">
       Aucune donnée de performance
     </div>
   );
   return (
     <div className="space-y-3">
-      {data.slice(0, 6).map(entry => (
+      {safeData.slice(0, 6).map(entry => (
         <div key={entry.userId} className="flex items-center gap-3">
           <div className="w-7 h-7 rounded-full bg-[#0f1e38]/10 flex items-center justify-center text-xs font-bold text-[#0f1e38] shrink-0">
             {entry.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
@@ -136,7 +139,9 @@ function PerformanceByResponsable({ data }: { data: PerfEntry[] }) {
 /* ─── Activités critiques ────────────────────────────────────────── */
 
 function CriticalActivities({ activities }: { activities: Activity[] }) {
-  const critical = activities
+  // Guard défensif absolu
+  const safeActivities = Array.isArray(activities) ? activities : [];
+  const critical = safeActivities
     .filter(a => (a.priority === 'CRITIQUE' || a.priority === 'HAUTE') && a.status !== 'VALIDEE' && a.status !== 'ANNULEE')
     .sort((a, b) => {
       const priorityScore = { CRITIQUE: 2, HAUTE: 1, NORMALE: 0, BASSE: -1 } as Record<string, number>;
@@ -190,7 +195,9 @@ function CriticalActivities({ activities }: { activities: Activity[] }) {
 /* ─── Risques et blocages ────────────────────────────────────────── */
 
 function RisksAndBlockers({ activities }: { activities: Activity[] }) {
-  const blockers = activities.filter(a =>
+  // Guard défensif absolu
+  const safeActivities = Array.isArray(activities) ? activities : [];
+  const blockers = safeActivities.filter(a =>
     a.status === 'EN_RETARD' ||
     a.status === 'EN_ATTENTE' ||
     a.status === 'SUSPENDUE' ||
@@ -240,16 +247,19 @@ function RisksAndBlockers({ activities }: { activities: Activity[] }) {
 /* ─── Résultats vs cibles ────────────────────────────────────────── */
 
 function ResultsVsTargets({ activities }: { activities: Activity[] }) {
+  // Guard défensif absolu
+  const safeActivities = Array.isArray(activities) ? activities : [];
+
   // Aggrège par statut pour donner une vue résultats/cibles
-  const total = activities.length;
-  const validee = activities.filter(a => a.status === 'VALIDEE').length;
-  const terminee = activities.filter(a => a.status === 'TERMINEE').length;
-  const enCours = activities.filter(a => a.status === 'EN_COURS' || a.status === 'EN_PREPARATION').length;
-  const retard = activities.filter(a => a.status === 'EN_RETARD').length;
+  const total = safeActivities.length;
+  const validee = safeActivities.filter(a => a.status === 'VALIDEE').length;
+  const terminee = safeActivities.filter(a => a.status === 'TERMINEE').length;
+  const enCours = safeActivities.filter(a => a.status === 'EN_COURS' || a.status === 'EN_PREPARATION').length;
+  const retard = safeActivities.filter(a => a.status === 'EN_RETARD').length;
 
   const targetCompletion = total > 0 ? Math.round(((validee + terminee) / total) * 100) : 0;
   const avgCompletion = total > 0
-    ? Math.round(activities.reduce((s, a) => s + a.completionRate, 0) / total)
+    ? Math.round(safeActivities.reduce((s, a) => s + a.completionRate, 0) / total)
     : 0;
 
   const metrics = [
@@ -553,7 +563,7 @@ export default function DashboardPage() {
             {loadingPerf ? (
               <div className="space-y-3">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-8" />)}</div>
             ) : (
-              <PerformanceByResponsable data={performance?.byResponsible ?? []} />
+              <PerformanceByResponsable data={Array.isArray(performance?.byResponsible) ? performance.byResponsible : []} />
             )}
           </div>
         </section>

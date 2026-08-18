@@ -8,7 +8,10 @@ interface Props {
 }
 
 export function UpcomingDeadlines({ activities }: Props) {
-  if (activities.length === 0) {
+  // Guard défensif absolu
+  const safeActivities = Array.isArray(activities) ? activities : [];
+
+  if (safeActivities.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-10 text-slate-400 gap-2">
         <AlertTriangle size={24} className="opacity-50" />
@@ -19,7 +22,7 @@ export function UpcomingDeadlines({ activities }: Props) {
 
   return (
     <ul className="divide-y divide-slate-100">
-      {activities.map((act) => {
+      {safeActivities.map((act) => {
         const daysLabel = act.dueDate ? formatDateRelative(act.dueDate) : null;
         const isOverdue = act.status === 'EN_RETARD';
 

@@ -35,7 +35,10 @@ interface Props {
 }
 
 export function AuditFeed({ entries }: Props) {
-  if (entries.length === 0) {
+  // Guard défensif absolu
+  const safeEntries = Array.isArray(entries) ? entries : [];
+
+  if (safeEntries.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-10 text-slate-400 gap-2">
         <Shield size={24} className="opacity-50" />
@@ -46,7 +49,7 @@ export function AuditFeed({ entries }: Props) {
 
   return (
     <ul className="space-y-3">
-      {entries.map((entry, i) => {
+      {safeEntries.map((entry, i) => {
         const Icon = ACTION_ICONS[entry.action] ?? Shield;
         const color = ACTION_COLORS[entry.action] ?? 'bg-slate-100 text-slate-500';
         const label = ACTION_LABELS[entry.action] ?? entry.action;
