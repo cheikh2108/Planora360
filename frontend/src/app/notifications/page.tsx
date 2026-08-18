@@ -88,13 +88,13 @@ export default function NotificationsPage() {
   })).sort((a, b) => a.label.localeCompare(b.label));
 
   return (
-    <div className="min-h-screen bg-[#f8fafc]">
+    <div className="flex flex-col flex-1 min-h-0 overflow-auto bg-[#f8fafc]">
       <Header
         title="Journal d'activité"
         subtitle="Historique complet des événements de votre organisation"
       />
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 w-full">
         {/* Stats + Filters card */}
         <div className="bg-white rounded-2xl border border-slate-200 p-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
