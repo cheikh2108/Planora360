@@ -160,7 +160,8 @@ function CreateRecommendationModal({ open, onClose }: { open: boolean; onClose: 
     },
     enabled: open,
   });
-  const users = usersData ?? [];
+  // Guard défensif absolu : s'assurer que users est TOUJOURS un tableau
+  const users = Array.isArray(usersData) ? usersData : [];
 
   const createMutation = useMutation({
     mutationFn: () => {
@@ -320,13 +321,15 @@ export default function RecommendationsPage() {
     search?: string;
   }>({});
 
-  const { data: recommendations = [], isLoading } = useQuery({
+  const { data: rawRecommendations, isLoading } = useQuery({
     queryKey: ['recommendations', filters],
     queryFn: async () => {
       const res = await recommendationsApi.getAll(filters);
       return res.data as Recommendation[];
     },
   });
+  // Guard défensif absolu : s'assurer que recommendations est TOUJOURS un tableau
+  const recommendations = Array.isArray(rawRecommendations) ? rawRecommendations : [];
 
   const { data: stats } = useQuery({
     queryKey: ['recommendations', 'stats'],
@@ -337,7 +340,7 @@ export default function RecommendationsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-[#f8fafc]">
+    <div className="flex flex-col flex-1 min-h-0 overflow-auto bg-[#f8fafc]">
       <Header
         title="Recommandations"
         subtitle="Suivi des recommandations issues d'audits, missions et évaluations"
@@ -349,7 +352,7 @@ export default function RecommendationsPage() {
         }
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         {/* Stats cards */}
         {stats && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
@@ -359,7 +362,7 @@ export default function RecommendationsPage() {
             </div>
             <div className="bg-white rounded-2xl border border-slate-200 p-4">
               <div className="text-2xl font-bold text-blue-600">
-                {stats.byStatus?.find((s: any) => s.status === 'EN_COURS')?._count || 0}
+                {Array.isArray(stats.byStatus) ? (stats.byStatus.find((s: any) => s.status === 'EN_COURS')?._count || 0) : 0}
               </div>
               <div className="text-xs text-slate-500 mt-1">En cours</div>
             </div>
@@ -369,7 +372,7 @@ export default function RecommendationsPage() {
             </div>
             <div className="bg-white rounded-2xl border border-slate-200 p-4">
               <div className="text-2xl font-bold text-green-600">
-                {stats.byStatus?.find((s: any) => s.status === 'VALIDEE')?._count || 0}
+                {Array.isArray(stats.byStatus) ? (stats.byStatus.find((s: any) => s.status === 'VALIDEE')?._count || 0) : 0}
               </div>
               <div className="text-xs text-slate-500 mt-1">Validées</div>
             </div>
