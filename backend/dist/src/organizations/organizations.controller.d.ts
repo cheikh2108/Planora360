@@ -36,14 +36,14 @@ export declare class OrganizationsController {
         trialEndsAt: Date | null;
     })[]>;
     findPending(): import(".prisma/client").Prisma.PrismaPromise<({
-        _count: {
-            users: number;
-        };
         users: {
             email: string;
             firstName: string;
             lastName: string;
         }[];
+        _count: {
+            users: number;
+        };
     } & {
         id: string;
         createdAt: Date;

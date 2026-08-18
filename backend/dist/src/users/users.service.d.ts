@@ -12,8 +12,6 @@ export declare class UsersService {
             permissions: import("@prisma/client/runtime/client").JsonValue;
         };
         id: string;
-        organizationId: string;
-        roleId: string;
         email: string;
         firstName: string;
         lastName: string;
@@ -23,7 +21,19 @@ export declare class UsersService {
         lastLoginAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
+        roleId: string;
     }>;
+    findUsersForAssignment(organizationId: string): Promise<{
+        id: string;
+        email: string;
+        firstName: string;
+        lastName: string;
+        role: {
+            id: string;
+            name: string;
+        };
+    }[]>;
     findAll(organizationId: string, page?: number, limit?: number): Promise<{
         data: {
             role: {
@@ -33,8 +43,6 @@ export declare class UsersService {
                 permissions: import("@prisma/client/runtime/client").JsonValue;
             };
             id: string;
-            organizationId: string;
-            roleId: string;
             email: string;
             firstName: string;
             lastName: string;
@@ -44,6 +52,8 @@ export declare class UsersService {
             lastLoginAt: Date | null;
             createdAt: Date;
             updatedAt: Date;
+            organizationId: string;
+            roleId: string;
         }[];
         total: number;
         page: number;
@@ -57,8 +67,6 @@ export declare class UsersService {
             permissions: import("@prisma/client/runtime/client").JsonValue;
         };
         id: string;
-        organizationId: string;
-        roleId: string;
         email: string;
         firstName: string;
         lastName: string;
@@ -68,6 +76,8 @@ export declare class UsersService {
         lastLoginAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
+        roleId: string;
     }>;
     update(id: string, dto: UpdateUserDto, organizationId: string): Promise<{
         role: {
@@ -77,8 +87,6 @@ export declare class UsersService {
             permissions: import("@prisma/client/runtime/client").JsonValue;
         };
         id: string;
-        organizationId: string;
-        roleId: string;
         email: string;
         firstName: string;
         lastName: string;
@@ -88,6 +96,8 @@ export declare class UsersService {
         lastLoginAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
+        roleId: string;
     }>;
     remove(id: string, organizationId: string): Promise<void>;
     findRoles(organizationId?: string, callerRole?: string): import(".prisma/client").Prisma.PrismaPromise<{

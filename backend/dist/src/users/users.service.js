@@ -46,6 +46,7 @@ exports.UsersService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../common/prisma/prisma.service");
 const bcrypt = __importStar(require("bcryptjs"));
+const subscription_guard_1 = require("../common/guards/subscription.guard");
 let UsersService = class UsersService {
     prisma;
     constructor(prisma) {
@@ -64,6 +65,21 @@ let UsersService = class UsersService {
         if (actorRole !== 'Super administrateur' && role.name === 'Super administrateur') {
             throw new common_1.ForbiddenException('Vous ne pouvez pas créer un super admin');
         }
+        const organization = await this.prisma.organization.findUnique({
+            where: { id: orgId },
+            select: { subscriptionPlan: true },
+        });
+        if (!organization)
+            throw new common_1.NotFoundException('Organisation introuvable');
+        const currentUserCount = await this.prisma.user.count({
+            where: { organizationId: orgId },
+        });
+        const planLimit = subscription_guard_1.PLAN_LIMITS[organization.subscriptionPlan];
+        if (currentUserCount >= planLimit.maxUsers) {
+            throw new common_1.BadRequestException(`Limite d'utilisateurs atteinte pour votre formule ${organization.subscriptionPlan}. ` +
+                `Maximum autorisé : ${planLimit.maxUsers} utilisateurs. ` +
+                `Passez à une formule supérieure pour ajouter plus d'utilisateurs.`);
+        }
         const passwordHash = await bcrypt.hash(dto.password, 12);
         const user = await this.prisma.user.create({
             data: {
@@ -79,6 +95,30 @@ let UsersService = class UsersService {
         });
         const { passwordHash: _, twoFactorSecret: __, ...safe } = user;
         return safe;
+    }
+    async findUsersForAssignment(organizationId) {
+        return this.prisma.user.findMany({
+            where: {
+                organizationId,
+                isActive: true,
+            },
+            select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                role: {
+                    select: {
+                        id: true,
+                        name: true,
+                    },
+                },
+            },
+            orderBy: [
+                { firstName: 'asc' },
+                { lastName: 'asc' },
+            ],
+        });
     }
     async findAll(organizationId, page = 1, limit = 10) {
         const where = { organizationId };

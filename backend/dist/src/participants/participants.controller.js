@@ -15,10 +15,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ParticipantsController = void 0;
 const common_1 = require("@nestjs/common");
 const platform_express_1 = require("@nestjs/platform-express");
+const multer_1 = require("multer");
 const participants_service_1 = require("./participants.service");
 const import_participants_dto_1 = require("./dto/import-participants.dto");
 const create_participant_dto_1 = require("./dto/create-participant.dto");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
+const upload = {
+    storage: (0, multer_1.memoryStorage)(),
+    limits: { fileSize: 5 * 1024 * 1024 }
+};
 let ParticipantsController = class ParticipantsController {
     participantsService;
     constructor(participantsService) {
@@ -48,7 +53,7 @@ __decorate([
 ], ParticipantsController.prototype, "create", null);
 __decorate([
     (0, common_1.Post)('import'),
-    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file')),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file', upload)),
     __param(0, (0, common_1.UploadedFile)()),
     __param(1, (0, common_1.Body)()),
     __param(2, (0, common_1.Request)()),

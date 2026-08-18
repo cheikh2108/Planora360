@@ -10,6 +10,16 @@ export declare class UsersController {
         name: string;
         permissions: import("@prisma/client/runtime/client").JsonValue;
     }[]>;
+    listForAssignment(user: any): Promise<{
+        id: string;
+        email: string;
+        firstName: string;
+        lastName: string;
+        role: {
+            id: string;
+            name: string;
+        };
+    }[]>;
     create(dto: CreateUserDto, user: any): Promise<{
         role: {
             id: string;
@@ -18,9 +28,9 @@ export declare class UsersController {
             permissions: import("@prisma/client/runtime/client").JsonValue;
         };
         id: string;
+        email: string;
         organizationId: string;
         roleId: string;
-        email: string;
         firstName: string;
         lastName: string;
         isTwoFactorEnabled: boolean;
@@ -39,9 +49,9 @@ export declare class UsersController {
                 permissions: import("@prisma/client/runtime/client").JsonValue;
             };
             id: string;
+            email: string;
             organizationId: string;
             roleId: string;
-            email: string;
             firstName: string;
             lastName: string;
             isTwoFactorEnabled: boolean;
@@ -63,9 +73,9 @@ export declare class UsersController {
             permissions: import("@prisma/client/runtime/client").JsonValue;
         };
         id: string;
+        email: string;
         organizationId: string;
         roleId: string;
-        email: string;
         firstName: string;
         lastName: string;
         isTwoFactorEnabled: boolean;
@@ -83,9 +93,9 @@ export declare class UsersController {
             permissions: import("@prisma/client/runtime/client").JsonValue;
         };
         id: string;
+        email: string;
         organizationId: string;
         roleId: string;
-        email: string;
         firstName: string;
         lastName: string;
         isTwoFactorEnabled: boolean;

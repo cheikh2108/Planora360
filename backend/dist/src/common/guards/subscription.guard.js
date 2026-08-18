@@ -40,12 +40,19 @@ let SubscriptionGuard = class SubscriptionGuard {
             return true;
         const { user } = context.switchToHttp().getRequest();
         if (!user)
-            throw new common_1.ForbiddenException();
+            throw new common_1.ForbiddenException('Accès refusé. Veuillez vous reconnecter.');
         const orgPlan = user.organization?.subscriptionPlan ?? 'DECOUVERTE';
         const orgRank = PLAN_RANK[orgPlan];
         const hasAccess = requiredPlans.some((p) => orgRank >= PLAN_RANK[p]);
         if (!hasAccess) {
-            throw new common_1.ForbiddenException(`Cette fonctionnalité nécessite la formule ${requiredPlans.join(' ou ')}. Votre formule actuelle : ${orgPlan}.`);
+            const planNames = {
+                DECOUVERTE: 'Découverte',
+                PROFESSIONNELLE: 'Professionnelle',
+                SUR_MESURE: 'Sur mesure',
+            };
+            throw new common_1.ForbiddenException(`Cette fonctionnalité nécessite la formule ${requiredPlans.map(p => planNames[p]).join(' ou ')}. ` +
+                `Votre formule actuelle : ${planNames[orgPlan]}. ` +
+                `Passez à une formule supérieure dans Paramètres > Abonnement.`);
         }
         return true;
     }

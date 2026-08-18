@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ActionPlansService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../common/prisma/prisma.service");
+const subscription_guard_1 = require("../common/guards/subscription.guard");
 let ActionPlansService = class ActionPlansService {
     prisma;
     constructor(prisma) {
@@ -19,6 +20,24 @@ let ActionPlansService = class ActionPlansService {
     }
     async create(dto, organizationId) {
         const { axes, ...planData } = dto;
+        const organization = await this.prisma.organization.findUnique({
+            where: { id: organizationId },
+            select: { subscriptionPlan: true },
+        });
+        if (!organization)
+            throw new common_1.NotFoundException('Organisation introuvable');
+        const activePlansCount = await this.prisma.actionPlan.count({
+            where: {
+                organizationId,
+                status: { not: 'ARCHIVE' },
+            },
+        });
+        const planLimit = subscription_guard_1.PLAN_LIMITS[organization.subscriptionPlan];
+        if (activePlansCount >= planLimit.maxPlans) {
+            throw new common_1.BadRequestException(`Limite de plans d'action atteinte pour votre formule ${organization.subscriptionPlan}. ` +
+                `Maximum autorisé : ${planLimit.maxPlans} plans actifs. ` +
+                `Archivez des plans existants ou passez à une formule supérieure.`);
+        }
         return this.prisma.actionPlan.create({
             data: {
                 ...planData,

@@ -57,7 +57,7 @@ let OrganizationsController = class OrganizationsController {
 exports.OrganizationsController = OrganizationsController;
 __decorate([
     (0, common_1.Patch)('my/brand-color'),
-    (0, roles_decorator_1.Roles)('Super administrateur', 'Administrateur', 'Coordinateur', 'Responsable de projet', 'Chef de service'),
+    (0, roles_decorator_1.Roles)('Super administrateur', 'Administrateur'),
     __param(0, (0, common_1.Body)('brandColor')),
     __param(1, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),

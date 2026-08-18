@@ -35,8 +35,8 @@ export declare class ValidationsService {
             step: import(".prisma/client").$Enums.ValidationStep;
             activityId: string;
             decision: import(".prisma/client").$Enums.ValidationDecision;
-            comment: string | null;
             validatorId: string;
+            comment: string | null;
         } | null;
     }>;
     getHistory(activityId: string, organizationId: string): Promise<{
@@ -45,8 +45,8 @@ export declare class ValidationsService {
         step: import(".prisma/client").$Enums.ValidationStep;
         activityId: string;
         decision: import(".prisma/client").$Enums.ValidationDecision;
-        comment: string | null;
         validatorId: string;
+        comment: string | null;
     }[]>;
     submit(activityId: string, userId: string, organizationId: string): Promise<{
         id: string;
@@ -54,8 +54,8 @@ export declare class ValidationsService {
         step: import(".prisma/client").$Enums.ValidationStep;
         activityId: string;
         decision: import(".prisma/client").$Enums.ValidationDecision;
-        comment: string | null;
         validatorId: string;
+        comment: string | null;
     }>;
     transition(activityId: string, dto: TransitionDto, userId: string, organizationId: string): Promise<{
         id: string;
@@ -63,8 +63,8 @@ export declare class ValidationsService {
         step: import(".prisma/client").$Enums.ValidationStep;
         activityId: string;
         decision: import(".prisma/client").$Enums.ValidationDecision;
-        comment: string | null;
         validatorId: string;
+        comment: string | null;
     }>;
     findPending(userId: string, organizationId: string, page?: number, limit?: number): Promise<{
         data: ({
@@ -82,8 +82,8 @@ export declare class ValidationsService {
                 step: import(".prisma/client").$Enums.ValidationStep;
                 activityId: string;
                 decision: import(".prisma/client").$Enums.ValidationDecision;
-                comment: string | null;
                 validatorId: string;
+                comment: string | null;
             }[];
         } & {
             id: string;

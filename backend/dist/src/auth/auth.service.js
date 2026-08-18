@@ -161,7 +161,7 @@ let AuthService = class AuthService {
         const otpAuthUrl = speakeasy.otpauthURL({
             secret: secret.base32,
             label: user.email,
-            issuer: 'Action Pilot',
+            issuer: 'PLANORA 360',
             encoding: 'base32',
         });
         const qrCode = await QRCode.toDataURL(otpAuthUrl);

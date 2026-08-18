@@ -28,19 +28,23 @@ let RolesGuard = class RolesGuard {
             return true;
         const { user } = context.switchToHttp().getRequest();
         if (!user)
-            throw new common_1.ForbiddenException();
+            throw new common_1.ForbiddenException('Accès refusé. Veuillez vous reconnecter.');
         const userPermissions = user.role?.permissions ?? [];
         if (userPermissions.includes('*'))
             return true;
         if (requiredRoles?.length) {
             const hasRole = requiredRoles.includes(user.role?.name);
-            if (!hasRole)
-                throw new common_1.ForbiddenException('Rôle insuffisant');
+            if (!hasRole) {
+                throw new common_1.ForbiddenException(`Cette action est réservée aux rôles suivants : ${requiredRoles.join(', ')}. ` +
+                    `Contactez votre administrateur pour obtenir les autorisations nécessaires.`);
+            }
         }
         if (requiredPermissions?.length) {
             const hasAll = requiredPermissions.every((p) => userPermissions.includes(p));
-            if (!hasAll)
-                throw new common_1.ForbiddenException('Permission insuffisante');
+            if (!hasAll) {
+                throw new common_1.ForbiddenException('Vous n\'avez pas les autorisations nécessaires pour effectuer cette action. ' +
+                    'Contactez votre administrateur pour obtenir les permissions requises.');
+            }
         }
         return true;
     }

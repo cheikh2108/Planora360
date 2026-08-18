@@ -10,6 +10,8 @@ exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const schedule_1 = require("@nestjs/schedule");
+const throttler_1 = require("@nestjs/throttler");
+const core_1 = require("@nestjs/core");
 const prisma_module_1 = require("./common/prisma/prisma.module");
 const audit_module_1 = require("./audit/audit.module");
 const notifications_module_1 = require("./notifications/notifications.module");
@@ -31,6 +33,7 @@ const indicators_module_1 = require("./indicators/indicators.module");
 const participants_module_1 = require("./participants/participants.module");
 const capitalization_module_1 = require("./capitalization/capitalization.module");
 const planning_module_1 = require("./planning/planning.module");
+const recommendations_module_1 = require("./recommendations/recommendations.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -39,6 +42,10 @@ exports.AppModule = AppModule = __decorate([
         imports: [
             config_1.ConfigModule.forRoot({ isGlobal: true }),
             schedule_1.ScheduleModule.forRoot(),
+            throttler_1.ThrottlerModule.forRoot([{
+                    ttl: 60000,
+                    limit: 10,
+                }]),
             prisma_module_1.PrismaModule,
             audit_module_1.AuditModule,
             notifications_module_1.NotificationsModule,
@@ -60,6 +67,13 @@ exports.AppModule = AppModule = __decorate([
             participants_module_1.ParticipantsModule,
             capitalization_module_1.CapitalizationModule,
             planning_module_1.PlanningModule,
+            recommendations_module_1.RecommendationsModule,
+        ],
+        providers: [
+            {
+                provide: core_1.APP_GUARD,
+                useClass: throttler_1.ThrottlerGuard,
+            },
         ],
     })
 ], AppModule);

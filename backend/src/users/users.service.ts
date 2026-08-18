@@ -75,6 +75,7 @@ export class UsersService {
     return this.prisma.user.findMany({
       where: {
         organizationId,
+        isActive: true,
       },
       select: {
         id: true,
