@@ -553,21 +553,17 @@ export default function RecommendationDetailPage() {
       <Header
         title={recommendation.code}
         subtitle={recommendation.title}
-        actions={
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" onClick={() => router.push('/recommendations')}>
-              <ArrowLeft size={16} />
-              Retour
-            </Button>
-            <Button variant="ghost" onClick={handleDelete} disabled={deleteMutation.isPending}>
-              <Trash2 size={16} />
-              Supprimer
-            </Button>
-          </div>
-        }
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        {/* Back button */}
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-900 transition-colors"
+        >
+          <ArrowLeft size={16} /> Retour
+        </button>
+
         {/* Main card */}
         <div className="bg-white rounded-2xl border border-slate-200 p-6">
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
@@ -646,6 +642,15 @@ export default function RecommendationDetailPage() {
               Rouvrir
             </Button>
           )}
+          <Button
+            variant="ghost"
+            onClick={handleDelete}
+            disabled={deleteMutation.isPending}
+            className="text-red-600 hover:text-red-700 hover:bg-red-50 ml-auto"
+          >
+            <Trash2 size={16} />
+            Supprimer
+          </Button>
         </div>
 
         {/* Actions and Comments */}
