@@ -5,34 +5,9 @@ import { auditApi } from '@/lib/api';
 import type { AuditEntry } from '@/lib/types';
 import { Header } from '@/components/layout/header';
 import { EmptyState } from '@/components/ui/empty-state';
-import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import {
-  Bell, CheckCircle2, XCircle, Upload, UserPlus, Edit3,
-  AlertTriangle, GitBranch, Send, Shield,
-} from 'lucide-react';
-
-const ACTION_CONFIG: Record<string, { icon: React.ElementType; badge: string; dot: string; label: string }> = {
-  SUBMIT:                { icon: Send,         badge: 'bg-blue-500/15 text-blue-400',     dot: 'bg-blue-500',    label: 'Soumission' },
-  'validation.submitted':{ icon: Send,         badge: 'bg-blue-500/15 text-blue-400',     dot: 'bg-blue-500',    label: 'Soumission validation' },
-  APPROVE:               { icon: CheckCircle2, badge: 'bg-emerald-500/15 text-emerald-400', dot: 'bg-emerald-500', label: 'Approuvé' },
-  'validation.approuve': { icon: CheckCircle2, badge: 'bg-emerald-500/15 text-emerald-400', dot: 'bg-emerald-500', label: 'Validation approuvée' },
-  REJECT:                { icon: XCircle,      badge: 'bg-red-500/15 text-red-400',       dot: 'bg-red-500',     label: 'Rejeté' },
-  'validation.rejete':   { icon: XCircle,      badge: 'bg-red-500/15 text-red-400',       dot: 'bg-red-500',     label: 'Validation rejetée' },
-  VALIDATE:              { icon: GitBranch,    badge: 'bg-teal-500/15 text-teal-400',     dot: 'bg-teal-500',    label: 'Validé' },
-  UPLOAD:                { icon: Upload,       badge: 'bg-purple-500/15 text-purple-400', dot: 'bg-purple-500',  label: 'Document ajouté' },
-  CREATE_USER:           { icon: UserPlus,     badge: 'bg-indigo-500/15 text-indigo-400', dot: 'bg-indigo-500',  label: 'Utilisateur créé' },
-  CREATE:                { icon: UserPlus,     badge: 'bg-indigo-500/15 text-indigo-400', dot: 'bg-indigo-500',  label: 'Création' },
-  UPDATE:                { icon: Edit3,        badge: 'bg-slate-500/15 text-slate-400',   dot: 'bg-slate-400',   label: 'Mise à jour' },
-  DELETE:                { icon: XCircle,      badge: 'bg-red-500/15 text-red-400',       dot: 'bg-red-500',     label: 'Suppression' },
-  STATUS_CHANGE:         { icon: AlertTriangle,badge: 'bg-amber-500/15 text-amber-400',   dot: 'bg-amber-400',   label: 'Changement de statut' },
-};
-
-function humanAction(action: string): string {
-  const config = ACTION_CONFIG[action];
-  if (config) return config.label;
-  return action.replace(/[._]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-}
+import { Bell } from 'lucide-react';
+import { ACTION_CONFIG, DEFAULT_CONFIG, humanAction } from '@/lib/action-config';
 
 /* ─── Skeleton de timeline ───────────────────────────────────── */
 
@@ -109,10 +84,7 @@ export default function NotificationsPage() {
                 {/* Timeline */}
                 <div className="space-y-0">
                   {dayEntries.map((entry, idx) => {
-                    const rawLabel = entry.action.replace(/[._]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-                    const config = ACTION_CONFIG[entry.action] ?? {
-                      icon: Shield, badge: 'bg-slate-500/10 text-slate-400', dot: 'bg-slate-400', label: rawLabel,
-                    };
+                    const config = ACTION_CONFIG[entry.action] ?? DEFAULT_CONFIG;
                     const Icon   = config.icon;
                     const actor  = entry.user ? `${entry.user.firstName} ${entry.user.lastName}` : 'Système';
                     const meta   = entry.metadata as Record<string, string> | null;

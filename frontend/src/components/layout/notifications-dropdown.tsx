@@ -4,36 +4,10 @@ import { useState, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { auditApi } from '@/lib/api';
 import type { AuditEntry } from '@/lib/types';
-import {
-  Bell, CheckCircle2, XCircle, Upload, UserPlus, Edit3,
-  AlertTriangle, GitBranch, Send, Shield, CheckCheck,
-} from 'lucide-react';
+import { Bell, CheckCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ACTION_CONFIG, DEFAULT_CONFIG, humanAction } from '@/lib/action-config';
 import Link from 'next/link';
-
-const ACTION_CONFIG: Record<string, { icon: React.ElementType; badge: string; dot: string; label: string }> = {
-  SUBMIT:                { icon: Send,         badge: 'bg-blue-500/15 text-blue-400',     dot: 'bg-blue-500',    label: 'Soumission' },
-  'validation.submitted':{ icon: Send,         badge: 'bg-blue-500/15 text-blue-400',     dot: 'bg-blue-500',    label: 'Soumission validation' },
-  APPROVE:               { icon: CheckCircle2, badge: 'bg-emerald-500/15 text-emerald-400', dot: 'bg-emerald-500', label: 'Approuvé' },
-  'validation.approuve': { icon: CheckCircle2, badge: 'bg-emerald-500/15 text-emerald-400', dot: 'bg-emerald-500', label: 'Validation approuvée' },
-  REJECT:                { icon: XCircle,      badge: 'bg-red-500/15 text-red-400',       dot: 'bg-red-500',     label: 'Rejeté' },
-  'validation.rejete':   { icon: XCircle,      badge: 'bg-red-500/15 text-red-400',       dot: 'bg-red-500',     label: 'Validation rejetée' },
-  VALIDATE:              { icon: GitBranch,    badge: 'bg-teal-500/15 text-teal-400',     dot: 'bg-teal-500',    label: 'Validé' },
-  UPLOAD:                { icon: Upload,       badge: 'bg-purple-500/15 text-purple-400', dot: 'bg-purple-500',  label: 'Document ajouté' },
-  CREATE_USER:           { icon: UserPlus,     badge: 'bg-indigo-500/15 text-indigo-400', dot: 'bg-indigo-500',  label: 'Utilisateur créé' },
-  CREATE:                { icon: UserPlus,     badge: 'bg-indigo-500/15 text-indigo-400', dot: 'bg-indigo-500',  label: 'Création' },
-  UPDATE:                { icon: Edit3,        badge: 'bg-slate-500/15 text-slate-400',   dot: 'bg-slate-500',   label: 'Mise à jour' },
-  STATUS_CHANGE:         { icon: AlertTriangle,badge: 'bg-amber-500/15 text-amber-400',   dot: 'bg-amber-500',   label: 'Statut modifié' },
-  DELETE:                { icon: XCircle,      badge: 'bg-red-500/15 text-red-400',       dot: 'bg-red-500',     label: 'Suppression' },
-};
-
-const DEFAULT_CONFIG = { icon: Shield, badge: 'bg-slate-500/15 text-slate-400', dot: 'bg-slate-500' };
-
-function humanAction(action: string): string {
-  const config = ACTION_CONFIG[action];
-  if (config) return config.label;
-  return action.replace(/[._]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-}
 
 function relativeTime(dateStr: string): string {
   const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);

@@ -22,6 +22,7 @@ export function FloatingHelpButton() {
     if (pathname.startsWith('/plans')) return 'plans';
     if (pathname.startsWith('/activities')) return 'activities';
     if (pathname.startsWith('/validations')) return 'validations';
+    if (pathname.startsWith('/recommendations')) return 'recommendations';
     if (pathname.startsWith('/indicators')) return 'indicators';
     if (pathname.startsWith('/participants')) return 'participants';
     if (pathname.startsWith('/capitalisation')) return 'capitalisation';

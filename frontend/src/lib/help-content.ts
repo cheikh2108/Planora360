@@ -328,6 +328,107 @@ export const HELP_CONTENT: HelpPage[] = [
       },
     ],
   },
+  {
+    page: 'recommendations',
+    articles: [
+      {
+        id: 'rec-1',
+        title: 'Qu\'est-ce qu\'une recommandation ?',
+        content: `
+          <p>Les recommandations sont des observations issues de :</p>
+          <ul>
+            <li><strong>Audits</strong> internes ou externes</li>
+            <li><strong>Missions</strong> de supervision</li>
+            <li><strong>Évaluations</strong> de projets ou programmes</li>
+            <li><strong>Contrôles</strong> qualité, internes, financiers</li>
+          </ul>
+          <p>Chaque recommandation doit être suivie jusqu'à sa clôture.</p>
+        `,
+      },
+      {
+        id: 'rec-2',
+        title: 'Créer une recommandation',
+        content: `
+          <p>Pour enregistrer une recommandation :</p>
+          <ol>
+            <li>Cliquez sur <strong>"Nouvelle recommandation"</strong></li>
+            <li>Renseignez : titre, description, source</li>
+            <li>Définissez la priorité (Critique, Élevée, Moyenne, Faible)</li>
+            <li>Assignez un responsable et un validateur</li>
+            <li>Fixez les dates d'émission et d'échéance</li>
+          </ol>
+          <p><strong>Un code unique</strong> (REC-YYYY-NNN) est généré automatiquement.</p>
+        `,
+      },
+      {
+        id: 'rec-3',
+        title: 'Workflow de suivi',
+        content: `
+          <p>Une recommandation passe par plusieurs statuts :</p>
+          <ul>
+            <li><strong>Non démarrée</strong> → Cliquez "Démarrer" pour la prendre en charge</li>
+            <li><strong>En cours</strong> → Ajoutez des actions et mettez à jour la progression</li>
+            <li><strong>Partiellement mise en œuvre</strong> → Progression entre 1% et 99%</li>
+            <li><strong>Réalisée à valider</strong> → Le responsable a terminé, en attente de validation</li>
+            <li><strong>Validée</strong> → Le validateur confirme la clôture</li>
+          </ul>
+          <p>Vous pouvez <strong>Suspendre</strong> ou <strong>Rouvrir</strong> une recommandation si nécessaire.</p>
+        `,
+      },
+      {
+        id: 'rec-4',
+        title: 'Gérer les actions',
+        content: `
+          <p>Pour chaque recommandation, définissez des <strong>actions concrètes</strong> :</p>
+          <ul>
+            <li>Titre et description de l'action</li>
+            <li>Échéance (optionnel)</li>
+            <li>Responsable de l'exécution</li>
+          </ul>
+          <p>Les actions permettent de décomposer une recommandation complexe en tâches réalisables.</p>
+        `,
+      },
+      {
+        id: 'rec-5',
+        title: 'Suivre la progression',
+        content: `
+          <p>La <strong>progression</strong> indique l'avancement de la mise en œuvre :</p>
+          <ul>
+            <li>Cliquez sur <strong>"Modifier"</strong> sous la barre de progression</li>
+            <li>Saisissez un pourcentage entre 0% et 100%</li>
+            <li>La couleur change automatiquement (rouge → orange → bleu → vert)</li>
+          </ul>
+          <p><strong>Astuce :</strong> Mettez à jour régulièrement pour un suivi en temps réel.</p>
+        `,
+      },
+      {
+        id: 'rec-6',
+        title: 'Commenter et collaborer',
+        content: `
+          <p>Utilisez les <strong>commentaires</strong> pour :</p>
+          <ul>
+            <li>Documenter l'avancement</li>
+            <li>Signaler des blocages</li>
+            <li>Partager des ressources</li>
+          </ul>
+          <p>Cochez <strong>"Marquer comme important"</strong> pour mettre en évidence un commentaire critique.</p>
+        `,
+      },
+      {
+        id: 'rec-7',
+        title: 'Filtrer et rechercher',
+        content: `
+          <p>Sur la page principale, utilisez les filtres pour :</p>
+          <ul>
+            <li>Afficher un statut spécifique (En cours, Validée, etc.)</li>
+            <li>Filtrer par priorité (Critique, Élevée, etc.)</li>
+            <li>Sélectionner une source (Audit interne, Mission, etc.)</li>
+          </ul>
+          <p>Les <strong>stats en haut</strong> vous donnent une vue d'ensemble rapide.</p>
+        `,
+      },
+    ],
+  },
 ];
 
 /**
