@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
 import { AuthProvider } from '@/lib/auth-context';
 import { HelpProvider } from '@/contexts/help-context';
+import { ToastProvider } from '@/components/ui/toast';
 import { HelpSidebar } from '@/components/help/help-sidebar';
 import { FloatingHelpButton } from '@/components/help/floating-help-button';
 
@@ -15,11 +16,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={client}>
       <AuthProvider>
-        <HelpProvider>
-          {children}
-          <HelpSidebar />
-          <FloatingHelpButton />
-        </HelpProvider>
+        <ToastProvider>
+          <HelpProvider>
+            {children}
+            <HelpSidebar />
+            <FloatingHelpButton />
+          </HelpProvider>
+        </ToastProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
