@@ -6,7 +6,7 @@ import {
   LayoutDashboard, FolderKanban, CheckSquare, GitBranch,
   PiggyBank, FileText, Bell, BarChart3, Settings, LogOut,
   ChevronDown, Users, Shield, Archive, Target, UserPlus,
-  BookOpen, Calendar, HelpCircle,
+  BookOpen, Calendar, HelpCircle, ShieldAlert,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth-context';
@@ -25,6 +25,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/plans/archives', label: 'Archives',        icon: Archive,         permission: 'plan.read' },
   { href: '/activities',    label: 'Activités',       icon: CheckSquare,     permission: 'activity.read' },
   { href: '/validations',   label: 'Validations',     icon: GitBranch,       permission: 'validation.approve' },
+  { href: '/recommendations', label: 'Recommandations', icon: ShieldAlert,   permission: 'plan.read' },
   { href: '/indicators',    label: 'Indicateurs',     icon: Target,          permission: 'dashboard.view' },
   { href: '/participants',  label: 'Participants',    icon: UserPlus,        permission: 'activity.read' },
   { href: '/capitalisation', label: 'Capitalisation',  icon: BookOpen,        permission: 'document.download' },
