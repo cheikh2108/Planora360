@@ -2,6 +2,7 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { PrismaService } from '../common/prisma/prisma.service';
 import { CreateParticipantDto } from './dto/create-participant.dto';
 import * as Excel from 'exceljs';
+import { Readable } from 'stream';
 
 @Injectable()
 export class ParticipantsService {
@@ -42,7 +43,9 @@ export class ParticipantsService {
 
     // Utiliser exceljs (plus sûr que xlsx)
     const workbook = new Excel.Workbook();
-    await workbook.xlsx.load(file.buffer);
+    // Créer un stream à partir du buffer pour compatibilité exceljs
+    const stream = Readable.from(file.buffer);
+    await workbook.xlsx.read(stream);
 
     const worksheet = workbook.worksheets[0];
     if (!worksheet) {
