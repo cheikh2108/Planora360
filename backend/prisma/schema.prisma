@@ -51,6 +51,46 @@ enum ValidationDecision {
   EN_ATTENTE
 }
 
+enum RecommendationSource {
+  MISSION_SUPERVISION
+  VISITE_TERRAIN
+  AUDIT_INTERNE
+  AUDIT_EXTERNE
+  EVALUATION_PROJET
+  EVALUATION_PROGRAMME
+  REUNION_COORDINATION
+  REVUE_PERFORMANCE
+  CONTROLE_INTERNE
+  CONTROLE_QUALITE
+  REVUE_BUDGETAIRE
+  REVUE_FINANCIERE
+  OBSERVATION_BAILLEUR
+  OBSERVATION_PARTENAIRE
+  REVUE_GOUVERNANCE
+  INSPECTION
+  REVUE_DOCUMENTAIRE
+  VERIFICATION_CONFORMITE
+  AUTRE
+}
+
+enum RecommendationPriority {
+  CRITIQUE
+  ELEVEE
+  MOYENNE
+  FAIBLE
+}
+
+enum RecommendationStatus {
+  NON_DEMARREE
+  EN_COURS
+  PARTIELLEMENT_MISE_EN_OEUVRE
+  REALISEE_A_VALIDER
+  EN_RETARD
+  SUSPENDUE
+  VALIDEE
+  ROUVERTE
+}
+
 model Organization {
   id               String             @id @default(cuid())
   name             String
@@ -70,6 +110,8 @@ model Organization {
   capitalizationRecords CapitalizationRecord[]
   annualWorkPlans       AnnualWorkPlan[]
   resultsMatrix         ResultsMatrix?
+  recommendations       Recommendation[]
+  helpArticles          HelpArticle[]
 
   @@map("organizations")
 }
@@ -89,28 +131,38 @@ model Role {
 }
 
 model User {
-  id              String       @id @default(cuid())
-  organizationId  String
-  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  roleId          String
-  role            Role         @relation(fields: [roleId], references: [id])
-  email           String       @unique
-  firstName       String
-  lastName        String
-  passwordHash    String
-  twoFactorSecret String?
-  isTwoFactorEnabled  Boolean   @default(false)
-  isActive            Boolean   @default(true)
-  mustChangePassword  Boolean   @default(false)
-  lastLoginAt         DateTime?
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  id                 String       @id @default(cuid())
+  organizationId     String
+  organization       Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  roleId             String
+  role               Role         @relation(fields: [roleId], references: [id])
+  email              String       @unique
+  firstName          String
+  lastName           String
+  passwordHash       String
+  twoFactorSecret    String?
+  isTwoFactorEnabled Boolean      @default(false)
+  isActive           Boolean      @default(true)
+  mustChangePassword Boolean      @default(false)
+  lastLoginAt        DateTime?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
 
   refreshTokens           RefreshToken[]
   responsibleActivities   Activity[]             @relation("ActivityResponsible")
   checklistItems          ChecklistItem[]        @relation("ChecklistResponsible")
   collaboratingActivities ActivityCollaborator[] @relation("ActivityCollaborators")
   capitalizationRecords   CapitalizationRecord[] @relation("CapitalizationAuthor")
+
+  recommendationsIssued       Recommendation[]            @relation("RecommendationIssuer")
+  recommendationsResponsible  Recommendation[]            @relation("RecommendationResponsible")
+  recommendationsValidated    Recommendation[]            @relation("RecommendationValidator")
+  recommendationsCreated      Recommendation[]            @relation("RecommendationCreator")
+  recommendationContributions RecommendationContributor[]
+  recommendationActions       RecommendationAction[]
+  recommendationEvidences     RecommendationEvidence[]
+  recommendationComments      RecommendationComment[]
+  recommendationHistory       RecommendationHistory[]
 
   @@index([organizationId])
   @@map("users")
@@ -129,20 +181,21 @@ model RefreshToken {
 }
 
 model ActionPlan {
-  id                 String       @id @default(cuid())
-  organizationId     String
-  organization       Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  title              String
-  status             PlanStatus @default(BROUILLON)
-  periodStart        DateTime
-  periodEnd          DateTime
-  strategicGoals     String?
-  expectedResults    String?
-  budgetPrevisional  Decimal?     @db.Decimal(14, 2)
-  createdAt          DateTime     @default(now())
-  updatedAt          DateTime     @updatedAt
+  id                String       @id @default(cuid())
+  organizationId    String
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  title             String
+  status            PlanStatus   @default(BROUILLON)
+  periodStart       DateTime
+  periodEnd         DateTime
+  strategicGoals    String?
+  expectedResults   String?
+  budgetPrevisional Decimal?     @db.Decimal(14, 2)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
 
-  axes Axis[]
+  axes            Axis[]
+  recommendations Recommendation[]
 
   @@index([organizationId])
   @@map("action_plans")
@@ -191,6 +244,7 @@ model Activity {
   collaborators   ActivityCollaborator[]
   indicators      Indicator[]
   participants    Participant[]
+  recommendations Recommendation[]
 
   @@index([organizationId])
   @@index([organizationId, status])
@@ -212,18 +266,18 @@ model ActivityCollaborator {
 }
 
 model Indicator {
-  id             String   @id @default(cuid())
+  id             String    @id @default(cuid())
   organizationId String
   activityId     String?
   activity       Activity? @relation(fields: [activityId], references: [id], onDelete: Cascade)
   title          String
   unit           String?
-  baseline       Float    @default(0)
+  baseline       Float     @default(0)
   target         Float
-  achieved       Float    @default(0)
+  achieved       Float     @default(0)
   dueDate        DateTime?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   @@index([organizationId])
   @@index([activityId])
@@ -271,9 +325,9 @@ model Budget {
   activityId    String
   activity      Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
   planned       Decimal  @db.Decimal(14, 2)
-  committed     Decimal  @db.Decimal(14, 2) @default(0)
-  disbursed     Decimal  @db.Decimal(14, 2) @default(0)
-  executed      Decimal  @db.Decimal(14, 2) @default(0)
+  committed     Decimal  @default(0) @db.Decimal(14, 2)
+  disbursed     Decimal  @default(0) @db.Decimal(14, 2)
+  executed      Decimal  @default(0) @db.Decimal(14, 2)
   fundingSource String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -320,21 +374,21 @@ model AuditLog {
 
 // MODULE PARTICIPANTS
 model Participant {
-  id            String       @id @default(cuid())
+  id             String       @id @default(cuid())
   organizationId String
-  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  activityId    String
-  activity      Activity     @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  activityId     String
+  activity       Activity     @relation(fields: [activityId], references: [id], onDelete: Cascade)
 
-  firstName     String
-  lastName      String
-  phone         String
-  paymentMode   String       // "WAVE" | "ORANGE_MONEY"
-  amount        Float
+  firstName   String
+  lastName    String
+  phone       String
+  paymentMode String // "WAVE" | "ORANGE_MONEY"
+  amount      Float
 
-  createdBy     String
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([phone, activityId])
   @@index([organizationId])
@@ -344,28 +398,28 @@ model Participant {
 
 // MODULE CAPITALISATION
 model CapitalizationRecord {
-  id            String       @id @default(cuid())
+  id             String       @id @default(cuid())
   organizationId String
-  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  type          String       // "BONNE_PRATIQUE" | "RECIT_CHANGEMENT" | "GUIDE"
-  title         String
-  context       String       @db.Text
-  challenges    String       @db.Text
-  solutions     String       @db.Text
-  results       String       @db.Text
-  lessons       String       @db.Text
+  type       String // "BONNE_PRATIQUE" | "RECIT_CHANGEMENT" | "GUIDE"
+  title      String
+  context    String @db.Text
+  challenges String @db.Text
+  solutions  String @db.Text
+  results    String @db.Text
+  lessons    String @db.Text
 
-  tags          String[]
-  status        String       @default("BROUILLON") // "BROUILLON" | "PUBLIE"
+  tags   String[]
+  status String   @default("BROUILLON") // "BROUILLON" | "PUBLIE"
 
-  authorId      String
-  author        User         @relation("CapitalizationAuthor", fields: [authorId], references: [id])
+  authorId String
+  author   User   @relation("CapitalizationAuthor", fields: [authorId], references: [id])
 
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  media         Media[]
+  media Media[]
 
   @@index([organizationId])
   @@index([authorId])
@@ -373,38 +427,240 @@ model CapitalizationRecord {
 }
 
 model Media {
-  id                    String               @id @default(cuid())
-  capitalizationId      String
-  capitalization        CapitalizationRecord @relation(fields: [capitalizationId], references: [id], onDelete: Cascade)
+  id               String               @id @default(cuid())
+  capitalizationId String
+  capitalization   CapitalizationRecord @relation(fields: [capitalizationId], references: [id], onDelete: Cascade)
 
-  type                  String               // "PHOTO" | "VIDEO" | "DOCUMENT"
-  filename              String
-  url                   String               // Backblaze B2
-  size                  Int
+  type     String // "PHOTO" | "VIDEO" | "DOCUMENT"
+  filename String
+  url      String // Backblaze B2
+  size     Int
 
-  uploadedAt            DateTime             @default(now())
+  uploadedAt DateTime @default(now())
 
   @@index([capitalizationId])
   @@map("media")
 }
 
+// MODULE RECOMMANDATIONS
+model Recommendation {
+  id   String @id @default(cuid())
+  code String @unique
+
+  // Identification
+  title       String
+  description String @db.Text
+
+  // Source
+  source            RecommendationSource
+  sourceReference   String?
+  sourceDocumentUrl String?
+
+  // Rattachements
+  actionPlanId   String?
+  actionPlan     ActionPlan?  @relation(fields: [actionPlanId], references: [id])
+  activityId     String?
+  activity       Activity?    @relation(fields: [activityId], references: [id])
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Dates
+  issuedAt    DateTime
+  dueDate     DateTime
+  completedAt DateTime?
+  validatedAt DateTime?
+
+  // Acteurs
+  issuerId       String?
+  issuer         User?   @relation("RecommendationIssuer", fields: [issuerId], references: [id])
+  issuerExternal String?
+
+  responsibleId String
+  responsible   User   @relation("RecommendationResponsible", fields: [responsibleId], references: [id])
+
+  validatorId String?
+  validator   User?   @relation("RecommendationValidator", fields: [validatorId], references: [id])
+
+  createdById String
+  createdBy   User   @relation("RecommendationCreator", fields: [createdById], references: [id])
+
+  // Contributeurs
+  contributors RecommendationContributor[]
+
+  // Suivi
+  priority RecommendationPriority
+  status   RecommendationStatus   @default(NON_DEMARREE)
+  progress Int                    @default(0)
+
+  // Actions et preuves
+  actions   RecommendationAction[]
+  evidences RecommendationEvidence[]
+  comments  RecommendationComment[]
+
+  // Gestion des retards/suspensions
+  suspendedReason String?   @db.Text
+  suspendedAt     DateTime?
+  suspendedBy     String?
+
+  reopenedReason String?   @db.Text
+  reopenedAt     DateTime?
+  reopenedBy     String?
+
+  // Historique
+  history RecommendationHistory[]
+
+  // Métadonnées
+  isRecurrent    Boolean @default(false)
+  recurrenceNote String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([actionPlanId])
+  @@index([activityId])
+  @@index([responsibleId])
+  @@index([status])
+  @@index([priority])
+  @@index([dueDate])
+  @@index([source])
+  @@map("recommendations")
+}
+
+model RecommendationContributor {
+  id               String         @id @default(cuid())
+  recommendationId String
+  recommendation   Recommendation @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+  userId           String
+  user             User           @relation(fields: [userId], references: [id])
+  role             String?
+  createdAt        DateTime       @default(now())
+
+  @@unique([recommendationId, userId])
+  @@index([recommendationId])
+  @@index([userId])
+  @@map("recommendation_contributors")
+}
+
+model RecommendationAction {
+  id               String         @id @default(cuid())
+  recommendationId String
+  recommendation   Recommendation @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+
+  title         String
+  description   String?   @db.Text
+  dueDate       DateTime?
+  completedAt   DateTime?
+  responsibleId String?
+  responsible   User?     @relation(fields: [responsibleId], references: [id])
+
+  status String @default("NON_DEMARREE")
+  order  Int    @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([recommendationId])
+  @@index([responsibleId])
+  @@map("recommendation_actions")
+}
+
+model RecommendationEvidence {
+  id               String         @id @default(cuid())
+  recommendationId String
+  recommendation   Recommendation @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+
+  fileName    String
+  fileUrl     String
+  fileSize    Int
+  mimeType    String
+  description String?
+
+  uploadedById String
+  uploadedBy   User     @relation(fields: [uploadedById], references: [id])
+  uploadedAt   DateTime @default(now())
+
+  @@index([recommendationId])
+  @@index([uploadedById])
+  @@map("recommendation_evidences")
+}
+
+model RecommendationComment {
+  id               String         @id @default(cuid())
+  recommendationId String
+  recommendation   Recommendation @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+
+  content     String  @db.Text
+  isImportant Boolean @default(false)
+
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([recommendationId])
+  @@index([authorId])
+  @@map("recommendation_comments")
+}
+
+model RecommendationHistory {
+  id               String         @id @default(cuid())
+  recommendationId String
+  recommendation   Recommendation @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+
+  action   String
+  field    String?
+  oldValue String? @db.Text
+  newValue String? @db.Text
+  comment  String? @db.Text
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@index([recommendationId])
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("recommendation_history")
+}
+
+// MODULE HELP ARTICLES
+model HelpArticle {
+  id             String        @id @default(cuid())
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  page           String
+  title          String
+  content        String        @db.Text
+  order          Int           @default(0)
+  status         String        @default("DRAFT")
+  authorId       String
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([organizationId])
+  @@index([page])
+  @@map("help_articles")
+}
+
 // MODULE PLANIFICATION
 model AnnualWorkPlan {
-  id            String       @id @default(cuid())
+  id             String       @id @default(cuid())
   organizationId String
-  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  year          Int
-  title         String
-  objectives    Json         // Structure flexible
+  year       Int
+  title      String
+  objectives Json // Structure flexible
 
-  status        String       @default("BROUILLON") // "BROUILLON" | "VALIDE"
-  validatedBy   String?
-  validatedAt   DateTime?
+  status      String    @default("BROUILLON") // "BROUILLON" | "VALIDE"
+  validatedBy String?
+  validatedAt DateTime?
 
-  createdBy     String
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([organizationId])
   @@index([year])
@@ -412,13 +668,13 @@ model AnnualWorkPlan {
 }
 
 model ResultsMatrix {
-  id            String       @id @default(cuid())
-  organizationId String      @unique
-  organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  id             String       @id @default(cuid())
+  organizationId String       @unique
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  data          Json         // Objectifs → Résultats → Indicateurs
+  data Json // Objectifs → Résultats → Indicateurs
 
-  updatedAt     DateTime     @updatedAt
+  updatedAt DateTime @updatedAt
 
   @@map("results_matrices")
 }

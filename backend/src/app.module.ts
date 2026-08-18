@@ -24,6 +24,7 @@ import { IndicatorsModule } from './indicators/indicators.module';
 import { ParticipantsModule } from './participants/participants.module';
 import { CapitalizationModule } from './capitalization/capitalization.module';
 import { PlanningModule } from './planning/planning.module';
+import { RecommendationsModule } from './recommendations/recommendations.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { PlanningModule } from './planning/planning.module';
     ParticipantsModule,
     CapitalizationModule,
     PlanningModule,
+    RecommendationsModule,
   ],
   providers: [
     {

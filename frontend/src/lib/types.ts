@@ -227,3 +227,157 @@ export interface PaginatedResponse<T> {
   page: number;
   limit: number;
 }
+
+// Recommendations
+export type RecommendationSource =
+  | 'MISSION_SUPERVISION'
+  | 'VISITE_TERRAIN'
+  | 'AUDIT_INTERNE'
+  | 'AUDIT_EXTERNE'
+  | 'EVALUATION_PROJET'
+  | 'EVALUATION_PROGRAMME'
+  | 'REUNION_COORDINATION'
+  | 'REVUE_PERFORMANCE'
+  | 'CONTROLE_INTERNE'
+  | 'CONTROLE_QUALITE'
+  | 'REVUE_BUDGETAIRE'
+  | 'REVUE_FINANCIERE'
+  | 'OBSERVATION_BAILLEUR'
+  | 'OBSERVATION_PARTENAIRE'
+  | 'REVUE_GOUVERNANCE'
+  | 'INSPECTION'
+  | 'REVUE_DOCUMENTAIRE'
+  | 'VERIFICATION_CONFORMITE'
+  | 'AUTRE';
+
+export type RecommendationPriority = 'CRITIQUE' | 'ELEVEE' | 'MOYENNE' | 'FAIBLE';
+
+export type RecommendationStatus =
+  | 'NON_DEMARREE'
+  | 'EN_COURS'
+  | 'PARTIELLEMENT_MISE_EN_OEUVRE'
+  | 'REALISEE_A_VALIDER'
+  | 'EN_RETARD'
+  | 'SUSPENDUE'
+  | 'VALIDEE'
+  | 'ROUVERTE';
+
+export interface Recommendation {
+  id: string;
+  code: string;
+  title: string;
+  description: string;
+  source: RecommendationSource;
+  sourceReference?: string;
+  sourceDocumentUrl?: string;
+  actionPlanId?: string;
+  actionPlan?: { id: string; title: string };
+  activityId?: string;
+  activity?: { id: string; title: string };
+  organizationId: string;
+  issuedAt: string;
+  dueDate: string;
+  completedAt?: string;
+  validatedAt?: string;
+  issuerId?: string;
+  issuer?: { id: string; firstName: string; lastName: string; email: string };
+  issuerExternal?: string;
+  responsibleId: string;
+  responsible: { id: string; firstName: string; lastName: string; email: string };
+  validatorId?: string;
+  validator?: { id: string; firstName: string; lastName: string; email: string };
+  createdById: string;
+  createdBy: { id: string; firstName: string; lastName: string; email: string };
+  contributors?: RecommendationContributor[];
+  priority: RecommendationPriority;
+  status: RecommendationStatus;
+  progress: number;
+  suspendedReason?: string;
+  suspendedAt?: string;
+  suspendedBy?: string;
+  reopenedReason?: string;
+  reopenedAt?: string;
+  reopenedBy?: string;
+  isRecurrent: boolean;
+  recurrenceNote?: string;
+  createdAt: string;
+  updatedAt: string;
+  _count?: {
+    actions: number;
+    evidences: number;
+    comments: number;
+    history: number;
+  };
+  actions?: RecommendationAction[];
+  evidences?: RecommendationEvidence[];
+  comments?: RecommendationComment[];
+  history?: RecommendationHistory[];
+}
+
+export interface RecommendationContributor {
+  id: string;
+  recommendationId: string;
+  userId: string;
+  user: { id: string; firstName: string; lastName: string; email: string };
+  role?: string;
+  createdAt: string;
+}
+
+export interface RecommendationAction {
+  id: string;
+  recommendationId: string;
+  title: string;
+  description?: string;
+  dueDate?: string;
+  completedAt?: string;
+  responsibleId?: string;
+  responsible?: { id: string; firstName: string; lastName: string; email: string };
+  status: string;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RecommendationEvidence {
+  id: string;
+  recommendationId: string;
+  fileName: string;
+  fileUrl: string;
+  fileSize: number;
+  mimeType: string;
+  description?: string;
+  uploadedById: string;
+  uploadedBy: { id: string; firstName: string; lastName: string; email: string };
+  uploadedAt: string;
+}
+
+export interface RecommendationComment {
+  id: string;
+  recommendationId: string;
+  content: string;
+  isImportant: boolean;
+  authorId: string;
+  author: { id: string; firstName: string; lastName: string; email: string };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RecommendationHistory {
+  id: string;
+  recommendationId: string;
+  action: string;
+  field?: string;
+  oldValue?: string;
+  newValue?: string;
+  comment?: string;
+  userId: string;
+  user: { id: string; firstName: string; lastName: string; email: string };
+  createdAt: string;
+}
+
+export interface RecommendationStats {
+  total: number;
+  byStatus: { status: RecommendationStatus; _count: number }[];
+  byPriority: { priority: RecommendationPriority; _count: number }[];
+  overdue: number;
+}

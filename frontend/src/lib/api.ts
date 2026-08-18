@@ -236,3 +236,25 @@ export const usersApi = {
   remove: (id: string) => api.delete(`/users/${id}`),
   toggleActive: (id: string, isActive: boolean) => api.patch(`/users/${id}`, { isActive }),
 };
+
+// Recommendations
+export const recommendationsApi = {
+  getAll: (filters?: Record<string, unknown>) => api.get('/recommendations', { params: filters }),
+  get: (id: string) => api.get(`/recommendations/${id}`),
+  getStats: () => api.get('/recommendations/stats'),
+  create: (data: Record<string, unknown>) => api.post('/recommendations', data),
+  update: (id: string, data: Record<string, unknown>) => api.patch(`/recommendations/${id}`, data),
+  changeStatus: (id: string, status: string, comment?: string) =>
+    api.patch(`/recommendations/${id}/status`, { status, comment }),
+  suspend: (id: string, reason: string) => api.post(`/recommendations/${id}/suspend`, { reason }),
+  reopen: (id: string, reason: string) => api.post(`/recommendations/${id}/reopen`, { reason }),
+  remove: (id: string) => api.delete(`/recommendations/${id}`),
+  addAction: (id: string, data: Record<string, unknown>) =>
+    api.post(`/recommendations/${id}/actions`, data),
+  updateAction: (actionId: string, data: Record<string, unknown>) =>
+    api.patch(`/recommendations/actions/${actionId}`, data),
+  removeAction: (actionId: string) => api.delete(`/recommendations/actions/${actionId}`),
+  addComment: (id: string, content: string, isImportant?: boolean) =>
+    api.post(`/recommendations/${id}/comments`, { content, isImportant }),
+  getComments: (id: string) => api.get(`/recommendations/${id}/comments`),
+};
