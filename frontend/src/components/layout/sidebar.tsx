@@ -25,7 +25,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/plans/archives', label: 'Archives',        icon: Archive,         permission: 'plan.read' },
   { href: '/activities',    label: 'Activités',       icon: CheckSquare,     permission: 'activity.read' },
   { href: '/validations',   label: 'Validations',     icon: GitBranch,       permission: 'validation.approve' },
-  { href: '/recommendations', label: 'Recommandations', icon: ShieldAlert,   permission: 'plan.read' },
+  { href: '/recommendations', label: 'Recommandations', icon: ShieldAlert },
   { href: '/indicators',    label: 'Indicateurs',     icon: Target,          permission: 'dashboard.view' },
   { href: '/participants',  label: 'Participants',    icon: UserPlus,        permission: 'activity.read' },
   { href: '/capitalisation', label: 'Capitalisation',  icon: BookOpen,        permission: 'document.download' },
