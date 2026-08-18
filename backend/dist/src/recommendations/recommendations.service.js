@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.RecommendationsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../common/prisma/prisma.service");
+const audit_service_1 = require("../audit/audit.service");
 const RECOMMENDATION_INCLUDE = {
     responsible: { select: { id: true, firstName: true, lastName: true, email: true } },
     issuer: { select: { id: true, firstName: true, lastName: true, email: true } },
@@ -28,8 +29,10 @@ const RECOMMENDATION_INCLUDE = {
 };
 let RecommendationsService = class RecommendationsService {
     prisma;
-    constructor(prisma) {
+    auditService;
+    constructor(prisma, auditService) {
         this.prisma = prisma;
+        this.auditService = auditService;
     }
     async verifyRecommendation(id, organizationId) {
         const recommendation = await this.prisma.recommendation.findFirst({
@@ -126,6 +129,14 @@ let RecommendationsService = class RecommendationsService {
             include: RECOMMENDATION_INCLUDE,
         });
         await this.logHistory(recommendation.id, userId, 'CREATE');
+        await this.auditService.log({
+            organizationId,
+            userId,
+            action: 'recommendation.create',
+            entityType: 'Recommendation',
+            entityId: recommendation.id,
+            metadata: { title: recommendation.title, code: recommendation.code },
+        });
         return recommendation;
     }
     async findAll(organizationId, filters) {
@@ -223,6 +234,17 @@ let RecommendationsService = class RecommendationsService {
         for (const [field, oldValue, newValue] of changes) {
             await this.logHistory(id, userId, 'UPDATE', field, oldValue, newValue);
         }
+        if (changes.length > 0) {
+            const action = dto.progress !== undefined ? 'recommendation.progress' : 'recommendation.update';
+            await this.auditService.log({
+                organizationId,
+                userId,
+                action,
+                entityType: 'Recommendation',
+                entityId: id,
+                metadata: { title: updated.title, code: updated.code },
+            });
+        }
         return updated;
     }
     async changeStatus(id, dto, organizationId, userId) {
@@ -233,10 +255,25 @@ let RecommendationsService = class RecommendationsService {
             include: RECOMMENDATION_INCLUDE,
         });
         await this.logHistory(id, userId, 'UPDATE_STATUS', 'status', recommendation.status, dto.status, dto.comment);
+        let auditAction = 'recommendation.update';
+        if (dto.status === 'EN_COURS' && recommendation.status === 'NON_DEMARREE') {
+            auditAction = 'recommendation.start';
+        }
+        else if (dto.status === 'VALIDEE') {
+            auditAction = 'recommendation.validate';
+        }
+        await this.auditService.log({
+            organizationId,
+            userId,
+            action: auditAction,
+            entityType: 'Recommendation',
+            entityId: id,
+            metadata: { title: updated.title, code: updated.code, oldStatus: recommendation.status, newStatus: dto.status },
+        });
         return updated;
     }
     async suspend(id, dto, organizationId, userId) {
-        await this.verifyRecommendation(id, organizationId);
+        const recommendation = await this.verifyRecommendation(id, organizationId);
         const updated = await this.prisma.recommendation.update({
             where: { id },
             data: {
@@ -248,10 +285,18 @@ let RecommendationsService = class RecommendationsService {
             include: RECOMMENDATION_INCLUDE,
         });
         await this.logHistory(id, userId, 'SUSPEND', undefined, undefined, undefined, dto.reason);
+        await this.auditService.log({
+            organizationId,
+            userId,
+            action: 'recommendation.suspend',
+            entityType: 'Recommendation',
+            entityId: id,
+            metadata: { title: recommendation.title, code: recommendation.code, reason: dto.reason },
+        });
         return updated;
     }
     async reopen(id, dto, organizationId, userId) {
-        await this.verifyRecommendation(id, organizationId);
+        const recommendation = await this.verifyRecommendation(id, organizationId);
         const updated = await this.prisma.recommendation.update({
             where: { id },
             data: {
@@ -263,16 +308,32 @@ let RecommendationsService = class RecommendationsService {
             include: RECOMMENDATION_INCLUDE,
         });
         await this.logHistory(id, userId, 'REOPEN', undefined, undefined, undefined, dto.reason);
+        await this.auditService.log({
+            organizationId,
+            userId,
+            action: 'recommendation.reopen',
+            entityType: 'Recommendation',
+            entityId: id,
+            metadata: { title: recommendation.title, code: recommendation.code, reason: dto.reason },
+        });
         return updated;
     }
     async delete(id, organizationId, userId) {
-        await this.verifyRecommendation(id, organizationId);
+        const recommendation = await this.verifyRecommendation(id, organizationId);
         await this.logHistory(id, userId, 'DELETE');
+        await this.auditService.log({
+            organizationId,
+            userId,
+            action: 'recommendation.delete',
+            entityType: 'Recommendation',
+            entityId: id,
+            metadata: { title: recommendation.title, code: recommendation.code },
+        });
         return this.prisma.recommendation.delete({ where: { id } });
     }
-    async addAction(recommendationId, dto, organizationId) {
-        await this.verifyRecommendation(recommendationId, organizationId);
-        return this.prisma.recommendationAction.create({
+    async addAction(recommendationId, dto, organizationId, userId) {
+        const recommendation = await this.verifyRecommendation(recommendationId, organizationId);
+        const action = await this.prisma.recommendationAction.create({
             data: {
                 recommendationId,
                 title: dto.title,
@@ -281,6 +342,17 @@ let RecommendationsService = class RecommendationsService {
                 responsibleId: dto.responsibleId,
             },
         });
+        if (userId) {
+            await this.auditService.log({
+                organizationId,
+                userId,
+                action: 'recommendation.action.add',
+                entityType: 'Recommendation',
+                entityId: recommendationId,
+                metadata: { title: recommendation.title, code: recommendation.code, actionTitle: dto.title },
+            });
+        }
+        return action;
     }
     async updateAction(actionId, organizationId, updates) {
         const action = await this.prisma.recommendationAction.findUnique({
@@ -295,7 +367,7 @@ let RecommendationsService = class RecommendationsService {
             data: updates,
         });
     }
-    async deleteAction(actionId, organizationId) {
+    async deleteAction(actionId, organizationId, userId) {
         const action = await this.prisma.recommendationAction.findUnique({
             where: { id: actionId },
             include: { recommendation: true },
@@ -303,10 +375,24 @@ let RecommendationsService = class RecommendationsService {
         if (!action || action.recommendation.organizationId !== organizationId) {
             throw new common_1.NotFoundException('Action introuvable');
         }
+        if (userId) {
+            await this.auditService.log({
+                organizationId,
+                userId,
+                action: 'recommendation.action.delete',
+                entityType: 'Recommendation',
+                entityId: action.recommendationId,
+                metadata: {
+                    title: action.recommendation.title,
+                    code: action.recommendation.code,
+                    actionTitle: action.title
+                },
+            });
+        }
         return this.prisma.recommendationAction.delete({ where: { id: actionId } });
     }
     async addComment(recommendationId, dto, organizationId, userId) {
-        await this.verifyRecommendation(recommendationId, organizationId);
+        const recommendation = await this.verifyRecommendation(recommendationId, organizationId);
         const comment = await this.prisma.recommendationComment.create({
             data: {
                 recommendationId,
@@ -319,6 +405,14 @@ let RecommendationsService = class RecommendationsService {
             },
         });
         await this.logHistory(recommendationId, userId, 'ADD_COMMENT');
+        await this.auditService.log({
+            organizationId,
+            userId,
+            action: 'recommendation.comment.add',
+            entityType: 'Recommendation',
+            entityId: recommendationId,
+            metadata: { title: recommendation.title, code: recommendation.code, isImportant: dto.isImportant },
+        });
         return comment;
     }
     async getComments(recommendationId, organizationId) {
@@ -363,6 +457,7 @@ let RecommendationsService = class RecommendationsService {
 exports.RecommendationsService = RecommendationsService;
 exports.RecommendationsService = RecommendationsService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        audit_service_1.AuditService])
 ], RecommendationsService);
 //# sourceMappingURL=recommendations.service.js.map

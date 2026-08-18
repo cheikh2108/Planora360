@@ -57,13 +57,13 @@ let RecommendationsController = class RecommendationsController {
         return this.recommendationsService.delete(id, user.organizationId, user.id);
     }
     addAction(id, dto, user) {
-        return this.recommendationsService.addAction(id, dto, user.organizationId);
+        return this.recommendationsService.addAction(id, dto, user.organizationId, user.id);
     }
     updateAction(actionId, updates, user) {
         return this.recommendationsService.updateAction(actionId, user.organizationId, updates);
     }
     deleteAction(actionId, user) {
-        return this.recommendationsService.deleteAction(actionId, user.organizationId);
+        return this.recommendationsService.deleteAction(actionId, user.organizationId, user.id);
     }
     addComment(id, dto, user) {
         return this.recommendationsService.addComment(id, dto, user.organizationId, user.id);

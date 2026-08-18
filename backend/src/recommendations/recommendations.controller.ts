@@ -107,7 +107,7 @@ export class RecommendationsController {
     @Body() dto: CreateActionDto,
     @CurrentUser() user: any,
   ) {
-    return this.recommendationsService.addAction(id, dto, user.organizationId);
+    return this.recommendationsService.addAction(id, dto, user.organizationId, user.id);
   }
 
   @Patch('actions/:actionId')
@@ -124,7 +124,7 @@ export class RecommendationsController {
   @Roles('Administrateur', 'Coordinateur', 'Responsable de projet')
   @HttpCode(HttpStatus.NO_CONTENT)
   deleteAction(@Param('actionId') actionId: string, @CurrentUser() user: any) {
-    return this.recommendationsService.deleteAction(actionId, user.organizationId);
+    return this.recommendationsService.deleteAction(actionId, user.organizationId, user.id);
   }
 
   // Commentaires

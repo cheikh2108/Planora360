@@ -10,11 +10,13 @@ exports.RecommendationsModule = void 0;
 const common_1 = require("@nestjs/common");
 const recommendations_controller_1 = require("./recommendations.controller");
 const recommendations_service_1 = require("./recommendations.service");
+const audit_module_1 = require("../audit/audit.module");
 let RecommendationsModule = class RecommendationsModule {
 };
 exports.RecommendationsModule = RecommendationsModule;
 exports.RecommendationsModule = RecommendationsModule = __decorate([
     (0, common_1.Module)({
+        imports: [audit_module_1.AuditModule],
         controllers: [recommendations_controller_1.RecommendationsController],
         providers: [recommendations_service_1.RecommendationsService],
         exports: [recommendations_service_1.RecommendationsService],

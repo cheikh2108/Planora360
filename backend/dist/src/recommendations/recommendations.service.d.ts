@@ -1,4 +1,5 @@
 import { PrismaService } from '../common/prisma/prisma.service';
+import { AuditService } from '../audit/audit.service';
 import { CreateRecommendationDto } from './dto/create-recommendation.dto';
 import { UpdateRecommendationDto } from './dto/update-recommendation.dto';
 import { ChangeStatusDto, SuspendRecommendationDto, ReopenRecommendationDto } from './dto/change-status.dto';
@@ -6,7 +7,8 @@ import { CreateCommentDto } from './dto/create-comment.dto';
 import { CreateActionDto } from './dto/create-action.dto';
 export declare class RecommendationsService {
     private readonly prisma;
-    constructor(prisma: PrismaService);
+    private readonly auditService;
+    constructor(prisma: PrismaService, auditService: AuditService);
     private verifyRecommendation;
     private generateCode;
     private logHistory;
@@ -725,7 +727,7 @@ export declare class RecommendationsService {
         isRecurrent: boolean;
         recurrenceNote: string | null;
     }>;
-    addAction(recommendationId: string, dto: CreateActionDto, organizationId: string): Promise<{
+    addAction(recommendationId: string, dto: CreateActionDto, organizationId: string, userId?: string): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -751,7 +753,7 @@ export declare class RecommendationsService {
         completedAt: Date | null;
         recommendationId: string;
     }>;
-    deleteAction(actionId: string, organizationId: string): Promise<{
+    deleteAction(actionId: string, organizationId: string, userId?: string): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
