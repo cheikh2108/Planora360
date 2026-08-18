@@ -4,8 +4,8 @@ import { useState } from 'react';
 
 export const dynamic = 'force-dynamic';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { recommendationsApi } from '@/lib/api';
-import type { Recommendation, RecommendationStatus, RecommendationPriority, RecommendationSource } from '@/lib/types';
+import { recommendationsApi, usersApi } from '@/lib/api';
+import type { Recommendation, RecommendationStatus, RecommendationPriority, RecommendationSource, User as UserType } from '@/lib/types';
 import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
@@ -145,10 +145,22 @@ function CreateRecommendationModal({ open, onClose }: { open: boolean; onClose: 
     issuedAt: new Date().toISOString().split('T')[0],
     dueDate: '',
     responsibleId: '',
+    validatorId: '',
   });
 
   const queryClient = useQueryClient();
   const toast = useToast();
+
+  // Charger la liste des utilisateurs
+  const { data: usersData } = useQuery({
+    queryKey: ['users'],
+    queryFn: async () => {
+      const res = await usersApi.listAll();
+      return res.data as UserType[];
+    },
+    enabled: open,
+  });
+  const users = usersData ?? [];
 
   const createMutation = useMutation({
     mutationFn: () => recommendationsApi.create(form),
@@ -164,6 +176,7 @@ function CreateRecommendationModal({ open, onClose }: { open: boolean; onClose: 
         issuedAt: new Date().toISOString().split('T')[0],
         dueDate: '',
         responsibleId: '',
+        validatorId: '',
       });
     },
     onError: (err: any) => {
@@ -249,13 +262,33 @@ function CreateRecommendationModal({ open, onClose }: { open: boolean; onClose: 
           </FormField>
         </div>
 
-        <FormField label="Responsable (ID)" required>
-          <Input
+        <FormField label="Responsable principal" required>
+          <Select
             value={form.responsibleId}
             onChange={(e) => setForm((f) => ({ ...f, responsibleId: e.target.value }))}
-            placeholder="ID de l'utilisateur responsable"
             required
-          />
+          >
+            <option value="">Sélectionner un responsable</option>
+            {users.map((user) => (
+              <option key={user.id} value={user.id}>
+                {user.firstName} {user.lastName} — {user.role.name}
+              </option>
+            ))}
+          </Select>
+        </FormField>
+
+        <FormField label="Validateur (optionnel)">
+          <Select
+            value={form.validatorId}
+            onChange={(e) => setForm((f) => ({ ...f, validatorId: e.target.value }))}
+          >
+            <option value="">Aucun validateur assigné</option>
+            {users.map((user) => (
+              <option key={user.id} value={user.id}>
+                {user.firstName} {user.lastName} — {user.role.name}
+              </option>
+            ))}
+          </Select>
         </FormField>
 
         <div className="flex justify-end gap-3 pt-4">
