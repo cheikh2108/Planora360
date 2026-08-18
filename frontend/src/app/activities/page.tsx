@@ -72,15 +72,18 @@ function ActivitiesContent() {
       return r.data as { data: Activity[]; total: number; page: number; limit: number };
     },
   });
-  const activities: Activity[] = activitiesPage?.data ?? [];
+  // Guard défensif absolu
+  const activities: Activity[] = Array.isArray(activitiesPage?.data) ? activitiesPage.data : [];
   const total = activitiesPage?.total ?? 0;
 
   // Separate full-list query for chart and KPIs — always unfiltered
-  const { data: allActivities = [] } = useQuery<Activity[]>({
+  const { data: rawAllActivities } = useQuery<Activity[]>({
     queryKey: ['activities-overview'],
     queryFn: async () => { const r = await activitiesApi.list({ limit: 1000 }); return (r.data as any).data ?? []; },
     staleTime: 60_000,
   });
+  // Guard défensif absolu
+  const allActivities = Array.isArray(rawAllActivities) ? rawAllActivities : [];
 
   const filtered = search.trim()
     ? activities.filter(a => a.title.toLowerCase().includes(search.toLowerCase()))
@@ -329,15 +332,18 @@ function CreateActivityModal({ open, onClose }: { open: boolean; onClose: () => 
     queryFn: async () => {
       const r = await plansApi.list({ limit: 100 });
       const result = r.data as { data: ActionPlan[] };
-      return result.data.filter(p => p.status !== 'ARCHIVE' && p.status !== 'TERMINE');
+      const dataArray = Array.isArray(result.data) ? result.data : [];
+      return dataArray.filter(p => p.status !== 'ARCHIVE' && p.status !== 'TERMINE');
     },
     enabled: open,
   });
-  const plans = plansData ?? [];
+  // Guard défensif absolu
+  const plans = Array.isArray(plansData) ? plansData : [];
 
   // Plan sélectionné
   const selectedPlan = plans.find(p => p.id === form.planId);
-  const axes = selectedPlan?.axes ?? [];
+  // Guard défensif absolu
+  const axes = Array.isArray(selectedPlan?.axes) ? selectedPlan.axes : [];
 
   const { mutate: createActivity, isPending } = useMutation({
     mutationFn: (data: Record<string, unknown>) => activitiesApi.create(data),

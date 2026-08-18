@@ -192,10 +192,13 @@ export default function PlansPage() {
     queryFn: async () => {
       const r = await plansApi.list({ page, limit: 10 });
       const result = r.data as { data: ActionPlan[]; total: number; page: number; limit: number };
-      return { ...result, data: result.data.filter(p => p.status !== 'ARCHIVE') };
+      // Guard défensif
+      const dataArray = Array.isArray(result.data) ? result.data : [];
+      return { ...result, data: dataArray.filter(p => p.status !== 'ARCHIVE') };
     },
   });
-  const plans: ActionPlan[] = plansPage?.data ?? [];
+  // Guard défensif absolu
+  const plans: ActionPlan[] = Array.isArray(plansPage?.data) ? plansPage.data : [];
   const total = plansPage?.total ?? 0;
 
   const totalActivities = plans.reduce(

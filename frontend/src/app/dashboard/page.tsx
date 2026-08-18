@@ -317,10 +317,12 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const [filters, setFilters] = useState<Filters>({ planId: '', period: 'all', status: '' });
 
-  const { data: plans = [] } = useQuery<ActionPlan[]>({
+  const { data: rawPlans } = useQuery<ActionPlan[]>({
     queryKey: ['plans'],
     queryFn: async () => { const r = await plansApi.list({ limit: 1000 }); return (r.data as any).data ?? []; },
   });
+  // Guard défensif absolu
+  const plans = Array.isArray(rawPlans) ? rawPlans : [];
 
   const { data: overview, isLoading: loadingOverview } = useQuery<DashboardOverview>({
     queryKey: ['dashboard-overview', filters.planId],
@@ -654,7 +656,7 @@ export default function DashboardPage() {
                 ))}
               </div>
             ) : (
-              <AuditFeed entries={(overview?.recentAudit ?? []).slice(0, 8)} />
+              <AuditFeed entries={Array.isArray(overview?.recentAudit) ? overview.recentAudit.slice(0, 8) : []} />
             )}
           </div>
         </section>
