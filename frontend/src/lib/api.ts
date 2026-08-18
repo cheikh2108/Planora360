@@ -117,12 +117,22 @@ export const dashboardApi = {
   },
   getPerformance: async () => {
     const res = await api.get('/dashboards/performance');
-    const entries = (res.data as any[]) ?? [];
+    // Backend peut retourner soit un tableau, soit un objet avec byResponsible
+    const rawData = res.data;
+    let entries: any[] = [];
+
+    if (Array.isArray(rawData)) {
+      entries = rawData;
+    } else if (rawData && typeof rawData === 'object') {
+      // Si c'est un objet, chercher byResponsible ou toute propriété qui est un tableau
+      entries = (rawData as any).byResponsible ?? Object.values(rawData).find(Array.isArray) ?? [];
+    }
+
     return {
       ...res,
       data: {
         byResponsible: entries
-          .filter(e => e.responsible)
+          .filter(e => e && e.responsible)
           .map(e => ({
             userId: e.responsible?.email ?? '',
             name: `${e.responsible?.firstName ?? ''} ${e.responsible?.lastName ?? ''}`.trim(),
