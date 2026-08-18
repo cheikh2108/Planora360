@@ -163,7 +163,12 @@ function CreateRecommendationModal({ open, onClose }: { open: boolean; onClose: 
   const users = usersData ?? [];
 
   const createMutation = useMutation({
-    mutationFn: () => recommendationsApi.create(form),
+    mutationFn: () => {
+      // Nettoyer les champs vides avant envoi
+      const payload: any = { ...form };
+      if (!payload.validatorId) delete payload.validatorId;
+      return recommendationsApi.create(payload);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recommendations'] });
       toast.success('Recommandation créée', 'La nouvelle recommandation a été ajoutée avec succès.');
