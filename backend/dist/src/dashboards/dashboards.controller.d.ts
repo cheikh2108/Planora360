@@ -34,10 +34,10 @@ export declare class DashboardsController {
         }[];
         recentActivity: {
             createdAt: Date;
-            userId: string;
             action: string;
             entityType: string;
             entityId: string;
+            userId: string;
         }[];
     }>;
     getPerformanceByResponsible(user: any, planId?: string): Promise<any[]>;

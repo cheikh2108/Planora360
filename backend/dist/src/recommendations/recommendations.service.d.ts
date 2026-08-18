@@ -303,8 +303,8 @@ export declare class RecommendationsService {
         } & {
             id: string;
             createdAt: Date;
-            userId: string;
             action: string;
+            userId: string;
             comment: string | null;
             field: string | null;
             oldValue: string | null;

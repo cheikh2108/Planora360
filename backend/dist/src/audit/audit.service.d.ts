@@ -13,30 +13,42 @@ export declare class AuditService {
         id: string;
         organizationId: string;
         createdAt: Date;
-        userId: string;
         action: string;
         entityType: string;
         entityId: string;
         metadata: import("@prisma/client/runtime/client").JsonValue | null;
+        userId: string;
     }, never, import("@prisma/client/runtime/client").DefaultArgs, import(".prisma/client").Prisma.PrismaClientOptions>;
-    findByOrganization(organizationId: string, limit?: number): import(".prisma/client").Prisma.PrismaPromise<{
-        id: string;
-        organizationId: string;
-        createdAt: Date;
-        userId: string;
-        action: string;
-        entityType: string;
-        entityId: string;
-        metadata: import("@prisma/client/runtime/client").JsonValue | null;
-    }[]>;
+    findByOrganization(organizationId: string, limit?: number, page?: number): Promise<{
+        entries: ({
+            user: {
+                id: string;
+                email: string;
+                firstName: string;
+                lastName: string;
+            };
+        } & {
+            id: string;
+            organizationId: string;
+            createdAt: Date;
+            action: string;
+            entityType: string;
+            entityId: string;
+            metadata: import("@prisma/client/runtime/client").JsonValue | null;
+            userId: string;
+        })[];
+        total: number;
+        page: number;
+        limit: number;
+    }>;
     findByEntity(entityType: string, entityId: string, organizationId: string): import(".prisma/client").Prisma.PrismaPromise<{
         id: string;
         organizationId: string;
         createdAt: Date;
-        userId: string;
         action: string;
         entityType: string;
         entityId: string;
         metadata: import("@prisma/client/runtime/client").JsonValue | null;
+        userId: string;
     }[]>;
 }

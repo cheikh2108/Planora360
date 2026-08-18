@@ -24,8 +24,8 @@ let AuditController = class AuditController {
     constructor(auditService) {
         this.auditService = auditService;
     }
-    findAll(user, limit) {
-        return this.auditService.findByOrganization(user.organizationId, limit ? parseInt(limit) : 100);
+    findAll(user, limit, page) {
+        return this.auditService.findByOrganization(user.organizationId, limit ? parseInt(limit) : 50, page ? parseInt(page) : 1);
     }
     findByActivity(id, user) {
         return this.auditService.findByEntity('Activity', id, user.organizationId);
@@ -37,8 +37,9 @@ __decorate([
     (0, roles_decorator_1.Roles)('Administrateur', 'Coordinateur', 'Auditeur', 'Super administrateur'),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Query)('limit')),
+    __param(2, (0, common_1.Query)('page')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:paramtypes", [Object, String, String]),
     __metadata("design:returntype", void 0)
 ], AuditController.prototype, "findAll", null);
 __decorate([

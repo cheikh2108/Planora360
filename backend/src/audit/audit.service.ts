@@ -25,12 +25,30 @@ export class AuditService {
     });
   }
 
-  findByOrganization(organizationId: string, limit = 100) {
-    return this.prisma.auditLog.findMany({
-      where: { organizationId },
-      orderBy: { createdAt: 'desc' },
-      take: limit,
-    });
+  async findByOrganization(organizationId: string, limit = 100, page = 1) {
+    const skip = (page - 1) * limit;
+
+    const [entries, total] = await Promise.all([
+      this.prisma.auditLog.findMany({
+        where: { organizationId },
+        orderBy: { createdAt: 'desc' },
+        take: limit,
+        skip,
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true,
+            },
+          },
+        },
+      }),
+      this.prisma.auditLog.count({ where: { organizationId } }),
+    ]);
+
+    return { entries, total, page, limit };
   }
 
   findByEntity(entityType: string, entityId: string, organizationId: string) {

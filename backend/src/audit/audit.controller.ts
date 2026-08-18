@@ -12,8 +12,16 @@ export class AuditController {
 
   @Get()
   @Roles('Administrateur', 'Coordinateur', 'Auditeur', 'Super administrateur')
-  findAll(@CurrentUser() user: any, @Query('limit') limit?: string) {
-    return this.auditService.findByOrganization(user.organizationId, limit ? parseInt(limit) : 100);
+  findAll(
+    @CurrentUser() user: any,
+    @Query('limit') limit?: string,
+    @Query('page') page?: string,
+  ) {
+    return this.auditService.findByOrganization(
+      user.organizationId,
+      limit ? parseInt(limit) : 50,
+      page ? parseInt(page) : 1,
+    );
   }
 
   @Get('activity/:id')

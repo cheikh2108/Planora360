@@ -162,6 +162,7 @@ model User {
   recommendationActions       RecommendationAction[]
   recommendationEvidences     RecommendationEvidence[]
   recommendationComments      RecommendationComment[]
+  auditLogs                   AuditLog[]                  @relation("AuditLogUser")
   recommendationHistory       RecommendationHistory[]
 
   @@index([organizationId])
@@ -359,6 +360,7 @@ model AuditLog {
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   userId         String
+  user           User         @relation("AuditLogUser", fields: [userId], references: [id], onDelete: Cascade)
   action         String
   entityType     String
   entityId       String
@@ -367,6 +369,7 @@ model AuditLog {
 
   @@index([organizationId])
   @@index([organizationId, createdAt])
+  @@index([userId])
   @@map("audit_logs")
 }
 

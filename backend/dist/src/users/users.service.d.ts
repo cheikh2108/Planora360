@@ -13,6 +13,8 @@ export declare class UsersService {
         };
         id: string;
         email: string;
+        organizationId: string;
+        roleId: string;
         firstName: string;
         lastName: string;
         isTwoFactorEnabled: boolean;
@@ -21,8 +23,6 @@ export declare class UsersService {
         lastLoginAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
-        organizationId: string;
-        roleId: string;
     }>;
     findUsersForAssignment(organizationId: string): Promise<{
         id: string;
@@ -44,6 +44,8 @@ export declare class UsersService {
             };
             id: string;
             email: string;
+            organizationId: string;
+            roleId: string;
             firstName: string;
             lastName: string;
             isTwoFactorEnabled: boolean;
@@ -52,8 +54,6 @@ export declare class UsersService {
             lastLoginAt: Date | null;
             createdAt: Date;
             updatedAt: Date;
-            organizationId: string;
-            roleId: string;
         }[];
         total: number;
         page: number;
@@ -68,6 +68,8 @@ export declare class UsersService {
         };
         id: string;
         email: string;
+        organizationId: string;
+        roleId: string;
         firstName: string;
         lastName: string;
         isTwoFactorEnabled: boolean;
@@ -76,8 +78,6 @@ export declare class UsersService {
         lastLoginAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
-        organizationId: string;
-        roleId: string;
     }>;
     update(id: string, dto: UpdateUserDto, organizationId: string): Promise<{
         role: {
@@ -88,6 +88,8 @@ export declare class UsersService {
         };
         id: string;
         email: string;
+        organizationId: string;
+        roleId: string;
         firstName: string;
         lastName: string;
         isTwoFactorEnabled: boolean;
@@ -96,8 +98,6 @@ export declare class UsersService {
         lastLoginAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
-        organizationId: string;
-        roleId: string;
     }>;
     remove(id: string, organizationId: string): Promise<void>;
     findRoles(organizationId?: string, callerRole?: string): import(".prisma/client").Prisma.PrismaPromise<{

@@ -38,10 +38,10 @@ export declare class DashboardsService {
         }[];
         recentActivity: {
             createdAt: Date;
-            userId: string;
             action: string;
             entityType: string;
             entityId: string;
+            userId: string;
         }[];
     }>;
     getPerformanceByResponsible(organizationId: string, planId?: string): Promise<any[]>;
