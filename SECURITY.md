@@ -70,9 +70,10 @@
 - ℹ️ Pas de redirection HTTP → HTTPS dans le code (géré upstream)
 
 ### 12. **Isolation des données**
-- ✅ La majorité des services filtrent par `organizationId`
-- ⚠️ Audit complet recommandé (37 fichiers à vérifier)
-- 📍 Services vérifiés : `documents.service.ts`, `users.service.ts`
+- ✅ **Audit complet effectué le 18/08/2026** — 100% conforme
+- ✅ 18 services audités : 0 vulnérabilité trouvée
+- ✅ 17 controllers audités : tous passent correctement `organizationId`
+- 📄 Voir [AUDIT-ORGANIZATIONID.md](AUDIT-ORGANIZATIONID.md) pour détails complets
 
 ---
 
@@ -92,10 +93,10 @@
 ## 📋 ACTIONS RECOMMANDÉES (P2)
 
 ### Court terme (ce mois-ci)
-1. **Audit de l'isolation `organizationId`**
-   - Vérifier systématiquement les 37 fichiers utilisant `organizationId`
-   - S'assurer qu'aucun endpoint n'oublie ce filtre
-   - Créer un interceptor global pour automatiser l'ajout
+1. ~~**Audit de l'isolation `organizationId`**~~ ✅ **TERMINÉ le 18/08/2026**
+   - ✅ 37 fichiers vérifiés systématiquement
+   - ✅ Aucun endpoint n'oublie ce filtre
+   - 📄 Rapport : [AUDIT-ORGANIZATIONID.md](AUDIT-ORGANIZATIONID.md)
 
 2. **Vérification/confirmation de l'email**
    - Implémenter un token de vérification à l'inscription
@@ -187,5 +188,6 @@ En cas de découverte de vulnérabilité :
 
 ---
 
-**Dernière mise à jour** : 17 août 2026  
-**Prochain audit prévu** : 17 septembre 2026
+**Dernière mise à jour** : 18 août 2026  
+**Dernier audit organizationId** : 18 août 2026 (100% conforme)  
+**Prochain audit prévu** : 18 février 2027
