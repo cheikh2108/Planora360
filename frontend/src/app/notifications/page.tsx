@@ -62,8 +62,11 @@ export default function NotificationsPage() {
     refetchInterval: 30_000,
   });
 
-  const entries = data?.entries ?? [];
+  const rawEntries = data?.entries ?? [];
   const total = data?.total ?? 0;
+
+  // Guard défensif absolu : s'assurer que entries est TOUJOURS un tableau
+  const entries = Array.isArray(rawEntries) ? rawEntries : [];
 
   // Group by calendar day
   const grouped = entries.reduce<Record<string, AuditEntry[]>>((acc, e) => {

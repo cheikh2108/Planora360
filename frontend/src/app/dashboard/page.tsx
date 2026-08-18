@@ -343,16 +343,26 @@ export default function DashboardPage() {
     queryFn: async () => { const r = await dashboardApi.getPerformance(); return r.data; },
   });
 
-  const { data: allActivities = [], isLoading: loadingActivities } = useQuery<Activity[]>({
+  const { data: rawActivities, isLoading: loadingActivities } = useQuery<Activity[]>({
     queryKey: ['activities-dashboard', filters.planId, filters.status],
     queryFn: async () => {
       const params: Record<string, string> = {};
       if (filters.planId) params.planId = filters.planId;
       if (filters.status) params.status = filters.status;
       const r = await activitiesApi.list({ ...params, limit: 1000 });
-      return (r.data as any).data ?? [];
+
+      // Backend retourne { data: Activity[], total, page, limit }
+      // Mais être défensif contre formats variables
+      const rawData = r.data as any;
+      if (!rawData) return [];
+      if (Array.isArray(rawData)) return rawData;
+      if (Array.isArray(rawData.data)) return rawData.data;
+      return [];
     },
   });
+
+  // Guard défensif absolu : s'assurer que allActivities est TOUJOURS un tableau
+  const allActivities = Array.isArray(rawActivities) ? rawActivities : [];
 
   const firstName = user?.firstName ?? '';
   const hour = new Date().getHours();

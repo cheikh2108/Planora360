@@ -24,7 +24,7 @@ export function NotificationsDropdown() {
   });
   const ref = useRef<HTMLDivElement>(null);
 
-  const { data: entries = [] } = useQuery<AuditEntry[]>({
+  const { data: rawEntries } = useQuery<AuditEntry[]>({
     queryKey: ['audit-notifications'],
     queryFn: async () => {
       const r = await auditApi.list({ limit: 20 });
@@ -37,6 +37,8 @@ export function NotificationsDropdown() {
     refetchInterval: 30_000,
   });
 
+  // Guard défensif : s'assurer que entries est TOUJOURS un tableau
+  const entries = Array.isArray(rawEntries) ? rawEntries : [];
   const unread = entries.filter(e => new Date(e.createdAt).getTime() > lastReadAt).length;
 
   useEffect(() => {
