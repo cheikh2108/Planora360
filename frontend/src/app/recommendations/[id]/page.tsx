@@ -7,20 +7,18 @@ import { recommendationsApi } from '@/lib/api';
 import type { Recommendation } from '@/lib/types';
 import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Modal } from '@/components/ui/modal';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { FormField } from '@/components/ui/form-field';
+import { FormField, Input, Textarea, Select } from '@/components/ui/form-field';
+import { ProgressBar } from '@/components/ui/progress-bar';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
+import { cn, formatDate } from '@/lib/utils';
 import {
   ArrowLeft,
   Calendar,
   Clock,
   User,
   ShieldAlert,
-  AlertTriangle,
   CheckCircle2,
   Play,
   Pause,
@@ -44,11 +42,29 @@ const RECOMMENDATION_STATUS_LABELS: Record<string, string> = {
   ROUVERTE: 'Rouverte',
 };
 
+const RECOMMENDATION_STATUS_COLORS: Record<string, string> = {
+  NON_DEMARREE: 'bg-slate-100 text-slate-700',
+  EN_COURS: 'bg-blue-100 text-blue-700',
+  PARTIELLEMENT_MISE_EN_OEUVRE: 'bg-yellow-100 text-yellow-700',
+  REALISEE_A_VALIDER: 'bg-purple-100 text-purple-700',
+  EN_RETARD: 'bg-red-100 text-red-700',
+  SUSPENDUE: 'bg-orange-100 text-orange-700',
+  VALIDEE: 'bg-green-100 text-green-700',
+  ROUVERTE: 'bg-indigo-100 text-indigo-700',
+};
+
 const RECOMMENDATION_PRIORITY_LABELS: Record<string, string> = {
   CRITIQUE: 'Critique',
   ELEVEE: 'Élevée',
   MOYENNE: 'Moyenne',
   FAIBLE: 'Faible',
+};
+
+const RECOMMENDATION_PRIORITY_COLORS: Record<string, string> = {
+  CRITIQUE: 'text-red-600',
+  ELEVEE: 'text-orange-600',
+  MOYENNE: 'text-yellow-600',
+  FAIBLE: 'text-slate-600',
 };
 
 const RECOMMENDATION_SOURCE_LABELS: Record<string, string> = {
@@ -72,38 +88,6 @@ const RECOMMENDATION_SOURCE_LABELS: Record<string, string> = {
   VERIFICATION_CONFORMITE: 'Vérification de conformité',
   AUTRE: 'Autre',
 };
-
-function formatDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString('fr-FR', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
-}
-
-function getStatusColor(status: string) {
-  const colors: Record<string, string> = {
-    NON_DEMARREE: 'bg-slate-100 text-slate-700',
-    EN_COURS: 'bg-blue-100 text-blue-700',
-    PARTIELLEMENT_MISE_EN_OEUVRE: 'bg-yellow-100 text-yellow-700',
-    REALISEE_A_VALIDER: 'bg-purple-100 text-purple-700',
-    EN_RETARD: 'bg-red-100 text-red-700',
-    SUSPENDUE: 'bg-orange-100 text-orange-700',
-    VALIDEE: 'bg-green-100 text-green-700',
-    ROUVERTE: 'bg-indigo-100 text-indigo-700',
-  };
-  return colors[status] || 'bg-slate-100 text-slate-700';
-}
-
-function getPriorityColor(priority: string) {
-  const colors: Record<string, string> = {
-    CRITIQUE: 'text-red-600',
-    ELEVEE: 'text-orange-600',
-    MOYENNE: 'text-yellow-600',
-    FAIBLE: 'text-slate-600',
-  };
-  return colors[priority] || 'text-slate-600';
-}
 
 /* ─── Modals ─────────────────────────────────────────────── */
 
@@ -156,19 +140,14 @@ function ChangeStatusModal({ open, onClose, currentStatus, recommendationId }: a
         className="flex flex-col gap-4"
       >
         <FormField label="Nouveau statut" required>
-          <select
-            value={newStatus}
-            onChange={(e) => setNewStatus(e.target.value)}
-            required
-            className="w-full h-10 px-3 py-2 text-sm border border-slate-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
+          <Select value={newStatus} onChange={(e) => setNewStatus(e.target.value)} required>
             <option value="">Sélectionner un statut</option>
             {availableStatuses().map((s) => (
               <option key={s} value={s}>
                 {RECOMMENDATION_STATUS_LABELS[s]}
               </option>
             ))}
-          </select>
+          </Select>
         </FormField>
 
         <FormField label="Commentaire (optionnel)">
@@ -421,6 +400,59 @@ function AddCommentModal({ open, onClose, recommendationId }: any) {
   );
 }
 
+function UpdateProgressModal({ open, onClose, recommendationId, currentProgress }: any) {
+  const [progress, setProgress] = useState(currentProgress);
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+  const mutation = useMutation({
+    mutationFn: () => recommendationsApi.update(recommendationId, { progress: parseInt(progress, 10) }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['recommendations', recommendationId] });
+      toast.success('Progression mise à jour', 'La progression a été mise à jour.');
+      onClose();
+    },
+    onError: (err: any) => {
+      toast.error('Erreur', err?.message || 'Impossible de mettre à jour la progression.');
+    },
+  });
+
+  return (
+    <Modal open={open} onClose={onClose} title="Mettre à jour la progression">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          mutation.mutate();
+        }}
+        className="flex flex-col gap-4"
+      >
+        <FormField label="Progression (%)" required>
+          <Input
+            type="number"
+            min="0"
+            max="100"
+            step="5"
+            value={progress}
+            onChange={(e) => setProgress(e.target.value)}
+            required
+          />
+        </FormField>
+
+        <ProgressBar value={parseInt(progress, 10) || 0} showLabel size="md" />
+
+        <div className="flex justify-end gap-3 pt-4">
+          <Button type="button" variant="ghost" onClick={onClose}>
+            Annuler
+          </Button>
+          <Button type="submit" loading={mutation.isPending}>
+            Mettre à jour
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
 /* ─── Page ─────────────────────────────────────────────── */
 
 export default function RecommendationDetailPage() {
@@ -435,13 +467,12 @@ export default function RecommendationDetailPage() {
   const [reopenOpen, setReopenOpen] = useState(false);
   const [addActionOpen, setAddActionOpen] = useState(false);
   const [addCommentOpen, setAddCommentOpen] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [updateProgressOpen, setUpdateProgressOpen] = useState(false);
 
   const { data: recommendation, isLoading } = useQuery({
     queryKey: ['recommendations', id],
     queryFn: async () => {
       const res = await recommendationsApi.get(id);
-      setProgress(res.data.progress);
       return res.data as Recommendation;
     },
   });
@@ -453,18 +484,6 @@ export default function RecommendationDetailPage() {
       return res.data as any[];
     },
     enabled: !!recommendation,
-  });
-
-  const updateProgressMutation = useMutation({
-    mutationFn: (newProgress: number) =>
-      recommendationsApi.update(id, { progress: newProgress }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recommendations', id] });
-      toast.success('Progression mise à jour', 'La progression a été mise à jour.');
-    },
-    onError: (err: any) => {
-      toast.error('Erreur', err?.message || 'Impossible de mettre à jour la progression.');
-    },
   });
 
   const deleteActionMutation = useMutation({
@@ -502,24 +521,13 @@ export default function RecommendationDetailPage() {
     }
   };
 
-  const handleProgressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = parseInt(e.target.value, 10);
-    setProgress(val);
-  };
-
-  const handleProgressCommit = () => {
-    if (progress !== recommendation?.progress) {
-      updateProgressMutation.mutate(progress);
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#f8fafc]">
         <Header title="Chargement..." subtitle="Veuillez patienter" />
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Skeleton className="h-96" />
-        </div>
+        </main>
       </div>
     );
   }
@@ -528,12 +536,12 @@ export default function RecommendationDetailPage() {
     return (
       <div className="min-h-screen bg-[#f8fafc]">
         <Header title="Introuvable" subtitle="Cette recommandation n'existe pas" />
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Button onClick={() => router.push('/recommendations')}>
             <ArrowLeft size={16} />
             Retour aux recommandations
           </Button>
-        </div>
+        </main>
       </div>
     );
   }
@@ -559,28 +567,55 @@ export default function RecommendationDetailPage() {
         }
       />
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        {/* Header card with status and priority */}
-        <div className="bg-slate-50/50 border border-slate-200/60 rounded-[2rem] p-1.5">
-          <div className="bg-white rounded-[calc(2rem-0.375rem)] p-6 shadow-[inset_0_1px_1px_rgba(255,255,255,0.3)]">
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-[#0f1e38] flex items-center justify-center shrink-0">
-                  <ShieldAlert size={20} className="text-white" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-slate-900 mb-2">{recommendation.title}</h1>
-                  <p className="text-sm text-slate-600">{recommendation.description}</p>
-                </div>
-              </div>
-              <div className="flex flex-col gap-2 items-start sm:items-end shrink-0">
-                <span className={`text-xs font-semibold px-3 py-1.5 rounded-full ${getStatusColor(recommendation.status)}`}>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        {/* Main card */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-6">
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-3">
+                <span className={cn('inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium', RECOMMENDATION_STATUS_COLORS[recommendation.status])}>
                   {RECOMMENDATION_STATUS_LABELS[recommendation.status]}
                 </span>
-                <span className={`text-xs font-medium ${getPriorityColor(recommendation.priority)}`}>
-                  Priorité {RECOMMENDATION_PRIORITY_LABELS[recommendation.priority]}
+                <span className={cn('text-xs font-medium', RECOMMENDATION_PRIORITY_COLORS[recommendation.priority])}>
+                  {RECOMMENDATION_PRIORITY_LABELS[recommendation.priority]}
                 </span>
               </div>
+              <h1 className="text-xl font-bold text-slate-900 mb-2">{recommendation.title}</h1>
+              {recommendation.description && (
+                <p className="text-sm text-slate-600 mb-4">{recommendation.description}</p>
+              )}
+              <div className="flex flex-wrap gap-4 text-xs text-slate-500">
+                <div className="flex items-center gap-1.5">
+                  <ShieldAlert size={13} />
+                  <span>{RECOMMENDATION_SOURCE_LABELS[recommendation.source]}</span>
+                </div>
+                {recommendation.responsible && (
+                  <div className="flex items-center gap-1.5">
+                    <User size={13} />
+                    <span>{recommendation.responsible.firstName} {recommendation.responsible.lastName}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-1.5">
+                  <Calendar size={13} />
+                  <span>Émise {formatDate(recommendation.issuedAt)}</span>
+                </div>
+                <div className={cn('flex items-center gap-1.5', isOverdue && 'text-red-600 font-semibold')}>
+                  <Clock size={13} />
+                  <span>Échéance {formatDate(recommendation.dueDate)}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col items-end gap-3 shrink-0">
+              <div className="text-right">
+                <p className="text-xs text-slate-500 mb-1">Progression</p>
+                <p className="text-3xl font-bold text-slate-900">{recommendation.progress}%</p>
+              </div>
+              <ProgressBar value={recommendation.progress} className="w-40" size="md" showLabel={false} />
+              <Button size="sm" onClick={() => setUpdateProgressOpen(true)}>
+                <Edit size={14} />
+                Modifier
+              </Button>
             </div>
           </div>
         </div>
@@ -613,80 +648,7 @@ export default function RecommendationDetailPage() {
           )}
         </div>
 
-        {/* Info grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* Source */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-5">
-            <div className="text-xs text-slate-500 mb-2">Source</div>
-            <div className="font-medium text-slate-900">{RECOMMENDATION_SOURCE_LABELS[recommendation.source]}</div>
-          </div>
-
-          {/* Issued date */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-5">
-            <div className="flex items-center gap-2 text-xs text-slate-500 mb-2">
-              <Calendar size={12} />
-              Date d'émission
-            </div>
-            <div className="font-medium text-slate-900">{formatDate(recommendation.issuedAt)}</div>
-          </div>
-
-          {/* Due date */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-5">
-            <div className="flex items-center gap-2 text-xs text-slate-500 mb-2">
-              <Clock size={12} />
-              Date d'échéance
-            </div>
-            <div className={`font-medium ${isOverdue ? 'text-red-600' : 'text-slate-900'}`}>
-              {formatDate(recommendation.dueDate)}
-              {isOverdue && <span className="ml-2 text-xs">(en retard)</span>}
-            </div>
-          </div>
-
-          {/* Responsible */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-5">
-            <div className="flex items-center gap-2 text-xs text-slate-500 mb-2">
-              <User size={12} />
-              Responsable
-            </div>
-            <div className="font-medium text-slate-900">
-              {recommendation.responsible.firstName} {recommendation.responsible.lastName}
-            </div>
-          </div>
-
-          {/* Progress with slider */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:col-span-2">
-            <div className="text-xs text-slate-500 mb-3">Progression</div>
-            <div className="flex items-center gap-4">
-              <input
-                type="range"
-                min="0"
-                max="100"
-                step="5"
-                value={progress}
-                onChange={handleProgressChange}
-                onMouseUp={handleProgressCommit}
-                onTouchEnd={handleProgressCommit}
-                className="flex-1 h-2 bg-slate-100 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-600"
-              />
-              <span className="text-lg font-semibold text-slate-900 min-w-[3rem] text-right">{progress}%</span>
-            </div>
-          </div>
-
-          {/* Validator */}
-          {recommendation.validator && (
-            <div className="bg-white rounded-2xl border border-slate-200 p-5">
-              <div className="flex items-center gap-2 text-xs text-slate-500 mb-2">
-                <CheckCircle2 size={12} />
-                Validateur
-              </div>
-              <div className="font-medium text-slate-900">
-                {recommendation.validator.firstName} {recommendation.validator.lastName}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Actions and Comments sections */}
+        {/* Actions and Comments */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Actions */}
           <div className="bg-white rounded-2xl border border-slate-200 p-6">
@@ -694,9 +656,7 @@ export default function RecommendationDetailPage() {
               <div className="flex items-center gap-2">
                 <ListTodo size={18} className="text-slate-600" />
                 <h2 className="font-semibold text-slate-900">Actions</h2>
-                <Badge variant="secondary" className="ml-2">
-                  {recommendation.actions?.length || 0}
-                </Badge>
+                <span className="text-xs text-slate-500">({recommendation.actions?.length || 0})</span>
               </div>
               <Button size="sm" onClick={() => setAddActionOpen(true)}>
                 <Plus size={14} />
@@ -711,10 +671,11 @@ export default function RecommendationDetailPage() {
                       <div className="flex-1 min-w-0">
                         <h3 className="font-medium text-slate-900 text-sm mb-1">{action.title}</h3>
                         {action.description && (
-                          <p className="text-xs text-slate-500 line-clamp-2">{action.description}</p>
+                          <p className="text-xs text-slate-500 line-clamp-2 mb-2">{action.description}</p>
                         )}
                         {action.dueDate && (
-                          <p className="text-xs text-slate-400 mt-2">
+                          <p className="text-xs text-slate-400 flex items-center gap-1">
+                            <Calendar size={10} />
                             Échéance : {formatDate(action.dueDate)}
                           </p>
                         )}
@@ -740,9 +701,7 @@ export default function RecommendationDetailPage() {
               <div className="flex items-center gap-2">
                 <MessageSquare size={18} className="text-slate-600" />
                 <h2 className="font-semibold text-slate-900">Commentaires</h2>
-                <Badge variant="secondary" className="ml-2">
-                  {comments.length}
-                </Badge>
+                <span className="text-xs text-slate-500">({comments.length})</span>
               </div>
               <Button size="sm" onClick={() => setAddCommentOpen(true)}>
                 <Plus size={14} />
@@ -754,9 +713,10 @@ export default function RecommendationDetailPage() {
                 {comments.map((comment: any) => (
                   <div
                     key={comment.id}
-                    className={`border rounded-xl p-4 ${
-                      comment.isImportant ? 'border-orange-200 bg-orange-50/30' : 'border-slate-200'
-                    }`}
+                    className={cn(
+                      'border rounded-xl p-4',
+                      comment.isImportant ? 'border-orange-300 bg-orange-50' : 'border-slate-200'
+                    )}
                   >
                     <div className="flex items-start justify-between gap-3 mb-2">
                       <div className="font-medium text-slate-900 text-sm">
@@ -775,7 +735,7 @@ export default function RecommendationDetailPage() {
             )}
           </div>
         </div>
-      </div>
+      </main>
 
       {/* Modals */}
       <ChangeStatusModal
@@ -788,6 +748,12 @@ export default function RecommendationDetailPage() {
       <ReopenModal open={reopenOpen} onClose={() => setReopenOpen(false)} recommendationId={id} />
       <AddActionModal open={addActionOpen} onClose={() => setAddActionOpen(false)} recommendationId={id} />
       <AddCommentModal open={addCommentOpen} onClose={() => setAddCommentOpen(false)} recommendationId={id} />
+      <UpdateProgressModal
+        open={updateProgressOpen}
+        onClose={() => setUpdateProgressOpen(false)}
+        recommendationId={id}
+        currentProgress={recommendation.progress}
+      />
     </div>
   );
 }
