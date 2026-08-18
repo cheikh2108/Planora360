@@ -11,10 +11,16 @@ import {
   Request,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 import { ParticipantsService } from './participants.service';
 import { ImportParticipantsDto } from './dto/import-participants.dto';
 import { CreateParticipantDto } from './dto/create-participant.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+
+const upload = {
+  storage: memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 } // 5 MB max pour les imports Excel
+};
 
 @Controller('participants')
 @UseGuards(JwtAuthGuard)
@@ -27,7 +33,7 @@ export class ParticipantsController {
   }
 
   @Post('import')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('file', upload))
   async import(
     @UploadedFile() file: Express.Multer.File,
     @Body() dto: ImportParticipantsDto,

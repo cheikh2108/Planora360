@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { CreateParticipantDto } from './dto/create-participant.dto';
-import * as XLSX from 'xlsx';
+import * as Excel from 'exceljs';
 
 @Injectable()
 export class ParticipantsService {
@@ -40,10 +40,34 @@ export class ParticipantsService {
       throw new BadRequestException('Aucun fichier fourni');
     }
 
-    const workbook = XLSX.read(file.buffer, { type: 'buffer' });
-    const sheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[sheetName];
-    const data: any[] = XLSX.utils.sheet_to_json(worksheet);
+    // Utiliser exceljs (plus sûr que xlsx)
+    const workbook = new Excel.Workbook();
+    await workbook.xlsx.load(file.buffer);
+
+    const worksheet = workbook.worksheets[0];
+    if (!worksheet) {
+      throw new BadRequestException('Le fichier Excel est vide');
+    }
+
+    // Convertir en JSON (équivalent de sheet_to_json)
+    const data: any[] = [];
+    const headers: string[] = [];
+
+    worksheet.eachRow((row, rowNumber) => {
+      if (rowNumber === 1) {
+        // Première ligne = headers
+        row.eachCell((cell) => {
+          headers.push(String(cell.value));
+        });
+      } else {
+        // Lignes suivantes = data
+        const rowData: any = {};
+        row.eachCell((cell, colNumber) => {
+          rowData[headers[colNumber - 1]] = cell.value;
+        });
+        data.push(rowData);
+      }
+    });
 
     if (!data || data.length === 0) {
       throw new BadRequestException('Le fichier Excel est vide');

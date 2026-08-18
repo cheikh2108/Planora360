@@ -13,11 +13,17 @@ import {
   UploadedFile,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 import { CapitalizationService } from './capitalization.service';
 import { CreateCapitalizationDto } from './dto/create-capitalization.dto';
 import { UpdateCapitalizationDto } from './dto/update-capitalization.dto';
 import { FilterCapitalizationDto } from './dto/filter-capitalization.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+
+const upload = {
+  storage: memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 } // 10 MB max pour les médias
+};
 
 @Controller('capitalization')
 @UseGuards(JwtAuthGuard)
@@ -67,7 +73,7 @@ export class CapitalizationController {
   }
 
   @Post(':id/media')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('file', upload))
   async uploadMedia(
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File,

@@ -1,4 +1,5 @@
 import { Controller, Post, Patch, Body, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
@@ -12,12 +13,14 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('register')
+  @Throttle({ default: { limit: 3, ttl: 60000 } }) // 3 inscriptions max par minute
   @HttpCode(HttpStatus.CREATED)
   register(@Body() dto: RegisterOrganizationDto) {
     return this.authService.register(dto);
   }
 
   @Post('login')
+  @Throttle({ default: { limit: 5, ttl: 60000 } }) // 5 tentatives max par minute
   @HttpCode(HttpStatus.OK)
   login(@Body() dto: LoginDto) {
     return this.authService.login(dto);

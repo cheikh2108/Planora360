@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { AuditModule } from './audit/audit.module';
 import { NotificationsModule } from './notifications/notifications.module';
@@ -27,6 +29,10 @@ import { PlanningModule } from './planning/planning.module';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     ScheduleModule.forRoot(),
+    ThrottlerModule.forRoot([{
+      ttl: 60000, // 60 secondes
+      limit: 10,  // 10 requêtes max par minute (global)
+    }]),
     PrismaModule,
     AuditModule,
     NotificationsModule,
@@ -48,6 +54,12 @@ import { PlanningModule } from './planning/planning.module';
     ParticipantsModule,
     CapitalizationModule,
     PlanningModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}
