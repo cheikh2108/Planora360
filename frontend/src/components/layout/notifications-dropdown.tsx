@@ -26,7 +26,14 @@ export function NotificationsDropdown() {
 
   const { data: entries = [] } = useQuery<AuditEntry[]>({
     queryKey: ['audit-notifications'],
-    queryFn: async () => { const r = await auditApi.list({ limit: 20 }); return r.data; },
+    queryFn: async () => {
+      const r = await auditApi.list({ limit: 20 });
+      // Backend peut retourner soit un tableau (ancien), soit { entries, total } (nouveau)
+      if (Array.isArray(r.data)) {
+        return r.data;
+      }
+      return (r.data as any)?.entries ?? [];
+    },
     refetchInterval: 30_000,
   });
 

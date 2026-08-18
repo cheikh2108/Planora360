@@ -50,7 +50,14 @@ export default function NotificationsPage() {
     queryKey: ['audit-notifications', page, actionFilter],
     queryFn: async () => {
       const r = await auditApi.list({ limit, page });
-      return r.data as { entries: AuditEntry[]; total: number };
+      // Backend retourne { entries, total, page, limit }
+      const response = r.data as any;
+      // Si c'est un tableau (ancien format), on le transforme
+      if (Array.isArray(response)) {
+        return { entries: response, total: response.length };
+      }
+      // Sinon c'est le nouveau format
+      return response as { entries: AuditEntry[]; total: number };
     },
     refetchInterval: 30_000,
   });
