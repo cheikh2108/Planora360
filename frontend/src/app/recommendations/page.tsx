@@ -151,11 +151,11 @@ function CreateRecommendationModal({ open, onClose }: { open: boolean; onClose: 
   const queryClient = useQueryClient();
   const toast = useToast();
 
-  // Charger la liste des utilisateurs
+  // Charger la liste des utilisateurs actifs pour assignation
   const { data: usersData } = useQuery({
-    queryKey: ['users'],
+    queryKey: ['users', 'for-assignment'],
     queryFn: async () => {
-      const res = await usersApi.listAll();
+      const res = await usersApi.listForAssignment();
       return res.data as UserType[];
     },
     enabled: open,

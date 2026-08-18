@@ -71,6 +71,31 @@ export class UsersService {
     return safe;
   }
 
+  async findUsersForAssignment(organizationId: string) {
+    return this.prisma.user.findMany({
+      where: {
+        organizationId,
+        isActive: true, // Seulement les utilisateurs actifs
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        role: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: [
+        { firstName: 'asc' },
+        { lastName: 'asc' },
+      ],
+    });
+  }
+
   async findAll(organizationId: string, page = 1, limit = 10) {
     const where = { organizationId };
     const [users, total] = await Promise.all([

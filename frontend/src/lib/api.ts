@@ -230,6 +230,7 @@ export const organizationsApi = {
 // Users (super admin scope — by org)
 export const usersApi = {
   listAll: () => api.get('/users'),
+  listForAssignment: () => api.get('/users/list-for-assignment'),
   get: (id: string) => api.get(`/users/${id}`),
   create: (data: Record<string, unknown>) => api.post('/users', data),
   update: (id: string, data: Record<string, unknown>) => api.patch(`/users/${id}`, data),

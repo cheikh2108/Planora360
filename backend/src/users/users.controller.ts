@@ -20,6 +20,11 @@ export class UsersController {
     return this.usersService.findRoles(user.organizationId, user.role?.name);
   }
 
+  @Get('list-for-assignment')
+  listForAssignment(@CurrentUser() user: any) {
+    return this.usersService.findUsersForAssignment(user.organizationId);
+  }
+
   @Post()
   @Roles('Super administrateur', 'Administrateur')
   create(@Body() dto: CreateUserDto, @CurrentUser() user: any) {
