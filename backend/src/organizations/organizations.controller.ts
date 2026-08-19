@@ -69,6 +69,6 @@ export class OrganizationsController {
   @Roles('Super administrateur')
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.organizationsService.remove(id, user.sub);
+    return this.organizationsService.remove(id, user?.id);
   }
 }
