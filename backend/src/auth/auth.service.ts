@@ -29,7 +29,10 @@ export class AuthService {
     });
     if (existing) throw new ConflictException('Une organisation avec ce nom existe déjà');
 
-    const emailTaken = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    // Vérifier uniquement les users non-supprimés
+    const emailTaken = await this.prisma.user.findFirst({
+      where: { email: dto.email, deletedAt: null }
+    });
     if (emailTaken) throw new ConflictException('Cet email est déjà utilisé');
 
     const adminRole = await this.prisma.role.findFirst({
@@ -69,8 +72,9 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
+    // Empêcher connexion des users supprimés
+    const user = await this.prisma.user.findFirst({
+      where: { email: dto.email, deletedAt: null },
       include: { role: true, organization: true },
     });
 

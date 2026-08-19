@@ -20,7 +20,10 @@ export class UsersService {
       ? dto.organizationId
       : actorOrganizationId;
 
-    const existing = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    // Vérifier uniquement les users non-supprimés
+    const existing = await this.prisma.user.findFirst({
+      where: { email: dto.email, deletedAt: null }
+    });
     if (existing) throw new ConflictException('Cet email est déjà utilisé');
 
     const role = await this.prisma.role.findUnique({ where: { id: dto.roleId } });
@@ -38,8 +41,9 @@ export class UsersService {
 
     if (!organization) throw new NotFoundException('Organisation introuvable');
 
+    // Compter uniquement les users non-supprimés
     const currentUserCount = await this.prisma.user.count({
-      where: { organizationId: orgId },
+      where: { organizationId: orgId, deletedAt: null },
     });
 
     const planLimit = PLAN_LIMITS[organization.subscriptionPlan];
@@ -76,6 +80,7 @@ export class UsersService {
       where: {
         organizationId,
         isActive: true,
+        deletedAt: null,
       },
       select: {
         id: true,
@@ -97,7 +102,7 @@ export class UsersService {
   }
 
   async findAll(organizationId: string, page = 1, limit = 20) {
-    const where = { organizationId };
+    const where = { organizationId, deletedAt: null };
     const [users, total] = await Promise.all([
       this.prisma.user.findMany({
         where,
@@ -118,7 +123,7 @@ export class UsersService {
 
   async findOne(id: string, organizationId: string) {
     const user = await this.prisma.user.findFirst({
-      where: { id, organizationId },
+      where: { id, organizationId, deletedAt: null },
       include: { role: true },
     });
     if (!user) throw new NotFoundException('Utilisateur introuvable');
@@ -147,7 +152,11 @@ export class UsersService {
 
   async remove(id: string, organizationId: string) {
     await this.findOne(id, organizationId);
-    await this.prisma.user.delete({ where: { id } });
+    // Soft delete : marquer comme supprimé au lieu de vraiment supprimer
+    await this.prisma.user.update({
+      where: { id },
+      data: { deletedAt: new Date(), isActive: false },
+    });
   }
 
   findRoles(organizationId?: string, callerRole?: string) {

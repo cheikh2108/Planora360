@@ -17,7 +17,10 @@ export class OrganizationsService {
     const existing = await this.prisma.organization.findFirst({ where: { name: dto.name, deletedAt: null } });
     if (existing) throw new ConflictException('Une organisation avec ce nom existe déjà');
 
-    const emailTaken = await this.prisma.user.findUnique({ where: { email: dto.adminEmail } });
+    // Vérifier uniquement les users non-supprimés
+    const emailTaken = await this.prisma.user.findFirst({
+      where: { email: dto.adminEmail, deletedAt: null }
+    });
     if (emailTaken) throw new ConflictException('Cet email est déjà utilisé');
 
     const isTrialPlan = !dto.subscriptionPlan || dto.subscriptionPlan === 'DECOUVERTE';
@@ -140,10 +143,23 @@ export class OrganizationsService {
 
   async remove(id: string) {
     await this.findOne(id);
-    // Soft delete : on marque comme supprimée au lieu de vraiment supprimer
-    return this.prisma.organization.update({
-      where: { id },
-      data: { deletedAt: new Date() },
-    });
+
+    const now = new Date();
+
+    // Soft delete : organisation ET tous ses users en transaction atomique
+    await this.prisma.$transaction([
+      // 1. Soft delete tous les users de l'organisation
+      this.prisma.user.updateMany({
+        where: { organizationId: id },
+        data: { deletedAt: now, isActive: false },
+      }),
+      // 2. Soft delete l'organisation
+      this.prisma.organization.update({
+        where: { id },
+        data: { deletedAt: now },
+      }),
+    ]);
+
+    return { message: 'Organisation et utilisateurs désactivés' };
   }
 }
