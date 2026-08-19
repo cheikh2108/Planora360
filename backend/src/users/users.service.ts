@@ -96,7 +96,7 @@ export class UsersService {
     });
   }
 
-  async findAll(organizationId: string, page = 1, limit = 10) {
+  async findAll(organizationId: string, page = 1, limit = 20) {
     const where = { organizationId };
     const [users, total] = await Promise.all([
       this.prisma.user.findMany({

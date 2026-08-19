@@ -229,7 +229,7 @@ export class ValidationsService {
     return validation;
   }
 
-  async findPending(userId: string, organizationId: string, page = 1, limit = 10) {
+  async findPending(userId: string, organizationId: string, page = 1, limit = 30) {
     const where = {
       organizationId,
       status: { notIn: ['VALIDEE', 'ANNULEE', 'NON_DEMARREE'] as any },

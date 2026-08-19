@@ -20,14 +20,17 @@ export default function UsersPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
 
+  const limit = 20;
+
   const { data: usersPage, isLoading } = useQuery({
     queryKey: ['users', page],
     queryFn: async () => {
-      const r = await api.get('/users', { params: { page, limit: 10 } });
+      const r = await api.get('/users', { params: { page, limit } });
       return r.data as { data: User[]; total: number; page: number; limit: number };
     },
   });
-  const users: User[] = usersPage?.data ?? [];
+  // Guard défensif absolu
+  const users: User[] = Array.isArray(usersPage?.data) ? usersPage.data : [];
   const total = usersPage?.total ?? 0;
 
   const { data: roles = [] } = useQuery<Role[]>({
@@ -168,7 +171,7 @@ export default function UsersPage() {
           )}
           {!search.trim() && total > 10 && (
             <div className="px-5 py-3 border-t border-slate-100">
-              <Pagination page={page} total={total} limit={10} onChange={setPage} />
+              <Pagination page={page} total={total} limit={limit} onChange={setPage} />
             </div>
           )}
         </div>

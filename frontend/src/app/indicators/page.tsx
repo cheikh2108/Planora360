@@ -128,18 +128,21 @@ export default function IndicatorsPage() {
   const [filterActivity, setFilterActivity] = useState('');
   const [page, setPage] = useState(1);
 
+  const limit = 25;
+
   useEffect(() => { setPage(1); }, [filterActivity]);
 
   const { data: indicatorsPage, isLoading } = useQuery({
     queryKey: ['indicators', filterActivity, page],
     queryFn: async () => {
-      const params: Record<string, unknown> = { page };
+      const params: Record<string, unknown> = { page, limit };
       if (filterActivity) params.activityId = filterActivity;
       const r = await indicatorsApi.list(params);
       return r.data as { data: Indicator[]; total: number; page: number; limit: number };
     },
   });
-  const indicators: Indicator[] = indicatorsPage?.data ?? [];
+  // Guard défensif absolu
+  const indicators: Indicator[] = Array.isArray(indicatorsPage?.data) ? indicatorsPage.data : [];
   const total = indicatorsPage?.total ?? 0;
 
   const { data: activities = [] } = useQuery<Activity[]>({
@@ -300,7 +303,7 @@ export default function IndicatorsPage() {
           )}
           {total > 20 && (
             <div className="px-5 py-3 border-t border-slate-100">
-              <Pagination page={page} total={total} limit={20} onChange={setPage} />
+              <Pagination page={page} total={total} limit={limit} onChange={setPage} />
             </div>
           )}
         </div>

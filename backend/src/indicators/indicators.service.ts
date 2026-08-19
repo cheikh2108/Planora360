@@ -24,7 +24,7 @@ export class IndicatorsService {
     });
   }
 
-  async findAll(organizationId: string, activityId?: string, page = 1, limit = 20) {
+  async findAll(organizationId: string, activityId?: string, page = 1, limit = 25) {
     const where = { organizationId, ...(activityId ? { activityId } : {}) };
     const [data, total] = await Promise.all([
       this.prisma.indicator.findMany({

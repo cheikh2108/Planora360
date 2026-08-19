@@ -191,7 +191,7 @@ let ValidationsService = class ValidationsService {
         });
         return validation;
     }
-    async findPending(userId, organizationId, page = 1, limit = 10) {
+    async findPending(userId, organizationId, page = 1, limit = 30) {
         const where = {
             organizationId,
             status: { notIn: ['VALIDEE', 'ANNULEE', 'NON_DEMARREE'] },

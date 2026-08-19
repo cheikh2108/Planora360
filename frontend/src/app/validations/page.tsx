@@ -47,10 +47,12 @@ export default function ValidationsPage() {
   const [form, setForm] = useState({ decision: 'APPROUVE', comment: '' });
   const [page, setPage] = useState(1);
 
+  const limit = 30;
+
   const { data: pendingPage, isLoading } = useQuery({
     queryKey: ['validations-pending', page],
     queryFn: async () => {
-      const r = await validationsApi.getPending({ page, limit: 10 });
+      const r = await validationsApi.getPending({ page, limit });
       const result = r.data as { data: (Activity & { validations: { step: string; createdAt: string }[] })[]; total: number; page: number; limit: number };
       return {
         items: result.data.map(act => ({
@@ -63,7 +65,8 @@ export default function ValidationsPage() {
     },
     refetchInterval: 30_000,
   });
-  const pending: PendingValidation[] = pendingPage?.items ?? [];
+  // Guard défensif absolu
+  const pending: PendingValidation[] = Array.isArray(pendingPage?.items) ? pendingPage.items : [];
   const totalPending = pendingPage?.total ?? 0;
 
   const { mutate: process, isPending: processing } = useMutation({
@@ -239,7 +242,7 @@ export default function ValidationsPage() {
           )}
           {totalPending > 10 && (
             <div className="px-5 py-3 border-t border-slate-100">
-              <Pagination page={page} total={totalPending} limit={10} onChange={setPage} />
+              <Pagination page={page} total={totalPending} limit={limit} onChange={setPage} />
             </div>
           )}
         </div>

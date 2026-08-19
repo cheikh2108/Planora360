@@ -120,7 +120,7 @@ let UsersService = class UsersService {
             ],
         });
     }
-    async findAll(organizationId, page = 1, limit = 10) {
+    async findAll(organizationId, page = 1, limit = 20) {
         const where = { organizationId };
         const [users, total] = await Promise.all([
             this.prisma.user.findMany({
