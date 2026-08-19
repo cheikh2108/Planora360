@@ -31,8 +31,10 @@ export interface Organization {
   subscriptionPlan: SubscriptionPlan;
   status: OrganizationStatus;
   rejectionReason?: string;
+  trialEndsAt?: string;
   createdAt: string;
   updatedAt?: string;
+  deletedAt?: string;
   _count?: { users: number; actionPlans: number };
   users?: { email: string; firstName: string; lastName: string }[];
 }

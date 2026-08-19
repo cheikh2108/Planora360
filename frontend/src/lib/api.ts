@@ -227,6 +227,7 @@ export const rolesApi = {
 export const organizationsApi = {
   list: () => api.get('/organizations'),
   listPending: () => api.get('/organizations/pending'),
+  getDeleted: () => api.get('/organizations/deleted'),
   get: (id: string) => api.get(`/organizations/${id}`),
   create: (data: { name: string; logoUrl?: string; subscriptionPlan?: string; adminFirstName: string; adminLastName: string; adminEmail: string }) =>
     api.post('/organizations', data),
@@ -235,6 +236,7 @@ export const organizationsApi = {
   approve: (id: string) => api.patch(`/organizations/${id}/approve`),
   reject: (id: string, reason?: string) => api.patch(`/organizations/${id}/reject`, { reason }),
   remove: (id: string) => api.delete(`/organizations/${id}`),
+  restore: (id: string) => api.patch(`/organizations/${id}/restore`),
 };
 
 // Users (super admin scope — by org)
