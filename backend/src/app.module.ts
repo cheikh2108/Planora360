@@ -31,8 +31,8 @@ import { RecommendationsModule } from './recommendations/recommendations.module'
     ConfigModule.forRoot({ isGlobal: true }),
     ScheduleModule.forRoot(),
     ThrottlerModule.forRoot([{
-      ttl: 60000, // 60 secondes
-      limit: 10,  // 10 requêtes max par minute (global)
+      ttl: 60000,  // 60 secondes
+      limit: 100,  // 100 requêtes max par minute (augmenté pour dashboard)
     }]),
     PrismaModule,
     AuditModule,
