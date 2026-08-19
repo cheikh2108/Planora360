@@ -329,7 +329,19 @@ export default function RecommendationsPage() {
     queryKey: ['recommendations', filters, page],
     queryFn: async () => {
       const res = await recommendationsApi.getAll({ ...filters, limit, page });
-      return res.data as { recommendations: Recommendation[]; total: number; page: number; limit: number };
+      const response = res.data as any;
+
+      // Double compatibilité : ancien format (tableau) ET nouveau format (objet)
+      if (Array.isArray(response)) {
+        // Ancien format : backend retourne directement un tableau
+        return { recommendations: response, total: response.length, page, limit };
+      } else if (response && typeof response === 'object') {
+        // Nouveau format : backend retourne { recommendations, total, page, limit }
+        return response;
+      }
+
+      // Fallback : format inconnu
+      return { recommendations: [], total: 0, page: 1, limit: 20 };
     },
   });
   // Guard défensif absolu : s'assurer que recommendations est TOUJOURS un tableau
@@ -459,7 +471,7 @@ export default function RecommendationsPage() {
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {recommendations.map((rec) => (
+              {recommendations.map((rec: Recommendation) => (
                 <RecommendationCard key={rec.id} rec={rec} />
               ))}
             </div>

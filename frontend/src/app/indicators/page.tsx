@@ -138,7 +138,16 @@ export default function IndicatorsPage() {
       const params: Record<string, unknown> = { page, limit };
       if (filterActivity) params.activityId = filterActivity;
       const r = await indicatorsApi.list(params);
-      return r.data as { data: Indicator[]; total: number; page: number; limit: number };
+      const response = r.data as any;
+
+      // Double compatibilité : ancien format (tableau) ET nouveau format (objet)
+      if (Array.isArray(response)) {
+        return { data: response, total: response.length, page, limit };
+      } else if (response && typeof response === 'object') {
+        return response;
+      }
+
+      return { data: [], total: 0, page: 1, limit: 25 };
     },
   });
   // Guard défensif absolu

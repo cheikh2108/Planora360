@@ -26,7 +26,16 @@ export default function UsersPage() {
     queryKey: ['users', page],
     queryFn: async () => {
       const r = await api.get('/users', { params: { page, limit } });
-      return r.data as { data: User[]; total: number; page: number; limit: number };
+      const response = r.data as any;
+
+      // Double compatibilité : ancien format (tableau) ET nouveau format (objet)
+      if (Array.isArray(response)) {
+        return { data: response, total: response.length, page, limit };
+      } else if (response && typeof response === 'object') {
+        return response;
+      }
+
+      return { data: [], total: 0, page: 1, limit: 20 };
     },
   });
   // Guard défensif absolu

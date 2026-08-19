@@ -53,14 +53,27 @@ export default function ValidationsPage() {
     queryKey: ['validations-pending', page],
     queryFn: async () => {
       const r = await validationsApi.getPending({ page, limit });
-      const result = r.data as { data: (Activity & { validations: { step: string; createdAt: string }[] })[]; total: number; page: number; limit: number };
+      const response = r.data as any;
+
+      // Double compatibilité : ancien format (tableau) ET nouveau format (objet)
+      let resultData: any[] = [];
+      let resultTotal = 0;
+
+      if (Array.isArray(response)) {
+        resultData = response;
+        resultTotal = response.length;
+      } else if (response && typeof response === 'object' && Array.isArray(response.data)) {
+        resultData = response.data;
+        resultTotal = response.total ?? response.data.length;
+      }
+
       return {
-        items: result.data.map(act => ({
+        items: resultData.map(act => ({
           activity: act,
           currentStep: act.validations?.[0]?.step ?? 'SOUMISSION',
-          pendingSince: act.validations?.[0]?.createdAt ?? (act as any).createdAt,
+          pendingSince: act.validations?.[0]?.createdAt ?? act.createdAt,
         })),
-        total: result.total,
+        total: resultTotal,
       };
     },
     refetchInterval: 30_000,

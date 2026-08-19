@@ -192,10 +192,18 @@ export default function PlansPage() {
     queryKey: ['plans', 'active', page],
     queryFn: async () => {
       const r = await plansApi.list({ page, limit });
-      const result = r.data as { data: ActionPlan[]; total: number; page: number; limit: number };
-      // Guard défensif
-      const dataArray = Array.isArray(result.data) ? result.data : [];
-      return { ...result, data: dataArray.filter(p => p.status !== 'ARCHIVE') };
+      const response = r.data as any;
+
+      // Double compatibilité : ancien format (tableau) ET nouveau format (objet)
+      if (Array.isArray(response)) {
+        return { data: response.filter(p => p.status !== 'ARCHIVE'), total: response.length, page, limit };
+      } else if (response && typeof response === 'object') {
+        // Guard défensif sur result.data
+        const dataArray = Array.isArray(response.data) ? response.data : [];
+        return { ...response, data: dataArray.filter((p: any) => p.status !== 'ARCHIVE') };
+      }
+
+      return { data: [], total: 0, page: 1, limit: 15 };
     },
   });
   // Guard défensif absolu
