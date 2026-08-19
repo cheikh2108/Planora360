@@ -100,6 +100,11 @@ export default function SuperAdminOrganizationsPage() {
     queryFn: async () => { const r = await organizationsApi.listPending(); return r.data; },
   });
 
+  const { data: deletedOrgs = [] } = useQuery<Organization[]>({
+    queryKey: ['organizations-deleted'],
+    queryFn: async () => { const r = await organizationsApi.getDeleted(); return r.data; },
+  });
+
   const { mutate: approveOrg, isPending: approving } = useMutation({
     mutationFn: (id: string) => organizationsApi.approve(id),
     onSuccess: () => {
@@ -120,7 +125,11 @@ export default function SuperAdminOrganizationsPage() {
 
   const { mutate: deleteOrg, isPending: deleting } = useMutation({
     mutationFn: (id: string) => organizationsApi.remove(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['organizations'] }); setDeleteTarget(null); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['organizations'] });
+      qc.invalidateQueries({ queryKey: ['organizations-deleted'] });
+      setDeleteTarget(null);
+    },
   });
 
   const filtered = orgs.filter(o => {
@@ -221,6 +230,16 @@ export default function SuperAdminOrganizationsPage() {
             </button>
           ))}
         </div>
+        <Link href="/super-admin/organizations/deleted">
+          <Button size="sm" variant="secondary" icon={<Trash2 size={14} />}>
+            Supprimées
+            {deletedOrgs.length > 0 && (
+              <span className="ml-1.5 bg-slate-200 text-slate-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                {deletedOrgs.length}
+              </span>
+            )}
+          </Button>
+        </Link>
         <Button size="sm" icon={<Plus size={14} />} onClick={() => setCreateOpen(true)}>
           Nouvelle organisation
         </Button>
