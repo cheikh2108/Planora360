@@ -1,29 +1,55 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import Link from 'next/link';
 import { organizationsApi } from '@/lib/api';
-import type { Organization } from '@/lib/types';
+import type { Organization, SubscriptionPlan } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
 import { formatDate, cn } from '@/lib/utils';
-import { Building2, Users, RotateCcw, ArrowLeft, FolderKanban, Clock, AlertCircle } from 'lucide-react';
-import { useState } from 'react';
+import {
+  Building2, Users, RotateCcw, ArrowLeft, FolderKanban,
+  Clock, AlertCircle, Search, Trash2,
+} from 'lucide-react';
 
-const PLAN_META = {
-  DECOUVERTE: { label: 'Découverte', color: 'text-emerald-700', bg: 'bg-emerald-50' },
-  PROFESSIONNELLE: { label: 'Professionnelle', color: 'text-blue-700', bg: 'bg-blue-50' },
-  SUR_MESURE: { label: 'Entreprise', color: 'text-amber-700', bg: 'bg-amber-50' },
+const PLAN_META: Record<SubscriptionPlan, {
+  label: string; color: string; bg: string; dot: string;
+}> = {
+  DECOUVERTE:      {
+    label: 'Découverte',
+    color: 'text-emerald-700', bg: 'bg-emerald-100', dot: 'bg-emerald-500',
+  },
+  PROFESSIONNELLE: {
+    label: 'Professionnelle',
+    color: 'text-blue-700', bg: 'bg-blue-100', dot: 'bg-blue-500',
+  },
+  SUR_MESURE:      {
+    label: 'Entreprise',
+    color: 'text-amber-700', bg: 'bg-amber-100', dot: 'bg-amber-500',
+  },
 };
+
+function PlanBadge({ plan }: { plan: SubscriptionPlan }) {
+  const m = PLAN_META[plan];
+  return (
+    <span className={cn('inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full', m.bg, m.color)}>
+      <span className={cn('w-1.5 h-1.5 rounded-full', m.dot)} />
+      {m.label}
+    </span>
+  );
+}
 
 export default function DeletedOrganizationsPage() {
   const router = useRouter();
   const qc = useQueryClient();
+  const [search, setSearch] = useState('');
   const [restoreId, setRestoreId] = useState<string | null>(null);
 
-  const { data: orgs, isLoading } = useQuery<Organization[]>({
+  const { data: orgs = [], isLoading } = useQuery<Organization[]>({
     queryKey: ['organizations-deleted'],
     queryFn: async () => {
       const response = await organizationsApi.getDeleted();
@@ -33,53 +59,41 @@ export default function DeletedOrganizationsPage() {
 
   const { mutate: restore, isPending: restoring } = useMutation({
     mutationFn: (id: string) => organizationsApi.restore(id),
-    onSuccess: (data) => {
+    onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['organizations-deleted'] });
       qc.invalidateQueries({ queryKey: ['organizations'] });
       setRestoreId(null);
-
-      // Toast de succès (si vous avez un système de toast)
-      console.log(`✅ ${data.data.message} (${data.data.usersRestored} utilisateurs)`);
     },
   });
 
-  const selectedOrg = orgs?.find(o => o.id === restoreId);
+  const filtered = orgs.filter(o => {
+    if (!search.trim()) return true;
+    return o.name.toLowerCase().includes(search.toLowerCase());
+  });
 
-  if (isLoading) {
-    return (
-      <main className="px-4 md:px-8 py-8 space-y-4 max-w-7xl mx-auto">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} className="h-24 rounded-2xl" />
-        ))}
-      </main>
-    );
-  }
+  const selectedOrg = orgs.find(o => o.id === restoreId);
 
   return (
     <main className="px-4 md:px-8 py-8 space-y-6 max-w-7xl mx-auto">
       {/* Header */}
       <div>
-        <button
-          onClick={() => router.push('/super-admin/organizations')}
+        <Link
+          href="/super-admin/organizations"
           className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-700 transition-colors mb-2"
         >
-          <ArrowLeft size={14} /> Retour aux organisations actives
-        </button>
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">Organisations supprimées</h1>
-            <p className="text-sm text-slate-500 mt-1">
-              {orgs?.length || 0} organisation{orgs?.length !== 1 ? 's' : ''} en attente de suppression définitive
-            </p>
-          </div>
-        </div>
+          <ArrowLeft size={14} /> Retour aux organisations
+        </Link>
+        <h1 className="text-2xl font-bold text-slate-900">Organisations supprimées</h1>
+        <p className="text-sm text-slate-500 mt-0.5">
+          {orgs.length} organisation{orgs.length > 1 ? 's' : ''} en attente de suppression définitive
+        </p>
       </div>
 
       {/* Info Banner */}
       <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex gap-3">
         <Clock size={18} className="text-amber-600 shrink-0 mt-0.5" />
         <div className="text-sm text-slate-700">
-          <p className="font-medium mb-1">Rétention de 90 jours</p>
+          <p className="font-medium text-amber-800 mb-1">Rétention de 90 jours</p>
           <p className="text-slate-600">
             Les organisations supprimées sont conservées pendant 90 jours avant suppression définitive.
             Vous pouvez les restaurer à tout moment pendant cette période.
@@ -87,113 +101,136 @@ export default function DeletedOrganizationsPage() {
         </div>
       </div>
 
-      {/* Liste des organisations supprimées */}
-      {!orgs || orgs.length === 0 ? (
-        <EmptyState
-          icon={Building2}
-          title="Aucune organisation supprimée"
-          description="Les organisations supprimées apparaîtront ici et pourront être restaurées pendant 90 jours."
-        />
-      ) : (
-        <div className="grid gap-4">
-          {orgs.map(org => {
-            const planMeta = PLAN_META[org.subscriptionPlan];
-            const deletedDaysAgo = org.deletedAt
-              ? Math.floor((Date.now() - new Date(org.deletedAt).getTime()) / (1000 * 60 * 60 * 24))
-              : 0;
-            const daysRemaining = 90 - deletedDaysAgo;
-
-            return (
-              <div
-                key={org.id}
-                className="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-sm transition-shadow"
-              >
-                <div className="flex items-start justify-between gap-4 flex-wrap">
-                  {/* Info */}
-                  <div className="flex items-start gap-4 flex-1 min-w-0">
-                    <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-sm font-bold text-slate-400 shrink-0">
-                      {org.name.slice(0, 2).toUpperCase()}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-slate-900">{org.name}</h3>
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-xs text-slate-500">
-                        <span className="flex items-center gap-1">
-                          <Users size={12} />
-                          {org._count?.users || 0} utilisateurs
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <FolderKanban size={12} />
-                          {org._count?.actionPlans || 0} plans
-                        </span>
-                        <span className={cn('px-2 py-0.5 rounded-full font-medium', planMeta.bg, planMeta.color)}>
-                          {planMeta.label}
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-400 mt-2">
-                        Supprimée le {formatDate(org.deletedAt!)} · <strong className="text-slate-600">{daysRemaining} jours restants</strong>
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Action */}
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    icon={<RotateCcw size={13} />}
-                    onClick={() => setRestoreId(org.id)}
-                  >
-                    Restaurer
-                  </Button>
-                </div>
-
-                {/* Barre de progression temps restant */}
-                <div className="mt-4">
-                  <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                    <div
-                      className={cn(
-                        'h-full transition-all',
-                        daysRemaining > 60 ? 'bg-green-500' :
-                        daysRemaining > 30 ? 'bg-amber-500' :
-                        'bg-red-500'
-                      )}
-                      style={{ width: `${(daysRemaining / 90) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+      {/* Toolbar */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative flex-1 min-w-48">
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Rechercher une organisation..."
+            className="w-full h-9 pl-8 pr-4 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+          />
         </div>
-      )}
+      </div>
 
-      {/* Modal de confirmation de restauration */}
-      <Modal
-        open={!!restoreId}
-        onClose={() => setRestoreId(null)}
-        title="Restaurer l'organisation"
-        size="sm"
-      >
+      {/* Table */}
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        {isLoading ? (
+          <div className="p-5 space-y-3">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="h-16" />
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
+          <EmptyState
+            icon={Trash2}
+            title="Aucune organisation supprimée"
+            description={search ? 'Aucun résultat.' : 'Les organisations supprimées apparaîtront ici.'}
+          />
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-100">
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-slate-500">Organisation</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500">Formule</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 hidden md:table-cell">Utilisateurs</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 hidden lg:table-cell">Plans</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 hidden lg:table-cell">Supprimée le</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 hidden xl:table-cell">Expiration</th>
+                  <th className="w-20" />
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map(org => {
+                  const deletedDaysAgo = org.deletedAt
+                    ? Math.floor((Date.now() - new Date(org.deletedAt).getTime()) / (1000 * 60 * 60 * 24))
+                    : 0;
+                  const daysRemaining = 90 - deletedDaysAgo;
+
+                  return (
+                    <tr key={org.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/60 transition-colors">
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-400 shrink-0">
+                            {org.name.slice(0, 2).toUpperCase()}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-slate-500 truncate">{org.name}</p>
+                            <p className="text-xs text-slate-400">{org.id.slice(0, 12)}…</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3.5"><PlanBadge plan={org.subscriptionPlan} /></td>
+                      <td className="px-4 py-3.5 hidden md:table-cell">
+                        <div className="flex items-center gap-1.5 text-sm text-slate-700">
+                          <Users size={13} className="text-slate-400" />
+                          {org._count?.users ?? 0}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3.5 hidden lg:table-cell">
+                        <div className="flex items-center gap-1.5 text-sm text-slate-700">
+                          <FolderKanban size={13} className="text-slate-400" />
+                          {org._count?.actionPlans ?? 0}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3.5 text-xs text-slate-500 hidden lg:table-cell">
+                        {formatDate(org.deletedAt!)}
+                      </td>
+                      <td className="px-4 py-3.5 hidden xl:table-cell">
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden min-w-16">
+                            <div
+                              className={cn(
+                                'h-full transition-all',
+                                daysRemaining > 60 ? 'bg-emerald-500' :
+                                daysRemaining > 30 ? 'bg-amber-500' :
+                                'bg-red-500'
+                              )}
+                              style={{ width: `${(daysRemaining / 90) * 100}%` }}
+                            />
+                          </div>
+                          <span className="text-xs text-slate-500 font-medium shrink-0 tabular-nums">
+                            {daysRemaining}j
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-3 py-3.5">
+                        <button
+                          onClick={() => setRestoreId(org.id)}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                          title="Restaurer"
+                        >
+                          <RotateCcw size={14} />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Modal de restauration */}
+      <Modal open={!!restoreId} onClose={() => setRestoreId(null)} title="Restaurer l'organisation" size="sm">
         {selectedOrg && (
           <div className="space-y-4">
-            <div className="flex gap-3 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
-              <AlertCircle size={18} className="text-blue-500 shrink-0 mt-0.5" />
-              <div className="text-sm text-slate-700">
-                <p className="font-medium mb-1">Restauration complète</p>
-                <p>
-                  <strong>{selectedOrg.name}</strong> et ses <strong>{selectedOrg._count?.users || 0} utilisateurs</strong> seront
-                  réactivés immédiatement.
-                </p>
-              </div>
+            <div className="flex gap-3 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3">
+              <RotateCcw size={18} className="text-emerald-600 shrink-0 mt-0.5" />
+              <p className="text-sm text-slate-700">
+                <strong>{selectedOrg.name}</strong> et ses <strong>{selectedOrg._count?.users || 0} utilisateur{selectedOrg._count?.users !== 1 ? 's' : ''}</strong> seront
+                réactivé{selectedOrg._count?.users !== 1 ? 's' : ''} immédiatement.
+              </p>
             </div>
-
             <div className="flex justify-end gap-3 pt-1">
-              <Button variant="secondary" onClick={() => setRestoreId(null)}>
-                Annuler
-              </Button>
+              <Button variant="secondary" onClick={() => setRestoreId(null)}>Annuler</Button>
               <Button
-                icon={<RotateCcw size={13} />}
                 loading={restoring}
                 onClick={() => restore(restoreId!)}
+                icon={<RotateCcw size={13} />}
               >
                 Restaurer
               </Button>
