@@ -25,7 +25,7 @@ export class AuthService {
 
   async register(dto: RegisterOrganizationDto) {
     const existing = await this.prisma.organization.findFirst({
-      where: { name: dto.organizationName },
+      where: { name: dto.organizationName, deletedAt: null },
     });
     if (existing) throw new ConflictException('Une organisation avec ce nom existe déjà');
 

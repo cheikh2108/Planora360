@@ -14,7 +14,7 @@ export class OrganizationsService {
   ) {}
 
   async create(dto: CreateOrganizationDto) {
-    const existing = await this.prisma.organization.findFirst({ where: { name: dto.name } });
+    const existing = await this.prisma.organization.findFirst({ where: { name: dto.name, deletedAt: null } });
     if (existing) throw new ConflictException('Une organisation avec ce nom existe déjà');
 
     const emailTaken = await this.prisma.user.findUnique({ where: { email: dto.adminEmail } });
@@ -67,7 +67,7 @@ export class OrganizationsService {
 
   findPending() {
     return this.prisma.organization.findMany({
-      where: { status: 'PENDING' },
+      where: { status: 'PENDING', deletedAt: null },
       orderBy: { createdAt: 'desc' },
       include: {
         _count: { select: { users: true } },
@@ -78,7 +78,7 @@ export class OrganizationsService {
 
   findAll() {
     return this.prisma.organization.findMany({
-      where: { status: 'ACTIVE' },
+      where: { status: 'ACTIVE', deletedAt: null },
       orderBy: { createdAt: 'desc' },
       include: { _count: { select: { users: true, actionPlans: true } } },
     });
@@ -114,8 +114,8 @@ export class OrganizationsService {
   }
 
   async findOne(id: string) {
-    const org = await this.prisma.organization.findUnique({
-      where: { id },
+    const org = await this.prisma.organization.findFirst({
+      where: { id, deletedAt: null },
       include: { _count: { select: { actionPlans: true, users: true } } },
     });
     if (!org) throw new NotFoundException('Organisation introuvable');
@@ -140,6 +140,10 @@ export class OrganizationsService {
 
   async remove(id: string) {
     await this.findOne(id);
-    return this.prisma.organization.delete({ where: { id } });
+    // Soft delete : on marque comme supprimée au lieu de vraiment supprimer
+    return this.prisma.organization.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
   }
 }

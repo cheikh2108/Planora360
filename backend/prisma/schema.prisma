@@ -101,6 +101,7 @@ model Organization {
   rejectionReason  String?
   trialEndsAt      DateTime?
   createdAt        DateTime           @default(now())
+  deletedAt        DateTime?
 
   users                 User[]
   roles                 Role[]
