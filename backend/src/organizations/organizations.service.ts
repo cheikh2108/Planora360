@@ -141,22 +141,30 @@ export class OrganizationsService {
     });
   }
 
-  async remove(id: string, currentUserId?: string) {
+  async remove(id: string, currentUserId: string) {
     await this.findOne(id);
 
-    // 🛡️ PROTECTION : Empêcher le super admin de supprimer sa propre organisation
-    if (currentUserId) {
-      const currentUser = await this.prisma.user.findUnique({
-        where: { id: currentUserId },
-        select: { organizationId: true },
-      });
+    // 🛡️ PROTECTION OBLIGATOIRE : Vérifier que currentUserId est fourni
+    if (!currentUserId) {
+      throw new BadRequestException('Impossible d\'identifier l\'utilisateur actuel.');
+    }
 
-      if (currentUser && currentUser.organizationId === id) {
-        throw new BadRequestException(
-          'Vous ne pouvez pas supprimer votre propre organisation. ' +
-          'Cela vous déconnecterait et supprimerait votre compte.'
-        );
-      }
+    // Récupérer l'utilisateur actuel
+    const currentUser = await this.prisma.user.findUnique({
+      where: { id: currentUserId, deletedAt: null },
+      select: { id: true, organizationId: true, role: { select: { name: true } } },
+    });
+
+    if (!currentUser) {
+      throw new BadRequestException('Utilisateur actuel introuvable ou inactif.');
+    }
+
+    // 🛡️ PROTECTION : Empêcher de supprimer sa propre organisation
+    if (currentUser.organizationId === id) {
+      throw new BadRequestException(
+        'Vous ne pouvez pas supprimer votre propre organisation. ' +
+        'Cela vous déconnecterait et supprimerait votre compte.'
+      );
     }
 
     const now = new Date();
