@@ -331,21 +331,45 @@ export default function RecommendationsPage() {
       const res = await recommendationsApi.getAll({ ...filters, limit, page });
       const response = res.data as any;
 
-      // Double compatibilité : ancien format (tableau) ET nouveau format (objet)
-      if (Array.isArray(response)) {
-        // Ancien format : backend retourne directement un tableau
-        return { recommendations: response, total: response.length, page, limit };
-      } else if (response && typeof response === 'object') {
-        // Nouveau format : backend retourne { recommendations, total, page, limit }
-        return response;
+      // Triple sécurité : gérer TOUS les formats possibles
+      if (!response) {
+        // Réponse vide/null/undefined
+        return { recommendations: [], total: 0, page, limit };
       }
 
-      // Fallback : format inconnu
+      if (Array.isArray(response)) {
+        // Format 1: tableau direct [rec1, rec2, ...]
+        return { recommendations: response, total: response.length, page, limit };
+      }
+
+      if (typeof response === 'object') {
+        // Format 2: objet { recommendations: [...], total: X }
+        if (Array.isArray(response.recommendations)) {
+          return {
+            recommendations: response.recommendations,
+            total: response.total ?? response.recommendations.length,
+            page: response.page ?? page,
+            limit: response.limit ?? limit,
+          };
+        }
+
+        // Format 3: objet avec autre propriété contenant un tableau
+        const arrayProp = Object.values(response).find(v => Array.isArray(v));
+        if (arrayProp && Array.isArray(arrayProp)) {
+          return { recommendations: arrayProp, total: arrayProp.length, page, limit };
+        }
+      }
+
+      // Fallback ultime : format totalement inconnu
+      console.error('[RECOMMENDATIONS] Format API inconnu:', response);
       return { recommendations: [], total: 0, page: 1, limit: 20 };
     },
   });
-  // Guard défensif absolu : s'assurer que recommendations est TOUJOURS un tableau
-  const recommendations = Array.isArray(rawRecommendations?.recommendations) ? rawRecommendations.recommendations : [];
+
+  // Triple guard défensif : s'assurer que recommendations est TOUJOURS un tableau
+  const recommendations = Array.isArray(rawRecommendations?.recommendations)
+    ? rawRecommendations.recommendations
+    : (Array.isArray(rawRecommendations) ? rawRecommendations : []);
   const total = rawRecommendations?.total ?? 0;
 
   // Reset page when filters change
