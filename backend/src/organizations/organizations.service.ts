@@ -141,8 +141,23 @@ export class OrganizationsService {
     });
   }
 
-  async remove(id: string) {
+  async remove(id: string, currentUserId?: string) {
     await this.findOne(id);
+
+    // 🛡️ PROTECTION : Empêcher le super admin de supprimer sa propre organisation
+    if (currentUserId) {
+      const currentUser = await this.prisma.user.findUnique({
+        where: { id: currentUserId },
+        select: { organizationId: true },
+      });
+
+      if (currentUser && currentUser.organizationId === id) {
+        throw new BadRequestException(
+          'Vous ne pouvez pas supprimer votre propre organisation. ' +
+          'Cela vous déconnecterait et supprimerait votre compte.'
+        );
+      }
+    }
 
     const now = new Date();
 
