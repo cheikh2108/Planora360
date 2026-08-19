@@ -87,6 +87,16 @@ export class OrganizationsService {
     });
   }
 
+  findDeleted() {
+    return this.prisma.organization.findMany({
+      where: { NOT: { deletedAt: null } },
+      orderBy: { deletedAt: 'desc' },
+      include: {
+        _count: { select: { users: true, actionPlans: true } },
+      },
+    });
+  }
+
   async approve(id: string) {
     const org = await this.findOne(id);
     if (org.status !== 'PENDING') throw new BadRequestException('Organisation non en attente');
@@ -184,5 +194,40 @@ export class OrganizationsService {
     ]);
 
     return { message: 'Organisation et utilisateurs désactivés' };
+  }
+
+  async restore(id: string) {
+    // Vérifier que l'organisation existe et est bien soft deleted
+    const org = await this.prisma.organization.findUnique({
+      where: { id },
+      include: { _count: { select: { users: true } } },
+    });
+
+    if (!org) {
+      throw new NotFoundException('Organisation introuvable');
+    }
+
+    if (org.deletedAt === null) {
+      throw new BadRequestException('Cette organisation est déjà active');
+    }
+
+    // Restauration : organisation ET tous ses users en transaction atomique
+    await this.prisma.$transaction([
+      // 1. Restaurer tous les users de l'organisation
+      this.prisma.user.updateMany({
+        where: { organizationId: id },
+        data: { deletedAt: null, isActive: true },
+      }),
+      // 2. Restaurer l'organisation
+      this.prisma.organization.update({
+        where: { id },
+        data: { deletedAt: null },
+      }),
+    ]);
+
+    return {
+      message: 'Organisation et utilisateurs restaurés',
+      usersRestored: org._count.users,
+    };
   }
 }

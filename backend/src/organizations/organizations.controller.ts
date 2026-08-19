@@ -39,6 +39,12 @@ export class OrganizationsController {
     return this.organizationsService.findPending();
   }
 
+  @Get('deleted')
+  @Roles('Super administrateur')
+  findDeleted() {
+    return this.organizationsService.findDeleted();
+  }
+
   @Get(':id')
   @Roles('Super administrateur')
   findOne(@Param('id') id: string) {
@@ -70,5 +76,12 @@ export class OrganizationsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: string, @CurrentUser() user: any) {
     return this.organizationsService.remove(id, user?.id);
+  }
+
+  @Patch(':id/restore')
+  @Roles('Super administrateur')
+  @HttpCode(HttpStatus.OK)
+  restore(@Param('id') id: string) {
+    return this.organizationsService.restore(id);
   }
 }
