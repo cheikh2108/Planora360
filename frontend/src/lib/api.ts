@@ -107,8 +107,8 @@ export const authApi = {
 
 // Dashboard
 export const dashboardApi = {
-  getOverview: async () => {
-    const res = await api.get('/dashboards/overview');
+  getOverview: async (params?: Record<string, string>) => {
+    const res = await api.get('/dashboards/overview', { params });
     const d = res.data;
     return {
       ...res,
@@ -126,8 +126,8 @@ export const dashboardApi = {
       },
     };
   },
-  getPerformance: async () => {
-    const res = await api.get('/dashboards/performance');
+  getPerformance: async (params?: Record<string, string>) => {
+    const res = await api.get('/dashboards/performance', { params });
     // Backend peut retourner soit un tableau, soit un objet avec byResponsible
     const rawData = res.data;
     let entries: any[] = [];
