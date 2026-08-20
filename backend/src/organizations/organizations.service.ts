@@ -153,81 +153,95 @@ export class OrganizationsService {
 
   async remove(id: string, currentUserId: string) {
     await this.findOne(id);
+    this.validateCurrentUserId(currentUserId);
 
-    // 🛡️ PROTECTION OBLIGATOIRE : Vérifier que currentUserId est fourni
+    const currentUser = await this.getCurrentUser(currentUserId);
+    this.preventSelfDeletion(currentUser.organizationId, id);
+
+    await this.softDeleteOrganizationWithUsers(id);
+    return { message: 'Organisation et utilisateurs désactivés' };
+  }
+
+  async restore(id: string) {
+    const organization = await this.findDeletedOrganization(id);
+    await this.restoreOrganizationWithUsers(id);
+
+    return {
+      message: 'Organisation et utilisateurs restaurés',
+      usersRestored: organization._count.users,
+    };
+  }
+
+  private validateCurrentUserId(currentUserId: string) {
     if (!currentUserId) {
       throw new BadRequestException('Impossible d\'identifier l\'utilisateur actuel.');
     }
+  }
 
-    // Récupérer l'utilisateur actuel
-    const currentUser = await this.prisma.user.findUnique({
-      where: { id: currentUserId, deletedAt: null },
+  private async getCurrentUser(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId, deletedAt: null },
       select: { id: true, organizationId: true, role: { select: { name: true } } },
     });
 
-    if (!currentUser) {
+    if (!user) {
       throw new BadRequestException('Utilisateur actuel introuvable ou inactif.');
     }
 
-    // 🛡️ PROTECTION : Empêcher de supprimer sa propre organisation
-    if (currentUser.organizationId === id) {
+    return user;
+  }
+
+  private preventSelfDeletion(userOrganizationId: string, targetOrganizationId: string) {
+    if (userOrganizationId === targetOrganizationId) {
       throw new BadRequestException(
         'Vous ne pouvez pas supprimer votre propre organisation. ' +
         'Cela vous déconnecterait et supprimerait votre compte.'
       );
     }
-
-    const now = new Date();
-
-    // Soft delete : organisation ET tous ses users en transaction atomique
-    await this.prisma.$transaction([
-      // 1. Soft delete tous les users de l'organisation
-      this.prisma.user.updateMany({
-        where: { organizationId: id },
-        data: { deletedAt: now, isActive: false },
-      }),
-      // 2. Soft delete l'organisation
-      this.prisma.organization.update({
-        where: { id },
-        data: { deletedAt: now },
-      }),
-    ]);
-
-    return { message: 'Organisation et utilisateurs désactivés' };
   }
 
-  async restore(id: string) {
-    // Vérifier que l'organisation existe et est bien soft deleted
-    const org = await this.prisma.organization.findUnique({
+  private async findDeletedOrganization(id: string) {
+    const organization = await this.prisma.organization.findUnique({
       where: { id },
       include: { _count: { select: { users: true } } },
     });
 
-    if (!org) {
+    if (!organization) {
       throw new NotFoundException('Organisation introuvable');
     }
 
-    if (org.deletedAt === null) {
+    if (organization.deletedAt === null) {
       throw new BadRequestException('Cette organisation est déjà active');
     }
 
-    // Restauration : organisation ET tous ses users en transaction atomique
+    return organization;
+  }
+
+  private async softDeleteOrganizationWithUsers(organizationId: string) {
+    const deletedAt = new Date();
+
     await this.prisma.$transaction([
-      // 1. Restaurer tous les users de l'organisation
       this.prisma.user.updateMany({
-        where: { organizationId: id },
+        where: { organizationId },
+        data: { deletedAt, isActive: false },
+      }),
+      this.prisma.organization.update({
+        where: { id: organizationId },
+        data: { deletedAt },
+      }),
+    ]);
+  }
+
+  private async restoreOrganizationWithUsers(organizationId: string) {
+    await this.prisma.$transaction([
+      this.prisma.user.updateMany({
+        where: { organizationId },
         data: { deletedAt: null, isActive: true },
       }),
-      // 2. Restaurer l'organisation
       this.prisma.organization.update({
-        where: { id },
+        where: { id: organizationId },
         data: { deletedAt: null },
       }),
     ]);
-
-    return {
-      message: 'Organisation et utilisateurs restaurés',
-      usersRestored: org._count.users,
-    };
   }
 }

@@ -1,7 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import {
+  getRetentionCutoffDate,
+  UPCOMING_DEADLINE_WARNING_DAYS,
+} from '../common/constants/retention.constants';
 
 @Injectable()
 export class SchedulerService {
@@ -12,75 +16,69 @@ export class SchedulerService {
     private notifications: NotificationsService,
   ) {}
 
-  // Tous les jours à 8h00 : scanner les retards et échéances proches
   @Cron('0 8 * * *')
   async dailyAlertScan() {
     this.logger.log('Démarrage du scan quotidien des alertes...');
 
     const organizations = await this.prisma.organization.findMany({
-      where: { deletedAt: null }, // Exclure les organisations soft deleted
+      where: { deletedAt: null },
       select: { id: true },
     });
 
     for (const org of organizations) {
       await this.notifications.notifyOverdueActivities(org.id);
-      await this.notifications.notifyUpcomingDeadlines(org.id, 3);
+      await this.notifications.notifyUpcomingDeadlines(org.id, UPCOMING_DEADLINE_WARNING_DAYS);
     }
 
     this.logger.log(`Scan terminé pour ${organizations.length} organisation(s)`);
   }
 
-  // Tous les jours à 3h00 : nettoyer les organisations supprimées depuis plus de 90 jours
   @Cron('0 3 * * *')
   async cleanupOldDeletedOrganizations() {
     this.logger.log('Démarrage du nettoyage des organisations supprimées...');
 
-    const ninetyDaysAgo = new Date();
-    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
-
     try {
-      // 1. Compter les organisations à supprimer
-      const toDelete = await this.prisma.organization.count({
-        where: {
-          deletedAt: { lte: ninetyDaysAgo },
-          NOT: { deletedAt: null },
-        },
-      });
+      const expiredOrganizations = await this.findExpiredOrganizations();
 
-      if (toDelete === 0) {
+      if (expiredOrganizations.length === 0) {
         this.logger.log('Aucune organisation à nettoyer.');
         return;
       }
 
-      // 2. Récupérer les IDs pour supprimer les users en cascade
-      const orgIds = await this.prisma.organization.findMany({
-        where: {
-          deletedAt: { lte: ninetyDaysAgo },
-          NOT: { deletedAt: null },
-        },
-        select: { id: true, name: true },
-      });
-
-      // 3. Suppression définitive en transaction
-      await this.prisma.$transaction([
-        // D'abord supprimer tous les users des organisations concernées
-        this.prisma.user.deleteMany({
-          where: {
-            organizationId: { in: orgIds.map(o => o.id) },
-          },
-        }),
-        // Puis supprimer les organisations
-        this.prisma.organization.deleteMany({
-          where: {
-            id: { in: orgIds.map(o => o.id) },
-          },
-        }),
-      ]);
-
-      this.logger.log(`✅ ${toDelete} organisation(s) supprimée(s) définitivement (>90 jours) :`);
-      orgIds.forEach(org => this.logger.log(`   - ${org.name} (${org.id})`));
+      await this.permanentlyDeleteOrganizations(expiredOrganizations);
+      this.logDeletedOrganizations(expiredOrganizations);
     } catch (error) {
       this.logger.error('Erreur lors du nettoyage des organisations:', error);
     }
+  }
+
+  private async findExpiredOrganizations() {
+    const cutoffDate = getRetentionCutoffDate();
+
+    return this.prisma.organization.findMany({
+      where: {
+        deletedAt: { lte: cutoffDate },
+        NOT: { deletedAt: null },
+      },
+      select: { id: true, name: true },
+    });
+  }
+
+  private async permanentlyDeleteOrganizations(organizations: Array<{ id: string; name: string }>) {
+    const organizationIds = organizations.map(org => org.id);
+
+    await this.prisma.$transaction([
+      this.prisma.user.deleteMany({
+        where: { organizationId: { in: organizationIds } },
+      }),
+      this.prisma.organization.deleteMany({
+        where: { id: { in: organizationIds } },
+      }),
+    ]);
+  }
+
+  private logDeletedOrganizations(organizations: Array<{ id: string; name: string }>) {
+    this.logger.log(`✅ ${organizations.length} organisation(s) supprimée(s) définitivement :`);
+    organizations.forEach(org => this.logger.log(`   - ${org.name} (${org.id})`));
   }
 }

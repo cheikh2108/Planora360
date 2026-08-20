@@ -11,6 +11,7 @@ import { Modal } from '@/components/ui/modal';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
 import { formatDate, cn } from '@/lib/utils';
+import { calculateRetentionInfo, getProgressBarColor, SOFT_DELETE_RETENTION_DAYS } from '@/lib/retention';
 import {
   Building2, Users, RotateCcw, ArrowLeft, FolderKanban,
   Clock, AlertCircle, Search, Trash2,
@@ -93,9 +94,9 @@ export default function DeletedOrganizationsPage() {
       <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex gap-3">
         <Clock size={18} className="text-amber-600 shrink-0 mt-0.5" />
         <div className="text-sm text-slate-700">
-          <p className="font-medium text-amber-800 mb-1">Rétention de 90 jours</p>
+          <p className="font-medium text-amber-800 mb-1">Rétention de {SOFT_DELETE_RETENTION_DAYS} jours</p>
           <p className="text-slate-600">
-            Les organisations supprimées sont conservées pendant 90 jours avant suppression définitive.
+            Les organisations supprimées sont conservées pendant {SOFT_DELETE_RETENTION_DAYS} jours avant suppression définitive.
             Vous pouvez les restaurer à tout moment pendant cette période.
           </p>
         </div>
@@ -144,10 +145,9 @@ export default function DeletedOrganizationsPage() {
               </thead>
               <tbody>
                 {filtered.map(org => {
-                  const deletedDaysAgo = org.deletedAt
-                    ? Math.floor((Date.now() - new Date(org.deletedAt).getTime()) / (1000 * 60 * 60 * 24))
-                    : 0;
-                  const daysRemaining = 90 - deletedDaysAgo;
+                  if (!org.deletedAt) return null;
+                  const retention = calculateRetentionInfo(org.deletedAt);
+                  const progressColor = getProgressBarColor(retention.urgencyLevel);
 
                   return (
                     <tr key={org.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/60 transition-colors">
@@ -182,17 +182,12 @@ export default function DeletedOrganizationsPage() {
                         <div className="flex items-center gap-2">
                           <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden min-w-16">
                             <div
-                              className={cn(
-                                'h-full transition-all',
-                                daysRemaining > 60 ? 'bg-emerald-500' :
-                                daysRemaining > 30 ? 'bg-amber-500' :
-                                'bg-red-500'
-                              )}
-                              style={{ width: `${(daysRemaining / 90) * 100}%` }}
+                              className={cn('h-full transition-all', progressColor)}
+                              style={{ width: `${retention.percentageRemaining}%` }}
                             />
                           </div>
                           <span className="text-xs text-slate-500 font-medium shrink-0 tabular-nums">
-                            {daysRemaining}j
+                            {retention.daysRemaining}j
                           </span>
                         </div>
                       </td>
