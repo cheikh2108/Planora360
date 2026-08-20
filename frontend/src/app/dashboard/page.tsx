@@ -325,8 +325,8 @@ export default function DashboardPage() {
   // Guard défensif absolu
   const plans = Array.isArray(rawPlans) ? rawPlans : [];
 
-  const { data: overview, isLoading: loadingOverview } = useQuery<DashboardOverview>({
-    queryKey: ['dashboard-overview', filters.planId],
+  const { data: overview, isLoading: loadingOverview, refetch: refetchOverview } = useQuery<DashboardOverview>({
+    queryKey: ['dashboard-overview', filters.planId, filters.status],
     queryFn: async () => {
       const r = await dashboardApi.getOverview();
       const d = r.data as any;
@@ -351,13 +351,13 @@ export default function DashboardPage() {
     refetchInterval: 60_000,
   });
 
-  const { data: performance, isLoading: loadingPerf } = useQuery<{ byResponsible: PerfEntry[] }>({
-    queryKey: ['dashboard-performance', filters.planId],
+  const { data: performance, isLoading: loadingPerf, refetch: refetchPerformance } = useQuery<{ byResponsible: PerfEntry[] }>({
+    queryKey: ['dashboard-performance', filters.planId, filters.status],
     queryFn: async () => { const r = await dashboardApi.getPerformance(); return r.data; },
   });
 
-  const { data: rawActivities, isLoading: loadingActivities } = useQuery<Activity[]>({
-    queryKey: ['activities-dashboard', filters.planId, filters.status],
+  const { data: rawActivities, isLoading: loadingActivities, refetch: refetchActivities } = useQuery<Activity[]>({
+    queryKey: ['activities-dashboard', filters.planId, filters.status, filters.period],
     queryFn: async () => {
       const params: Record<string, string> = {};
       if (filters.planId) params.planId = filters.planId;
