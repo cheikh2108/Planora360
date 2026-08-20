@@ -1,5 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
+import {
+  UPCOMING_DEADLINE_MS,
+  RECENT_AUDIT_LOGS_LIMIT,
+  UPCOMING_DEADLINES_LIMIT,
+  STATUS_COMPLETED,
+  STATUS_OVERDUE,
+  STATUS_EXCLUDED_FROM_DEADLINES,
+  roundToTwoDecimals,
+  calculatePercentage,
+} from '../common/constants/dashboard.constants';
 
 @Injectable()
 export class DashboardsService {
@@ -10,11 +20,28 @@ export class DashboardsService {
     responsibleId?: string;
     status?: string;
   } = {}) {
+    const where = this.buildActivityWhereClause(organizationId, filters);
+    const data = await this.fetchOverviewData(organizationId, where);
+    const statusMap = this.buildStatusMap(data.byStatus);
+    const planned = await this.calculatePlannedBudget(organizationId, data.budgetSummary);
+
+    return {
+      activities: this.buildActivitiesOverview(data, statusMap),
+      budget: this.buildBudgetOverview(planned, data.budgetSummary),
+      upcomingDeadlines: data.upcomingDeadlines,
+      recentActivity: data.recentAuditLogs,
+    };
+  }
+
+  private buildActivityWhereClause(organizationId: string, filters: any) {
     const where: any = { organizationId, parentActivityId: null };
     if (filters.planId) where.axis = { actionPlanId: filters.planId };
     if (filters.responsibleId) where.responsibleId = filters.responsibleId;
     if (filters.status) where.status = filters.status;
+    return where;
+  }
 
+  private async fetchOverviewData(organizationId: string, where: any) {
     const [
       totalActivities,
       byStatus,
@@ -25,90 +52,112 @@ export class DashboardsService {
       recentAuditLogs,
     ] = await Promise.all([
       this.prisma.activity.count({ where }),
-
-      this.prisma.activity.groupBy({
-        by: ['status'],
-        where,
-        _count: { status: true },
-      }),
-
-      this.prisma.activity.aggregate({
-        where,
-        _avg: { completionRate: true },
-      }),
-
-      this.prisma.activity.count({
-        where: { ...where, status: 'EN_RETARD' },
-      }),
-
-      this.prisma.activity.findMany({
-        where: {
-          ...where,
-          dueDate: {
-            gte: new Date(),
-            lte: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-          },
-          status: { notIn: ['VALIDEE', 'ANNULEE', 'TERMINEE'] },
-        },
-        orderBy: { dueDate: 'asc' },
-        take: 10,
-        select: {
-          id: true, title: true, dueDate: true, status: true, priority: true,
-          responsible: { select: { firstName: true, lastName: true } },
-        },
-      }),
-
-      this.prisma.budget.aggregate({
-        where: { activity: { ...where } },
-        _sum: { planned: true, committed: true, disbursed: true, executed: true },
-      }),
-
-      this.prisma.auditLog.findMany({
-        where: { organizationId },
-        orderBy: { createdAt: 'desc' },
-        take: 5,
-        select: { action: true, entityType: true, entityId: true, createdAt: true, userId: true },
-      }),
+      this.prisma.activity.groupBy({ by: ['status'], where, _count: { status: true } }),
+      this.prisma.activity.aggregate({ where, _avg: { completionRate: true } }),
+      this.prisma.activity.count({ where: { ...where, status: STATUS_OVERDUE } }),
+      this.fetchUpcomingDeadlines(where),
+      this.fetchBudgetSummary(where),
+      this.fetchRecentAuditLogs(organizationId),
     ]);
 
-    const statusMap = byStatus.reduce((acc: any, s) => {
+    return {
+      totalActivities,
+      byStatus,
+      avgCompletion,
+      overdueActivities,
+      upcomingDeadlines,
+      budgetSummary,
+      recentAuditLogs,
+    };
+  }
+
+  private async fetchUpcomingDeadlines(where: any) {
+    return this.prisma.activity.findMany({
+      where: {
+        ...where,
+        dueDate: {
+          gte: new Date(),
+          lte: new Date(Date.now() + UPCOMING_DEADLINE_MS),
+        },
+        status: { notIn: STATUS_EXCLUDED_FROM_DEADLINES },
+      },
+      orderBy: { dueDate: 'asc' },
+      take: UPCOMING_DEADLINES_LIMIT,
+      select: {
+        id: true,
+        title: true,
+        dueDate: true,
+        status: true,
+        priority: true,
+        responsible: { select: { firstName: true, lastName: true } },
+      },
+    });
+  }
+
+  private async fetchBudgetSummary(where: any) {
+    return this.prisma.budget.aggregate({
+      where: { activity: { ...where } },
+      _sum: { planned: true, committed: true, disbursed: true, executed: true },
+    });
+  }
+
+  private async fetchRecentAuditLogs(organizationId: string) {
+    return this.prisma.auditLog.findMany({
+      where: { organizationId },
+      orderBy: { createdAt: 'desc' },
+      take: RECENT_AUDIT_LOGS_LIMIT,
+      select: { action: true, entityType: true, entityId: true, createdAt: true, userId: true },
+    });
+  }
+
+  private buildStatusMap(byStatus: any[]) {
+    return byStatus.reduce((acc: any, s) => {
       acc[s.status] = s._count.status;
       return acc;
     }, {});
+  }
 
+  private async calculatePlannedBudget(organizationId: string, budgetSummary: any): Promise<number> {
     let planned = Number(budgetSummary._sum.planned ?? 0);
-    const executed = Number(budgetSummary._sum.executed ?? 0);
 
-    // Fallback : si aucune ligne budgétaire saisie, utiliser budgetPrevisional des plans actifs
     if (planned === 0) {
       const plans = await this.prisma.actionPlan.findMany({
         where: { organizationId, status: { not: 'ARCHIVE' } },
         select: { budgetPrevisional: true },
       });
-      planned = plans.reduce((s, p) => s + Number(p.budgetPrevisional ?? 0), 0);
+      planned = plans.reduce((sum, plan) => sum + Number(plan.budgetPrevisional ?? 0), 0);
     }
 
+    return planned;
+  }
+
+  private buildActivitiesOverview(data: any, statusMap: any) {
+    const completed = STATUS_COMPLETED.reduce((sum, status) => sum + (statusMap[status] ?? 0), 0);
+
     return {
-      activities: {
-        total: totalActivities,
-        byStatus: statusMap,
-        completed: (statusMap['TERMINEE'] ?? 0) + (statusMap['VALIDEE'] ?? 0),
-        inProgress: statusMap['EN_COURS'] ?? 0,
-        overdue: overdueActivities,
-        avgCompletionRate: Math.round((avgCompletion._avg.completionRate ?? 0) * 100) / 100,
-      },
-      budget: {
-        planned,
-        committed: Number(budgetSummary._sum.committed ?? 0),
-        disbursed: Number(budgetSummary._sum.disbursed ?? 0),
-        executed,
-        availableBalance: Math.max(0, planned - Number(budgetSummary._sum.committed ?? 0)),
-        remainingToPay: Math.max(0, Number(budgetSummary._sum.committed ?? 0) - executed),
-        commitmentRate: planned > 0 ? Math.round((Number(budgetSummary._sum.committed ?? 0) / planned) * 10000) / 100 : 0,
-        executionRate: planned > 0 ? Math.round((executed / planned) * 10000) / 100 : 0,
-      },
-      upcomingDeadlines,
-      recentActivity: recentAuditLogs,
+      total: data.totalActivities,
+      byStatus: statusMap,
+      completed,
+      inProgress: statusMap['EN_COURS'] ?? 0,
+      overdue: data.overdueActivities,
+      avgCompletionRate: roundToTwoDecimals(data.avgCompletion._avg.completionRate ?? 0),
+    };
+  }
+
+  private buildBudgetOverview(planned: number, budgetSummary: any) {
+    const committed = Number(budgetSummary._sum.committed ?? 0);
+    const disbursed = Number(budgetSummary._sum.disbursed ?? 0);
+    const executed = Number(budgetSummary._sum.executed ?? 0);
+
+    return {
+      planned,
+      committed,
+      disbursed,
+      executed,
+      availableBalance: Math.max(0, planned - committed),
+      remainingToPay: Math.max(0, committed - executed),
+      commitmentRate: calculatePercentage(committed, planned),
+      executionRate: calculatePercentage(executed, planned),
     };
   }
 
@@ -146,7 +195,7 @@ export class DashboardsService {
 
     return Object.values(byResponsible).map((r: any) => ({
       ...r,
-      avgCompletion: r.total > 0 ? Math.round((r.avgCompletion / r.total) * 100) / 100 : 0,
+      avgCompletion: r.total > 0 ? roundToTwoDecimals(r.avgCompletion / r.total) : 0,
     }));
   }
 

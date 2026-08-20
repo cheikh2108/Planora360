@@ -11,6 +11,7 @@ export declare class OrganizationsController {
     create(dto: CreateOrganizationDto): Promise<{
         id: string;
         createdAt: Date;
+        deletedAt: Date | null;
         name: string;
         logoUrl: string | null;
         brandColor: string | null;
@@ -27,6 +28,7 @@ export declare class OrganizationsController {
     } & {
         id: string;
         createdAt: Date;
+        deletedAt: Date | null;
         name: string;
         logoUrl: string | null;
         brandColor: string | null;
@@ -47,6 +49,24 @@ export declare class OrganizationsController {
     } & {
         id: string;
         createdAt: Date;
+        deletedAt: Date | null;
+        name: string;
+        logoUrl: string | null;
+        brandColor: string | null;
+        subscriptionPlan: import(".prisma/client").$Enums.SubscriptionPlan;
+        status: import(".prisma/client").$Enums.OrganizationStatus;
+        rejectionReason: string | null;
+        trialEndsAt: Date | null;
+    })[]>;
+    findDeleted(): import(".prisma/client").Prisma.PrismaPromise<({
+        _count: {
+            users: number;
+            actionPlans: number;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        deletedAt: Date | null;
         name: string;
         logoUrl: string | null;
         brandColor: string | null;
@@ -63,6 +83,7 @@ export declare class OrganizationsController {
     } & {
         id: string;
         createdAt: Date;
+        deletedAt: Date | null;
         name: string;
         logoUrl: string | null;
         brandColor: string | null;
@@ -74,6 +95,7 @@ export declare class OrganizationsController {
     update(id: string, dto: UpdateOrganizationDto): Promise<{
         id: string;
         createdAt: Date;
+        deletedAt: Date | null;
         name: string;
         logoUrl: string | null;
         brandColor: string | null;
@@ -90,15 +112,11 @@ export declare class OrganizationsController {
     }): Promise<{
         message: string;
     }>;
-    remove(id: string): Promise<{
-        id: string;
-        createdAt: Date;
-        name: string;
-        logoUrl: string | null;
-        brandColor: string | null;
-        subscriptionPlan: import(".prisma/client").$Enums.SubscriptionPlan;
-        status: import(".prisma/client").$Enums.OrganizationStatus;
-        rejectionReason: string | null;
-        trialEndsAt: Date | null;
+    remove(id: string, user: any): Promise<{
+        message: string;
+    }>;
+    restore(id: string): Promise<{
+        message: string;
+        usersRestored: number;
     }>;
 }

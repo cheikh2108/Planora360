@@ -6,4 +6,8 @@ export declare class SchedulerService {
     private readonly logger;
     constructor(prisma: PrismaService, notifications: NotificationsService);
     dailyAlertScan(): Promise<void>;
+    cleanupOldDeletedOrganizations(): Promise<void>;
+    private findExpiredOrganizations;
+    private permanentlyDeleteOrganizations;
+    private logDeletedOrganizations;
 }

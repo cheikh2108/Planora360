@@ -17,6 +17,7 @@ export declare class JwtStrategy extends JwtStrategy_base {
         organization: {
             id: string;
             createdAt: Date;
+            deletedAt: Date | null;
             name: string;
             logoUrl: string | null;
             brandColor: string | null;
@@ -46,6 +47,7 @@ export declare class JwtStrategy extends JwtStrategy_base {
         lastLoginAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
+        deletedAt: Date | null;
     }>;
 }
 export {};

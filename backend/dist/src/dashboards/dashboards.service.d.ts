@@ -8,11 +8,11 @@ export declare class DashboardsService {
         status?: string;
     }): Promise<{
         activities: {
-            total: number;
+            total: any;
             byStatus: any;
             completed: any;
             inProgress: any;
-            overdue: number;
+            overdue: any;
             avgCompletionRate: number;
         };
         budget: {
@@ -44,6 +44,15 @@ export declare class DashboardsService {
             userId: string;
         }[];
     }>;
+    private buildActivityWhereClause;
+    private fetchOverviewData;
+    private fetchUpcomingDeadlines;
+    private fetchBudgetSummary;
+    private fetchRecentAuditLogs;
+    private buildStatusMap;
+    private calculatePlannedBudget;
+    private buildActivitiesOverview;
+    private buildBudgetOverview;
     getPerformanceByResponsible(organizationId: string, planId?: string): Promise<any[]>;
     getActivityProgress(organizationId: string, planId: string): Promise<({
         axes: ({

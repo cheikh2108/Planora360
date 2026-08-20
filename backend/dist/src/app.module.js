@@ -44,7 +44,7 @@ exports.AppModule = AppModule = __decorate([
             schedule_1.ScheduleModule.forRoot(),
             throttler_1.ThrottlerModule.forRoot([{
                     ttl: 60000,
-                    limit: 10,
+                    limit: 100,
                 }]),
             prisma_module_1.PrismaModule,
             audit_module_1.AuditModule,

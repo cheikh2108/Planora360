@@ -4,26 +4,14 @@ import { UpdateUserDto } from './dto/update-user.dto';
 export declare class UsersService {
     private prisma;
     constructor(prisma: PrismaService);
-    create(dto: CreateUserDto, actorOrganizationId: string, actorRole: string): Promise<{
-        role: {
-            id: string;
-            organizationId: string | null;
-            name: string;
-            permissions: import("@prisma/client/runtime/client").JsonValue;
-        };
-        id: string;
-        email: string;
-        organizationId: string;
-        roleId: string;
-        firstName: string;
-        lastName: string;
-        isTwoFactorEnabled: boolean;
-        isActive: boolean;
-        mustChangePassword: boolean;
-        lastLoginAt: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
-    }>;
+    create(dto: CreateUserDto, actorOrganizationId: string, actorRole: string): Promise<any>;
+    private resolveOrganizationId;
+    private validateEmailUniqueness;
+    private validateRole;
+    private validateUserLimit;
+    private createUser;
+    private hashPassword;
+    private sanitizeUserResponse;
     findUsersForAssignment(organizationId: string): Promise<{
         id: string;
         email: string;
@@ -54,6 +42,7 @@ export declare class UsersService {
             lastLoginAt: Date | null;
             createdAt: Date;
             updatedAt: Date;
+            deletedAt: Date | null;
         }[];
         total: number;
         page: number;
@@ -78,27 +67,9 @@ export declare class UsersService {
         lastLoginAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
+        deletedAt: Date | null;
     }>;
-    update(id: string, dto: UpdateUserDto, organizationId: string): Promise<{
-        role: {
-            id: string;
-            organizationId: string | null;
-            name: string;
-            permissions: import("@prisma/client/runtime/client").JsonValue;
-        };
-        id: string;
-        email: string;
-        organizationId: string;
-        roleId: string;
-        firstName: string;
-        lastName: string;
-        isTwoFactorEnabled: boolean;
-        isActive: boolean;
-        mustChangePassword: boolean;
-        lastLoginAt: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
-    }>;
+    update(id: string, dto: UpdateUserDto, organizationId: string): Promise<any>;
     remove(id: string, organizationId: string): Promise<void>;
     findRoles(organizationId?: string, callerRole?: string): import(".prisma/client").Prisma.PrismaPromise<{
         id: string;

@@ -38,6 +38,9 @@ let OrganizationsController = class OrganizationsController {
     findPending() {
         return this.organizationsService.findPending();
     }
+    findDeleted() {
+        return this.organizationsService.findDeleted();
+    }
     findOne(id) {
         return this.organizationsService.findOne(id);
     }
@@ -50,8 +53,11 @@ let OrganizationsController = class OrganizationsController {
     reject(id, dto) {
         return this.organizationsService.reject(id, dto.reason);
     }
-    remove(id) {
-        return this.organizationsService.remove(id);
+    remove(id, user) {
+        return this.organizationsService.remove(id, user?.id);
+    }
+    restore(id) {
+        return this.organizationsService.restore(id);
     }
 };
 exports.OrganizationsController = OrganizationsController;
@@ -86,6 +92,13 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], OrganizationsController.prototype, "findPending", null);
+__decorate([
+    (0, common_1.Get)('deleted'),
+    (0, roles_decorator_1.Roles)('Super administrateur'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], OrganizationsController.prototype, "findDeleted", null);
 __decorate([
     (0, common_1.Get)(':id'),
     (0, roles_decorator_1.Roles)('Super administrateur'),
@@ -127,10 +140,20 @@ __decorate([
     (0, roles_decorator_1.Roles)('Super administrateur'),
     (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], OrganizationsController.prototype, "remove", null);
+__decorate([
+    (0, common_1.Patch)(':id/restore'),
+    (0, roles_decorator_1.Roles)('Super administrateur'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
-], OrganizationsController.prototype, "remove", null);
+], OrganizationsController.prototype, "restore", null);
 exports.OrganizationsController = OrganizationsController = __decorate([
     (0, common_1.Controller)('organizations'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),

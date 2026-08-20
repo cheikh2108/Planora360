@@ -56,10 +56,12 @@ let OrganizationsService = class OrganizationsService {
         this.notifications = notifications;
     }
     async create(dto) {
-        const existing = await this.prisma.organization.findFirst({ where: { name: dto.name } });
+        const existing = await this.prisma.organization.findFirst({ where: { name: dto.name, deletedAt: null } });
         if (existing)
             throw new common_1.ConflictException('Une organisation avec ce nom existe déjà');
-        const emailTaken = await this.prisma.user.findUnique({ where: { email: dto.adminEmail } });
+        const emailTaken = await this.prisma.user.findFirst({
+            where: { email: dto.adminEmail, deletedAt: null }
+        });
         if (emailTaken)
             throw new common_1.ConflictException('Cet email est déjà utilisé');
         const isTrialPlan = !dto.subscriptionPlan || dto.subscriptionPlan === 'DECOUVERTE';
@@ -103,7 +105,7 @@ let OrganizationsService = class OrganizationsService {
     }
     findPending() {
         return this.prisma.organization.findMany({
-            where: { status: 'PENDING' },
+            where: { status: 'PENDING', deletedAt: null },
             orderBy: { createdAt: 'desc' },
             include: {
                 _count: { select: { users: true } },
@@ -113,9 +115,18 @@ let OrganizationsService = class OrganizationsService {
     }
     findAll() {
         return this.prisma.organization.findMany({
-            where: { status: 'ACTIVE' },
+            where: { status: 'ACTIVE', deletedAt: null },
             orderBy: { createdAt: 'desc' },
             include: { _count: { select: { users: true, actionPlans: true } } },
+        });
+    }
+    findDeleted() {
+        return this.prisma.organization.findMany({
+            where: { NOT: { deletedAt: null } },
+            orderBy: { deletedAt: 'desc' },
+            include: {
+                _count: { select: { users: true, actionPlans: true } },
+            },
         });
     }
     async approve(id) {
@@ -143,8 +154,8 @@ let OrganizationsService = class OrganizationsService {
         return { message: 'Organisation rejetée' };
     }
     async findOne(id) {
-        const org = await this.prisma.organization.findUnique({
-            where: { id },
+        const org = await this.prisma.organization.findFirst({
+            where: { id, deletedAt: null },
             include: { _count: { select: { actionPlans: true, users: true } } },
         });
         if (!org)
@@ -165,9 +176,80 @@ let OrganizationsService = class OrganizationsService {
             select: { id: true, brandColor: true },
         });
     }
-    async remove(id) {
+    async remove(id, currentUserId) {
         await this.findOne(id);
-        return this.prisma.organization.delete({ where: { id } });
+        this.validateCurrentUserId(currentUserId);
+        const currentUser = await this.getCurrentUser(currentUserId);
+        this.preventSelfDeletion(currentUser.organizationId, id);
+        await this.softDeleteOrganizationWithUsers(id);
+        return { message: 'Organisation et utilisateurs désactivés' };
+    }
+    async restore(id) {
+        const organization = await this.findDeletedOrganization(id);
+        await this.restoreOrganizationWithUsers(id);
+        return {
+            message: 'Organisation et utilisateurs restaurés',
+            usersRestored: organization._count.users,
+        };
+    }
+    validateCurrentUserId(currentUserId) {
+        if (!currentUserId) {
+            throw new common_1.BadRequestException('Impossible d\'identifier l\'utilisateur actuel.');
+        }
+    }
+    async getCurrentUser(userId) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId, deletedAt: null },
+            select: { id: true, organizationId: true, role: { select: { name: true } } },
+        });
+        if (!user) {
+            throw new common_1.BadRequestException('Utilisateur actuel introuvable ou inactif.');
+        }
+        return user;
+    }
+    preventSelfDeletion(userOrganizationId, targetOrganizationId) {
+        if (userOrganizationId === targetOrganizationId) {
+            throw new common_1.BadRequestException('Vous ne pouvez pas supprimer votre propre organisation. ' +
+                'Cela vous déconnecterait et supprimerait votre compte.');
+        }
+    }
+    async findDeletedOrganization(id) {
+        const organization = await this.prisma.organization.findUnique({
+            where: { id },
+            include: { _count: { select: { users: true } } },
+        });
+        if (!organization) {
+            throw new common_1.NotFoundException('Organisation introuvable');
+        }
+        if (organization.deletedAt === null) {
+            throw new common_1.BadRequestException('Cette organisation est déjà active');
+        }
+        return organization;
+    }
+    async softDeleteOrganizationWithUsers(organizationId) {
+        const deletedAt = new Date();
+        await this.prisma.$transaction([
+            this.prisma.user.updateMany({
+                where: { organizationId },
+                data: { deletedAt, isActive: false },
+            }),
+            this.prisma.organization.update({
+                where: { id: organizationId },
+                data: { deletedAt },
+            }),
+        ]);
+    }
+    async restoreOrganizationWithUsers(organizationId) {
+        await this.prisma.$transaction([
+            this.prisma.user.updateMany({
+                where: { organizationId },
+                data: { deletedAt: null, isActive: true },
+            }),
+            this.prisma.organization.update({
+                where: { id: organizationId },
+                data: { deletedAt: null },
+            }),
+        ]);
     }
 };
 exports.OrganizationsService = OrganizationsService;

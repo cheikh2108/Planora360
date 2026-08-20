@@ -47,32 +47,50 @@ const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../common/prisma/prisma.service");
 const bcrypt = __importStar(require("bcryptjs"));
 const subscription_guard_1 = require("../common/guards/subscription.guard");
+const auth_constants_1 = require("../common/constants/auth.constants");
 let UsersService = class UsersService {
     prisma;
     constructor(prisma) {
         this.prisma = prisma;
     }
     async create(dto, actorOrganizationId, actorRole) {
-        const orgId = actorRole === 'Super administrateur' && dto.organizationId
-            ? dto.organizationId
+        const orgId = this.resolveOrganizationId(dto.organizationId, actorOrganizationId, actorRole);
+        await this.validateEmailUniqueness(dto.email);
+        const role = await this.validateRole(dto.roleId, actorRole);
+        await this.validateUserLimit(orgId);
+        const user = await this.createUser(dto, orgId);
+        return this.sanitizeUserResponse(user);
+    }
+    resolveOrganizationId(dtoOrganizationId, actorOrganizationId, actorRole) {
+        return actorRole === auth_constants_1.ROLE_SUPER_ADMIN && dtoOrganizationId
+            ? dtoOrganizationId
             : actorOrganizationId;
-        const existing = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    }
+    async validateEmailUniqueness(email) {
+        const existing = await this.prisma.user.findFirst({
+            where: { email, deletedAt: null },
+        });
         if (existing)
             throw new common_1.ConflictException('Cet email est déjà utilisé');
-        const role = await this.prisma.role.findUnique({ where: { id: dto.roleId } });
+    }
+    async validateRole(roleId, actorRole) {
+        const role = await this.prisma.role.findUnique({ where: { id: roleId } });
         if (!role)
             throw new common_1.NotFoundException('Rôle introuvable');
-        if (actorRole !== 'Super administrateur' && role.name === 'Super administrateur') {
+        if (actorRole !== auth_constants_1.ROLE_SUPER_ADMIN && role.name === auth_constants_1.ROLE_SUPER_ADMIN) {
             throw new common_1.ForbiddenException('Vous ne pouvez pas créer un super admin');
         }
+        return role;
+    }
+    async validateUserLimit(organizationId) {
         const organization = await this.prisma.organization.findUnique({
-            where: { id: orgId },
+            where: { id: organizationId },
             select: { subscriptionPlan: true },
         });
         if (!organization)
             throw new common_1.NotFoundException('Organisation introuvable');
         const currentUserCount = await this.prisma.user.count({
-            where: { organizationId: orgId },
+            where: { organizationId, deletedAt: null },
         });
         const planLimit = subscription_guard_1.PLAN_LIMITS[organization.subscriptionPlan];
         if (currentUserCount >= planLimit.maxUsers) {
@@ -80,19 +98,26 @@ let UsersService = class UsersService {
                 `Maximum autorisé : ${planLimit.maxUsers} utilisateurs. ` +
                 `Passez à une formule supérieure pour ajouter plus d'utilisateurs.`);
         }
-        const passwordHash = await bcrypt.hash(dto.password, 12);
-        const user = await this.prisma.user.create({
+    }
+    async createUser(dto, organizationId) {
+        const passwordHash = await this.hashPassword(dto.password);
+        return this.prisma.user.create({
             data: {
                 email: dto.email,
                 firstName: dto.firstName,
                 lastName: dto.lastName,
                 passwordHash,
-                organizationId: orgId,
+                organizationId,
                 roleId: dto.roleId,
                 mustChangePassword: true,
             },
             include: { role: true },
         });
+    }
+    async hashPassword(password) {
+        return bcrypt.hash(password, auth_constants_1.BCRYPT_SALT_ROUNDS);
+    }
+    sanitizeUserResponse(user) {
         const { passwordHash: _, twoFactorSecret: __, ...safe } = user;
         return safe;
     }
@@ -101,6 +126,7 @@ let UsersService = class UsersService {
             where: {
                 organizationId,
                 isActive: true,
+                deletedAt: null,
             },
             select: {
                 id: true,
@@ -121,7 +147,7 @@ let UsersService = class UsersService {
         });
     }
     async findAll(organizationId, page = 1, limit = 20) {
-        const where = { organizationId };
+        const where = { organizationId, deletedAt: null };
         const [users, total] = await Promise.all([
             this.prisma.user.findMany({
                 where,
@@ -141,7 +167,7 @@ let UsersService = class UsersService {
     }
     async findOne(id, organizationId) {
         const user = await this.prisma.user.findFirst({
-            where: { id, organizationId },
+            where: { id, organizationId, deletedAt: null },
             include: { role: true },
         });
         if (!user)
@@ -153,7 +179,7 @@ let UsersService = class UsersService {
         await this.findOne(id, organizationId);
         const data = { ...dto };
         if (dto.password) {
-            data.passwordHash = await bcrypt.hash(dto.password, 12);
+            data.passwordHash = await this.hashPassword(dto.password);
             delete data.password;
         }
         const updated = await this.prisma.user.update({
@@ -161,21 +187,23 @@ let UsersService = class UsersService {
             data,
             include: { role: true },
         });
-        const { passwordHash, twoFactorSecret, ...safe } = updated;
-        return safe;
+        return this.sanitizeUserResponse(updated);
     }
     async remove(id, organizationId) {
         await this.findOne(id, organizationId);
-        await this.prisma.user.delete({ where: { id } });
+        await this.prisma.user.update({
+            where: { id },
+            data: { deletedAt: new Date(), isActive: false },
+        });
     }
     findRoles(organizationId, callerRole) {
-        const isSuperAdmin = callerRole === 'Super administrateur';
+        const isSuperAdmin = callerRole === auth_constants_1.ROLE_SUPER_ADMIN;
         return this.prisma.role.findMany({
             where: {
                 ...(organizationId
                     ? { OR: [{ organizationId }, { organizationId: null }] }
                     : {}),
-                ...(isSuperAdmin ? {} : { NOT: { name: 'Super administrateur' } }),
+                ...(isSuperAdmin ? {} : { NOT: { name: auth_constants_1.ROLE_SUPER_ADMIN } }),
             },
             orderBy: [{ organizationId: 'asc' }, { name: 'asc' }],
         });

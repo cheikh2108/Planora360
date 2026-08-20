@@ -12,12 +12,25 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DashboardsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../common/prisma/prisma.service");
+const dashboard_constants_1 = require("../common/constants/dashboard.constants");
 let DashboardsService = class DashboardsService {
     prisma;
     constructor(prisma) {
         this.prisma = prisma;
     }
     async getOverview(organizationId, filters = {}) {
+        const where = this.buildActivityWhereClause(organizationId, filters);
+        const data = await this.fetchOverviewData(organizationId, where);
+        const statusMap = this.buildStatusMap(data.byStatus);
+        const planned = await this.calculatePlannedBudget(organizationId, data.budgetSummary);
+        return {
+            activities: this.buildActivitiesOverview(data, statusMap),
+            budget: this.buildBudgetOverview(planned, data.budgetSummary),
+            upcomingDeadlines: data.upcomingDeadlines,
+            recentActivity: data.recentAuditLogs,
+        };
+    }
+    buildActivityWhereClause(organizationId, filters) {
         const where = { organizationId, parentActivityId: null };
         if (filters.planId)
             where.axis = { actionPlanId: filters.planId };
@@ -25,81 +38,105 @@ let DashboardsService = class DashboardsService {
             where.responsibleId = filters.responsibleId;
         if (filters.status)
             where.status = filters.status;
+        return where;
+    }
+    async fetchOverviewData(organizationId, where) {
         const [totalActivities, byStatus, avgCompletion, overdueActivities, upcomingDeadlines, budgetSummary, recentAuditLogs,] = await Promise.all([
             this.prisma.activity.count({ where }),
-            this.prisma.activity.groupBy({
-                by: ['status'],
-                where,
-                _count: { status: true },
-            }),
-            this.prisma.activity.aggregate({
-                where,
-                _avg: { completionRate: true },
-            }),
-            this.prisma.activity.count({
-                where: { ...where, status: 'EN_RETARD' },
-            }),
-            this.prisma.activity.findMany({
-                where: {
-                    ...where,
-                    dueDate: {
-                        gte: new Date(),
-                        lte: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-                    },
-                    status: { notIn: ['VALIDEE', 'ANNULEE', 'TERMINEE'] },
-                },
-                orderBy: { dueDate: 'asc' },
-                take: 10,
-                select: {
-                    id: true, title: true, dueDate: true, status: true, priority: true,
-                    responsible: { select: { firstName: true, lastName: true } },
-                },
-            }),
-            this.prisma.budget.aggregate({
-                where: { activity: { ...where } },
-                _sum: { planned: true, committed: true, disbursed: true, executed: true },
-            }),
-            this.prisma.auditLog.findMany({
-                where: { organizationId },
-                orderBy: { createdAt: 'desc' },
-                take: 5,
-                select: { action: true, entityType: true, entityId: true, createdAt: true, userId: true },
-            }),
+            this.prisma.activity.groupBy({ by: ['status'], where, _count: { status: true } }),
+            this.prisma.activity.aggregate({ where, _avg: { completionRate: true } }),
+            this.prisma.activity.count({ where: { ...where, status: dashboard_constants_1.STATUS_OVERDUE } }),
+            this.fetchUpcomingDeadlines(where),
+            this.fetchBudgetSummary(where),
+            this.fetchRecentAuditLogs(organizationId),
         ]);
-        const statusMap = byStatus.reduce((acc, s) => {
+        return {
+            totalActivities,
+            byStatus,
+            avgCompletion,
+            overdueActivities,
+            upcomingDeadlines,
+            budgetSummary,
+            recentAuditLogs,
+        };
+    }
+    async fetchUpcomingDeadlines(where) {
+        return this.prisma.activity.findMany({
+            where: {
+                ...where,
+                dueDate: {
+                    gte: new Date(),
+                    lte: new Date(Date.now() + dashboard_constants_1.UPCOMING_DEADLINE_MS),
+                },
+                status: { notIn: dashboard_constants_1.STATUS_EXCLUDED_FROM_DEADLINES },
+            },
+            orderBy: { dueDate: 'asc' },
+            take: dashboard_constants_1.UPCOMING_DEADLINES_LIMIT,
+            select: {
+                id: true,
+                title: true,
+                dueDate: true,
+                status: true,
+                priority: true,
+                responsible: { select: { firstName: true, lastName: true } },
+            },
+        });
+    }
+    async fetchBudgetSummary(where) {
+        return this.prisma.budget.aggregate({
+            where: { activity: { ...where } },
+            _sum: { planned: true, committed: true, disbursed: true, executed: true },
+        });
+    }
+    async fetchRecentAuditLogs(organizationId) {
+        return this.prisma.auditLog.findMany({
+            where: { organizationId },
+            orderBy: { createdAt: 'desc' },
+            take: dashboard_constants_1.RECENT_AUDIT_LOGS_LIMIT,
+            select: { action: true, entityType: true, entityId: true, createdAt: true, userId: true },
+        });
+    }
+    buildStatusMap(byStatus) {
+        return byStatus.reduce((acc, s) => {
             acc[s.status] = s._count.status;
             return acc;
         }, {});
+    }
+    async calculatePlannedBudget(organizationId, budgetSummary) {
         let planned = Number(budgetSummary._sum.planned ?? 0);
-        const executed = Number(budgetSummary._sum.executed ?? 0);
         if (planned === 0) {
             const plans = await this.prisma.actionPlan.findMany({
                 where: { organizationId, status: { not: 'ARCHIVE' } },
                 select: { budgetPrevisional: true },
             });
-            planned = plans.reduce((s, p) => s + Number(p.budgetPrevisional ?? 0), 0);
+            planned = plans.reduce((sum, plan) => sum + Number(plan.budgetPrevisional ?? 0), 0);
         }
+        return planned;
+    }
+    buildActivitiesOverview(data, statusMap) {
+        const completed = dashboard_constants_1.STATUS_COMPLETED.reduce((sum, status) => sum + (statusMap[status] ?? 0), 0);
         return {
-            activities: {
-                total: totalActivities,
-                byStatus: statusMap,
-                completed: (statusMap['TERMINEE'] ?? 0) + (statusMap['VALIDEE'] ?? 0),
-                inProgress: statusMap['EN_COURS'] ?? 0,
-                overdue: overdueActivities,
-                avgCompletionRate: Math.round((avgCompletion._avg.completionRate ?? 0) * 100) / 100,
-            },
-            budget: {
-                planned,
-                committed: Number(budgetSummary._sum.committed ?? 0),
-                disbursed: Number(budgetSummary._sum.disbursed ?? 0),
-                executed,
-                availableBalance: Math.max(0, planned - Number(budgetSummary._sum.committed ?? 0)),
-                remainingToPay: Math.max(0, Number(budgetSummary._sum.committed ?? 0) - executed),
-                commitmentRate: planned > 0 ? Math.round((Number(budgetSummary._sum.committed ?? 0) / planned) * 10000) / 100 : 0,
-                executionRate: planned > 0 ? Math.round((executed / planned) * 10000) / 100 : 0,
-            },
-            upcomingDeadlines,
-            recentActivity: recentAuditLogs,
+            total: data.totalActivities,
+            byStatus: statusMap,
+            completed,
+            inProgress: statusMap['EN_COURS'] ?? 0,
+            overdue: data.overdueActivities,
+            avgCompletionRate: (0, dashboard_constants_1.roundToTwoDecimals)(data.avgCompletion._avg.completionRate ?? 0),
+        };
+    }
+    buildBudgetOverview(planned, budgetSummary) {
+        const committed = Number(budgetSummary._sum.committed ?? 0);
+        const disbursed = Number(budgetSummary._sum.disbursed ?? 0);
+        const executed = Number(budgetSummary._sum.executed ?? 0);
+        return {
+            planned,
+            committed,
+            disbursed,
+            executed,
+            availableBalance: Math.max(0, planned - committed),
+            remainingToPay: Math.max(0, committed - executed),
+            commitmentRate: (0, dashboard_constants_1.calculatePercentage)(committed, planned),
+            executionRate: (0, dashboard_constants_1.calculatePercentage)(executed, planned),
         };
     }
     async getPerformanceByResponsible(organizationId, planId) {
@@ -136,7 +173,7 @@ let DashboardsService = class DashboardsService {
         }
         return Object.values(byResponsible).map((r) => ({
             ...r,
-            avgCompletion: r.total > 0 ? Math.round((r.avgCompletion / r.total) * 100) / 100 : 0,
+            avgCompletion: r.total > 0 ? (0, dashboard_constants_1.roundToTwoDecimals)(r.avgCompletion / r.total) : 0,
         }));
     }
     async getActivityProgress(organizationId, planId) {

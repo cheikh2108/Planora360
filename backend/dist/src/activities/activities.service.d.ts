@@ -6,6 +6,12 @@ export declare class ActivitiesService {
     private prisma;
     constructor(prisma: PrismaService);
     create(dto: CreateActivityDto, organizationId: string, currentUserId: string): Promise<any>;
+    private validateAxis;
+    private validateParentActivity;
+    private validateResponsible;
+    private createActivity;
+    private addCollaborators;
+    private findActivityById;
     findAll(organizationId: string, planId?: string, page?: number, limit?: number): Promise<{
         data: ({
             _count: {

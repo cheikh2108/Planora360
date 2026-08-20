@@ -15,6 +15,7 @@ const common_1 = require("@nestjs/common");
 const schedule_1 = require("@nestjs/schedule");
 const prisma_service_1 = require("../common/prisma/prisma.service");
 const notifications_service_1 = require("../notifications/notifications.service");
+const retention_constants_1 = require("../common/constants/retention.constants");
 let SchedulerService = SchedulerService_1 = class SchedulerService {
     prisma;
     notifications;
@@ -26,13 +27,54 @@ let SchedulerService = SchedulerService_1 = class SchedulerService {
     async dailyAlertScan() {
         this.logger.log('Démarrage du scan quotidien des alertes...');
         const organizations = await this.prisma.organization.findMany({
+            where: { deletedAt: null },
             select: { id: true },
         });
         for (const org of organizations) {
             await this.notifications.notifyOverdueActivities(org.id);
-            await this.notifications.notifyUpcomingDeadlines(org.id, 3);
+            await this.notifications.notifyUpcomingDeadlines(org.id, retention_constants_1.UPCOMING_DEADLINE_WARNING_DAYS);
         }
         this.logger.log(`Scan terminé pour ${organizations.length} organisation(s)`);
+    }
+    async cleanupOldDeletedOrganizations() {
+        this.logger.log('Démarrage du nettoyage des organisations supprimées...');
+        try {
+            const expiredOrganizations = await this.findExpiredOrganizations();
+            if (expiredOrganizations.length === 0) {
+                this.logger.log('Aucune organisation à nettoyer.');
+                return;
+            }
+            await this.permanentlyDeleteOrganizations(expiredOrganizations);
+            this.logDeletedOrganizations(expiredOrganizations);
+        }
+        catch (error) {
+            this.logger.error('Erreur lors du nettoyage des organisations:', error);
+        }
+    }
+    async findExpiredOrganizations() {
+        const cutoffDate = (0, retention_constants_1.getRetentionCutoffDate)();
+        return this.prisma.organization.findMany({
+            where: {
+                deletedAt: { lte: cutoffDate },
+                NOT: { deletedAt: null },
+            },
+            select: { id: true, name: true },
+        });
+    }
+    async permanentlyDeleteOrganizations(organizations) {
+        const organizationIds = organizations.map(org => org.id);
+        await this.prisma.$transaction([
+            this.prisma.user.deleteMany({
+                where: { organizationId: { in: organizationIds } },
+            }),
+            this.prisma.organization.deleteMany({
+                where: { id: { in: organizationIds } },
+            }),
+        ]);
+    }
+    logDeletedOrganizations(organizations) {
+        this.logger.log(`✅ ${organizations.length} organisation(s) supprimée(s) définitivement :`);
+        organizations.forEach(org => this.logger.log(`   - ${org.name} (${org.id})`));
     }
 };
 exports.SchedulerService = SchedulerService;
@@ -42,6 +84,12 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], SchedulerService.prototype, "dailyAlertScan", null);
+__decorate([
+    (0, schedule_1.Cron)('0 3 * * *'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], SchedulerService.prototype, "cleanupOldDeletedOrganizations", null);
 exports.SchedulerService = SchedulerService = SchedulerService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,

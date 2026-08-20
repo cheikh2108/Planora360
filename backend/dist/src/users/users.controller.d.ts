@@ -20,26 +20,7 @@ export declare class UsersController {
             name: string;
         };
     }[]>;
-    create(dto: CreateUserDto, user: any): Promise<{
-        role: {
-            id: string;
-            organizationId: string | null;
-            name: string;
-            permissions: import("@prisma/client/runtime/client").JsonValue;
-        };
-        id: string;
-        email: string;
-        organizationId: string;
-        roleId: string;
-        firstName: string;
-        lastName: string;
-        isTwoFactorEnabled: boolean;
-        isActive: boolean;
-        mustChangePassword: boolean;
-        lastLoginAt: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
-    }>;
+    create(dto: CreateUserDto, user: any): Promise<any>;
     findAll(user: any, page?: string, limit?: string): Promise<{
         data: {
             role: {
@@ -60,6 +41,7 @@ export declare class UsersController {
             lastLoginAt: Date | null;
             createdAt: Date;
             updatedAt: Date;
+            deletedAt: Date | null;
         }[];
         total: number;
         page: number;
@@ -84,26 +66,8 @@ export declare class UsersController {
         lastLoginAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
+        deletedAt: Date | null;
     }>;
-    update(id: string, dto: UpdateUserDto, user: any): Promise<{
-        role: {
-            id: string;
-            organizationId: string | null;
-            name: string;
-            permissions: import("@prisma/client/runtime/client").JsonValue;
-        };
-        id: string;
-        email: string;
-        organizationId: string;
-        roleId: string;
-        firstName: string;
-        lastName: string;
-        isTwoFactorEnabled: boolean;
-        isActive: boolean;
-        mustChangePassword: boolean;
-        lastLoginAt: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
-    }>;
+    update(id: string, dto: UpdateUserDto, user: any): Promise<any>;
     remove(id: string, user: any): Promise<void>;
 }

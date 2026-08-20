@@ -39,28 +39,49 @@ export class ActivitiesService {
   constructor(private prisma: PrismaService) {}
 
   async create(dto: CreateActivityDto, organizationId: string, currentUserId: string) {
+    await this.validateAxis(dto.axisId, organizationId);
+    await this.validateParentActivity(dto.parentActivityId, organizationId);
+    await this.validateResponsible(dto.responsibleId, organizationId);
+
+    const activity = await this.createActivity(dto, organizationId, currentUserId);
+
+    if (dto.collaboratorIds?.length) {
+      await this.addCollaborators(activity.id, dto.collaboratorIds);
+      return this.findActivityById(activity.id);
+    }
+
+    return activity;
+  }
+
+  private async validateAxis(axisId: string, organizationId: string) {
     const axis = await this.prisma.axis.findFirst({
-      where: { id: dto.axisId, actionPlan: { organizationId } },
+      where: { id: axisId, actionPlan: { organizationId } },
     });
     if (!axis) throw new NotFoundException('Axe introuvable');
+  }
 
-    if (dto.parentActivityId) {
-      const parent = await this.prisma.activity.findFirst({
-        where: { id: dto.parentActivityId, organizationId },
-      });
-      if (!parent) throw new NotFoundException('Activité parente introuvable');
-    }
+  private async validateParentActivity(parentActivityId: string | undefined, organizationId: string) {
+    if (!parentActivityId) return;
 
-    if (dto.responsibleId) {
-      const responsible = await this.prisma.user.findFirst({
-        where: { id: dto.responsibleId, organizationId },
-      });
-      if (!responsible) throw new NotFoundException('Responsable introuvable');
-    }
+    const parent = await this.prisma.activity.findFirst({
+      where: { id: parentActivityId, organizationId },
+    });
+    if (!parent) throw new NotFoundException('Activité parente introuvable');
+  }
 
+  private async validateResponsible(responsibleId: string | undefined, organizationId: string) {
+    if (!responsibleId) return;
+
+    const responsible = await this.prisma.user.findFirst({
+      where: { id: responsibleId, organizationId },
+    });
+    if (!responsible) throw new NotFoundException('Responsable introuvable');
+  }
+
+  private async createActivity(dto: CreateActivityDto, organizationId: string, currentUserId: string) {
     const { collaboratorIds, responsibleId, startDate, dueDate, ...rest } = dto;
 
-    const activity = await this.prisma.activity.create({
+    return this.prisma.activity.create({
       data: {
         ...rest,
         organizationId,
@@ -70,16 +91,20 @@ export class ActivitiesService {
       },
       include: ACTIVITY_INCLUDE,
     });
+  }
 
-    if (collaboratorIds?.length) {
-      await this.prisma.activityCollaborator.createMany({
-        data: collaboratorIds.map((userId: string) => ({ activityId: activity.id, userId })),
-        skipDuplicates: true,
-      });
-      return this.prisma.activity.findFirst({ where: { id: activity.id }, include: ACTIVITY_INCLUDE }) as any;
-    }
+  private async addCollaborators(activityId: string, collaboratorIds: string[]) {
+    await this.prisma.activityCollaborator.createMany({
+      data: collaboratorIds.map((userId) => ({ activityId, userId })),
+      skipDuplicates: true,
+    });
+  }
 
-    return activity;
+  private async findActivityById(activityId: string) {
+    return this.prisma.activity.findFirst({
+      where: { id: activityId },
+      include: ACTIVITY_INCLUDE,
+    }) as any;
   }
 
   async findAll(

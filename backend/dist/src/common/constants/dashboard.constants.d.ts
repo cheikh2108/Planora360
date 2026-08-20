@@ -1,0 +1,11 @@
+export declare const UPCOMING_DEADLINE_DAYS = 7;
+export declare const UPCOMING_DEADLINE_MS: number;
+export declare const RECENT_AUDIT_LOGS_LIMIT = 5;
+export declare const UPCOMING_DEADLINES_LIMIT = 10;
+export declare const STATUS_COMPLETED: string[];
+export declare const STATUS_IN_PROGRESS = "EN_COURS";
+export declare const STATUS_OVERDUE = "EN_RETARD";
+export declare const STATUS_EXCLUDED_FROM_DEADLINES: string[];
+export declare const ROUNDING_PRECISION = 100;
+export declare function roundToTwoDecimals(value: number): number;
+export declare function calculatePercentage(numerator: number, denominator: number): number;

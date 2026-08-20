@@ -11,6 +11,12 @@ export declare class AuthService {
     register(dto: RegisterOrganizationDto): Promise<{
         message: string;
     }>;
+    private validateUniqueOrganization;
+    private validateUniqueEmail;
+    private findAdminRole;
+    private createOrganization;
+    private createAdminUser;
+    private hashPassword;
     login(dto: LoginDto): Promise<{
         accessToken: string;
         refreshToken: string;
@@ -37,6 +43,11 @@ export declare class AuthService {
     } | {
         requiresTwoFactor: boolean;
     }>;
+    private findActiveUser;
+    private validateOrganizationStatus;
+    private validatePassword;
+    private verifyTOTP;
+    private updateLastLogin;
     refresh(token: string): Promise<{
         accessToken: string;
         refreshToken: string;
@@ -61,6 +72,9 @@ export declare class AuthService {
             } | undefined;
         };
     }>;
+    private findRefreshToken;
+    private validateRefreshTokenExpiry;
+    private deleteRefreshToken;
     logout(userId: string): Promise<void>;
     setup2fa(userId: string): Promise<{
         qrCode: string;
@@ -69,11 +83,21 @@ export declare class AuthService {
     enable2fa(userId: string, token: string): Promise<{
         message: string;
     }>;
+    private findUserOrThrow;
+    private findUserWithTOTPSecret;
+    private generateTOTPSecret;
+    private generateQRCode;
+    private storeTOTPSecret;
     changePassword(userId: string, newPassword: string): Promise<{
         message: string;
     }>;
     disable2fa(userId: string, token: string): Promise<{
         message: string;
     }>;
+    private validatePasswordStrength;
     private generateTokens;
+    private createJWTPayload;
+    private signAccessToken;
+    private createRefreshToken;
+    private serializeUserResponse;
 }

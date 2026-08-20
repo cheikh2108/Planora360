@@ -51,6 +51,7 @@ const bcrypt = __importStar(require("bcryptjs"));
 const speakeasy = __importStar(require("speakeasy"));
 const QRCode = __importStar(require("qrcode"));
 const crypto_1 = require("crypto");
+const auth_constants_1 = require("../common/constants/auth.constants");
 let AuthService = class AuthService {
     prisma;
     jwtService;
@@ -61,139 +62,195 @@ let AuthService = class AuthService {
         this.config = config;
     }
     async register(dto) {
+        await this.validateUniqueOrganization(dto.organizationName);
+        await this.validateUniqueEmail(dto.email);
+        const adminRole = await this.findAdminRole();
+        const organization = await this.createOrganization(dto);
+        await this.createAdminUser(dto, organization.id, adminRole.id);
+        return { message: 'Votre demande a été enregistrée. Vous serez notifié par email après validation.' };
+    }
+    async validateUniqueOrganization(name) {
         const existing = await this.prisma.organization.findFirst({
-            where: { name: dto.organizationName },
+            where: { name, deletedAt: null },
         });
         if (existing)
             throw new common_1.ConflictException('Une organisation avec ce nom existe déjà');
-        const emailTaken = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    }
+    async validateUniqueEmail(email) {
+        const emailTaken = await this.prisma.user.findFirst({
+            where: { email, deletedAt: null },
+        });
         if (emailTaken)
             throw new common_1.ConflictException('Cet email est déjà utilisé');
+    }
+    async findAdminRole() {
         const adminRole = await this.prisma.role.findFirst({
-            where: { name: 'Administrateur', organizationId: null },
+            where: { name: auth_constants_1.ROLE_ADMIN, organizationId: null },
         });
         if (!adminRole)
             throw new common_1.NotFoundException('Rôle Administrateur introuvable');
+        return adminRole;
+    }
+    async createOrganization(dto) {
         const isTrialPlan = !dto.subscriptionPlan || dto.subscriptionPlan === 'DECOUVERTE';
-        const trialEndsAt = isTrialPlan
-            ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-            : undefined;
-        const org = await this.prisma.organization.create({
+        const trialEndsAt = isTrialPlan ? (0, auth_constants_1.calculateTrialEndDate)() : undefined;
+        return this.prisma.organization.create({
             data: {
                 name: dto.organizationName,
                 subscriptionPlan: dto.subscriptionPlan ?? 'DECOUVERTE',
-                brandColor: dto.brandColor ?? '#2563eb',
-                status: 'PENDING',
+                brandColor: dto.brandColor ?? auth_constants_1.DEFAULT_BRAND_COLOR,
+                status: auth_constants_1.ORG_STATUS_PENDING,
                 trialEndsAt,
             },
         });
-        const passwordHash = await bcrypt.hash(dto.password, 12);
+    }
+    async createAdminUser(dto, organizationId, roleId) {
+        const passwordHash = await this.hashPassword(dto.password);
         await this.prisma.user.create({
             data: {
                 email: dto.email,
                 firstName: dto.firstName,
                 lastName: dto.lastName,
                 passwordHash,
-                organizationId: org.id,
-                roleId: adminRole.id,
+                organizationId,
+                roleId,
                 isActive: false,
             },
         });
-        return { message: 'Votre demande a été enregistrée. Vous serez notifié par email après validation.' };
+    }
+    async hashPassword(password) {
+        return bcrypt.hash(password, auth_constants_1.BCRYPT_SALT_ROUNDS);
     }
     async login(dto) {
-        const user = await this.prisma.user.findUnique({
-            where: { email: dto.email },
-            include: { role: true, organization: true },
-        });
-        if (!user)
-            throw new common_1.UnauthorizedException('Identifiants invalides');
-        if (user.organization?.status === 'PENDING') {
-            throw new common_1.UnauthorizedException('REGISTRATION_PENDING');
-        }
-        if (user.organization?.status === 'REJECTED') {
-            throw new common_1.UnauthorizedException('REGISTRATION_REJECTED');
-        }
-        if (!user.isActive)
-            throw new common_1.UnauthorizedException('Identifiants invalides');
-        const passwordValid = await bcrypt.compare(dto.password, user.passwordHash);
-        if (!passwordValid)
-            throw new common_1.UnauthorizedException('Identifiants invalides');
+        const user = await this.findActiveUser(dto.email);
+        this.validateOrganizationStatus(user.organization?.status);
+        await this.validatePassword(dto.password, user.passwordHash);
         if (user.isTwoFactorEnabled) {
             if (!dto.totp)
                 return { requiresTwoFactor: true };
-            const isValid = speakeasy.totp.verify({
-                secret: user.twoFactorSecret,
-                encoding: 'base32',
-                token: dto.totp,
-                window: 1,
-            });
-            if (!isValid)
-                throw new common_1.UnauthorizedException('Code 2FA invalide');
+            this.verifyTOTP(user.twoFactorSecret, dto.totp, auth_constants_1.ERROR_INVALID_2FA_CODE);
         }
-        await this.prisma.user.update({
-            where: { id: user.id },
-            data: { lastLoginAt: new Date() },
-        });
+        await this.updateLastLogin(user.id);
         return this.generateTokens(user);
     }
+    async findActiveUser(email) {
+        const user = await this.prisma.user.findFirst({
+            where: { email, deletedAt: null },
+            include: { role: true, organization: true },
+        });
+        if (!user || !user.isActive) {
+            throw new common_1.UnauthorizedException(auth_constants_1.ERROR_INVALID_CREDENTIALS);
+        }
+        return user;
+    }
+    validateOrganizationStatus(status) {
+        if (status === auth_constants_1.ORG_STATUS_PENDING) {
+            throw new common_1.UnauthorizedException(auth_constants_1.ERROR_REGISTRATION_PENDING);
+        }
+        if (status === auth_constants_1.ORG_STATUS_REJECTED) {
+            throw new common_1.UnauthorizedException(auth_constants_1.ERROR_REGISTRATION_REJECTED);
+        }
+    }
+    async validatePassword(password, passwordHash) {
+        const passwordValid = await bcrypt.compare(password, passwordHash);
+        if (!passwordValid) {
+            throw new common_1.UnauthorizedException(auth_constants_1.ERROR_INVALID_CREDENTIALS);
+        }
+    }
+    verifyTOTP(secret, token, errorMessage) {
+        const isValid = speakeasy.totp.verify({
+            secret,
+            encoding: 'base32',
+            token,
+            window: auth_constants_1.TOTP_VERIFICATION_WINDOW,
+        });
+        if (!isValid)
+            throw new common_1.UnauthorizedException(errorMessage);
+    }
+    async updateLastLogin(userId) {
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: { lastLoginAt: new Date() },
+        });
+    }
     async refresh(token) {
+        const stored = await this.findRefreshToken(token);
+        this.validateRefreshTokenExpiry(stored);
+        await this.deleteRefreshToken(stored.id);
+        return this.generateTokens(stored.user);
+    }
+    async findRefreshToken(token) {
         const stored = await this.prisma.refreshToken.findUnique({
             where: { token },
             include: { user: { include: { role: true, organization: true } } },
         });
-        if (!stored || stored.expiresAt < new Date()) {
-            if (stored)
-                await this.prisma.refreshToken.delete({ where: { id: stored.id } });
-            throw new common_1.UnauthorizedException('Refresh token invalide ou expiré');
+        if (!stored) {
+            throw new common_1.UnauthorizedException(auth_constants_1.ERROR_INVALID_REFRESH_TOKEN);
         }
-        await this.prisma.refreshToken.delete({ where: { id: stored.id } });
-        return this.generateTokens(stored.user);
+        return stored;
+    }
+    validateRefreshTokenExpiry(token) {
+        if (token.expiresAt < new Date()) {
+            this.deleteRefreshToken(token.id);
+            throw new common_1.UnauthorizedException(auth_constants_1.ERROR_INVALID_REFRESH_TOKEN);
+        }
+    }
+    async deleteRefreshToken(tokenId) {
+        await this.prisma.refreshToken.delete({ where: { id: tokenId } });
     }
     async logout(userId) {
         await this.prisma.refreshToken.deleteMany({ where: { userId } });
     }
     async setup2fa(userId) {
-        const user = await this.prisma.user.findUnique({ where: { id: userId } });
-        if (!user)
-            throw new common_1.NotFoundException();
-        const secret = speakeasy.generateSecret({ length: 20 });
-        const otpAuthUrl = speakeasy.otpauthURL({
-            secret: secret.base32,
-            label: user.email,
-            issuer: 'PLANORA 360',
-            encoding: 'base32',
-        });
-        const qrCode = await QRCode.toDataURL(otpAuthUrl);
-        await this.prisma.user.update({
-            where: { id: userId },
-            data: { twoFactorSecret: secret.base32 },
-        });
+        const user = await this.findUserOrThrow(userId);
+        const secret = this.generateTOTPSecret();
+        const qrCode = await this.generateQRCode(secret.base32, user.email);
+        await this.storeTOTPSecret(userId, secret.base32);
         return { qrCode, secret: secret.base32 };
     }
     async enable2fa(userId, token) {
-        const user = await this.prisma.user.findUnique({ where: { id: userId } });
-        if (!user || !user.twoFactorSecret)
-            throw new common_1.BadRequestException('2FA non initialisé');
-        const isValid = speakeasy.totp.verify({
-            secret: user.twoFactorSecret,
-            encoding: 'base32',
-            token,
-            window: 1,
-        });
-        if (!isValid)
-            throw new common_1.UnauthorizedException('Code invalide');
+        const user = await this.findUserWithTOTPSecret(userId);
+        this.verifyTOTP(user.twoFactorSecret, token, auth_constants_1.ERROR_INVALID_CODE);
         await this.prisma.user.update({
             where: { id: userId },
             data: { isTwoFactorEnabled: true },
         });
         return { message: '2FA activé avec succès' };
     }
-    async changePassword(userId, newPassword) {
-        if (!newPassword || newPassword.length < 8) {
-            throw new common_1.BadRequestException('Le mot de passe doit contenir au moins 8 caractères');
+    async findUserOrThrow(userId) {
+        const user = await this.prisma.user.findUnique({ where: { id: userId } });
+        if (!user)
+            throw new common_1.NotFoundException();
+        return user;
+    }
+    async findUserWithTOTPSecret(userId) {
+        const user = await this.prisma.user.findUnique({ where: { id: userId } });
+        if (!user || !user.twoFactorSecret) {
+            throw new common_1.BadRequestException(auth_constants_1.ERROR_2FA_NOT_INITIALIZED);
         }
-        const passwordHash = await bcrypt.hash(newPassword, 12);
+        return user;
+    }
+    generateTOTPSecret() {
+        return speakeasy.generateSecret({ length: auth_constants_1.TOTP_SECRET_LENGTH });
+    }
+    async generateQRCode(secret, email) {
+        const otpAuthUrl = speakeasy.otpauthURL({
+            secret,
+            label: email,
+            issuer: auth_constants_1.TOTP_ISSUER,
+            encoding: 'base32',
+        });
+        return QRCode.toDataURL(otpAuthUrl);
+    }
+    async storeTOTPSecret(userId, secret) {
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: { twoFactorSecret: secret },
+        });
+    }
+    async changePassword(userId, newPassword) {
+        this.validatePasswordStrength(newPassword);
+        const passwordHash = await this.hashPassword(newPassword);
         await this.prisma.user.update({
             where: { id: userId },
             data: { passwordHash, mustChangePassword: false },
@@ -201,61 +258,73 @@ let AuthService = class AuthService {
         return { message: 'Mot de passe mis à jour' };
     }
     async disable2fa(userId, token) {
-        const user = await this.prisma.user.findUnique({ where: { id: userId } });
-        if (!user || !user.twoFactorSecret)
-            throw new common_1.BadRequestException();
-        const isValid = speakeasy.totp.verify({
-            secret: user.twoFactorSecret,
-            encoding: 'base32',
-            token,
-            window: 1,
-        });
-        if (!isValid)
-            throw new common_1.UnauthorizedException('Code invalide');
+        const user = await this.findUserWithTOTPSecret(userId);
+        this.verifyTOTP(user.twoFactorSecret, token, auth_constants_1.ERROR_INVALID_CODE);
         await this.prisma.user.update({
             where: { id: userId },
             data: { isTwoFactorEnabled: false, twoFactorSecret: null },
         });
         return { message: '2FA désactivé' };
     }
+    validatePasswordStrength(password) {
+        if (!password || password.length < auth_constants_1.MIN_PASSWORD_LENGTH) {
+            throw new common_1.BadRequestException(`Le mot de passe doit contenir au moins ${auth_constants_1.MIN_PASSWORD_LENGTH} caractères`);
+        }
+    }
     async generateTokens(user) {
-        const payload = {
+        const payload = this.createJWTPayload(user);
+        const accessToken = this.signAccessToken(payload);
+        const refreshToken = await this.createRefreshToken(user.id);
+        return {
+            accessToken,
+            refreshToken,
+            user: this.serializeUserResponse(user),
+        };
+    }
+    createJWTPayload(user) {
+        return {
             sub: user.id,
             email: user.email,
             organizationId: user.organizationId,
             roleId: user.roleId,
         };
-        const accessToken = this.jwtService.sign(payload, {
+    }
+    signAccessToken(payload) {
+        return this.jwtService.sign(payload, {
             secret: this.config.get('JWT_SECRET'),
             expiresIn: this.config.get('JWT_EXPIRES_IN'),
         });
-        const rawRefresh = (0, crypto_1.randomBytes)(40).toString('hex');
-        const expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + 7);
+    }
+    async createRefreshToken(userId) {
+        const token = (0, crypto_1.randomBytes)(auth_constants_1.REFRESH_TOKEN_BYTES).toString('hex');
+        const expiresAt = (0, auth_constants_1.calculateRefreshTokenExpiry)();
         await this.prisma.refreshToken.create({
-            data: { userId: user.id, token: rawRefresh, expiresAt },
+            data: { userId, token, expiresAt },
         });
+        return token;
+    }
+    serializeUserResponse(user) {
         return {
-            accessToken,
-            refreshToken: rawRefresh,
-            user: {
-                id: user.id,
-                email: user.email,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                organizationId: user.organizationId,
-                isActive: user.isActive,
-                mustChangePassword: user.mustChangePassword,
-                twoFactorEnabled: user.isTwoFactorEnabled,
-                role: {
-                    id: user.role?.id,
-                    name: user.role?.name,
-                    permissions: user.role?.permissions ?? [],
-                },
-                organization: user.organization
-                    ? { id: user.organization.id, name: user.organization.name, brandColor: user.organization.brandColor ?? '#2563eb' }
-                    : undefined,
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            organizationId: user.organizationId,
+            isActive: user.isActive,
+            mustChangePassword: user.mustChangePassword,
+            twoFactorEnabled: user.isTwoFactorEnabled,
+            role: {
+                id: user.role?.id,
+                name: user.role?.name,
+                permissions: user.role?.permissions ?? [],
             },
+            organization: user.organization
+                ? {
+                    id: user.organization.id,
+                    name: user.organization.name,
+                    brandColor: user.organization.brandColor ?? auth_constants_1.DEFAULT_BRAND_COLOR,
+                }
+                : undefined,
         };
     }
 };

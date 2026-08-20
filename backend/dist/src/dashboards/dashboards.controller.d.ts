@@ -4,11 +4,11 @@ export declare class DashboardsController {
     constructor(dashboardsService: DashboardsService);
     getOverview(user: any, planId?: string, responsibleId?: string, status?: string): Promise<{
         activities: {
-            total: number;
+            total: any;
             byStatus: any;
             completed: any;
             inProgress: any;
-            overdue: number;
+            overdue: any;
             avgCompletionRate: number;
         };
         budget: {

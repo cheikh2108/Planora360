@@ -57,6 +57,13 @@ export declare class ValidationsService {
         validatorId: string;
         comment: string | null;
     }>;
+    private findActivity;
+    private validateSubmissionPermissions;
+    private validateMandatoryTasksCompleted;
+    private createSubmissionValidation;
+    private updateActivityStatus;
+    private logSubmission;
+    private notifyNextStepValidators;
     transition(activityId: string, dto: TransitionDto, userId: string, organizationId: string): Promise<{
         id: string;
         createdAt: Date;
@@ -66,6 +73,15 @@ export declare class ValidationsService {
         validatorId: string;
         comment: string | null;
     }>;
+    private findUserWithRole;
+    private getCurrentValidationStep;
+    private validateTransitionAllowed;
+    private validateUserRole;
+    private validateRejectionTransition;
+    private createTransitionValidation;
+    private applyStatusChange;
+    private logTransition;
+    private notifyResponsible;
     findPending(userId: string, organizationId: string, page?: number, limit?: number): Promise<{
         data: ({
             _count: {

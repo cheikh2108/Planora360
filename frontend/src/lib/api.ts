@@ -1,76 +1,87 @@
 import axios from 'axios';
+import {
+  API_BASE_URL,
+  ERROR_MESSAGES,
+  NETWORK_ERROR_MESSAGE,
+  LOGIN_REDIRECT_URL,
+} from './api-constants';
+import { TokenStorage } from './token-storage';
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000/api',
+  baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
 });
 
 api.interceptors.request.use((config) => {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+  const token = TokenStorage.getAccessToken();
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
-// Messages d'erreur conviviaux
-const ERROR_MESSAGES: Record<number, string> = {
-  400: 'Les informations fournies sont incorrectes. Veuillez vérifier et réessayer.',
-  401: 'Votre session a expiré. Veuillez vous reconnecter.',
-  403: 'Vous n\'avez pas les autorisations nécessaires pour effectuer cette action.',
-  404: 'La ressource demandée est introuvable.',
-  409: 'Cette action ne peut pas être effectuée car elle entre en conflit avec des données existantes.',
-  422: 'Les données fournies ne sont pas valides.',
-  429: 'Trop de requêtes. Veuillez patienter quelques instants avant de réessayer.',
-  500: 'Une erreur est survenue sur le serveur. Veuillez réessayer plus tard.',
-  502: 'Le serveur est temporairement indisponible. Veuillez réessayer dans quelques instants.',
-  503: 'Le service est temporairement indisponible. Veuillez réessayer plus tard.',
-};
-
 api.interceptors.response.use(
   (res) => res,
   async (err) => {
-    const original = err.config;
-
-    // Gestion du 401 (token expiré)
-    if (err.response?.status === 401 && !original._retry) {
-      original._retry = true;
-      const refreshToken = localStorage.getItem('refreshToken');
-      if (refreshToken) {
-        try {
-          const { data } = await axios.post(
-            `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000/api'}/auth/refresh`,
-            { refreshToken },
-          );
-          localStorage.setItem('accessToken', data.accessToken);
-          localStorage.setItem('refreshToken', data.refreshToken);
-          original.headers.Authorization = `Bearer ${data.accessToken}`;
-          return api(original);
-        } catch {
-          localStorage.clear();
-          window.location.href = '/auth/login';
-        }
-      }
+    if (err.response?.status === 401) {
+      return handleUnauthorizedError(err);
     }
 
-    // Transformer les erreurs techniques en messages conviviaux
-    if (err.response?.status) {
-      const status = err.response.status;
-      const backendMessage = err.response.data?.message;
-
-      // Si le backend renvoie un message clair, on l'utilise
-      // Sinon on utilise notre message convivial par défaut
-      if (backendMessage && typeof backendMessage === 'string') {
-        err.message = backendMessage;
-      } else if (ERROR_MESSAGES[status]) {
-        err.message = ERROR_MESSAGES[status];
-      }
-    } else if (!err.response) {
-      // Erreur réseau (pas de réponse du serveur)
-      err.message = 'Impossible de contacter le serveur. Vérifiez votre connexion internet.';
-    }
-
+    transformErrorMessage(err);
     return Promise.reject(err);
   },
 );
+
+async function handleUnauthorizedError(err: any) {
+  const original = err.config;
+
+  if (original._retry) {
+    return Promise.reject(err);
+  }
+
+  original._retry = true;
+
+  if (!TokenStorage.hasRefreshToken()) {
+    redirectToLogin();
+    return Promise.reject(err);
+  }
+
+  try {
+    const newTokens = await refreshAccessToken();
+    TokenStorage.setTokens(newTokens.accessToken, newTokens.refreshToken);
+    original.headers.Authorization = `Bearer ${newTokens.accessToken}`;
+    return api(original);
+  } catch {
+    redirectToLogin();
+    return Promise.reject(err);
+  }
+}
+
+async function refreshAccessToken(): Promise<{ accessToken: string; refreshToken: string }> {
+  const refreshToken = TokenStorage.getRefreshToken();
+  const { data } = await axios.post(`${API_BASE_URL}/auth/refresh`, { refreshToken });
+  return data;
+}
+
+function redirectToLogin() {
+  TokenStorage.clearTokens();
+  if (typeof window !== 'undefined') {
+    window.location.href = LOGIN_REDIRECT_URL;
+  }
+}
+
+function transformErrorMessage(err: any) {
+  if (err.response?.status) {
+    const status = err.response.status;
+    const backendMessage = err.response.data?.message;
+
+    if (backendMessage && typeof backendMessage === 'string') {
+      err.message = backendMessage;
+    } else if (ERROR_MESSAGES[status]) {
+      err.message = ERROR_MESSAGES[status];
+    }
+  } else if (!err.response) {
+    err.message = NETWORK_ERROR_MESSAGE;
+  }
+}
 
 export default api;
 
