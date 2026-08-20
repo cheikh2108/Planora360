@@ -125,9 +125,32 @@ export default function ParticipantsPage() {
 
         {/* Liste des participants */}
         {loading ? (
-          <div className="bg-white rounded-2xl border border-slate-200 p-8">
-            <div className="flex items-center justify-center">
-              <span className="text-sm text-slate-500">Chargement des participants...</span>
+          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-slate-50 border-b border-slate-200">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Prénom</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Nom</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Téléphone</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Mode de paiement</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Montant</th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {[...Array(3)].map((_, i) => (
+                    <tr key={i} className="animate-pulse">
+                      <td className="px-4 py-3"><div className="h-4 bg-slate-200 rounded w-20"></div></td>
+                      <td className="px-4 py-3"><div className="h-4 bg-slate-200 rounded w-24"></div></td>
+                      <td className="px-4 py-3"><div className="h-4 bg-slate-200 rounded w-28"></div></td>
+                      <td className="px-4 py-3"><div className="h-6 bg-slate-200 rounded-full w-24"></div></td>
+                      <td className="px-4 py-3"><div className="h-4 bg-slate-200 rounded w-20 ml-auto"></div></td>
+                      <td className="px-4 py-3 text-center"><div className="h-8 bg-slate-200 rounded w-8 mx-auto"></div></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         ) : participants.length === 0 ? (
