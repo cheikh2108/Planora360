@@ -54,16 +54,13 @@ export function SelectTrigger({ children, className }: { children: React.ReactNo
       type="button"
       onClick={() => setOpen(!open)}
       className={cn(
-        'flex h-10 w-full items-center justify-between rounded-md border border-slate-200 bg-white px-3 py-2 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+        'flex h-11 w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium transition-all hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 shadow-sm',
+        open && 'border-[#2563eb] ring-2 ring-[#2563eb] ring-offset-1',
         className
       )}
-      style={{
-        boxShadow: open ? '0 0 0 2px color-mix(in srgb, var(--color-brand, #2563eb) 30%, transparent)' : undefined,
-        borderColor: open ? 'var(--color-brand, #2563eb)' : undefined
-      }}
     >
       {children}
-      <ChevronDown className={cn('h-4 w-4 opacity-50 shrink-0 transition-transform', open && 'rotate-180')} />
+      <ChevronDown className={cn('h-4 w-4 text-slate-400 shrink-0 transition-transform duration-200', open && 'rotate-180 text-[#2563eb]')} />
     </button>
   );
 }
@@ -76,7 +73,7 @@ export function SelectValue({ placeholder }: SelectValueProps) {
   const { value, getLabel } = useSelectContext();
   const displayValue = value ? getLabel(value) : placeholder || 'Sélectionner...';
 
-  return <span className="text-left truncate">{displayValue}</span>;
+  return <span className={cn('text-left truncate', value ? 'text-slate-900' : 'text-slate-500')}>{displayValue}</span>;
 }
 
 export function SelectContent({ children }: { children: React.ReactNode }) {
@@ -87,8 +84,8 @@ export function SelectContent({ children }: { children: React.ReactNode }) {
   return (
     <>
       <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-      <div className="absolute z-50 mt-1 w-full rounded-md border border-slate-200 bg-white shadow-lg max-h-60 overflow-auto">
-        <div className="p-1">{children}</div>
+      <div className="absolute z-50 mt-2 w-full rounded-xl border border-slate-200 bg-white shadow-xl max-h-60 overflow-auto">
+        <div className="p-1.5">{children}</div>
       </div>
     </>
   );
@@ -115,10 +112,10 @@ export function SelectItem({ value, children }: SelectItemProps) {
         setOpen(false);
       }}
       className={cn(
-        'relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors',
+        'relative flex cursor-pointer select-none items-center rounded-lg px-3 py-2.5 text-sm outline-none transition-all',
         value === selectedValue
-          ? 'bg-slate-100 text-slate-900 font-medium'
-          : 'hover:bg-slate-50 text-slate-700'
+          ? 'bg-[#2563eb] text-white font-medium shadow-sm'
+          : 'hover:bg-slate-50 text-slate-700 hover:text-slate-900'
       )}
     >
       {children}

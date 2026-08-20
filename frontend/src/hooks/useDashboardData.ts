@@ -55,6 +55,8 @@ function useOverview(planId: string) {
   return useQuery<DashboardOverview>({
     queryKey: ['dashboard-overview', planId],
     queryFn: async () => {
+      const params: any = {};
+      if (planId) params.planId = planId;
       const response = await dashboardApi.getOverview();
       return normalizeOverviewData(response.data as any);
     },

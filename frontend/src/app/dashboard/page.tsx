@@ -16,6 +16,7 @@ import { KpiSkeleton, Skeleton } from '@/components/ui/skeleton';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { useAuth } from '@/lib/auth-context';
+import { useFilteredActivities } from '@/hooks/useDashboardFilters';
 import { formatCurrency, formatDate, PRIORITY_COLORS, PRIORITY_LABELS, cn } from '@/lib/utils';
 import {
   Activity as ActivityIcon, AlertTriangle, CheckCircle2, Clock,
@@ -376,6 +377,9 @@ export default function DashboardPage() {
   // Guard défensif absolu : s'assurer que allActivities est TOUJOURS un tableau
   const allActivities = Array.isArray(rawActivities) ? rawActivities : [];
 
+  // Appliquer les filtres période
+  const filteredActivities = useFilteredActivities(allActivities, filters);
+
   const firstName = user?.firstName ?? '';
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Bonjour' : hour < 18 ? 'Bon après-midi' : 'Bonsoir';
@@ -386,7 +390,7 @@ export default function DashboardPage() {
   const overdue = s('EN_RETARD');
   const validated = s('VALIDEE');
 
-  const recentActivities = [...allActivities]
+  const recentActivities = [...filteredActivities]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 8);
 

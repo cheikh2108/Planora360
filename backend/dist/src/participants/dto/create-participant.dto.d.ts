@@ -4,5 +4,5 @@ export declare class CreateParticipantDto {
     lastName: string;
     phone: string;
     paymentMode: string;
-    amount: number;
+    amount?: number;
 }

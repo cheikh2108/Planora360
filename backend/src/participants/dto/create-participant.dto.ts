@@ -1,4 +1,5 @@
-import { IsString, IsNumber, IsNotEmpty, IsEnum } from 'class-validator';
+import { IsString, IsNumber, IsNotEmpty, IsEnum, IsOptional } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateParticipantDto {
   @IsString()
@@ -22,6 +23,7 @@ export class CreateParticipantDto {
   paymentMode: string;
 
   @IsNumber()
-  @IsNotEmpty()
-  amount: number;
+  @IsOptional()
+  @Type(() => Number)
+  amount?: number;
 }

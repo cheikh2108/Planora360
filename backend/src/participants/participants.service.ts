@@ -23,7 +23,7 @@ export class ParticipantsService {
         lastName: dto.lastName,
         phone: dto.phone,
         paymentMode: dto.paymentMode,
-        amount: dto.amount,
+        amount: dto.amount ?? 0,
         activityId: dto.activityId,
         organizationId,
         createdBy: userId,
