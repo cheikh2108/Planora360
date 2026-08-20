@@ -33,9 +33,11 @@ interface SelectProps {
 export function Select({ value, onValueChange, children, disabled }: SelectProps) {
   const [open, setOpen] = React.useState(false);
   const optionsRef = React.useRef<Map<string, string>>(new Map());
+  const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
 
   const registerOption = React.useCallback((value: string, label: string) => {
     optionsRef.current.set(value, label);
+    forceUpdate(); // Force un re-render pour mettre à jour le label
   }, []);
 
   const getLabel = React.useCallback((value: string) => {
@@ -105,7 +107,21 @@ export function SelectItem({ value, children }: SelectItemProps) {
 
   // Register this option when component mounts
   React.useEffect(() => {
-    const label = typeof children === 'string' ? children : value;
+    // Extraire le texte du children même si c'est un ReactNode
+    let label = value;
+    if (typeof children === 'string') {
+      label = children;
+    } else if (typeof children === 'number') {
+      label = String(children);
+    } else if (React.isValidElement(children) && typeof children.props.children === 'string') {
+      label = children.props.children;
+    } else if (children && typeof (children as any).toString === 'function') {
+      // Essayer de convertir en string
+      const str = String(children);
+      if (str !== '[object Object]') {
+        label = str;
+      }
+    }
     registerOption(value, label);
   }, [value, children, registerOption]);
 
