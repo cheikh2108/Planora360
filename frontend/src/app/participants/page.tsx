@@ -95,13 +95,18 @@ export default function ParticipantsPage() {
         subtitle="Gérez les participants de vos activités"
         actions={
           <>
-            <Button variant="ghost" onClick={() => router.push('/participants/import')}>
+            <Button
+              variant="ghost"
+              onClick={() => router.push('/participants/import')}
+              className="hidden sm:flex"
+            >
               <Upload size={14} className="mr-1.5" />
               Importer Excel
             </Button>
             <Button onClick={() => router.push('/participants/new')}>
               <UserPlus size={14} className="mr-1.5" />
-              Ajouter
+              <span className="hidden sm:inline">Ajouter</span>
+              <span className="sm:hidden">+</span>
             </Button>
           </>
         }
