@@ -28,52 +28,12 @@ export declare class UsersController {
     }[]>;
     create(dto: CreateUserDto, user: any): Promise<any>;
     findAll(user: any, page?: string, limit?: string): Promise<{
-        data: {
-            role: {
-                id: string;
-                organizationId: string | null;
-                name: string;
-                permissions: import("@prisma/client/runtime/client").JsonValue;
-            };
-            id: string;
-            email: string;
-            organizationId: string;
-            roleId: string;
-            firstName: string;
-            lastName: string;
-            isTwoFactorEnabled: boolean;
-            isActive: boolean;
-            mustChangePassword: boolean;
-            lastLoginAt: Date | null;
-            createdAt: Date;
-            updatedAt: Date;
-            deletedAt: Date | null;
-        }[];
+        data: any[];
         total: number;
         page: number;
         limit: number;
     }>;
-    findOne(id: string, user: any): Promise<{
-        role: {
-            id: string;
-            organizationId: string | null;
-            name: string;
-            permissions: import("@prisma/client/runtime/client").JsonValue;
-        };
-        id: string;
-        email: string;
-        organizationId: string;
-        roleId: string;
-        firstName: string;
-        lastName: string;
-        isTwoFactorEnabled: boolean;
-        isActive: boolean;
-        mustChangePassword: boolean;
-        lastLoginAt: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
-        deletedAt: Date | null;
-    }>;
+    findOne(id: string, user: any): Promise<any>;
     update(id: string, dto: UpdateUserDto, user: any): Promise<any>;
     remove(id: string, user: any): Promise<void>;
 }

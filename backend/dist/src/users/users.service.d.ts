@@ -23,27 +23,7 @@ export declare class UsersService {
         };
     }[]>;
     findAll(organizationId: string, page?: number, limit?: number): Promise<{
-        data: {
-            role: {
-                id: string;
-                organizationId: string | null;
-                name: string;
-                permissions: import("@prisma/client/runtime/client").JsonValue;
-            };
-            id: string;
-            email: string;
-            organizationId: string;
-            roleId: string;
-            firstName: string;
-            lastName: string;
-            isTwoFactorEnabled: boolean;
-            isActive: boolean;
-            mustChangePassword: boolean;
-            lastLoginAt: Date | null;
-            createdAt: Date;
-            updatedAt: Date;
-            deletedAt: Date | null;
-        }[];
+        data: any[];
         total: number;
         page: number;
         limit: number;
@@ -54,27 +34,7 @@ export declare class UsersService {
         inactive: number;
         with2FA: number;
     }>;
-    findOne(id: string, organizationId: string): Promise<{
-        role: {
-            id: string;
-            organizationId: string | null;
-            name: string;
-            permissions: import("@prisma/client/runtime/client").JsonValue;
-        };
-        id: string;
-        email: string;
-        organizationId: string;
-        roleId: string;
-        firstName: string;
-        lastName: string;
-        isTwoFactorEnabled: boolean;
-        isActive: boolean;
-        mustChangePassword: boolean;
-        lastLoginAt: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
-        deletedAt: Date | null;
-    }>;
+    findOne(id: string, organizationId: string): Promise<any>;
     update(id: string, dto: UpdateUserDto, organizationId: string): Promise<any>;
     remove(id: string, organizationId: string): Promise<void>;
     findRoles(organizationId?: string, callerRole?: string): import(".prisma/client").Prisma.PrismaPromise<{

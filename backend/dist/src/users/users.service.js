@@ -118,8 +118,11 @@ let UsersService = class UsersService {
         return bcrypt.hash(password, auth_constants_1.BCRYPT_SALT_ROUNDS);
     }
     sanitizeUserResponse(user) {
-        const { passwordHash: _, twoFactorSecret: __, ...safe } = user;
-        return safe;
+        const { passwordHash: _, twoFactorSecret: __, isTwoFactorEnabled, ...rest } = user;
+        return {
+            ...rest,
+            twoFactorEnabled: isTwoFactorEnabled,
+        };
     }
     async findUsersForAssignment(organizationId) {
         return this.prisma.user.findMany({
@@ -159,7 +162,7 @@ let UsersService = class UsersService {
             this.prisma.user.count({ where }),
         ]);
         return {
-            data: users.map(({ passwordHash, twoFactorSecret, ...u }) => u),
+            data: users.map((user) => this.sanitizeUserResponse(user)),
             total,
             page,
             limit,
@@ -186,8 +189,7 @@ let UsersService = class UsersService {
         });
         if (!user)
             throw new common_1.NotFoundException('Utilisateur introuvable');
-        const { passwordHash, twoFactorSecret, ...safe } = user;
-        return safe;
+        return this.sanitizeUserResponse(user);
     }
     async update(id, dto, organizationId) {
         await this.findOne(id, organizationId);

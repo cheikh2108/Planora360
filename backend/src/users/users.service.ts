@@ -100,8 +100,11 @@ export class UsersService {
   }
 
   private sanitizeUserResponse(user: any) {
-    const { passwordHash: _, twoFactorSecret: __, ...safe } = user;
-    return safe;
+    const { passwordHash: _, twoFactorSecret: __, isTwoFactorEnabled, ...rest } = user;
+    return {
+      ...rest,
+      twoFactorEnabled: isTwoFactorEnabled,
+    };
   }
 
   async findUsersForAssignment(organizationId: string) {
@@ -143,7 +146,7 @@ export class UsersService {
       this.prisma.user.count({ where }),
     ]);
     return {
-      data: users.map(({ passwordHash, twoFactorSecret, ...u }) => u),
+      data: users.map((user) => this.sanitizeUserResponse(user)),
       total,
       page,
       limit,
@@ -173,8 +176,7 @@ export class UsersService {
       include: { role: true },
     });
     if (!user) throw new NotFoundException('Utilisateur introuvable');
-    const { passwordHash, twoFactorSecret, ...safe } = user;
-    return safe;
+    return this.sanitizeUserResponse(user);
   }
 
   async update(id: string, dto: UpdateUserDto, organizationId: string) {
