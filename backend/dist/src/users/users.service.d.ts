@@ -48,6 +48,12 @@ export declare class UsersService {
         page: number;
         limit: number;
     }>;
+    getStats(organizationId: string): Promise<{
+        total: number;
+        active: number;
+        inactive: number;
+        with2FA: number;
+    }>;
     findOne(id: string, organizationId: string): Promise<{
         role: {
             id: string;

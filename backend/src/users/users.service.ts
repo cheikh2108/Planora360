@@ -150,6 +150,23 @@ export class UsersService {
     };
   }
 
+  async getStats(organizationId: string) {
+    const where = { organizationId, deletedAt: null };
+
+    const [total, activeCount, with2FACount] = await Promise.all([
+      this.prisma.user.count({ where }),
+      this.prisma.user.count({ where: { ...where, isActive: true } }),
+      this.prisma.user.count({ where: { ...where, isTwoFactorEnabled: true } }),
+    ]);
+
+    return {
+      total,
+      active: activeCount,
+      inactive: total - activeCount,
+      with2FA: with2FACount,
+    };
+  }
+
   async findOne(id: string, organizationId: string) {
     const user = await this.prisma.user.findFirst({
       where: { id, organizationId, deletedAt: null },

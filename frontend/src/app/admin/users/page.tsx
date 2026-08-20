@@ -47,9 +47,17 @@ export default function UsersPage() {
     queryFn: async () => { const r = await api.get('/users/roles'); return r.data; },
   });
 
+  const { data: stats } = useQuery<{ total: number; active: number; inactive: number; with2FA: number }>({
+    queryKey: ['users-stats'],
+    queryFn: async () => { const r = await api.get('/users/stats'); return r.data; },
+  });
+
   const { mutate: toggleStatus } = useMutation({
     mutationFn: (user: User) => api.patch(`/users/${user.id}`, { isActive: !user.isActive }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['users'], exact: false }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['users'], exact: false });
+      qc.invalidateQueries({ queryKey: ['users-stats'] });
+    },
   });
 
   const filtered = search.trim()
@@ -58,21 +66,20 @@ export default function UsersPage() {
       )
     : users;
 
-  const activeCount = users.filter(u => u.isActive).length;
-  const displayTotal = search.trim() ? filtered.length : total;
+  const displayTotal = search.trim() ? filtered.length : (stats?.total ?? total);
 
   return (
     <div className="flex flex-col flex-1 min-h-0 overflow-auto">
-      <Header title="Gestion des utilisateurs" subtitle={`${displayTotal} utilisateur${displayTotal > 1 ? 's' : ''} · ${activeCount} actifs`} />
+      <Header title="Gestion des utilisateurs" subtitle={`${displayTotal} utilisateur${displayTotal > 1 ? 's' : ''} · ${stats?.active ?? 0} actifs`} />
       <main className="flex-1 px-4 md:px-6 py-6 space-y-5">
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'Total', value: total, color: 'text-slate-900' },
-            { label: 'Actifs', value: activeCount, color: 'text-green-600' },
-            { label: 'Inactifs', value: users.length - activeCount, color: 'text-red-500' },
-            { label: 'Avec 2FA', value: users.filter(u => u.twoFactorEnabled).length, color: 'text-indigo-600' },
+            { label: 'Total', value: stats?.total ?? 0, color: 'text-slate-900' },
+            { label: 'Actifs', value: stats?.active ?? 0, color: 'text-green-600' },
+            { label: 'Inactifs', value: stats?.inactive ?? 0, color: 'text-red-500' },
+            { label: 'Avec 2FA', value: stats?.with2FA ?? 0, color: 'text-indigo-600' },
           ].map(s => (
             <div key={s.label} className="bg-white rounded-2xl border border-slate-200 p-4">
               <p className="text-xs text-slate-500 mb-1">{s.label}</p>

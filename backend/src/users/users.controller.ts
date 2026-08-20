@@ -20,6 +20,12 @@ export class UsersController {
     return this.usersService.findRoles(user.organizationId, user.role?.name);
   }
 
+  @Get('stats')
+  @Roles('Super administrateur', 'Administrateur', 'Coordinateur')
+  getStats(@CurrentUser() user: any) {
+    return this.usersService.getStats(user.organizationId);
+  }
+
   @Get('list-for-assignment')
   listForAssignment(@CurrentUser() user: any) {
     return this.usersService.findUsersForAssignment(user.organizationId);

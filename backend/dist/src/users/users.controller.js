@@ -29,6 +29,9 @@ let UsersController = class UsersController {
     findRoles(user) {
         return this.usersService.findRoles(user.organizationId, user.role?.name);
     }
+    getStats(user) {
+        return this.usersService.getStats(user.organizationId);
+    }
     listForAssignment(user) {
         return this.usersService.findUsersForAssignment(user.organizationId);
     }
@@ -56,6 +59,14 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "findRoles", null);
+__decorate([
+    (0, common_1.Get)('stats'),
+    (0, roles_decorator_1.Roles)('Super administrateur', 'Administrateur', 'Coordinateur'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "getStats", null);
 __decorate([
     (0, common_1.Get)('list-for-assignment'),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),

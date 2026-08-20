@@ -10,6 +10,12 @@ export declare class UsersController {
         name: string;
         permissions: import("@prisma/client/runtime/client").JsonValue;
     }[]>;
+    getStats(user: any): Promise<{
+        total: number;
+        active: number;
+        inactive: number;
+        with2FA: number;
+    }>;
     listForAssignment(user: any): Promise<{
         id: string;
         email: string;
