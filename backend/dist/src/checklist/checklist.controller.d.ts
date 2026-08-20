@@ -20,8 +20,8 @@ export declare class ChecklistController {
         activityId: string;
         label: string;
         isMandatory: boolean;
-        progress: number;
         observations: string | null;
+        progress: number;
         isValidated: boolean;
     }>;
     findAll(activityId: string, user: any): import(".prisma/client").Prisma.PrismaPromise<({
@@ -46,8 +46,8 @@ export declare class ChecklistController {
         activityId: string;
         label: string;
         isMandatory: boolean;
-        progress: number;
         observations: string | null;
+        progress: number;
         isValidated: boolean;
     })[]>;
     findOne(id: string, user: any): Promise<{
@@ -78,8 +78,8 @@ export declare class ChecklistController {
         activityId: string;
         label: string;
         isMandatory: boolean;
-        progress: number;
         observations: string | null;
+        progress: number;
         isValidated: boolean;
     }>;
     update(id: string, dto: UpdateChecklistItemDto, user: any): Promise<{
@@ -98,8 +98,8 @@ export declare class ChecklistController {
         activityId: string;
         label: string;
         isMandatory: boolean;
-        progress: number;
         observations: string | null;
+        progress: number;
         isValidated: boolean;
     }>;
     remove(id: string, user: any): Promise<void>;

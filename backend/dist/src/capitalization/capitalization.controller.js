@@ -31,7 +31,7 @@ let CapitalizationController = class CapitalizationController {
         this.capitalizationService = capitalizationService;
     }
     async create(dto, req) {
-        return this.capitalizationService.create(dto, req.user.organizationId, req.user.sub);
+        return this.capitalizationService.create(dto, req.user.organizationId, req.user.id);
     }
     async findAll(filters, req) {
         return this.capitalizationService.findAll(req.user.organizationId, filters);
@@ -40,10 +40,10 @@ let CapitalizationController = class CapitalizationController {
         return this.capitalizationService.findOne(id, req.user.organizationId);
     }
     async update(id, dto, req) {
-        return this.capitalizationService.update(id, dto, req.user.organizationId, req.user.sub);
+        return this.capitalizationService.update(id, dto, req.user.organizationId, req.user.id);
     }
     async remove(id, req) {
-        return this.capitalizationService.remove(id, req.user.organizationId, req.user.sub);
+        return this.capitalizationService.remove(id, req.user.organizationId, req.user.id);
     }
     async uploadMedia(id, file, type, req) {
         return this.capitalizationService.uploadMedia(id, file, type, req.user.organizationId);

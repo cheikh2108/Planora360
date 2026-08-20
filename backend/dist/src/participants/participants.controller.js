@@ -30,10 +30,10 @@ let ParticipantsController = class ParticipantsController {
         this.participantsService = participantsService;
     }
     async create(dto, req) {
-        return this.participantsService.create(dto, req.user.organizationId, req.user.sub);
+        return this.participantsService.create(dto, req.user.organizationId, req.user.id);
     }
     async import(file, dto, req) {
-        return this.participantsService.importFromExcel(file, dto.activityId, req.user.organizationId, req.user.sub);
+        return this.participantsService.importFromExcel(file, dto.activityId, req.user.organizationId, req.user.id);
     }
     async findByActivity(activityId, req) {
         return this.participantsService.findByActivity(activityId, req.user.organizationId);

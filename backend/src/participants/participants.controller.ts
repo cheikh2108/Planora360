@@ -29,7 +29,7 @@ export class ParticipantsController {
 
   @Post()
   async create(@Body() dto: CreateParticipantDto, @Request() req) {
-    return this.participantsService.create(dto, req.user.organizationId, req.user.sub);
+    return this.participantsService.create(dto, req.user.organizationId, req.user.id);
   }
 
   @Post('import')
@@ -43,7 +43,7 @@ export class ParticipantsController {
       file,
       dto.activityId,
       req.user.organizationId,
-      req.user.sub,
+      req.user.id,
     );
   }
 

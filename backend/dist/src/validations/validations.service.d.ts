@@ -35,8 +35,8 @@ export declare class ValidationsService {
             step: import(".prisma/client").$Enums.ValidationStep;
             activityId: string;
             decision: import(".prisma/client").$Enums.ValidationDecision;
-            validatorId: string;
             comment: string | null;
+            validatorId: string;
         } | null;
     }>;
     getHistory(activityId: string, organizationId: string): Promise<{
@@ -45,8 +45,8 @@ export declare class ValidationsService {
         step: import(".prisma/client").$Enums.ValidationStep;
         activityId: string;
         decision: import(".prisma/client").$Enums.ValidationDecision;
-        validatorId: string;
         comment: string | null;
+        validatorId: string;
     }[]>;
     submit(activityId: string, userId: string, organizationId: string): Promise<{
         id: string;
@@ -54,8 +54,8 @@ export declare class ValidationsService {
         step: import(".prisma/client").$Enums.ValidationStep;
         activityId: string;
         decision: import(".prisma/client").$Enums.ValidationDecision;
-        validatorId: string;
         comment: string | null;
+        validatorId: string;
     }>;
     private findActivity;
     private validateSubmissionPermissions;
@@ -70,8 +70,8 @@ export declare class ValidationsService {
         step: import(".prisma/client").$Enums.ValidationStep;
         activityId: string;
         decision: import(".prisma/client").$Enums.ValidationDecision;
-        validatorId: string;
         comment: string | null;
+        validatorId: string;
     }>;
     private findUserWithRole;
     private getCurrentValidationStep;
@@ -98,8 +98,8 @@ export declare class ValidationsService {
                 step: import(".prisma/client").$Enums.ValidationStep;
                 activityId: string;
                 decision: import(".prisma/client").$Enums.ValidationDecision;
-                validatorId: string;
                 comment: string | null;
+                validatorId: string;
             }[];
         } & {
             id: string;

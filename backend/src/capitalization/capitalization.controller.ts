@@ -35,7 +35,7 @@ export class CapitalizationController {
     return this.capitalizationService.create(
       dto,
       req.user.organizationId,
-      req.user.sub,
+      req.user.id,
     );
   }
 
@@ -59,7 +59,7 @@ export class CapitalizationController {
       id,
       dto,
       req.user.organizationId,
-      req.user.sub,
+      req.user.id,
     );
   }
 
@@ -68,7 +68,7 @@ export class CapitalizationController {
     return this.capitalizationService.remove(
       id,
       req.user.organizationId,
-      req.user.sub,
+      req.user.id,
     );
   }
 
