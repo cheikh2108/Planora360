@@ -15,6 +15,7 @@ import { AuditFeed } from '@/components/dashboard/audit-feed';
 import { KpiSkeleton, Skeleton } from '@/components/ui/skeleton';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/lib/auth-context';
 import { useFilteredActivities } from '@/hooks/useDashboardFilters';
 import { formatCurrency, formatDate, PRIORITY_COLORS, PRIORITY_LABELS, cn } from '@/lib/utils';
@@ -50,15 +51,20 @@ function FilterBar({
   return (
     <div className="flex items-center gap-2 flex-wrap">
       <Filter size={14} className="text-slate-400 shrink-0" />
+
       {/* Plan */}
-      <select
-        value={filters.planId}
-        onChange={e => onChange({ ...filters, planId: e.target.value })}
-        className="h-9 px-3 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#2563eb] bg-white"
-      >
-        <option value="">Tous les plans</option>
-        {plans.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
-      </select>
+      <Select value={filters.planId} onValueChange={(value) => onChange({ ...filters, planId: value })}>
+        <SelectTrigger className="w-48 h-9 text-xs">
+          <SelectValue placeholder="Tous les plans" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="">Tous les plans</SelectItem>
+          {plans.map(p => (
+            <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
       {/* Période */}
       <div className="flex items-center bg-white border border-slate-200 rounded-xl overflow-x-auto">
         {PERIODS.map(p => (
@@ -74,19 +80,21 @@ function FilterBar({
           </button>
         ))}
       </div>
+
       {/* Statut */}
-      <select
-        value={filters.status}
-        onChange={e => onChange({ ...filters, status: e.target.value })}
-        className="h-9 px-3 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#2563eb] bg-white"
-      >
-        <option value="">Tous statuts</option>
-        <option value="EN_RETARD">En retard</option>
-        <option value="EN_COURS">En cours</option>
-        <option value="EN_PREPARATION">En préparation</option>
-        <option value="TERMINEE">Terminées</option>
-        <option value="VALIDEE">Validées</option>
-      </select>
+      <Select value={filters.status} onValueChange={(value) => onChange({ ...filters, status: value })}>
+        <SelectTrigger className="w-48 h-9 text-xs">
+          <SelectValue placeholder="Tous statuts" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="">Tous statuts</SelectItem>
+          <SelectItem value="EN_RETARD">En retard</SelectItem>
+          <SelectItem value="EN_COURS">En cours</SelectItem>
+          <SelectItem value="EN_PREPARATION">En préparation</SelectItem>
+          <SelectItem value="TERMINEE">Terminées</SelectItem>
+          <SelectItem value="VALIDEE">Validées</SelectItem>
+        </SelectContent>
+      </Select>
     </div>
   );
 }

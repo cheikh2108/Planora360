@@ -4,6 +4,7 @@ import * as React from 'react';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+
 interface SelectContextType {
   value: string;
   onValueChange: (value: string) => void;
@@ -11,6 +12,7 @@ interface SelectContextType {
   setOpen: (open: boolean) => void;
   registerOption: (value: string, label: string) => void;
   getLabel: (value: string) => string;
+  disabled?: boolean;
 }
 
 const SelectContext = React.createContext<SelectContextType | undefined>(undefined);
@@ -25,9 +27,10 @@ interface SelectProps {
   value: string;
   onValueChange: (value: string) => void;
   children: React.ReactNode;
+  disabled?: boolean;
 }
 
-export function Select({ value, onValueChange, children }: SelectProps) {
+export function Select({ value, onValueChange, children, disabled }: SelectProps) {
   const [open, setOpen] = React.useState(false);
   const optionsRef = React.useRef<Map<string, string>>(new Map());
 
@@ -40,22 +43,23 @@ export function Select({ value, onValueChange, children }: SelectProps) {
   }, []);
 
   return (
-    <SelectContext.Provider value={{ value, onValueChange, open, setOpen, registerOption, getLabel }}>
+    <SelectContext.Provider value={{ value, onValueChange, open, setOpen, registerOption, getLabel, disabled }}>
       <div className="relative">{children}</div>
     </SelectContext.Provider>
   );
 }
 
 export function SelectTrigger({ children, className }: { children: React.ReactNode; className?: string }) {
-  const { open, setOpen } = useSelectContext();
+  const { open, setOpen, disabled } = useSelectContext();
 
   return (
     <button
       type="button"
-      onClick={() => setOpen(!open)}
+      onClick={() => !disabled && setOpen(!open)}
+      disabled={disabled}
       className={cn(
         'flex h-11 w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium transition-all hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 shadow-sm',
-        open && 'border-[#2563eb] ring-2 ring-[#2563eb] ring-offset-1',
+        open && !disabled && 'border-[#2563eb] ring-2 ring-[#2563eb] ring-offset-1',
         className
       )}
     >
