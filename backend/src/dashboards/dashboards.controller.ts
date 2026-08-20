@@ -22,8 +22,9 @@ export class DashboardsController {
   getPerformanceByResponsible(
     @CurrentUser() user: any,
     @Query('planId') planId?: string,
+    @Query('status') status?: string,
   ) {
-    return this.dashboardsService.getPerformanceByResponsible(user.organizationId, planId);
+    return this.dashboardsService.getPerformanceByResponsible(user.organizationId, planId, status);
   }
 
   @Get('plan/:planId/progress')

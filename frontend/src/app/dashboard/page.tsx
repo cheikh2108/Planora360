@@ -336,7 +336,10 @@ export default function DashboardPage() {
   const { data: overview, isLoading: loadingOverview, refetch: refetchOverview } = useQuery<DashboardOverview>({
     queryKey: ['dashboard-overview', filters.planId, filters.status],
     queryFn: async () => {
-      const r = await dashboardApi.getOverview();
+      const params: Record<string, string> = {};
+      if (filters.planId) params.planId = filters.planId;
+      if (filters.status) params.status = filters.status;
+      const r = await dashboardApi.getOverview(params);
       const d = r.data as any;
       return {
         ...d,
@@ -361,7 +364,13 @@ export default function DashboardPage() {
 
   const { data: performance, isLoading: loadingPerf, refetch: refetchPerformance } = useQuery<{ byResponsible: PerfEntry[] }>({
     queryKey: ['dashboard-performance', filters.planId, filters.status],
-    queryFn: async () => { const r = await dashboardApi.getPerformance(); return r.data; },
+    queryFn: async () => {
+      const params: Record<string, string> = {};
+      if (filters.planId) params.planId = filters.planId;
+      if (filters.status) params.status = filters.status;
+      const r = await dashboardApi.getPerformance(params);
+      return r.data;
+    },
   });
 
   const { data: rawActivities, isLoading: loadingActivities, refetch: refetchActivities } = useQuery<Activity[]>({

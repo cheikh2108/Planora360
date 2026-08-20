@@ -27,10 +27,10 @@ export declare class DashboardsService {
         };
         upcomingDeadlines: {
             id: string;
-            status: import(".prisma/client").$Enums.ActivityStatus;
             title: string;
             dueDate: Date;
             priority: string;
+            status: import(".prisma/client").$Enums.ActivityStatus;
             responsible: {
                 firstName: string;
                 lastName: string;
@@ -38,10 +38,10 @@ export declare class DashboardsService {
         }[];
         recentActivity: {
             createdAt: Date;
+            userId: string;
             action: string;
             entityType: string;
             entityId: string;
-            userId: string;
         }[];
     }>;
     private buildActivityWhereClause;
@@ -53,19 +53,19 @@ export declare class DashboardsService {
     private calculatePlannedBudget;
     private buildActivitiesOverview;
     private buildBudgetOverview;
-    getPerformanceByResponsible(organizationId: string, planId?: string): Promise<any[]>;
+    getPerformanceByResponsible(organizationId: string, planId?: string, status?: string): Promise<any[]>;
     getActivityProgress(organizationId: string, planId: string): Promise<({
         axes: ({
             activities: {
-                id: string;
                 _count: {
                     checklistItems: number;
                 };
-                status: import(".prisma/client").$Enums.ActivityStatus;
+                id: string;
                 title: string;
                 startDate: Date;
                 dueDate: Date;
                 priority: string;
+                status: import(".prisma/client").$Enums.ActivityStatus;
                 completionRate: number;
                 responsible: {
                     firstName: string;
@@ -81,11 +81,11 @@ export declare class DashboardsService {
     } & {
         id: string;
         organizationId: string;
-        createdAt: Date;
-        updatedAt: Date;
-        status: import(".prisma/client").$Enums.PlanStatus;
         title: string;
         expectedResults: string | null;
+        status: import(".prisma/client").$Enums.PlanStatus;
+        createdAt: Date;
+        updatedAt: Date;
         periodStart: Date;
         periodEnd: Date;
         strategicGoals: string | null;

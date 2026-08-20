@@ -139,10 +139,12 @@ let DashboardsService = class DashboardsService {
             executionRate: (0, dashboard_constants_1.calculatePercentage)(executed, planned),
         };
     }
-    async getPerformanceByResponsible(organizationId, planId) {
+    async getPerformanceByResponsible(organizationId, planId, status) {
         const where = { organizationId, parentActivityId: null };
         if (planId)
             where.axis = { actionPlanId: planId };
+        if (status)
+            where.status = status;
         const activities = await this.prisma.activity.findMany({
             where,
             select: {

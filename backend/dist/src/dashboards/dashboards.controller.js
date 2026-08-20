@@ -25,8 +25,8 @@ let DashboardsController = class DashboardsController {
     getOverview(user, planId, responsibleId, status) {
         return this.dashboardsService.getOverview(user.organizationId, { planId, responsibleId, status });
     }
-    getPerformanceByResponsible(user, planId) {
-        return this.dashboardsService.getPerformanceByResponsible(user.organizationId, planId);
+    getPerformanceByResponsible(user, planId, status) {
+        return this.dashboardsService.getPerformanceByResponsible(user.organizationId, planId, status);
     }
     getActivityProgress(planId, user) {
         return this.dashboardsService.getActivityProgress(user.organizationId, planId);
@@ -47,8 +47,9 @@ __decorate([
     (0, common_1.Get)('performance'),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Query)('planId')),
+    __param(2, (0, common_1.Query)('status')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:paramtypes", [Object, String, String]),
     __metadata("design:returntype", void 0)
 ], DashboardsController.prototype, "getPerformanceByResponsible", null);
 __decorate([

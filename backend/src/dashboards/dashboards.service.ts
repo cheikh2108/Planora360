@@ -161,9 +161,10 @@ export class DashboardsService {
     };
   }
 
-  async getPerformanceByResponsible(organizationId: string, planId?: string) {
+  async getPerformanceByResponsible(organizationId: string, planId?: string, status?: string) {
     const where: any = { organizationId, parentActivityId: null };
     if (planId) where.axis = { actionPlanId: planId };
+    if (status) where.status = status;
 
     const activities = await this.prisma.activity.findMany({
       where,
