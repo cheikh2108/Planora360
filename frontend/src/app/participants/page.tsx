@@ -12,6 +12,7 @@ import api from '@/lib/api';
 export default function ParticipantsPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [loadingActivities, setLoadingActivities] = useState(true);
   const [participants, setParticipants] = useState<any[]>([]);
   const [activities, setActivities] = useState<any[]>([]);
   const [selectedActivityId, setSelectedActivityId] = useState<string>('');
@@ -23,13 +24,15 @@ export default function ParticipantsPage() {
   useEffect(() => {
     if (selectedActivityId) {
       loadParticipants(selectedActivityId);
-    } else {
+    } else if (!loadingActivities) {
+      // Ne mettre loading à false que si on a fini de charger les activités
       setParticipants([]);
       setLoading(false);
     }
-  }, [selectedActivityId]);
+  }, [selectedActivityId, loadingActivities]);
 
   const loadActivities = async () => {
+    setLoadingActivities(true);
     try {
       const response = await api.get('/activities?limit=100');
       const activitiesData = response.data.data || [];
@@ -38,9 +41,14 @@ export default function ParticipantsPage() {
       // Sélectionner automatiquement la première activité si elle existe
       if (activitiesData.length > 0) {
         setSelectedActivityId(activitiesData[0].id);
+      } else {
+        setLoading(false);
       }
     } catch (error) {
       console.error('Erreur chargement activités:', error);
+      setLoading(false);
+    } finally {
+      setLoadingActivities(false);
     }
   };
 
