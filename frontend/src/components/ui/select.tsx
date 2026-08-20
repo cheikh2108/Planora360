@@ -113,13 +113,21 @@ export function SelectItem({ value, children }: SelectItemProps) {
       label = children;
     } else if (typeof children === 'number') {
       label = String(children);
-    } else if (React.isValidElement(children) && typeof children.props.children === 'string') {
-      label = children.props.children;
-    } else if (children && typeof (children as any).toString === 'function') {
+    } else if (React.isValidElement(children)) {
+      // Typage sûr pour accéder aux props
+      const props = children.props as any;
+      if (props && typeof props.children === 'string') {
+        label = props.children;
+      }
+    } else if (children) {
       // Essayer de convertir en string
-      const str = String(children);
-      if (str !== '[object Object]') {
-        label = str;
+      try {
+        const str = String(children);
+        if (str !== '[object Object]') {
+          label = str;
+        }
+      } catch (e) {
+        // Garder la valeur par défaut
       }
     }
     registerOption(value, label);
