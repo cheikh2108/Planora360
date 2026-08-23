@@ -34,8 +34,8 @@ export function FloatingHelpButton() {
     return 'dashboard';
   };
 
-  // Ne pas afficher sur les pages auth
-  if (pathname?.startsWith('/auth')) return null;
+  // Ne pas afficher sur les pages auth et super-admin
+  if (pathname?.startsWith('/auth') || pathname?.startsWith('/super-admin')) return null;
 
   return (
     <div className="fixed bottom-6 right-6 z-[9999]">
