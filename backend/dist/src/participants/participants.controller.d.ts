@@ -6,16 +6,16 @@ export declare class ParticipantsController {
     constructor(participantsService: ParticipantsService);
     create(dto: CreateParticipantDto, req: any): Promise<{
         id: string;
+        organizationId: string;
         firstName: string;
         lastName: string;
+        createdAt: Date;
+        updatedAt: Date;
+        activityId: string;
         phone: string;
         paymentMode: string;
         amount: number;
         createdBy: string;
-        createdAt: Date;
-        updatedAt: Date;
-        organizationId: string;
-        activityId: string;
     }>;
     import(file: Express.Multer.File, dto: ImportParticipantsDto, req: any): Promise<{
         success: boolean;
@@ -28,28 +28,28 @@ export declare class ParticipantsController {
     }>;
     findByActivity(activityId: string, req: any): Promise<{
         id: string;
+        organizationId: string;
         firstName: string;
         lastName: string;
+        createdAt: Date;
+        updatedAt: Date;
+        activityId: string;
         phone: string;
         paymentMode: string;
         amount: number;
         createdBy: string;
-        createdAt: Date;
-        updatedAt: Date;
-        organizationId: string;
-        activityId: string;
     }[]>;
     remove(id: string, req: any): Promise<{
         id: string;
+        organizationId: string;
         firstName: string;
         lastName: string;
+        createdAt: Date;
+        updatedAt: Date;
+        activityId: string;
         phone: string;
         paymentMode: string;
         amount: number;
         createdBy: string;
-        createdAt: Date;
-        updatedAt: Date;
-        organizationId: string;
-        activityId: string;
     }>;
 }

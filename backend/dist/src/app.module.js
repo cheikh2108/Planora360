@@ -34,6 +34,7 @@ const participants_module_1 = require("./participants/participants.module");
 const capitalization_module_1 = require("./capitalization/capitalization.module");
 const planning_module_1 = require("./planning/planning.module");
 const recommendations_module_1 = require("./recommendations/recommendations.module");
+const sentry_test_module_1 = require("./sentry-test/sentry-test.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -68,6 +69,7 @@ exports.AppModule = AppModule = __decorate([
             capitalization_module_1.CapitalizationModule,
             planning_module_1.PlanningModule,
             recommendations_module_1.RecommendationsModule,
+            sentry_test_module_1.SentryTestModule,
         ],
         providers: [
             {

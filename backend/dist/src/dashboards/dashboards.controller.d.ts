@@ -23,10 +23,10 @@ export declare class DashboardsController {
         };
         upcomingDeadlines: {
             id: string;
+            status: import(".prisma/client").$Enums.ActivityStatus;
             title: string;
             dueDate: Date;
             priority: string;
-            status: import(".prisma/client").$Enums.ActivityStatus;
             responsible: {
                 firstName: string;
                 lastName: string;
@@ -34,25 +34,25 @@ export declare class DashboardsController {
         }[];
         recentActivity: {
             createdAt: Date;
-            userId: string;
             action: string;
             entityType: string;
             entityId: string;
+            userId: string;
         }[];
     }>;
     getPerformanceByResponsible(user: any, planId?: string, status?: string): Promise<any[]>;
     getActivityProgress(planId: string, user: any): Promise<({
         axes: ({
             activities: {
+                id: string;
                 _count: {
                     checklistItems: number;
                 };
-                id: string;
+                status: import(".prisma/client").$Enums.ActivityStatus;
                 title: string;
                 startDate: Date;
                 dueDate: Date;
                 priority: string;
-                status: import(".prisma/client").$Enums.ActivityStatus;
                 completionRate: number;
                 responsible: {
                     firstName: string;
@@ -68,11 +68,11 @@ export declare class DashboardsController {
     } & {
         id: string;
         organizationId: string;
-        title: string;
-        expectedResults: string | null;
-        status: import(".prisma/client").$Enums.PlanStatus;
         createdAt: Date;
         updatedAt: Date;
+        status: import(".prisma/client").$Enums.PlanStatus;
+        title: string;
+        expectedResults: string | null;
         periodStart: Date;
         periodEnd: Date;
         strategicGoals: string | null;
