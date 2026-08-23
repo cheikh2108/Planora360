@@ -367,11 +367,20 @@ model AuditLog {
   entityType     String
   entityId       String
   metadata       Json?
+
+  // Enhanced audit fields (Phase 3)
+  ipAddress      String?
+  userAgent      String?
+  requestId      String?
+  oldValues      Json?
+  newValues      Json?
+
   createdAt      DateTime     @default(now())
 
   @@index([organizationId])
   @@index([organizationId, createdAt])
   @@index([userId])
+  @@index([requestId])
   @@map("audit_logs")
 }
 

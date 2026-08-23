@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   Building2, Shield, Settings, LogOut,
-  LayoutDashboard,
+  LayoutDashboard, ScrollText,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth-context';
@@ -13,6 +13,7 @@ const NAV = [
   { href: '/super-admin',               label: 'Vue d\'ensemble', icon: LayoutDashboard, exact: true },
   { href: '/super-admin/organizations', label: 'Organisations',   icon: Building2 },
   { href: '/super-admin/roles',         label: 'Rôles système',   icon: Shield },
+  { href: '/super-admin/audit-logs',    label: 'Audit Logs',      icon: ScrollText },
   { href: '/super-admin/settings',      label: 'Paramètres',      icon: Settings },
 ];
 
