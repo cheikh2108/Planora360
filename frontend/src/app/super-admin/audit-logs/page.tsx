@@ -228,20 +228,18 @@ export default function AuditLogsPage() {
             </p>
             <div className="flex gap-2">
               <Button
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="border-slate-300"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               <Button
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="border-slate-300"
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>
