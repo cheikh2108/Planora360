@@ -21,9 +21,9 @@ export declare class CapitalizationController {
         createdAt: Date;
         updatedAt: Date;
         status: string;
+        type: string;
         tags: string[];
         title: string;
-        type: string;
         context: string;
         challenges: string;
         solutions: string;
@@ -47,9 +47,9 @@ export declare class CapitalizationController {
         createdAt: Date;
         updatedAt: Date;
         status: string;
+        type: string;
         tags: string[];
         title: string;
-        type: string;
         context: string;
         challenges: string;
         solutions: string;
@@ -73,9 +73,9 @@ export declare class CapitalizationController {
         createdAt: Date;
         updatedAt: Date;
         status: string;
+        type: string;
         tags: string[];
         title: string;
-        type: string;
         context: string;
         challenges: string;
         solutions: string;
@@ -99,9 +99,9 @@ export declare class CapitalizationController {
         createdAt: Date;
         updatedAt: Date;
         status: string;
+        type: string;
         tags: string[];
         title: string;
-        type: string;
         context: string;
         challenges: string;
         solutions: string;
@@ -115,9 +115,9 @@ export declare class CapitalizationController {
         createdAt: Date;
         updatedAt: Date;
         status: string;
+        type: string;
         tags: string[];
         title: string;
-        type: string;
         context: string;
         challenges: string;
         solutions: string;

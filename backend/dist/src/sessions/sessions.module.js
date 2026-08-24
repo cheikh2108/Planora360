@@ -6,15 +6,18 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SentryTestModule = void 0;
+exports.SessionsModule = void 0;
 const common_1 = require("@nestjs/common");
-const sentry_test_controller_1 = require("./sentry-test.controller");
-let SentryTestModule = class SentryTestModule {
+const sessions_service_1 = require("./sessions.service");
+const sessions_controller_1 = require("./sessions.controller");
+let SessionsModule = class SessionsModule {
 };
-exports.SentryTestModule = SentryTestModule;
-exports.SentryTestModule = SentryTestModule = __decorate([
+exports.SessionsModule = SessionsModule;
+exports.SessionsModule = SessionsModule = __decorate([
     (0, common_1.Module)({
-        controllers: [sentry_test_controller_1.SentryTestController],
+        controllers: [sessions_controller_1.SessionsController],
+        providers: [sessions_service_1.SessionsService],
+        exports: [sessions_service_1.SessionsService],
     })
-], SentryTestModule);
-//# sourceMappingURL=sentry-test.module.js.map
+], SessionsModule);
+//# sourceMappingURL=sessions.module.js.map

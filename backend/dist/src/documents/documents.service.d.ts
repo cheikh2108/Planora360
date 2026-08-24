@@ -7,9 +7,9 @@ export declare class DocumentsService {
     uploadToActivity(activityId: string, file: Express.Multer.File, type: string, organizationId: string, uploadedById: string): Promise<{
         id: string;
         createdAt: Date;
+        type: string;
         activityId: string | null;
         checklistItemId: string | null;
-        type: string;
         storageKey: string;
         fileName: string;
         fileSize: number | null;
@@ -19,9 +19,9 @@ export declare class DocumentsService {
     uploadToChecklistItem(checklistItemId: string, file: Express.Multer.File, type: string, organizationId: string, uploadedById: string): Promise<{
         id: string;
         createdAt: Date;
+        type: string;
         activityId: string | null;
         checklistItemId: string | null;
-        type: string;
         storageKey: string;
         fileName: string;
         fileSize: number | null;
@@ -31,9 +31,9 @@ export declare class DocumentsService {
     findByActivity(activityId: string, organizationId: string): Promise<{
         id: string;
         createdAt: Date;
+        type: string;
         activityId: string | null;
         checklistItemId: string | null;
-        type: string;
         storageKey: string;
         fileName: string;
         fileSize: number | null;
@@ -43,9 +43,9 @@ export declare class DocumentsService {
     findByChecklistItem(checklistItemId: string, organizationId: string): Promise<{
         id: string;
         createdAt: Date;
+        type: string;
         activityId: string | null;
         checklistItemId: string | null;
-        type: string;
         storageKey: string;
         fileName: string;
         fileSize: number | null;
@@ -60,9 +60,9 @@ export declare class DocumentsService {
     remove(id: string, organizationId: string): Promise<{
         id: string;
         createdAt: Date;
+        type: string;
         activityId: string | null;
         checklistItemId: string | null;
-        type: string;
         storageKey: string;
         fileName: string;
         fileSize: number | null;

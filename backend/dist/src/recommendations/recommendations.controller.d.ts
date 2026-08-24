@@ -66,8 +66,8 @@ export declare class RecommendationsController {
         createdAt: Date;
         updatedAt: Date;
         status: import(".prisma/client").$Enums.RecommendationStatus;
-        title: string;
         description: string;
+        title: string;
         responsibleId: string;
         dueDate: Date;
         priority: import(".prisma/client").$Enums.RecommendationPriority;
@@ -154,8 +154,8 @@ export declare class RecommendationsController {
             createdAt: Date;
             updatedAt: Date;
             status: import(".prisma/client").$Enums.RecommendationStatus;
-            title: string;
             description: string;
+            title: string;
             responsibleId: string;
             dueDate: Date;
             priority: import(".prisma/client").$Enums.RecommendationPriority;
@@ -277,8 +277,8 @@ export declare class RecommendationsController {
             createdAt: Date;
             updatedAt: Date;
             status: string;
-            title: string;
             description: string | null;
+            title: string;
             responsibleId: string | null;
             dueDate: Date | null;
             order: number;
@@ -327,8 +327,8 @@ export declare class RecommendationsController {
         createdAt: Date;
         updatedAt: Date;
         status: import(".prisma/client").$Enums.RecommendationStatus;
-        title: string;
         description: string;
+        title: string;
         responsibleId: string;
         dueDate: Date;
         priority: import(".prisma/client").$Enums.RecommendationPriority;
@@ -414,8 +414,8 @@ export declare class RecommendationsController {
         createdAt: Date;
         updatedAt: Date;
         status: import(".prisma/client").$Enums.RecommendationStatus;
-        title: string;
         description: string;
+        title: string;
         responsibleId: string;
         dueDate: Date;
         priority: import(".prisma/client").$Enums.RecommendationPriority;
@@ -501,8 +501,8 @@ export declare class RecommendationsController {
         createdAt: Date;
         updatedAt: Date;
         status: import(".prisma/client").$Enums.RecommendationStatus;
-        title: string;
         description: string;
+        title: string;
         responsibleId: string;
         dueDate: Date;
         priority: import(".prisma/client").$Enums.RecommendationPriority;
@@ -588,8 +588,8 @@ export declare class RecommendationsController {
         createdAt: Date;
         updatedAt: Date;
         status: import(".prisma/client").$Enums.RecommendationStatus;
-        title: string;
         description: string;
+        title: string;
         responsibleId: string;
         dueDate: Date;
         priority: import(".prisma/client").$Enums.RecommendationPriority;
@@ -675,8 +675,8 @@ export declare class RecommendationsController {
         createdAt: Date;
         updatedAt: Date;
         status: import(".prisma/client").$Enums.RecommendationStatus;
-        title: string;
         description: string;
+        title: string;
         responsibleId: string;
         dueDate: Date;
         priority: import(".prisma/client").$Enums.RecommendationPriority;
@@ -709,8 +709,8 @@ export declare class RecommendationsController {
         createdAt: Date;
         updatedAt: Date;
         status: import(".prisma/client").$Enums.RecommendationStatus;
-        title: string;
         description: string;
+        title: string;
         responsibleId: string;
         dueDate: Date;
         priority: import(".prisma/client").$Enums.RecommendationPriority;
@@ -742,8 +742,8 @@ export declare class RecommendationsController {
         createdAt: Date;
         updatedAt: Date;
         status: string;
-        title: string;
         description: string | null;
+        title: string;
         responsibleId: string | null;
         dueDate: Date | null;
         order: number;
@@ -755,8 +755,8 @@ export declare class RecommendationsController {
         createdAt: Date;
         updatedAt: Date;
         status: string;
-        title: string;
         description: string | null;
+        title: string;
         responsibleId: string | null;
         dueDate: Date | null;
         order: number;
@@ -768,8 +768,8 @@ export declare class RecommendationsController {
         createdAt: Date;
         updatedAt: Date;
         status: string;
-        title: string;
         description: string | null;
+        title: string;
         responsibleId: string | null;
         dueDate: Date | null;
         order: number;

@@ -14,6 +14,8 @@ const throttler_1 = require("@nestjs/throttler");
 const core_1 = require("@nestjs/core");
 const prisma_module_1 = require("./common/prisma/prisma.module");
 const audit_module_1 = require("./audit/audit.module");
+const security_events_module_1 = require("./security-events/security-events.module");
+const sessions_module_1 = require("./sessions/sessions.module");
 const notifications_module_1 = require("./notifications/notifications.module");
 const storage_module_1 = require("./storage/storage.module");
 const auth_module_1 = require("./auth/auth.module");
@@ -34,7 +36,6 @@ const participants_module_1 = require("./participants/participants.module");
 const capitalization_module_1 = require("./capitalization/capitalization.module");
 const planning_module_1 = require("./planning/planning.module");
 const recommendations_module_1 = require("./recommendations/recommendations.module");
-const sentry_test_module_1 = require("./sentry-test/sentry-test.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -49,6 +50,8 @@ exports.AppModule = AppModule = __decorate([
                 }]),
             prisma_module_1.PrismaModule,
             audit_module_1.AuditModule,
+            security_events_module_1.SecurityEventsModule,
+            sessions_module_1.SessionsModule,
             notifications_module_1.NotificationsModule,
             storage_module_1.StorageModule,
             auth_module_1.AuthModule,
@@ -69,7 +72,6 @@ exports.AppModule = AppModule = __decorate([
             capitalization_module_1.CapitalizationModule,
             planning_module_1.PlanningModule,
             recommendations_module_1.RecommendationsModule,
-            sentry_test_module_1.SentryTestModule,
         ],
         providers: [
             {

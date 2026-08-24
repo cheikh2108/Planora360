@@ -23,9 +23,9 @@ export declare class CapitalizationService {
         createdAt: Date;
         updatedAt: Date;
         status: string;
+        type: string;
         tags: string[];
         title: string;
-        type: string;
         context: string;
         challenges: string;
         solutions: string;
@@ -49,9 +49,9 @@ export declare class CapitalizationService {
         createdAt: Date;
         updatedAt: Date;
         status: string;
+        type: string;
         tags: string[];
         title: string;
-        type: string;
         context: string;
         challenges: string;
         solutions: string;
@@ -75,9 +75,9 @@ export declare class CapitalizationService {
         createdAt: Date;
         updatedAt: Date;
         status: string;
+        type: string;
         tags: string[];
         title: string;
-        type: string;
         context: string;
         challenges: string;
         solutions: string;
@@ -101,9 +101,9 @@ export declare class CapitalizationService {
         createdAt: Date;
         updatedAt: Date;
         status: string;
+        type: string;
         tags: string[];
         title: string;
-        type: string;
         context: string;
         challenges: string;
         solutions: string;
@@ -117,9 +117,9 @@ export declare class CapitalizationService {
         createdAt: Date;
         updatedAt: Date;
         status: string;
+        type: string;
         tags: string[];
         title: string;
-        type: string;
         context: string;
         challenges: string;
         solutions: string;

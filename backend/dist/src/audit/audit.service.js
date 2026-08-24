@@ -26,6 +26,11 @@ let AuditService = class AuditService {
                 entityType: params.entityType,
                 entityId: params.entityId,
                 metadata: params.metadata ?? {},
+                ipAddress: params.ipAddress,
+                userAgent: params.userAgent,
+                requestId: params.requestId,
+                oldValues: params.oldValues ?? undefined,
+                newValues: params.newValues ?? undefined,
             },
         });
     }
@@ -57,6 +62,53 @@ let AuditService = class AuditService {
             where: { entityType, entityId, organizationId },
             orderBy: { createdAt: 'asc' },
         });
+    }
+    async findWithFilters(params) {
+        const limit = params.limit || 100;
+        const page = params.page || 1;
+        const skip = (page - 1) * limit;
+        const where = {};
+        if (params.organizationId)
+            where.organizationId = params.organizationId;
+        if (params.userId)
+            where.userId = params.userId;
+        if (params.action)
+            where.action = { contains: params.action };
+        if (params.entityType)
+            where.entityType = params.entityType;
+        if (params.entityId)
+            where.entityId = params.entityId;
+        if (params.requestId)
+            where.requestId = params.requestId;
+        if (params.ipAddress)
+            where.ipAddress = params.ipAddress;
+        if (params.startDate || params.endDate) {
+            where.createdAt = {};
+            if (params.startDate)
+                where.createdAt.gte = params.startDate;
+            if (params.endDate)
+                where.createdAt.lte = params.endDate;
+        }
+        const [entries, total] = await Promise.all([
+            this.prisma.auditLog.findMany({
+                where,
+                orderBy: { createdAt: 'desc' },
+                take: limit,
+                skip,
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            firstName: true,
+                            lastName: true,
+                            email: true,
+                        },
+                    },
+                },
+            }),
+            this.prisma.auditLog.count({ where }),
+        ]);
+        return { entries, total, page, limit };
     }
 };
 exports.AuditService = AuditService;

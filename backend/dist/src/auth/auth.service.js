@@ -47,6 +47,7 @@ const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
 const config_1 = require("@nestjs/config");
 const prisma_service_1 = require("../common/prisma/prisma.service");
+const sessions_service_1 = require("../sessions/sessions.service");
 const bcrypt = __importStar(require("bcryptjs"));
 const speakeasy = __importStar(require("speakeasy"));
 const QRCode = __importStar(require("qrcode"));
@@ -56,10 +57,12 @@ let AuthService = class AuthService {
     prisma;
     jwtService;
     config;
-    constructor(prisma, jwtService, config) {
+    sessionsService;
+    constructor(prisma, jwtService, config, sessionsService) {
         this.prisma = prisma;
         this.jwtService = jwtService;
         this.config = config;
+        this.sessionsService = sessionsService;
     }
     async register(dto) {
         await this.validateUniqueOrganization(dto.organizationName);
@@ -121,7 +124,7 @@ let AuthService = class AuthService {
     async hashPassword(password) {
         return bcrypt.hash(password, auth_constants_1.BCRYPT_SALT_ROUNDS);
     }
-    async login(dto) {
+    async login(dto, ipAddress, userAgent) {
         const user = await this.findActiveUser(dto.email);
         this.validateOrganizationStatus(user.organization?.status);
         await this.validatePassword(dto.password, user.passwordHash);
@@ -131,7 +134,7 @@ let AuthService = class AuthService {
             this.verifyTOTP(user.twoFactorSecret, dto.totp, auth_constants_1.ERROR_INVALID_2FA_CODE);
         }
         await this.updateLastLogin(user.id);
-        return this.generateTokens(user);
+        return this.generateTokens(user, ipAddress, userAgent);
     }
     async findActiveUser(email) {
         const user = await this.prisma.user.findFirst({
@@ -173,11 +176,11 @@ let AuthService = class AuthService {
             data: { lastLoginAt: new Date() },
         });
     }
-    async refresh(token) {
+    async refresh(token, ipAddress, userAgent) {
         const stored = await this.findRefreshToken(token);
         this.validateRefreshTokenExpiry(stored);
         await this.deleteRefreshToken(stored.id);
-        return this.generateTokens(stored.user);
+        return this.generateTokens(stored.user, ipAddress, userAgent);
     }
     async findRefreshToken(token) {
         const stored = await this.prisma.refreshToken.findUnique({
@@ -271,10 +274,17 @@ let AuthService = class AuthService {
             throw new common_1.BadRequestException(`Le mot de passe doit contenir au moins ${auth_constants_1.MIN_PASSWORD_LENGTH} caractères`);
         }
     }
-    async generateTokens(user) {
+    async generateTokens(user, ipAddress, userAgent) {
         const payload = this.createJWTPayload(user);
         const accessToken = this.signAccessToken(payload);
         const refreshToken = await this.createRefreshToken(user.id);
+        const refreshTokenExpiry = (0, auth_constants_1.calculateRefreshTokenExpiry)();
+        await this.sessionsService.createSession({
+            userId: user.id,
+            ipAddress: ipAddress || 'unknown',
+            userAgent,
+            expiresAt: refreshTokenExpiry,
+        });
         return {
             accessToken,
             refreshToken,
@@ -333,6 +343,7 @@ exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         jwt_1.JwtService,
-        config_1.ConfigService])
+        config_1.ConfigService,
+        sessions_service_1.SessionsService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

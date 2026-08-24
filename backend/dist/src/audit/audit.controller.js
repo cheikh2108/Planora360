@@ -19,6 +19,7 @@ const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../common/guards/roles.guard");
 const roles_decorator_1 = require("../common/decorators/roles.decorator");
 const current_user_decorator_1 = require("../common/decorators/current-user.decorator");
+const audit_filters_dto_1 = require("./dto/audit-filters.dto");
 let AuditController = class AuditController {
     auditService;
     constructor(auditService) {
@@ -29,6 +30,58 @@ let AuditController = class AuditController {
     }
     findByActivity(id, user) {
         return this.auditService.findByEntity('Activity', id, user.organizationId);
+    }
+    async searchWithFilters(filters, user) {
+        const searchParams = {
+            ...filters,
+            organizationId: filters.organizationId || user.organizationId,
+            startDate: filters.startDate ? new Date(filters.startDate) : undefined,
+            endDate: filters.endDate ? new Date(filters.endDate) : undefined,
+        };
+        return this.auditService.findWithFilters(searchParams);
+    }
+    async export(filters, user, res) {
+        const searchParams = {
+            ...filters,
+            organizationId: filters.organizationId || user.organizationId,
+            startDate: filters.startDate ? new Date(filters.startDate) : undefined,
+            endDate: filters.endDate ? new Date(filters.endDate) : undefined,
+            limit: 10000,
+        };
+        const { entries } = await this.auditService.findWithFilters(searchParams);
+        const header = [
+            'Date',
+            'Organization ID',
+            'User',
+            'Action',
+            'Entity Type',
+            'Entity ID',
+            'IP Address',
+            'User Agent',
+            'Request ID',
+            'Metadata',
+        ].join(',');
+        const rows = entries.map((entry) => {
+            const date = new Date(entry.createdAt).toISOString();
+            const userName = `${entry.user.firstName} ${entry.user.lastName}`;
+            const metadata = JSON.stringify(entry.metadata || {}).replace(/"/g, '""');
+            return [
+                date,
+                entry.organizationId,
+                `"${userName}"`,
+                entry.action,
+                entry.entityType,
+                entry.entityId,
+                entry.ipAddress || '',
+                `"${entry.userAgent || ''}"`,
+                entry.requestId || '',
+                `"${metadata}"`,
+            ].join(',');
+        });
+        const csv = [header, ...rows].join('\n');
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename="audit-logs-${Date.now()}.csv"`);
+        res.send(csv);
     }
 };
 exports.AuditController = AuditController;
@@ -51,6 +104,26 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], AuditController.prototype, "findByActivity", null);
+__decorate([
+    (0, common_1.Get)('search'),
+    (0, roles_decorator_1.Roles)('Super administrateur'),
+    __param(0, (0, common_1.Query)()),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [audit_filters_dto_1.AuditFiltersDto, Object]),
+    __metadata("design:returntype", Promise)
+], AuditController.prototype, "searchWithFilters", null);
+__decorate([
+    (0, common_1.Get)('export'),
+    (0, roles_decorator_1.Roles)('Super administrateur'),
+    (0, common_1.HttpCode)(200),
+    __param(0, (0, common_1.Query)()),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __param(2, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [audit_filters_dto_1.AuditFiltersDto, Object, Object]),
+    __metadata("design:returntype", Promise)
+], AuditController.prototype, "export", null);
 exports.AuditController = AuditController = __decorate([
     (0, common_1.Controller)('audit'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),

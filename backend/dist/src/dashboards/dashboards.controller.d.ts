@@ -49,8 +49,8 @@ export declare class DashboardsController {
                     checklistItems: number;
                 };
                 status: import(".prisma/client").$Enums.ActivityStatus;
-                title: string;
                 startDate: Date;
+                title: string;
                 dueDate: Date;
                 priority: string;
                 completionRate: number;

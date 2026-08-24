@@ -76,13 +76,13 @@ export declare class ActionPlansController {
                 createdAt: Date;
                 updatedAt: Date;
                 status: import(".prisma/client").$Enums.ActivityStatus;
+                startDate: Date;
+                description: string | null;
                 axisId: string;
                 parentActivityId: string | null;
                 title: string;
-                description: string | null;
                 expectedResults: string | null;
                 responsibleId: string;
-                startDate: Date;
                 dueDate: Date;
                 priority: string;
                 budgetPlanned: import("@prisma/client-runtime-utils").Decimal | null;

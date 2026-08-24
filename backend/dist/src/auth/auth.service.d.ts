@@ -1,13 +1,15 @@
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { SessionsService } from '../sessions/sessions.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterOrganizationDto } from './dto/register-organization.dto';
 export declare class AuthService {
     private prisma;
     private jwtService;
     private config;
-    constructor(prisma: PrismaService, jwtService: JwtService, config: ConfigService);
+    private sessionsService;
+    constructor(prisma: PrismaService, jwtService: JwtService, config: ConfigService, sessionsService: SessionsService);
     register(dto: RegisterOrganizationDto): Promise<{
         message: string;
     }>;
@@ -17,7 +19,7 @@ export declare class AuthService {
     private createOrganization;
     private createAdminUser;
     private hashPassword;
-    login(dto: LoginDto): Promise<{
+    login(dto: LoginDto, ipAddress?: string, userAgent?: string): Promise<{
         accessToken: string;
         refreshToken: string;
         user: {
@@ -48,7 +50,7 @@ export declare class AuthService {
     private validatePassword;
     private verifyTOTP;
     private updateLastLogin;
-    refresh(token: string): Promise<{
+    refresh(token: string, ipAddress?: string, userAgent?: string): Promise<{
         accessToken: string;
         refreshToken: string;
         user: {

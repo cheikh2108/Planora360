@@ -1,4 +1,6 @@
+import { Response } from 'express';
 import { AuditService } from './audit.service';
+import { AuditFiltersDto } from './dto/audit-filters.dto';
 export declare class AuditController {
     private auditService;
     constructor(auditService: AuditService);
@@ -18,6 +20,11 @@ export declare class AuditController {
             entityType: string;
             entityId: string;
             metadata: import("@prisma/client/runtime/client").JsonValue | null;
+            ipAddress: string | null;
+            userAgent: string | null;
+            requestId: string | null;
+            oldValues: import("@prisma/client/runtime/client").JsonValue | null;
+            newValues: import("@prisma/client/runtime/client").JsonValue | null;
             userId: string;
         })[];
         total: number;
@@ -32,6 +39,39 @@ export declare class AuditController {
         entityType: string;
         entityId: string;
         metadata: import("@prisma/client/runtime/client").JsonValue | null;
+        ipAddress: string | null;
+        userAgent: string | null;
+        requestId: string | null;
+        oldValues: import("@prisma/client/runtime/client").JsonValue | null;
+        newValues: import("@prisma/client/runtime/client").JsonValue | null;
         userId: string;
     }[]>;
+    searchWithFilters(filters: AuditFiltersDto, user: any): Promise<{
+        entries: ({
+            user: {
+                id: string;
+                email: string;
+                firstName: string;
+                lastName: string;
+            };
+        } & {
+            id: string;
+            organizationId: string;
+            createdAt: Date;
+            action: string;
+            entityType: string;
+            entityId: string;
+            metadata: import("@prisma/client/runtime/client").JsonValue | null;
+            ipAddress: string | null;
+            userAgent: string | null;
+            requestId: string | null;
+            oldValues: import("@prisma/client/runtime/client").JsonValue | null;
+            newValues: import("@prisma/client/runtime/client").JsonValue | null;
+            userId: string;
+        })[];
+        total: number;
+        page: number;
+        limit: number;
+    }>;
+    export(filters: AuditFiltersDto, user: any, res: Response): Promise<void>;
 }

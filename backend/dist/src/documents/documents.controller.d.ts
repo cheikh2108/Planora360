@@ -5,9 +5,9 @@ export declare class DocumentsController {
     uploadToActivity(activityId: string, file: Express.Multer.File, type: string, user: any): Promise<{
         id: string;
         createdAt: Date;
+        type: string;
         activityId: string | null;
         checklistItemId: string | null;
-        type: string;
         storageKey: string;
         fileName: string;
         fileSize: number | null;
@@ -17,9 +17,9 @@ export declare class DocumentsController {
     findByActivity(activityId: string, user: any): Promise<{
         id: string;
         createdAt: Date;
+        type: string;
         activityId: string | null;
         checklistItemId: string | null;
-        type: string;
         storageKey: string;
         fileName: string;
         fileSize: number | null;
@@ -29,9 +29,9 @@ export declare class DocumentsController {
     uploadToChecklist(itemId: string, file: Express.Multer.File, type: string, user: any): Promise<{
         id: string;
         createdAt: Date;
+        type: string;
         activityId: string | null;
         checklistItemId: string | null;
-        type: string;
         storageKey: string;
         fileName: string;
         fileSize: number | null;
@@ -41,9 +41,9 @@ export declare class DocumentsController {
     findByChecklistItem(itemId: string, user: any): Promise<{
         id: string;
         createdAt: Date;
+        type: string;
         activityId: string | null;
         checklistItemId: string | null;
-        type: string;
         storageKey: string;
         fileName: string;
         fileSize: number | null;
@@ -58,9 +58,9 @@ export declare class DocumentsController {
     remove(id: string, user: any): Promise<{
         id: string;
         createdAt: Date;
+        type: string;
         activityId: string | null;
         checklistItemId: string | null;
-        type: string;
         storageKey: string;
         fileName: string;
         fileSize: number | null;
