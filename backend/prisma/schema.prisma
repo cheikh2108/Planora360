@@ -190,6 +190,7 @@ model User {
   recommendationComments      RecommendationComment[]
   auditLogs                   AuditLog[]                  @relation("AuditLogUser")
   recommendationHistory       RecommendationHistory[]
+  sessions                    Session[]
 
   @@index([organizationId])
   @@map("users")
@@ -205,6 +206,37 @@ model RefreshToken {
 
   @@index([userId])
   @@map("refresh_tokens")
+}
+
+model Session {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Device & Browser
+  deviceName     String?
+  browser        String?
+  os             String?
+
+  // Location
+  ipAddress      String
+  country        String?
+  city           String?
+
+  // Activity tracking
+  lastActivityAt DateTime @default(now())
+  expiresAt      DateTime
+
+  // Metadata
+  userAgent      String?
+  metadata       Json?
+
+  createdAt      DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([lastActivityAt])
+  @@map("sessions")
 }
 
 model ActionPlan {

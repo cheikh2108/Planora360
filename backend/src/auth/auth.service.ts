@@ -8,6 +8,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { SessionsService } from '../sessions/sessions.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterOrganizationDto } from './dto/register-organization.dto';
 import * as bcrypt from 'bcryptjs';
@@ -43,6 +44,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private config: ConfigService,
+    private sessionsService: SessionsService,
   ) {}
 
   async register(dto: RegisterOrganizationDto) {
@@ -112,7 +114,7 @@ export class AuthService {
     return bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
   }
 
-  async login(dto: LoginDto) {
+  async login(dto: LoginDto, ipAddress?: string, userAgent?: string) {
     const user = await this.findActiveUser(dto.email);
     this.validateOrganizationStatus(user.organization?.status);
     await this.validatePassword(dto.password, user.passwordHash);
@@ -123,7 +125,7 @@ export class AuthService {
     }
 
     await this.updateLastLogin(user.id);
-    return this.generateTokens(user);
+    return this.generateTokens(user, ipAddress, userAgent);
   }
 
   private async findActiveUser(email: string) {
@@ -172,12 +174,12 @@ export class AuthService {
     });
   }
 
-  async refresh(token: string) {
+  async refresh(token: string, ipAddress?: string, userAgent?: string) {
     const stored = await this.findRefreshToken(token);
     this.validateRefreshTokenExpiry(stored);
 
     await this.deleteRefreshToken(stored.id);
-    return this.generateTokens(stored.user);
+    return this.generateTokens(stored.user, ipAddress, userAgent);
   }
 
   private async findRefreshToken(token: string) {
@@ -297,10 +299,19 @@ export class AuthService {
     }
   }
 
-  private async generateTokens(user: any) {
+  private async generateTokens(user: any, ipAddress?: string, userAgent?: string) {
     const payload = this.createJWTPayload(user);
     const accessToken = this.signAccessToken(payload);
     const refreshToken = await this.createRefreshToken(user.id);
+
+    // Create session record
+    const refreshTokenExpiry = calculateRefreshTokenExpiry();
+    await this.sessionsService.createSession({
+      userId: user.id,
+      ipAddress: ipAddress || 'unknown',
+      userAgent,
+      expiresAt: refreshTokenExpiry,
+    });
 
     return {
       accessToken,

@@ -32,7 +32,7 @@ export class AuthController {
     const userAgent = request.headers['user-agent'];
 
     try {
-      const result = await this.authService.login(dto);
+      const result = await this.authService.login(dto, ipAddress, userAgent);
 
       // Track successful login
       await this.securityEventsService.trackLoginAttempt({
@@ -81,8 +81,10 @@ export class AuthController {
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  refresh(@Body() dto: RefreshTokenDto) {
-    return this.authService.refresh(dto.refreshToken);
+  refresh(@Body() dto: RefreshTokenDto, @Req() request: Request) {
+    const ipAddress = this.extractIpAddress(request);
+    const userAgent = request.headers['user-agent'];
+    return this.authService.refresh(dto.refreshToken, ipAddress, userAgent);
   }
 
   @Post('logout')

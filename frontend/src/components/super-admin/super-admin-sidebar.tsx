@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   Building2, Shield, Settings, LogOut,
-  LayoutDashboard, ScrollText, AlertTriangle,
+  LayoutDashboard, ScrollText, AlertTriangle, Monitor,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth-context';
@@ -14,6 +14,7 @@ const NAV = [
   { href: '/super-admin/organizations', label: 'Organisations',   icon: Building2 },
   { href: '/super-admin/roles',         label: 'Rôles système',   icon: Shield },
   { href: '/super-admin/security',      label: 'Security Center', icon: AlertTriangle },
+  { href: '/super-admin/sessions',      label: 'Sessions Actives', icon: Monitor },
   { href: '/super-admin/audit-logs',    label: 'Audit Logs',      icon: ScrollText },
   { href: '/super-admin/settings',      label: 'Paramètres',      icon: Settings },
 ];
