@@ -14,7 +14,7 @@ export class SessionsController {
    * Get all active sessions (Super Admin only)
    */
   @Get()
-  @Roles('Super Administrateur')
+  @Roles('Super administrateur')
   async findActiveSessions(@Query() filters: SessionFiltersDto) {
     return this.sessionsService.findActiveSessions({
       ...filters,
@@ -27,7 +27,7 @@ export class SessionsController {
    * Get session statistics (Super Admin only)
    */
   @Get('stats')
-  @Roles('Super Administrateur')
+  @Roles('Super administrateur')
   async getStats() {
     return this.sessionsService.getStats();
   }
@@ -36,7 +36,7 @@ export class SessionsController {
    * Revoke a specific session (Super Admin only)
    */
   @Delete(':id')
-  @Roles('Super Administrateur')
+  @Roles('Super administrateur')
   async revokeSession(@Param('id') id: string) {
     await this.sessionsService.revokeSession(id);
     return { message: 'Session révoquée avec succès' };
@@ -46,7 +46,7 @@ export class SessionsController {
    * Revoke all sessions for a user (Super Admin only)
    */
   @Delete('user/:userId')
-  @Roles('Super Administrateur')
+  @Roles('Super administrateur')
   async revokeUserSessions(@Param('userId') userId: string) {
     const result = await this.sessionsService.revokeUserSessions(userId);
     return {

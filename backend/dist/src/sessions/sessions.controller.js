@@ -49,7 +49,7 @@ let SessionsController = class SessionsController {
 exports.SessionsController = SessionsController;
 __decorate([
     (0, common_1.Get)(),
-    (0, roles_decorator_1.Roles)('Super Administrateur'),
+    (0, roles_decorator_1.Roles)('Super administrateur'),
     __param(0, (0, common_1.Query)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [session_filters_dto_1.SessionFiltersDto]),
@@ -57,14 +57,14 @@ __decorate([
 ], SessionsController.prototype, "findActiveSessions", null);
 __decorate([
     (0, common_1.Get)('stats'),
-    (0, roles_decorator_1.Roles)('Super Administrateur'),
+    (0, roles_decorator_1.Roles)('Super administrateur'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], SessionsController.prototype, "getStats", null);
 __decorate([
     (0, common_1.Delete)(':id'),
-    (0, roles_decorator_1.Roles)('Super Administrateur'),
+    (0, roles_decorator_1.Roles)('Super administrateur'),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -72,7 +72,7 @@ __decorate([
 ], SessionsController.prototype, "revokeSession", null);
 __decorate([
     (0, common_1.Delete)('user/:userId'),
-    (0, roles_decorator_1.Roles)('Super Administrateur'),
+    (0, roles_decorator_1.Roles)('Super administrateur'),
     __param(0, (0, common_1.Param)('userId')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
