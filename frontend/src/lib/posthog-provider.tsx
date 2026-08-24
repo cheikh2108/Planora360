@@ -16,6 +16,14 @@ if (typeof window !== 'undefined') {
       capture_pageview: false, // On gère manuellement les pageviews
       capture_pageleave: true,
       autocapture: false, // On capture manuellement les événements importants
+
+      // Session Replay - Enregistrement vidéo des sessions
+      // Le simple fait de définir session_recording l'active automatiquement
+      session_recording: {
+        maskAllInputs: true, // Masque tous les champs de formulaire (sécurité)
+        maskTextSelector: '[data-private]', // Masque les éléments avec data-private
+        recordCrossOriginIframes: false, // Sécurité : pas d'enregistrement d'iframes externes
+      },
     });
   }
 }
