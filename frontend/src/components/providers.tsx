@@ -7,6 +7,7 @@ import { HelpProvider } from '@/contexts/help-context';
 import { ToastProvider } from '@/components/ui/toast';
 import { HelpSidebar } from '@/components/help/help-sidebar';
 import { FloatingHelpButton } from '@/components/help/floating-help-button';
+import { PostHogProvider } from '@/lib/posthog-provider';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [client] = useState(() => new QueryClient({
@@ -14,16 +15,18 @@ export function Providers({ children }: { children: React.ReactNode }) {
   }));
 
   return (
-    <QueryClientProvider client={client}>
-      <AuthProvider>
-        <ToastProvider>
-          <HelpProvider>
-            {children}
-            <HelpSidebar />
-            <FloatingHelpButton />
-          </HelpProvider>
-        </ToastProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+    <PostHogProvider>
+      <QueryClientProvider client={client}>
+        <AuthProvider>
+          <ToastProvider>
+            <HelpProvider>
+              {children}
+              <HelpSidebar />
+              <FloatingHelpButton />
+            </HelpProvider>
+          </ToastProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </PostHogProvider>
   );
 }

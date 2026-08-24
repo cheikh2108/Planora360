@@ -12,13 +12,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ActionPlansService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../common/prisma/prisma.service");
+const posthog_service_1 = require("../analytics/posthog.service");
 const subscription_guard_1 = require("../common/guards/subscription.guard");
 let ActionPlansService = class ActionPlansService {
     prisma;
-    constructor(prisma) {
+    posthog;
+    constructor(prisma, posthog) {
         this.prisma = prisma;
+        this.posthog = posthog;
     }
-    async create(dto, organizationId) {
+    async create(dto, organizationId, userId) {
         const { axes, ...planData } = dto;
         const organization = await this.prisma.organization.findUnique({
             where: { id: organizationId },
@@ -38,7 +41,7 @@ let ActionPlansService = class ActionPlansService {
                 `Maximum autorisé : ${planLimit.maxPlans} plans actifs. ` +
                 `Archivez des plans existants ou passez à une formule supérieure.`);
         }
-        return this.prisma.actionPlan.create({
+        const plan = await this.prisma.actionPlan.create({
             data: {
                 ...planData,
                 periodStart: new Date(dto.periodStart),
@@ -50,6 +53,8 @@ let ActionPlansService = class ActionPlansService {
             },
             include: { axes: { orderBy: { order: 'asc' } } },
         });
+        this.posthog.trackActionPlanCreated(userId, plan.id, organizationId);
+        return plan;
     }
     async findAll(organizationId, page = 1, limit = 10) {
         const where = { organizationId };
@@ -139,6 +144,7 @@ let ActionPlansService = class ActionPlansService {
 exports.ActionPlansService = ActionPlansService;
 exports.ActionPlansService = ActionPlansService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        posthog_service_1.PostHogService])
 ], ActionPlansService);
 //# sourceMappingURL=action-plans.service.js.map

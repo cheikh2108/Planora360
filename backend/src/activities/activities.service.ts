@@ -3,6 +3,7 @@ import {
 } from '@nestjs/common';
 import { ActivityStatus } from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { PostHogService } from '../analytics/posthog.service';
 import { CreateActivityDto } from './dto/create-activity.dto';
 import { UpdateActivityDto } from './dto/update-activity.dto';
 
@@ -36,7 +37,10 @@ const ALLOWED_STATUS_TRANSITIONS: Partial<Record<ActivityStatus, ActivityStatus[
 
 @Injectable()
 export class ActivitiesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private posthog: PostHogService,
+  ) {}
 
   async create(dto: CreateActivityDto, organizationId: string, currentUserId: string) {
     await this.validateAxis(dto.axisId, organizationId);
@@ -44,6 +48,12 @@ export class ActivitiesService {
     await this.validateResponsible(dto.responsibleId, organizationId);
 
     const activity = await this.createActivity(dto, organizationId, currentUserId);
+
+    // Track activity creation
+    const axis = await this.prisma.axis.findUnique({ where: { id: dto.axisId }, select: { actionPlanId: true } });
+    if (axis) {
+      this.posthog.trackActivityCreated(currentUserId, activity.id, axis.actionPlanId, organizationId);
+    }
 
     if (dto.collaboratorIds?.length) {
       await this.addCollaborators(activity.id, dto.collaboratorIds);

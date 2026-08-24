@@ -13,12 +13,15 @@ exports.DocumentsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../common/prisma/prisma.service");
 const storage_service_1 = require("../storage/storage.service");
+const posthog_service_1 = require("../analytics/posthog.service");
 let DocumentsService = class DocumentsService {
     prisma;
     storage;
-    constructor(prisma, storage) {
+    posthog;
+    constructor(prisma, storage, posthog) {
         this.prisma = prisma;
         this.storage = storage;
+        this.posthog = posthog;
     }
     async uploadToActivity(activityId, file, type, organizationId, uploadedById) {
         const activity = await this.prisma.activity.findFirst({
@@ -28,7 +31,7 @@ let DocumentsService = class DocumentsService {
             throw new common_1.NotFoundException('Activité introuvable');
         const storageKey = `${organizationId}/${activityId}/${Date.now()}-${file.originalname}`;
         await this.storage.upload(storageKey, file);
-        return this.prisma.document.create({
+        const document = await this.prisma.document.create({
             data: {
                 activityId,
                 type: type ?? 'autre',
@@ -39,6 +42,8 @@ let DocumentsService = class DocumentsService {
                 uploadedById,
             },
         });
+        this.posthog.trackDocumentUploaded(uploadedById, document.id, file.size, organizationId);
+        return document;
     }
     async uploadToChecklistItem(checklistItemId, file, type, organizationId, uploadedById) {
         const item = await this.prisma.checklistItem.findFirst({
@@ -118,6 +123,7 @@ exports.DocumentsService = DocumentsService;
 exports.DocumentsService = DocumentsService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        storage_service_1.StorageService])
+        storage_service_1.StorageService,
+        posthog_service_1.PostHogService])
 ], DocumentsService);
 //# sourceMappingURL=documents.service.js.map

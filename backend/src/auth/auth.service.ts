@@ -8,6 +8,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { PostHogService } from '../analytics/posthog.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterOrganizationDto } from './dto/register-organization.dto';
 import * as bcrypt from 'bcryptjs';
@@ -43,6 +44,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private config: ConfigService,
+    private posthog: PostHogService,
   ) {}
 
   async register(dto: RegisterOrganizationDto) {
@@ -51,7 +53,10 @@ export class AuthService {
 
     const adminRole = await this.findAdminRole();
     const organization = await this.createOrganization(dto);
-    await this.createAdminUser(dto, organization.id, adminRole.id);
+    const user = await this.createAdminUser(dto, organization.id, adminRole.id);
+
+    // Track registration in PostHog
+    this.posthog.trackRegistration(user.id, organization.id, dto.subscriptionPlan ?? 'DECOUVERTE');
 
     return { message: 'Votre demande a été enregistrée. Vous serez notifié par email après validation.' };
   }
@@ -95,7 +100,7 @@ export class AuthService {
 
   private async createAdminUser(dto: RegisterOrganizationDto, organizationId: string, roleId: string) {
     const passwordHash = await this.hashPassword(dto.password);
-    await this.prisma.user.create({
+    return this.prisma.user.create({
       data: {
         email: dto.email,
         firstName: dto.firstName,
@@ -123,6 +128,10 @@ export class AuthService {
     }
 
     await this.updateLastLogin(user.id);
+
+    // Track login in PostHog
+    this.posthog.trackLogin(user.id, user.email, user.organizationId);
+
     return this.generateTokens(user, ipAddress, userAgent);
   }
 
@@ -205,6 +214,9 @@ export class AuthService {
   }
 
   async logout(userId: string) {
+    // Track logout in PostHog
+    this.posthog.trackLogout(userId);
+
     await this.prisma.refreshToken.deleteMany({ where: { userId } });
   }
 

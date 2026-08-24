@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ActivitiesService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../common/prisma/prisma.service");
+const posthog_service_1 = require("../analytics/posthog.service");
 const ACTIVITY_INCLUDE = {
     responsible: { select: { id: true, firstName: true, lastName: true, email: true } },
     collaborators: {
@@ -39,14 +40,20 @@ const ALLOWED_STATUS_TRANSITIONS = {
 };
 let ActivitiesService = class ActivitiesService {
     prisma;
-    constructor(prisma) {
+    posthog;
+    constructor(prisma, posthog) {
         this.prisma = prisma;
+        this.posthog = posthog;
     }
     async create(dto, organizationId, currentUserId) {
         await this.validateAxis(dto.axisId, organizationId);
         await this.validateParentActivity(dto.parentActivityId, organizationId);
         await this.validateResponsible(dto.responsibleId, organizationId);
         const activity = await this.createActivity(dto, organizationId, currentUserId);
+        const axis = await this.prisma.axis.findUnique({ where: { id: dto.axisId }, select: { actionPlanId: true } });
+        if (axis) {
+            this.posthog.trackActivityCreated(currentUserId, activity.id, axis.actionPlanId, organizationId);
+        }
         if (dto.collaboratorIds?.length) {
             await this.addCollaborators(activity.id, dto.collaboratorIds);
             return this.findActivityById(activity.id);
@@ -187,6 +194,7 @@ let ActivitiesService = class ActivitiesService {
 exports.ActivitiesService = ActivitiesService;
 exports.ActivitiesService = ActivitiesService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        posthog_service_1.PostHogService])
 ], ActivitiesService);
 //# sourceMappingURL=activities.service.js.map

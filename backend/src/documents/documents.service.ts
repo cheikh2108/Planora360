@@ -1,12 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
+import { PostHogService } from '../analytics/posthog.service';
 
 @Injectable()
 export class DocumentsService {
   constructor(
     private prisma: PrismaService,
     private storage: StorageService,
+    private posthog: PostHogService,
   ) {}
 
   async uploadToActivity(
@@ -24,7 +26,7 @@ export class DocumentsService {
     const storageKey = `${organizationId}/${activityId}/${Date.now()}-${file.originalname}`;
     await this.storage.upload(storageKey, file);
 
-    return this.prisma.document.create({
+    const document = await this.prisma.document.create({
       data: {
         activityId,
         type: type ?? 'autre',
@@ -35,6 +37,11 @@ export class DocumentsService {
         uploadedById,
       },
     });
+
+    // Track document upload
+    this.posthog.trackDocumentUploaded(uploadedById, document.id, file.size, organizationId);
+
+    return document;
   }
 
   async uploadToChecklistItem(

@@ -6,8 +6,8 @@ export declare class ValidationsController {
     submit(activityId: string, user: any): Promise<{
         id: string;
         createdAt: Date;
-        step: import(".prisma/client").$Enums.ValidationStep;
         activityId: string;
+        step: import(".prisma/client").$Enums.ValidationStep;
         decision: import(".prisma/client").$Enums.ValidationDecision;
         validatorId: string;
         comment: string | null;
@@ -15,8 +15,8 @@ export declare class ValidationsController {
     transition(activityId: string, dto: TransitionDto, user: any): Promise<{
         id: string;
         createdAt: Date;
-        step: import(".prisma/client").$Enums.ValidationStep;
         activityId: string;
+        step: import(".prisma/client").$Enums.ValidationStep;
         decision: import(".prisma/client").$Enums.ValidationDecision;
         validatorId: string;
         comment: string | null;
@@ -24,8 +24,8 @@ export declare class ValidationsController {
     getHistory(activityId: string, user: any): Promise<{
         id: string;
         createdAt: Date;
-        step: import(".prisma/client").$Enums.ValidationStep;
         activityId: string;
+        step: import(".prisma/client").$Enums.ValidationStep;
         decision: import(".prisma/client").$Enums.ValidationDecision;
         validatorId: string;
         comment: string | null;
@@ -55,8 +55,8 @@ export declare class ValidationsController {
         lastValidation: {
             id: string;
             createdAt: Date;
-            step: import(".prisma/client").$Enums.ValidationStep;
             activityId: string;
+            step: import(".prisma/client").$Enums.ValidationStep;
             decision: import(".prisma/client").$Enums.ValidationDecision;
             validatorId: string;
             comment: string | null;
@@ -75,8 +75,8 @@ export declare class ValidationsController {
             validations: {
                 id: string;
                 createdAt: Date;
-                step: import(".prisma/client").$Enums.ValidationStep;
                 activityId: string;
+                step: import(".prisma/client").$Enums.ValidationStep;
                 decision: import(".prisma/client").$Enums.ValidationDecision;
                 validatorId: string;
                 comment: string | null;

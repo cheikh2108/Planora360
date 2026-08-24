@@ -1,11 +1,13 @@
 import { PrismaService } from '../common/prisma/prisma.service';
+import { PostHogService } from '../analytics/posthog.service';
 import { CreateActionPlanDto } from './dto/create-action-plan.dto';
 import { UpdateActionPlanDto } from './dto/update-action-plan.dto';
 import { CreateAxisDto, UpdateAxisDto } from './dto/create-axis.dto';
 export declare class ActionPlansService {
     private prisma;
-    constructor(prisma: PrismaService);
-    create(dto: CreateActionPlanDto, organizationId: string): Promise<{
+    private posthog;
+    constructor(prisma: PrismaService, posthog: PostHogService);
+    create(dto: CreateActionPlanDto, organizationId: string, userId: string): Promise<{
         axes: {
             id: string;
             title: string;

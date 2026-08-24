@@ -13,6 +13,7 @@ const schedule_1 = require("@nestjs/schedule");
 const throttler_1 = require("@nestjs/throttler");
 const core_1 = require("@nestjs/core");
 const prisma_module_1 = require("./common/prisma/prisma.module");
+const analytics_module_1 = require("./analytics/analytics.module");
 const audit_module_1 = require("./audit/audit.module");
 const security_events_module_1 = require("./security-events/security-events.module");
 const notifications_module_1 = require("./notifications/notifications.module");
@@ -48,6 +49,7 @@ exports.AppModule = AppModule = __decorate([
                     limit: 100,
                 }]),
             prisma_module_1.PrismaModule,
+            analytics_module_1.AnalyticsModule,
             audit_module_1.AuditModule,
             security_events_module_1.SecurityEventsModule,
             notifications_module_1.NotificationsModule,

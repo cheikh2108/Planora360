@@ -5,48 +5,48 @@ export declare class DocumentsController {
     uploadToActivity(activityId: string, file: Express.Multer.File, type: string, user: any): Promise<{
         id: string;
         createdAt: Date;
-        type: string;
         activityId: string | null;
+        fileSize: number | null;
+        type: string;
         checklistItemId: string | null;
         storageKey: string;
         fileName: string;
-        fileSize: number | null;
         mimeType: string | null;
         uploadedById: string;
     }>;
     findByActivity(activityId: string, user: any): Promise<{
         id: string;
         createdAt: Date;
-        type: string;
         activityId: string | null;
+        fileSize: number | null;
+        type: string;
         checklistItemId: string | null;
         storageKey: string;
         fileName: string;
-        fileSize: number | null;
         mimeType: string | null;
         uploadedById: string;
     }[]>;
     uploadToChecklist(itemId: string, file: Express.Multer.File, type: string, user: any): Promise<{
         id: string;
         createdAt: Date;
-        type: string;
         activityId: string | null;
+        fileSize: number | null;
+        type: string;
         checklistItemId: string | null;
         storageKey: string;
         fileName: string;
-        fileSize: number | null;
         mimeType: string | null;
         uploadedById: string;
     }>;
     findByChecklistItem(itemId: string, user: any): Promise<{
         id: string;
         createdAt: Date;
-        type: string;
         activityId: string | null;
+        fileSize: number | null;
+        type: string;
         checklistItemId: string | null;
         storageKey: string;
         fileName: string;
-        fileSize: number | null;
         mimeType: string | null;
         uploadedById: string;
     }[]>;
@@ -58,12 +58,12 @@ export declare class DocumentsController {
     remove(id: string, user: any): Promise<{
         id: string;
         createdAt: Date;
-        type: string;
         activityId: string | null;
+        fileSize: number | null;
+        type: string;
         checklistItemId: string | null;
         storageKey: string;
         fileName: string;
-        fileSize: number | null;
         mimeType: string | null;
         uploadedById: string;
     }>;

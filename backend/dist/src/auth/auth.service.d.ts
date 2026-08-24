@@ -1,13 +1,15 @@
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { PostHogService } from '../analytics/posthog.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterOrganizationDto } from './dto/register-organization.dto';
 export declare class AuthService {
     private prisma;
     private jwtService;
     private config;
-    constructor(prisma: PrismaService, jwtService: JwtService, config: ConfigService);
+    private posthog;
+    constructor(prisma: PrismaService, jwtService: JwtService, config: ConfigService, posthog: PostHogService);
     register(dto: RegisterOrganizationDto): Promise<{
         message: string;
     }>;

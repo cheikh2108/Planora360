@@ -63,8 +63,8 @@ export declare class ActivitiesController {
             } & {
                 id: string;
                 createdAt: Date;
-                userId: string;
                 activityId: string;
+                userId: string;
             })[];
         } & {
             id: string;
@@ -101,10 +101,10 @@ export declare class ActivitiesController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
+            activityId: string;
             responsibleId: string;
             dueDate: Date | null;
             order: number;
-            activityId: string;
             label: string;
             isMandatory: boolean;
             progress: number;
@@ -159,8 +159,8 @@ export declare class ActivitiesController {
         validations: {
             id: string;
             createdAt: Date;
-            step: import(".prisma/client").$Enums.ValidationStep;
             activityId: string;
+            step: import(".prisma/client").$Enums.ValidationStep;
             decision: import(".prisma/client").$Enums.ValidationDecision;
             validatorId: string;
             comment: string | null;
@@ -175,8 +175,8 @@ export declare class ActivitiesController {
         } & {
             id: string;
             createdAt: Date;
-            userId: string;
             activityId: string;
+            userId: string;
         })[];
     } & {
         id: string;
@@ -255,8 +255,8 @@ export declare class ActivitiesController {
         } & {
             id: string;
             createdAt: Date;
-            userId: string;
             activityId: string;
+            userId: string;
         })[];
     } & {
         id: string;

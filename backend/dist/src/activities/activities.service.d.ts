@@ -1,10 +1,12 @@
 import { ActivityStatus } from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { PostHogService } from '../analytics/posthog.service';
 import { CreateActivityDto } from './dto/create-activity.dto';
 import { UpdateActivityDto } from './dto/update-activity.dto';
 export declare class ActivitiesService {
     private prisma;
-    constructor(prisma: PrismaService);
+    private posthog;
+    constructor(prisma: PrismaService, posthog: PostHogService);
     create(dto: CreateActivityDto, organizationId: string, currentUserId: string): Promise<any>;
     private validateAxis;
     private validateParentActivity;
@@ -69,8 +71,8 @@ export declare class ActivitiesService {
             } & {
                 id: string;
                 createdAt: Date;
-                userId: string;
                 activityId: string;
+                userId: string;
             })[];
         } & {
             id: string;
@@ -107,10 +109,10 @@ export declare class ActivitiesService {
             id: string;
             createdAt: Date;
             updatedAt: Date;
+            activityId: string;
             responsibleId: string;
             dueDate: Date | null;
             order: number;
-            activityId: string;
             label: string;
             isMandatory: boolean;
             progress: number;
@@ -165,8 +167,8 @@ export declare class ActivitiesService {
         validations: {
             id: string;
             createdAt: Date;
-            step: import(".prisma/client").$Enums.ValidationStep;
             activityId: string;
+            step: import(".prisma/client").$Enums.ValidationStep;
             decision: import(".prisma/client").$Enums.ValidationDecision;
             validatorId: string;
             comment: string | null;
@@ -181,8 +183,8 @@ export declare class ActivitiesService {
         } & {
             id: string;
             createdAt: Date;
-            userId: string;
             activityId: string;
+            userId: string;
         })[];
     } & {
         id: string;
@@ -261,8 +263,8 @@ export declare class ActivitiesService {
         } & {
             id: string;
             createdAt: Date;
-            userId: string;
             activityId: string;
+            userId: string;
         })[];
     } & {
         id: string;

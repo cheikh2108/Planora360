@@ -28,7 +28,7 @@ let ActionPlansController = class ActionPlansController {
         this.actionPlansService = actionPlansService;
     }
     create(dto, user) {
-        return this.actionPlansService.create(dto, user.organizationId);
+        return this.actionPlansService.create(dto, user.organizationId, user.id);
     }
     findAll(user, page, limit) {
         return this.actionPlansService.findAll(user.organizationId, page ? parseInt(page) : 1, limit ? parseInt(limit) : 10);

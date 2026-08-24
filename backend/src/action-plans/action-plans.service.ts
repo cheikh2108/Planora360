@@ -2,6 +2,7 @@ import {
   Injectable, NotFoundException, ForbiddenException, BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { PostHogService } from '../analytics/posthog.service';
 import { CreateActionPlanDto } from './dto/create-action-plan.dto';
 import { UpdateActionPlanDto } from './dto/update-action-plan.dto';
 import { CreateAxisDto, UpdateAxisDto } from './dto/create-axis.dto';
@@ -9,9 +10,12 @@ import { PLAN_LIMITS } from '../common/guards/subscription.guard';
 
 @Injectable()
 export class ActionPlansService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private posthog: PostHogService,
+  ) {}
 
-  async create(dto: CreateActionPlanDto, organizationId: string) {
+  async create(dto: CreateActionPlanDto, organizationId: string, userId: string) {
     const { axes, ...planData } = dto;
 
     // Vérifier la limite de plans d'action selon le plan tarifaire
@@ -40,7 +44,7 @@ export class ActionPlansService {
       );
     }
 
-    return this.prisma.actionPlan.create({
+    const plan = await this.prisma.actionPlan.create({
       data: {
         ...planData,
         periodStart: new Date(dto.periodStart),
@@ -52,6 +56,11 @@ export class ActionPlansService {
       },
       include: { axes: { orderBy: { order: 'asc' } } },
     });
+
+    // Track action plan creation
+    this.posthog.trackActionPlanCreated(userId, plan.id, organizationId);
+
+    return plan;
   }
 
   async findAll(organizationId: string, page = 1, limit = 10) {

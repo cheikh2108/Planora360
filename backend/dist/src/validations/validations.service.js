@@ -14,6 +14,7 @@ const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../common/prisma/prisma.service");
 const audit_service_1 = require("../audit/audit.service");
 const notifications_service_1 = require("../notifications/notifications.service");
+const posthog_service_1 = require("../analytics/posthog.service");
 const validation_constants_1 = require("../common/constants/validation.constants");
 const ALLOWED_TRANSITIONS = {
     SOUMISSION: ['VERIFICATION_HIERARCHIQUE'],
@@ -36,10 +37,12 @@ let ValidationsService = class ValidationsService {
     prisma;
     audit;
     notifications;
-    constructor(prisma, audit, notifications) {
+    posthog;
+    constructor(prisma, audit, notifications, posthog) {
         this.prisma = prisma;
         this.audit = audit;
         this.notifications = notifications;
+        this.posthog = posthog;
     }
     async getCurrentStep(activityId, organizationId) {
         const activity = await this.prisma.activity.findFirst({
@@ -72,6 +75,7 @@ let ValidationsService = class ValidationsService {
         await this.updateActivityStatus(activityId, 'EN_COURS');
         await this.logSubmission(organizationId, userId, activityId, activity.title);
         await this.notifyNextStepValidators(activityId, activity.title, organizationId);
+        this.posthog.trackActivitySubmitted(userId, activityId, organizationId);
         return validation;
     }
     async findActivity(activityId, organizationId) {
@@ -154,6 +158,8 @@ let ValidationsService = class ValidationsService {
         await this.applyStatusChange(activityId, dto.toStep);
         await this.logTransition(organizationId, userId, activityId, currentStep, dto, activity.title);
         await this.notifyResponsible(activity, dto);
+        const approved = dto.decision === 'APPROUVE';
+        this.posthog.trackActivityValidated(userId, activityId, approved, organizationId);
         return validation;
     }
     async findUserWithRole(userId) {
@@ -261,6 +267,7 @@ exports.ValidationsService = ValidationsService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         audit_service_1.AuditService,
-        notifications_service_1.NotificationsService])
+        notifications_service_1.NotificationsService,
+        posthog_service_1.PostHogService])
 ], ValidationsService);
 //# sourceMappingURL=validations.service.js.map

@@ -5,6 +5,7 @@ import { ValidationStep, ValidationDecision, ActivityStatus } from '@prisma/clie
 import { PrismaService } from '../common/prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { PostHogService } from '../analytics/posthog.service';
 import { TransitionDto } from './dto/transition.dto';
 import { MIN_COMPLETION_FOR_SUBMIT } from '../common/constants/validation.constants';
 
@@ -37,6 +38,7 @@ export class ValidationsService {
     private prisma: PrismaService,
     private audit: AuditService,
     private notifications: NotificationsService,
+    private posthog: PostHogService,
   ) {}
 
   async getCurrentStep(activityId: string, organizationId: string) {
@@ -74,6 +76,9 @@ export class ValidationsService {
     await this.updateActivityStatus(activityId, 'EN_COURS');
     await this.logSubmission(organizationId, userId, activityId, activity.title);
     await this.notifyNextStepValidators(activityId, activity.title, organizationId);
+
+    // Track activity submission
+    this.posthog.trackActivitySubmitted(userId, activityId, organizationId);
 
     return validation;
   }
@@ -170,6 +175,10 @@ export class ValidationsService {
     await this.applyStatusChange(activityId, dto.toStep);
     await this.logTransition(organizationId, userId, activityId, currentStep, dto, activity.title);
     await this.notifyResponsible(activity, dto);
+
+    // Track activity validation
+    const approved = dto.decision === 'APPROUVE';
+    this.posthog.trackActivityValidated(userId, activityId, approved, organizationId);
 
     return validation;
   }

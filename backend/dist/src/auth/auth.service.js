@@ -47,6 +47,7 @@ const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
 const config_1 = require("@nestjs/config");
 const prisma_service_1 = require("../common/prisma/prisma.service");
+const posthog_service_1 = require("../analytics/posthog.service");
 const bcrypt = __importStar(require("bcryptjs"));
 const speakeasy = __importStar(require("speakeasy"));
 const QRCode = __importStar(require("qrcode"));
@@ -56,17 +57,20 @@ let AuthService = class AuthService {
     prisma;
     jwtService;
     config;
-    constructor(prisma, jwtService, config) {
+    posthog;
+    constructor(prisma, jwtService, config, posthog) {
         this.prisma = prisma;
         this.jwtService = jwtService;
         this.config = config;
+        this.posthog = posthog;
     }
     async register(dto) {
         await this.validateUniqueOrganization(dto.organizationName);
         await this.validateUniqueEmail(dto.email);
         const adminRole = await this.findAdminRole();
         const organization = await this.createOrganization(dto);
-        await this.createAdminUser(dto, organization.id, adminRole.id);
+        const user = await this.createAdminUser(dto, organization.id, adminRole.id);
+        this.posthog.trackRegistration(user.id, organization.id, dto.subscriptionPlan ?? 'DECOUVERTE');
         return { message: 'Votre demande a été enregistrée. Vous serez notifié par email après validation.' };
     }
     async validateUniqueOrganization(name) {
@@ -106,7 +110,7 @@ let AuthService = class AuthService {
     }
     async createAdminUser(dto, organizationId, roleId) {
         const passwordHash = await this.hashPassword(dto.password);
-        await this.prisma.user.create({
+        return this.prisma.user.create({
             data: {
                 email: dto.email,
                 firstName: dto.firstName,
@@ -131,6 +135,7 @@ let AuthService = class AuthService {
             this.verifyTOTP(user.twoFactorSecret, dto.totp, auth_constants_1.ERROR_INVALID_2FA_CODE);
         }
         await this.updateLastLogin(user.id);
+        this.posthog.trackLogin(user.id, user.email, user.organizationId);
         return this.generateTokens(user, ipAddress, userAgent);
     }
     async findActiveUser(email) {
@@ -199,6 +204,7 @@ let AuthService = class AuthService {
         await this.prisma.refreshToken.deleteMany({ where: { id: tokenId } });
     }
     async logout(userId) {
+        this.posthog.trackLogout(userId);
         await this.prisma.refreshToken.deleteMany({ where: { userId } });
     }
     async setup2fa(userId) {
@@ -333,6 +339,7 @@ exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         jwt_1.JwtService,
-        config_1.ConfigService])
+        config_1.ConfigService,
+        posthog_service_1.PostHogService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

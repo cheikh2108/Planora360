@@ -15,10 +15,10 @@ export declare class ChecklistService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        activityId: string;
         responsibleId: string;
         dueDate: Date | null;
         order: number;
-        activityId: string;
         label: string;
         isMandatory: boolean;
         progress: number;
@@ -41,10 +41,10 @@ export declare class ChecklistService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        activityId: string;
         responsibleId: string;
         dueDate: Date | null;
         order: number;
-        activityId: string;
         label: string;
         isMandatory: boolean;
         progress: number;
@@ -60,12 +60,12 @@ export declare class ChecklistService {
         documents: {
             id: string;
             createdAt: Date;
-            type: string;
             activityId: string | null;
+            fileSize: number | null;
+            type: string;
             checklistItemId: string | null;
             storageKey: string;
             fileName: string;
-            fileSize: number | null;
             mimeType: string | null;
             uploadedById: string;
         }[];
@@ -73,10 +73,10 @@ export declare class ChecklistService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        activityId: string;
         responsibleId: string;
         dueDate: Date | null;
         order: number;
-        activityId: string;
         label: string;
         isMandatory: boolean;
         progress: number;
@@ -93,10 +93,10 @@ export declare class ChecklistService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        activityId: string;
         responsibleId: string;
         dueDate: Date | null;
         order: number;
-        activityId: string;
         label: string;
         isMandatory: boolean;
         progress: number;

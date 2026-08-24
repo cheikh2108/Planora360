@@ -14,9 +14,9 @@ export declare class IndicatorsController {
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        activityId: string | null;
         title: string;
         dueDate: Date | null;
-        activityId: string | null;
         unit: string | null;
         baseline: number;
         target: number;
@@ -33,9 +33,9 @@ export declare class IndicatorsController {
             organizationId: string;
             createdAt: Date;
             updatedAt: Date;
+            activityId: string | null;
             title: string;
             dueDate: Date | null;
-            activityId: string | null;
             unit: string | null;
             baseline: number;
             target: number;
@@ -55,9 +55,9 @@ export declare class IndicatorsController {
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        activityId: string | null;
         title: string;
         dueDate: Date | null;
-        activityId: string | null;
         unit: string | null;
         baseline: number;
         target: number;
@@ -73,9 +73,9 @@ export declare class IndicatorsController {
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        activityId: string | null;
         title: string;
         dueDate: Date | null;
-        activityId: string | null;
         unit: string | null;
         baseline: number;
         target: number;
@@ -86,9 +86,9 @@ export declare class IndicatorsController {
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        activityId: string | null;
         title: string;
         dueDate: Date | null;
-        activityId: string | null;
         unit: string | null;
         baseline: number;
         target: number;

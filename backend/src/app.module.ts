@@ -4,6 +4,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { PrismaModule } from './common/prisma/prisma.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 import { AuditModule } from './audit/audit.module';
 import { SecurityEventsModule } from './security-events/security-events.module';
 import { NotificationsModule } from './notifications/notifications.module';
@@ -36,6 +37,7 @@ import { RecommendationsModule } from './recommendations/recommendations.module'
       limit: 100,  // 100 requêtes max par minute (augmenté pour dashboard)
     }]),
     PrismaModule,
+    AnalyticsModule,
     AuditModule,
     SecurityEventsModule,
     NotificationsModule,

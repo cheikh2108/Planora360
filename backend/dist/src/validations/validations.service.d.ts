@@ -1,12 +1,14 @@
 import { PrismaService } from '../common/prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { PostHogService } from '../analytics/posthog.service';
 import { TransitionDto } from './dto/transition.dto';
 export declare class ValidationsService {
     private prisma;
     private audit;
     private notifications;
-    constructor(prisma: PrismaService, audit: AuditService, notifications: NotificationsService);
+    private posthog;
+    constructor(prisma: PrismaService, audit: AuditService, notifications: NotificationsService, posthog: PostHogService);
     getCurrentStep(activityId: string, organizationId: string): Promise<{
         activity: {
             id: string;
@@ -32,8 +34,8 @@ export declare class ValidationsService {
         lastValidation: {
             id: string;
             createdAt: Date;
-            step: import(".prisma/client").$Enums.ValidationStep;
             activityId: string;
+            step: import(".prisma/client").$Enums.ValidationStep;
             decision: import(".prisma/client").$Enums.ValidationDecision;
             validatorId: string;
             comment: string | null;
@@ -42,8 +44,8 @@ export declare class ValidationsService {
     getHistory(activityId: string, organizationId: string): Promise<{
         id: string;
         createdAt: Date;
-        step: import(".prisma/client").$Enums.ValidationStep;
         activityId: string;
+        step: import(".prisma/client").$Enums.ValidationStep;
         decision: import(".prisma/client").$Enums.ValidationDecision;
         validatorId: string;
         comment: string | null;
@@ -51,8 +53,8 @@ export declare class ValidationsService {
     submit(activityId: string, userId: string, organizationId: string): Promise<{
         id: string;
         createdAt: Date;
-        step: import(".prisma/client").$Enums.ValidationStep;
         activityId: string;
+        step: import(".prisma/client").$Enums.ValidationStep;
         decision: import(".prisma/client").$Enums.ValidationDecision;
         validatorId: string;
         comment: string | null;
@@ -67,8 +69,8 @@ export declare class ValidationsService {
     transition(activityId: string, dto: TransitionDto, userId: string, organizationId: string): Promise<{
         id: string;
         createdAt: Date;
-        step: import(".prisma/client").$Enums.ValidationStep;
         activityId: string;
+        step: import(".prisma/client").$Enums.ValidationStep;
         decision: import(".prisma/client").$Enums.ValidationDecision;
         validatorId: string;
         comment: string | null;
@@ -95,8 +97,8 @@ export declare class ValidationsService {
             validations: {
                 id: string;
                 createdAt: Date;
-                step: import(".prisma/client").$Enums.ValidationStep;
                 activityId: string;
+                step: import(".prisma/client").$Enums.ValidationStep;
                 decision: import(".prisma/client").$Enums.ValidationDecision;
                 validatorId: string;
                 comment: string | null;

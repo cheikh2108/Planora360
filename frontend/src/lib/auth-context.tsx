@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import type { User } from './types';
 import api, { authApi } from './api';
+import { posthog } from './posthog-provider';
 
 interface AuthContextType {
   user: User | null;
@@ -64,11 +65,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('user', JSON.stringify(data.user));
     setUser(data.user);
     applyBrandColor(data.user?.organization?.brandColor);
+
+    // Identify user in PostHog
+    if (data.user?.id) {
+      posthog.identify(data.user.id, {
+        email: data.user.email,
+        firstName: data.user.firstName,
+        lastName: data.user.lastName,
+        role: data.user.role?.name,
+        organizationId: data.user.organizationId,
+        organizationName: data.user.organization?.name,
+      });
+    }
+
     return data.user as import('./types').User;
   }
 
   async function logout() {
     try { await authApi.logout(); } catch { /* ignore */ }
+    posthog.reset(); // Clear PostHog identity
     localStorage.clear();
     setUser(null);
     window.location.href = '/auth/login';
