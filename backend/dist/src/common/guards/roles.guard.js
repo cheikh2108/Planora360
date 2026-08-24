@@ -29,6 +29,9 @@ let RolesGuard = class RolesGuard {
         const { user } = context.switchToHttp().getRequest();
         if (!user)
             throw new common_1.ForbiddenException('Accès refusé. Veuillez vous reconnecter.');
+        console.log('[RolesGuard] User:', user.email);
+        console.log('[RolesGuard] User role:', user.role);
+        console.log('[RolesGuard] Required roles:', requiredRoles);
         const userPermissions = user.role?.permissions ?? [];
         if (userPermissions.includes('*'))
             return true;

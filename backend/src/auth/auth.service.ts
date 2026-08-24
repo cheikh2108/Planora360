@@ -8,7 +8,6 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../common/prisma/prisma.service';
-import { SessionsService } from '../sessions/sessions.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterOrganizationDto } from './dto/register-organization.dto';
 import * as bcrypt from 'bcryptjs';
@@ -44,7 +43,6 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private config: ConfigService,
-    private sessionsService: SessionsService,
   ) {}
 
   async register(dto: RegisterOrganizationDto) {
@@ -203,7 +201,7 @@ export class AuthService {
   }
 
   private async deleteRefreshToken(tokenId: string) {
-    await this.prisma.refreshToken.delete({ where: { id: tokenId } });
+    await this.prisma.refreshToken.deleteMany({ where: { id: tokenId } });
   }
 
   async logout(userId: string) {
@@ -303,15 +301,6 @@ export class AuthService {
     const payload = this.createJWTPayload(user);
     const accessToken = this.signAccessToken(payload);
     const refreshToken = await this.createRefreshToken(user.id);
-
-    // Create session record
-    const refreshTokenExpiry = calculateRefreshTokenExpiry();
-    await this.sessionsService.createSession({
-      userId: user.id,
-      ipAddress: ipAddress || 'unknown',
-      userAgent,
-      expiresAt: refreshTokenExpiry,
-    });
 
     return {
       accessToken,

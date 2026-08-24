@@ -47,7 +47,6 @@ const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
 const config_1 = require("@nestjs/config");
 const prisma_service_1 = require("../common/prisma/prisma.service");
-const sessions_service_1 = require("../sessions/sessions.service");
 const bcrypt = __importStar(require("bcryptjs"));
 const speakeasy = __importStar(require("speakeasy"));
 const QRCode = __importStar(require("qrcode"));
@@ -57,12 +56,10 @@ let AuthService = class AuthService {
     prisma;
     jwtService;
     config;
-    sessionsService;
-    constructor(prisma, jwtService, config, sessionsService) {
+    constructor(prisma, jwtService, config) {
         this.prisma = prisma;
         this.jwtService = jwtService;
         this.config = config;
-        this.sessionsService = sessionsService;
     }
     async register(dto) {
         await this.validateUniqueOrganization(dto.organizationName);
@@ -199,7 +196,7 @@ let AuthService = class AuthService {
         }
     }
     async deleteRefreshToken(tokenId) {
-        await this.prisma.refreshToken.delete({ where: { id: tokenId } });
+        await this.prisma.refreshToken.deleteMany({ where: { id: tokenId } });
     }
     async logout(userId) {
         await this.prisma.refreshToken.deleteMany({ where: { userId } });
@@ -278,13 +275,6 @@ let AuthService = class AuthService {
         const payload = this.createJWTPayload(user);
         const accessToken = this.signAccessToken(payload);
         const refreshToken = await this.createRefreshToken(user.id);
-        const refreshTokenExpiry = (0, auth_constants_1.calculateRefreshTokenExpiry)();
-        await this.sessionsService.createSession({
-            userId: user.id,
-            ipAddress: ipAddress || 'unknown',
-            userAgent,
-            expiresAt: refreshTokenExpiry,
-        });
         return {
             accessToken,
             refreshToken,
@@ -343,7 +333,6 @@ exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         jwt_1.JwtService,
-        config_1.ConfigService,
-        sessions_service_1.SessionsService])
+        config_1.ConfigService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

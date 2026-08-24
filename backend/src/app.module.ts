@@ -6,7 +6,6 @@ import { APP_GUARD } from '@nestjs/core';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { AuditModule } from './audit/audit.module';
 import { SecurityEventsModule } from './security-events/security-events.module';
-import { SessionsModule } from './sessions/sessions.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { StorageModule } from './storage/storage.module';
 import { AuthModule } from './auth/auth.module';
@@ -39,7 +38,6 @@ import { RecommendationsModule } from './recommendations/recommendations.module'
     PrismaModule,
     AuditModule,
     SecurityEventsModule,
-    SessionsModule,
     NotificationsModule,
     StorageModule,
     AuthModule,

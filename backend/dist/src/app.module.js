@@ -15,7 +15,6 @@ const core_1 = require("@nestjs/core");
 const prisma_module_1 = require("./common/prisma/prisma.module");
 const audit_module_1 = require("./audit/audit.module");
 const security_events_module_1 = require("./security-events/security-events.module");
-const sessions_module_1 = require("./sessions/sessions.module");
 const notifications_module_1 = require("./notifications/notifications.module");
 const storage_module_1 = require("./storage/storage.module");
 const auth_module_1 = require("./auth/auth.module");
@@ -51,7 +50,6 @@ exports.AppModule = AppModule = __decorate([
             prisma_module_1.PrismaModule,
             audit_module_1.AuditModule,
             security_events_module_1.SecurityEventsModule,
-            sessions_module_1.SessionsModule,
             notifications_module_1.NotificationsModule,
             storage_module_1.StorageModule,
             auth_module_1.AuthModule,
