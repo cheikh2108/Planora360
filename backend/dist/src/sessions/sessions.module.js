@@ -10,11 +10,13 @@ exports.SessionsModule = void 0;
 const common_1 = require("@nestjs/common");
 const sessions_service_1 = require("./sessions.service");
 const sessions_controller_1 = require("./sessions.controller");
+const prisma_module_1 = require("../common/prisma/prisma.module");
 let SessionsModule = class SessionsModule {
 };
 exports.SessionsModule = SessionsModule;
 exports.SessionsModule = SessionsModule = __decorate([
     (0, common_1.Module)({
+        imports: [prisma_module_1.PrismaModule],
         controllers: [sessions_controller_1.SessionsController],
         providers: [sessions_service_1.SessionsService],
         exports: [sessions_service_1.SessionsService],
