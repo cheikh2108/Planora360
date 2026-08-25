@@ -50,13 +50,6 @@ export default function MaintenancePage() {
     window.location.reload();
   };
 
-  // Spring physics config (design-taste-frontend)
-  const spring = {
-    type: 'spring',
-    stiffness: 100,
-    damping: 20,
-  };
-
   return (
     <div className="min-h-screen bg-white flex flex-col font-geist">
 
@@ -95,7 +88,7 @@ export default function MaintenancePage() {
           <motion.div
             initial={{ opacity: 0, transform: 'translateY(20px)' }}
             animate={{ opacity: 1, transform: 'translateY(0px)' }}
-            transition={spring}
+            transition={{ type: "spring", stiffness: 100, damping: 20 }}
             className="space-y-8 text-center lg:text-left order-2 lg:order-1"
           >
 
@@ -113,7 +106,7 @@ export default function MaintenancePage() {
             <motion.h1
               initial={{ opacity: 0, transform: 'translateY(10px)' }}
               animate={{ opacity: 1, transform: 'translateY(0px)' }}
-              transition={{ ...spring, delay: 0.15 }}
+              transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.15 }}
               className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 leading-[1.1]"
             >
               Plateforme temporairement{' '}
@@ -124,7 +117,7 @@ export default function MaintenancePage() {
             <motion.p
               initial={{ opacity: 0, transform: 'translateY(10px)' }}
               animate={{ opacity: 1, transform: 'translateY(0px)' }}
-              transition={{ ...spring, delay: 0.25 }}
+              transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.25 }}
               className="text-lg text-slate-600 leading-relaxed max-w-lg mx-auto lg:mx-0"
             >
               {message}
@@ -134,7 +127,7 @@ export default function MaintenancePage() {
             <motion.div
               initial={{ opacity: 0, transform: 'translateY(10px)' }}
               animate={{ opacity: 1, transform: 'translateY(0px)' }}
-              transition={{ ...spring, delay: 0.35 }}
+              transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.35 }}
               className="pt-4"
             >
               <motion.button
@@ -154,7 +147,7 @@ export default function MaintenancePage() {
           <motion.div
             initial={{ opacity: 0, transform: 'translateX(30px)' }}
             animate={{ opacity: 1, transform: 'translateX(0px)' }}
-            transition={{ ...spring, delay: 0.2 }}
+            transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.2 }}
             className="flex items-center justify-center order-1 lg:order-2 relative"
           >
             <img
