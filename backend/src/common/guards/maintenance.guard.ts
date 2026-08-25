@@ -5,6 +5,8 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 
 /**
@@ -20,6 +22,8 @@ export class MaintenanceGuard implements CanActivate {
   constructor(
     private prisma: PrismaService,
     private reflector: Reflector,
+    private jwtService: JwtService,
+    private config: ConfigService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -31,10 +35,11 @@ export class MaintenanceGuard implements CanActivate {
       return true;
     }
 
-    // 2. Toujours autoriser les routes admin, maintenance, et organizations (protégées par JWT + RolesGuard)
-    // Note: organizations est accessible uniquement par super admin, donc pas besoin du guard ici
-    if (url.match(/^\/api\/(super-admin|admin|maintenance|organizations|users)/)) {
-      return true;
+    // 2. Vérifier si l'utilisateur est super admin via le token JWT
+    // (car request.user n'est pas encore peuplé à ce stade)
+    const token = this.extractTokenFromHeader(request);
+    if (token && await this.isSuperAdmin(token)) {
+      return true; // Super admin bypass complet
     }
 
     // 3. Récupérer les settings (cache possible ici pour optimisation)
@@ -82,5 +87,32 @@ export class MaintenanceGuard implements CanActivate {
       request.socket.remoteAddress ||
       ''
     );
+  }
+
+  private extractTokenFromHeader(request: any): string | null {
+    const authHeader = request.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return null;
+    }
+    return authHeader.substring(7);
+  }
+
+  private async isSuperAdmin(token: string): Promise<boolean> {
+    try {
+      const payload = this.jwtService.verify(token, {
+        secret: this.config.get('JWT_SECRET'),
+      });
+
+      // Récupérer l'utilisateur avec son rôle
+      const user = await this.prisma.user.findUnique({
+        where: { id: payload.sub },
+        include: { role: true },
+      });
+
+      // Vérifier si le rôle a la permission "*" (super admin)
+      return user?.role?.permissions?.includes('*') ?? false;
+    } catch {
+      return false;
+    }
   }
 }
