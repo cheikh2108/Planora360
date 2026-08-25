@@ -110,7 +110,8 @@ export class MaintenanceGuard implements CanActivate {
       });
 
       // Vérifier si le rôle a la permission "*" (super admin)
-      return user?.role?.permissions?.includes('*') ?? false;
+      const permissions = user?.role?.permissions as string[] | null;
+      return permissions?.includes('*') ?? false;
     } catch {
       return false;
     }
