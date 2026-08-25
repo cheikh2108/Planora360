@@ -81,4 +81,41 @@ export class SchedulerService {
     this.logger.log(`✅ ${organizations.length} organisation(s) supprimée(s) définitivement :`);
     organizations.forEach(org => this.logger.log(`   - ${org.name} (${org.id})`));
   }
+
+  @Cron('0 4 * * *') // Tous les jours à 4h du matin
+  async cleanupOldDeletedUsers() {
+    this.logger.log('Démarrage du nettoyage des utilisateurs supprimés...');
+
+    try {
+      const ninetyDaysAgo = new Date();
+      ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+
+      const deletedUsers = await this.prisma.user.findMany({
+        where: {
+          deletedAt: { lte: ninetyDaysAgo },
+          NOT: { deletedAt: null },
+        },
+        select: { id: true, email: true, firstName: true, lastName: true },
+      });
+
+      if (deletedUsers.length === 0) {
+        this.logger.log('Aucun utilisateur à nettoyer.');
+        return;
+      }
+
+      // Suppression définitive (libère les emails)
+      const result = await this.prisma.user.deleteMany({
+        where: {
+          id: { in: deletedUsers.map(u => u.id) },
+        },
+      });
+
+      this.logger.log(`✅ ${result.count} utilisateur(s) supprimé(s) définitivement (> 90 jours) :`);
+      deletedUsers.forEach(user =>
+        this.logger.log(`   - ${user.firstName} ${user.lastName} (${user.email})`)
+      );
+    } catch (error) {
+      this.logger.error('Erreur lors du nettoyage des utilisateurs:', error);
+    }
+  }
 }

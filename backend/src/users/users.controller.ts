@@ -51,10 +51,23 @@ export class UsersController {
     );
   }
 
+  @Get('deleted')
+  @Roles('Super administrateur', 'Administrateur')
+  findDeleted(@CurrentUser() user: any) {
+    return this.usersService.findDeleted(user.organizationId);
+  }
+
   @Get(':id')
   @Roles('Super administrateur', 'Administrateur', 'Coordinateur')
   findOne(@Param('id') id: string, @CurrentUser() user: any) {
     return this.usersService.findOne(id, user.organizationId);
+  }
+
+  @Post(':id/restore')
+  @Roles('Super administrateur', 'Administrateur')
+  @HttpCode(HttpStatus.OK)
+  restore(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.usersService.restore(id, user.organizationId);
   }
 
   @Patch(':id')
@@ -68,5 +81,12 @@ export class UsersController {
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: string, @CurrentUser() user: any) {
     return this.usersService.remove(id, user.organizationId);
+  }
+
+  @Delete(':id/hard')
+  @Roles('Super administrateur', 'Administrateur')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  hardDelete(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.usersService.hardDelete(id, user.organizationId);
   }
 }

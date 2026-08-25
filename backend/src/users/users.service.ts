@@ -206,6 +206,83 @@ export class UsersService {
     });
   }
 
+  async findDeleted(organizationId: string) {
+    // Liste des utilisateurs supprimés (dans la corbeille)
+    return this.prisma.user.findMany({
+      where: {
+        organizationId,
+        deletedAt: { not: null },
+      },
+      include: {
+        role: true,
+      },
+      orderBy: { deletedAt: 'desc' },
+    });
+  }
+
+  async restore(id: string, organizationId: string) {
+    // Vérifier que l'utilisateur existe et est bien supprimé
+    const user = await this.prisma.user.findFirst({
+      where: { id, organizationId, deletedAt: { not: null } },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Utilisateur introuvable dans la corbeille');
+    }
+
+    // Vérifier que l'email n'est pas déjà utilisé par un utilisateur actif
+    const emailTaken = await this.prisma.user.findFirst({
+      where: {
+        email: user.email,
+        deletedAt: null,
+        id: { not: id },
+      },
+    });
+
+    if (emailTaken) {
+      throw new ConflictException(
+        'Impossible de récupérer : un utilisateur actif utilise déjà cet email'
+      );
+    }
+
+    // Restaurer l'utilisateur
+    return this.prisma.user.update({
+      where: { id },
+      data: { deletedAt: null, isActive: true },
+      include: { role: true },
+    });
+  }
+
+  async hardDelete(id: string, organizationId: string) {
+    // Vérifier que l'utilisateur existe et est bien supprimé
+    const user = await this.prisma.user.findFirst({
+      where: { id, organizationId, deletedAt: { not: null } },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Utilisateur introuvable dans la corbeille');
+    }
+
+    // Suppression définitive (libère l'email pour réutilisation)
+    await this.prisma.user.delete({
+      where: { id },
+    });
+  }
+
+  async cleanupOldDeletedUsers() {
+    // Supprimer définitivement les utilisateurs supprimés depuis plus de 90 jours
+    const ninetyDaysAgo = new Date();
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+
+    const deleted = await this.prisma.user.deleteMany({
+      where: {
+        deletedAt: { lt: ninetyDaysAgo },
+      },
+    });
+
+    return { count: deleted.count };
+  }
+
   findRoles(organizationId?: string, callerRole?: string) {
     const isSuperAdmin = callerRole === ROLE_SUPER_ADMIN;
     return this.prisma.role.findMany({
