@@ -94,6 +94,7 @@ export interface User {
   mustChangePassword: boolean;
   twoFactorEnabled: boolean;
   createdAt?: string;
+  deletedAt?: string;
 }
 
 export interface AuthTokens {
