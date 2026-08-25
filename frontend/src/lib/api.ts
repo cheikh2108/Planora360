@@ -254,10 +254,13 @@ export const organizationsApi = {
 export const usersApi = {
   listAll: () => api.get('/users'),
   listForAssignment: () => api.get('/users/list-for-assignment'),
+  getDeleted: () => api.get('/users/deleted'),
   get: (id: string) => api.get(`/users/${id}`),
   create: (data: Record<string, unknown>) => api.post('/users', data),
   update: (id: string, data: Record<string, unknown>) => api.patch(`/users/${id}`, data),
   remove: (id: string) => api.delete(`/users/${id}`),
+  restore: (id: string) => api.post(`/users/${id}/restore`),
+  hardDelete: (id: string) => api.delete(`/users/${id}/hard`),
   toggleActive: (id: string, isActive: boolean) => api.patch(`/users/${id}`, { isActive }),
 };
 

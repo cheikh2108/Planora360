@@ -31,8 +31,9 @@ export class MaintenanceGuard implements CanActivate {
       return true;
     }
 
-    // 2. Toujours autoriser les routes admin et maintenance (protégées par JWT + RolesGuard)
-    if (url.match(/^\/api\/(super-admin|admin|maintenance)/)) {
+    // 2. Toujours autoriser les routes admin, maintenance, et organizations (protégées par JWT + RolesGuard)
+    // Note: organizations est accessible uniquement par super admin, donc pas besoin du guard ici
+    if (url.match(/^\/api\/(super-admin|admin|maintenance|organizations|users)/)) {
       return true;
     }
 
