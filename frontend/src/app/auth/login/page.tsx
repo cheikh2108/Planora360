@@ -16,12 +16,19 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [today, setToday] = useState('');
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
 
   // Calculer la date côté client uniquement pour éviter l'erreur d'hydration
   useEffect(() => {
     setToday(new Date().toLocaleDateString('fr-FR', {
       weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
     }));
+
+    // Vérifier le mode maintenance
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/maintenance/status`)
+      .then((res) => res.json())
+      .then((data) => setMaintenanceMode(data.maintenanceMode))
+      .catch(() => {});
   }, []);
 
   async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
@@ -125,6 +132,25 @@ export default function LoginPage() {
         <div className="hidden lg:flex items-center justify-end px-12 pt-8 shrink-0">
           <p className="text-[11px] text-slate-300 capitalize">{today}</p>
         </div>
+
+        {/* Bannière maintenance */}
+        {maintenanceMode && (
+          <div className="mx-10 sm:mx-16 xl:mx-20 mt-6 mb-0 px-4 py-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <div className="flex gap-3">
+              <div className="shrink-0 mt-0.5">
+                <svg className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-amber-900 mb-1">Site en maintenance</p>
+                <p className="text-xs text-amber-800 leading-relaxed">
+                  Le site est actuellement en maintenance. Seuls les <strong>super administrateurs</strong> peuvent se connecter pour gérer les paramètres.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Formulaire centré */}
         <div className="flex-1 flex flex-col justify-center px-10 sm:px-16 xl:px-20">

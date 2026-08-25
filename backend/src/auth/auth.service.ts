@@ -52,8 +52,13 @@ export class AuthService {
     await this.validateUniqueEmail(dto.email);
 
     const adminRole = await this.findAdminRole();
-    const organization = await this.createOrganization(dto);
-    const user = await this.createAdminUser(dto, organization.id, adminRole.id);
+
+    // Transaction atomique : soit tout réussit, soit tout échoue
+    const { organization, user } = await this.prisma.$transaction(async (tx) => {
+      const organization = await this.createOrganization(dto, tx);
+      const user = await this.createAdminUser(dto, organization.id, adminRole.id, tx);
+      return { organization, user };
+    });
 
     // Track registration in PostHog
     this.posthog.trackRegistration(user.id, organization.id, dto.subscriptionPlan ?? 'DECOUVERTE');
@@ -83,11 +88,12 @@ export class AuthService {
     return adminRole;
   }
 
-  private async createOrganization(dto: RegisterOrganizationDto) {
+  private async createOrganization(dto: RegisterOrganizationDto, tx?: any) {
     const isTrialPlan = !dto.subscriptionPlan || dto.subscriptionPlan === 'DECOUVERTE';
     const trialEndsAt = isTrialPlan ? calculateTrialEndDate() : undefined;
 
-    return this.prisma.organization.create({
+    const prismaClient = tx || this.prisma;
+    return prismaClient.organization.create({
       data: {
         name: dto.organizationName,
         subscriptionPlan: dto.subscriptionPlan ?? 'DECOUVERTE',
@@ -98,9 +104,10 @@ export class AuthService {
     });
   }
 
-  private async createAdminUser(dto: RegisterOrganizationDto, organizationId: string, roleId: string) {
+  private async createAdminUser(dto: RegisterOrganizationDto, organizationId: string, roleId: string, tx?: any) {
     const passwordHash = await this.hashPassword(dto.password);
-    return this.prisma.user.create({
+    const prismaClient = tx || this.prisma;
+    return prismaClient.user.create({
       data: {
         email: dto.email,
         firstName: dto.firstName,
