@@ -785,3 +785,18 @@ model ResultsMatrix {
 
   @@map("results_matrices")
 }
+
+// SYSTÈME - MODE MAINTENANCE
+model SystemSettings {
+  id                 String    @id @default(cuid())
+  maintenanceMode    Boolean   @default(false)
+  maintenanceMessage String?   @db.Text
+  scheduledStart     DateTime?
+  scheduledEnd       DateTime?
+  allowedIPs         String[]  @default([])
+  allowedUserIds     String[]  @default([])
+  updatedAt          DateTime  @updatedAt
+  updatedBy          String?   // userId du super admin qui a fait le changement
+
+  @@map("system_settings")
+}

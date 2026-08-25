@@ -12,8 +12,17 @@ export function SuperAdminShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
-    if (!loading && user?.role?.name !== 'Super administrateur') {
-      router.replace('/dashboard');
+    if (!loading) {
+      // Si pas super admin
+      if (user?.role?.name !== 'Super administrateur') {
+        // Si connecté mais pas super admin → dashboard
+        // Si pas connecté → login direct
+        if (user) {
+          router.replace('/dashboard');
+        } else {
+          router.replace('/auth/login');
+        }
+      }
     }
   }, [user, loading, router]);
 

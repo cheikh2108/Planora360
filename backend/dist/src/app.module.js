@@ -36,6 +36,8 @@ const participants_module_1 = require("./participants/participants.module");
 const capitalization_module_1 = require("./capitalization/capitalization.module");
 const planning_module_1 = require("./planning/planning.module");
 const recommendations_module_1 = require("./recommendations/recommendations.module");
+const maintenance_module_1 = require("./maintenance/maintenance.module");
+const maintenance_guard_1 = require("./common/guards/maintenance.guard");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -49,6 +51,7 @@ exports.AppModule = AppModule = __decorate([
                     limit: 100,
                 }]),
             prisma_module_1.PrismaModule,
+            maintenance_module_1.MaintenanceModule,
             analytics_module_1.AnalyticsModule,
             audit_module_1.AuditModule,
             security_events_module_1.SecurityEventsModule,
@@ -74,6 +77,10 @@ exports.AppModule = AppModule = __decorate([
             recommendations_module_1.RecommendationsModule,
         ],
         providers: [
+            {
+                provide: core_1.APP_GUARD,
+                useClass: maintenance_guard_1.MaintenanceGuard,
+            },
             {
                 provide: core_1.APP_GUARD,
                 useClass: throttler_1.ThrottlerGuard,

@@ -27,6 +27,8 @@ import { ParticipantsModule } from './participants/participants.module';
 import { CapitalizationModule } from './capitalization/capitalization.module';
 import { PlanningModule } from './planning/planning.module';
 import { RecommendationsModule } from './recommendations/recommendations.module';
+import { MaintenanceModule } from './maintenance/maintenance.module';
+import { MaintenanceGuard } from './common/guards/maintenance.guard';
 
 @Module({
   imports: [
@@ -37,6 +39,7 @@ import { RecommendationsModule } from './recommendations/recommendations.module'
       limit: 100,  // 100 requêtes max par minute (augmenté pour dashboard)
     }]),
     PrismaModule,
+    MaintenanceModule,
     AnalyticsModule,
     AuditModule,
     SecurityEventsModule,
@@ -62,6 +65,11 @@ import { RecommendationsModule } from './recommendations/recommendations.module'
     RecommendationsModule,
   ],
   providers: [
+    // MaintenanceGuard s'exécute EN PREMIER (avant throttling, avant auth)
+    {
+      provide: APP_GUARD,
+      useClass: MaintenanceGuard,
+    },
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,

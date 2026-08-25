@@ -8,6 +8,7 @@ import { ToastProvider } from '@/components/ui/toast';
 import { HelpSidebar } from '@/components/help/help-sidebar';
 import { FloatingHelpButton } from '@/components/help/floating-help-button';
 import { PostHogProvider } from '@/lib/posthog-provider';
+import { Toaster } from 'sonner';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [client] = useState(() => new QueryClient({
@@ -22,7 +23,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             <HelpProvider>
               {children}
               <HelpSidebar />
-              <FloatingHelpButton />
+              <Toaster position="top-right" />
             </HelpProvider>
           </ToastProvider>
         </AuthProvider>
