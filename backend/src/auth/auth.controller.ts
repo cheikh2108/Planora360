@@ -1,4 +1,4 @@
-import { Controller, Post, Patch, Body, UseGuards, HttpCode, HttpStatus, Req, Res } from '@nestjs/common';
+import { Controller, Post, Patch, Body, UseGuards, HttpCode, HttpStatus, Req, Res, ServiceUnavailableException } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
@@ -10,6 +10,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { SecurityEventsService } from '../security-events/security-events.service';
 import { CsrfService } from '../common/csrf/csrf.service';
+import { PrismaService } from '../common/prisma/prisma.service';
 
 @Controller('auth')
 export class AuthController {
@@ -17,6 +18,7 @@ export class AuthController {
     private authService: AuthService,
     private securityEventsService: SecurityEventsService,
     private csrfService: CsrfService,
+    private prisma: PrismaService,
   ) {}
 
   @Post('register')
@@ -48,6 +50,10 @@ export class AuthController {
       if ('requiresTwoFactor' in result) {
         return result; // { requiresTwoFactor: true }
       }
+
+      // Vérifier le mode maintenance APRÈS l'authentification réussie
+      await this.checkMaintenanceMode(result.user);
+
 
       // Générer token CSRF
       const csrfToken = this.csrfService.generateToken();
@@ -194,5 +200,35 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   changePassword(@CurrentUser() user: any, @Body() dto: { newPassword: string }) {
     return this.authService.changePassword(user.id, dto.newPassword);
+  }
+
+  /**
+   * Vérifie si le mode maintenance est activé et bloque les utilisateurs non-super-admins
+   */
+  private async checkMaintenanceMode(user: any): Promise<void> {
+    // Récupérer les settings de maintenance
+    const settings = await this.prisma.systemSettings.findFirst({
+      orderBy: { updatedAt: 'desc' },
+    });
+
+    // Si mode maintenance désactivé, autoriser
+    if (!settings || !settings.maintenanceMode) {
+      return;
+    }
+
+    // Vérifier si l'utilisateur est super admin (permission "*")
+    const permissions = user?.role?.permissions as string[] | null;
+    if (permissions?.includes('*')) {
+      return; // Super admin peut se connecter
+    }
+
+    // Bloquer les utilisateurs normaux
+    throw new ServiceUnavailableException({
+      statusCode: 503,
+      message:
+        settings.maintenanceMessage ||
+        'Le système est actuellement en maintenance. Veuillez réessayer dans quelques instants.',
+      estimatedEnd: settings.scheduledEnd,
+    });
   }
 }
