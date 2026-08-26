@@ -5,6 +5,16 @@ const nextConfig: NextConfig = {
   // Configuration optimisée pour production
   compress: true,
   poweredByHeader: false,
+
+  // Proxy API calls to backend (évite problème cross-domain cookies)
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'https://firebrick-lyrebird-183958.hostingersite.com/api/:path*',
+      },
+    ];
+  },
 };
 
 // Configuration Sentry
