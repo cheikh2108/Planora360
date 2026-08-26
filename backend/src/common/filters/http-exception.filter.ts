@@ -5,6 +5,7 @@ import {
   HttpException,
   HttpStatus,
   Logger,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import * as Sentry from '@sentry/nestjs';
@@ -28,6 +29,9 @@ export class HttpExceptionFilter implements ExceptionFilter {
         ? exception.getResponse()
         : 'Une erreur interne est survenue';
 
+    // Ignorer les erreurs attendues pour Sentry
+    const shouldIgnoreForSentry = this.shouldIgnoreForSentry(exception, status);
+
     // Log l'erreur complète pour le debugging (avec stack trace)
     if (status >= 500) {
       this.logger.error(
@@ -35,8 +39,9 @@ export class HttpExceptionFilter implements ExceptionFilter {
         exception instanceof Error ? exception.stack : exception,
       );
 
-      // Capture dans Sentry (erreurs serveur uniquement)
-      Sentry.withScope((scope) => {
+      // Capture dans Sentry (erreurs serveur uniquement, sauf celles ignorées)
+      if (!shouldIgnoreForSentry) {
+        Sentry.withScope((scope) => {
         // Ajouter contexte de la requête
         scope.setContext('http', {
           method: request.method,
@@ -58,13 +63,14 @@ export class HttpExceptionFilter implements ExceptionFilter {
           scope.setTag('organizationId', (request as any).organizationId);
         }
 
-        // Capturer l'exception
-        if (exception instanceof Error) {
-          Sentry.captureException(exception);
-        } else {
-          Sentry.captureMessage(`Unhandled error: ${JSON.stringify(exception)}`, 'error');
-        }
-      });
+          // Capturer l'exception
+          if (exception instanceof Error) {
+            Sentry.captureException(exception);
+          } else {
+            Sentry.captureMessage(`Unhandled error: ${JSON.stringify(exception)}`, 'error');
+          }
+        });
+      }
     }
 
     // En production, ne jamais exposer les stack traces
@@ -80,5 +86,27 @@ export class HttpExceptionFilter implements ExceptionFilter {
     };
 
     response.status(status).json(errorResponse);
+  }
+
+  /**
+   * Détermine si une erreur doit être ignorée par Sentry
+   * (erreurs attendues dans le fonctionnement normal)
+   */
+  private shouldIgnoreForSentry(exception: unknown, status: number): boolean {
+    // Ignorer les erreurs 503 du mode maintenance
+    if (status === HttpStatus.SERVICE_UNAVAILABLE) {
+      if (exception instanceof ServiceUnavailableException) {
+        const response = exception.getResponse();
+        // Vérifier si c'est bien une erreur de maintenance (contient "maintenance" dans le message)
+        if (typeof response === 'object' && 'message' in response) {
+          const message = (response as any).message;
+          if (typeof message === 'string' && message.toLowerCase().includes('maintenance')) {
+            return true; // Ignorer pour Sentry
+          }
+        }
+      }
+    }
+
+    return false; // Par défaut, envoyer à Sentry
   }
 }
