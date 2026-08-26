@@ -49,6 +49,7 @@ export default function DeletedOrganizationsPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [restoreId, setRestoreId] = useState<string | null>(null);
+  const [hardDeleteId, setHardDeleteId] = useState<string | null>(null);
 
   const { data: orgs = [], isLoading } = useQuery<Organization[]>({
     queryKey: ['organizations-deleted'],
@@ -67,12 +68,21 @@ export default function DeletedOrganizationsPage() {
     },
   });
 
+  const { mutate: hardDelete, isPending: hardDeleting } = useMutation({
+    mutationFn: (id: string) => organizationsApi.hardDelete(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['organizations-deleted'] });
+      qc.invalidateQueries({ queryKey: ['organizations'] });
+      setHardDeleteId(null);
+    },
+  });
+
   const filtered = orgs.filter(o => {
     if (!search.trim()) return true;
     return o.name.toLowerCase().includes(search.toLowerCase());
   });
 
-  const selectedOrg = orgs.find(o => o.id === restoreId);
+  const selectedOrg = orgs.find(o => o.id === restoreId || o.id === hardDeleteId);
 
   return (
     <main className="px-4 md:px-8 py-8 space-y-6 max-w-7xl mx-auto">
@@ -140,7 +150,7 @@ export default function DeletedOrganizationsPage() {
                   <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 hidden lg:table-cell">Plans</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 hidden lg:table-cell">Supprimée le</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 hidden xl:table-cell">Expiration</th>
-                  <th className="w-20" />
+                  <th className="w-28" />
                 </tr>
               </thead>
               <tbody>
@@ -192,13 +202,22 @@ export default function DeletedOrganizationsPage() {
                         </div>
                       </td>
                       <td className="px-3 py-3.5">
-                        <button
-                          onClick={() => setRestoreId(org.id)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
-                          title="Restaurer"
-                        >
-                          <RotateCcw size={14} />
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => setRestoreId(org.id)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                            title="Restaurer"
+                          >
+                            <RotateCcw size={14} />
+                          </button>
+                          <button
+                            onClick={() => setHardDeleteId(org.id)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                            title="Supprimer définitivement"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -211,7 +230,7 @@ export default function DeletedOrganizationsPage() {
 
       {/* Modal de restauration */}
       <Modal open={!!restoreId} onClose={() => setRestoreId(null)} title="Restaurer l'organisation" size="sm">
-        {selectedOrg && (
+        {selectedOrg && restoreId && (
           <div className="space-y-4">
             <div className="flex gap-3 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3">
               <RotateCcw size={18} className="text-emerald-600 shrink-0 mt-0.5" />
@@ -228,6 +247,38 @@ export default function DeletedOrganizationsPage() {
                 icon={<RotateCcw size={13} />}
               >
                 Restaurer
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Modal de suppression définitive */}
+      <Modal open={!!hardDeleteId} onClose={() => setHardDeleteId(null)} title="Supprimer définitivement" size="sm">
+        {selectedOrg && hardDeleteId && (
+          <div className="space-y-4">
+            <div className="flex gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+              <AlertCircle size={18} className="text-red-600 shrink-0 mt-0.5" />
+              <div className="text-sm text-slate-700">
+                <p className="font-semibold text-red-900 mb-1">Action irréversible</p>
+                <p>
+                  <strong>{selectedOrg.name}</strong> et ses <strong>{selectedOrg._count?.users || 0} utilisateur{selectedOrg._count?.users !== 1 ? 's' : ''}</strong> seront
+                  supprimé{selectedOrg._count?.users !== 1 ? 's' : ''} définitivement de la base de données.
+                </p>
+                <p className="text-xs text-slate-600 mt-2">
+                  ✅ Le nom <strong>{selectedOrg.name}</strong> et les adresses email des utilisateurs seront libérés et pourront être réutilisés.
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 pt-1">
+              <Button variant="secondary" onClick={() => setHardDeleteId(null)}>Annuler</Button>
+              <Button
+                variant="danger"
+                loading={hardDeleting}
+                onClick={() => hardDelete(hardDeleteId!)}
+                icon={<Trash2 size={13} />}
+              >
+                Supprimer définitivement
               </Button>
             </div>
           </div>

@@ -84,4 +84,11 @@ export class OrganizationsController {
   restore(@Param('id') id: string) {
     return this.organizationsService.restore(id);
   }
+
+  @Delete(':id/hard')
+  @Roles('Super administrateur')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  hardDelete(@Param('id') id: string) {
+    return this.organizationsService.hardDelete(id);
+  }
 }

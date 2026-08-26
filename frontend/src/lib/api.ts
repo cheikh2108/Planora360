@@ -248,6 +248,7 @@ export const organizationsApi = {
   reject: (id: string, reason?: string) => api.patch(`/organizations/${id}/reject`, { reason }),
   remove: (id: string) => api.delete(`/organizations/${id}`),
   restore: (id: string) => api.patch(`/organizations/${id}/restore`),
+  hardDelete: (id: string) => api.delete(`/organizations/${id}/hard`),
 };
 
 // Users (super admin scope — by org)

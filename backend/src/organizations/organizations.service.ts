@@ -172,6 +172,28 @@ export class OrganizationsService {
     };
   }
 
+  async hardDelete(id: string) {
+    // Vérifier que l'organisation existe et est supprimée
+    const organization = await this.findDeletedOrganization(id);
+
+    // Suppression définitive (libère le nom d'organisation et les emails)
+    await this.prisma.$transaction([
+      // 1. Supprimer tous les utilisateurs de l'organisation
+      this.prisma.user.deleteMany({
+        where: { organizationId: id },
+      }),
+      // 2. Supprimer l'organisation
+      this.prisma.organization.delete({
+        where: { id },
+      }),
+    ]);
+
+    return {
+      message: 'Organisation supprimée définitivement',
+      usersDeleted: organization._count.users,
+    };
+  }
+
   private validateCurrentUserId(currentUserId: string) {
     if (!currentUserId) {
       throw new BadRequestException('Impossible d\'identifier l\'utilisateur actuel.');
