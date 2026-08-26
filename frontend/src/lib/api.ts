@@ -10,11 +10,34 @@ import { TokenStorage } from './token-storage';
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
+  withCredentials: true, // CRITICAL: Envoie les cookies httpOnly avec chaque requête
 });
 
+/**
+ * Récupère le token CSRF depuis les cookies
+ */
+function getCsrfToken(): string | null {
+  if (typeof document === 'undefined') return null;
+  const match = document.cookie.match(/csrf-token=([^;]+)/);
+  return match ? match[1] : null;
+}
+
 api.interceptors.request.use((config) => {
+  // Ajouter token CSRF pour les requêtes mutantes (protection CSRF)
+  const method = config.method?.toUpperCase();
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method || '')) {
+    const csrfToken = getCsrfToken();
+    if (csrfToken) {
+      config.headers['X-CSRF-Token'] = csrfToken;
+    }
+  }
+
+  // Rétrocompatibilité: fallback sur localStorage si cookies pas encore disponibles
   const token = TokenStorage.getAccessToken();
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
   return config;
 });
 
@@ -39,15 +62,16 @@ async function handleUnauthorizedError(err: any) {
 
   original._retry = true;
 
-  if (!TokenStorage.hasRefreshToken()) {
+  // Vérifier si on a un refresh token (cookie ou localStorage)
+  const hasRefreshToken = hasCookie('refreshToken') || TokenStorage.hasRefreshToken();
+  if (!hasRefreshToken) {
     redirectToLogin();
     return Promise.reject(err);
   }
 
   try {
-    const newTokens = await refreshAccessToken();
-    TokenStorage.setTokens(newTokens.accessToken, newTokens.refreshToken);
-    original.headers.Authorization = `Bearer ${newTokens.accessToken}`;
+    await refreshAccessToken();
+    // Plus besoin de modifier Authorization header - le cookie est automatiquement envoyé
     return api(original);
   } catch {
     redirectToLogin();
@@ -55,10 +79,24 @@ async function handleUnauthorizedError(err: any) {
   }
 }
 
-async function refreshAccessToken(): Promise<{ accessToken: string; refreshToken: string }> {
-  const refreshToken = TokenStorage.getRefreshToken();
-  const { data } = await axios.post(`${API_BASE_URL}/auth/refresh`, { refreshToken });
-  return data;
+/**
+ * Vérifie si un cookie existe
+ */
+function hasCookie(name: string): boolean {
+  if (typeof document === 'undefined') return false;
+  return document.cookie.includes(`${name}=`);
+}
+
+async function refreshAccessToken(): Promise<void> {
+  // Le refresh token est automatiquement envoyé via le cookie httpOnly
+  // Backend retourne les nouveaux tokens dans des cookies
+  const refreshToken = TokenStorage.getRefreshToken(); // Fallback localStorage
+  await axios.post(
+    `${API_BASE_URL}/auth/refresh`,
+    refreshToken ? { refreshToken } : {}, // Body vide si cookie présent
+    { withCredentials: true }
+  );
+  // Les nouveaux cookies sont automatiquement définis par le navigateur
 }
 
 function redirectToLogin() {

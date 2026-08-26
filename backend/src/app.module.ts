@@ -29,6 +29,8 @@ import { PlanningModule } from './planning/planning.module';
 import { RecommendationsModule } from './recommendations/recommendations.module';
 import { MaintenanceModule } from './maintenance/maintenance.module';
 import { MaintenanceGuard } from './common/guards/maintenance.guard';
+import { CsrfModule } from './common/csrf/csrf.module';
+import { CsrfGuard } from './common/guards/csrf.guard';
 
 @Module({
   imports: [
@@ -40,6 +42,7 @@ import { MaintenanceGuard } from './common/guards/maintenance.guard';
     }]),
     PrismaModule,
     MaintenanceModule,
+    CsrfModule,
     AnalyticsModule,
     AuditModule,
     SecurityEventsModule,
@@ -65,7 +68,10 @@ import { MaintenanceGuard } from './common/guards/maintenance.guard';
     RecommendationsModule,
   ],
   providers: [
-    // MaintenanceGuard s'exécute EN PREMIER (avant throttling, avant auth)
+    // Ordre d'exécution des guards globaux :
+    // 1. MaintenanceGuard - vérifie si le site est en maintenance
+    // 2. ThrottlerGuard - rate limiting
+    // 3. CsrfGuard - protection CSRF (après throttling, avant/avec auth)
     {
       provide: APP_GUARD,
       useClass: MaintenanceGuard,
@@ -73,6 +79,10 @@ import { MaintenanceGuard } from './common/guards/maintenance.guard';
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: CsrfGuard,
     },
   ],
 })

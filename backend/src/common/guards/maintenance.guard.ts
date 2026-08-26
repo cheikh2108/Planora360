@@ -30,8 +30,8 @@ export class MaintenanceGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const url = request.url;
 
-    // 1. Toujours autoriser health check + auth endpoints
-    if (url.match(/^\/(health|api\/auth)/)) {
+    // 1. Toujours autoriser health check + auth endpoints + maintenance status
+    if (url.match(/^\/(health|api\/auth|api\/maintenance)/)) {
       return true;
     }
 
@@ -90,11 +90,18 @@ export class MaintenanceGuard implements CanActivate {
   }
 
   private extractTokenFromHeader(request: any): string | null {
-    const authHeader = request.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return null;
+    // Priorité 1: Cookie httpOnly (nouveau système sécurisé)
+    if (request.cookies?.['accessToken']) {
+      return request.cookies['accessToken'];
     }
-    return authHeader.substring(7);
+
+    // Priorité 2: Header Authorization (ancien système, rétrocompatibilité)
+    const authHeader = request.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      return authHeader.substring(7);
+    }
+
+    return null;
   }
 
   private async isSuperAdmin(token: string): Promise<boolean> {

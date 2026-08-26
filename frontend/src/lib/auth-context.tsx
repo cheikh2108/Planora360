@@ -37,9 +37,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
+    // Vérifier si l'utilisateur est connecté (cookies httpOnly ou localStorage legacy)
+    const hasAccessTokenCookie = document.cookie.includes('accessToken=');
     const stored = localStorage.getItem('user');
-    if (token && stored) {
+
+    if (hasAccessTokenCookie && stored) {
       try {
         const u = JSON.parse(stored);
         setUser(u);
@@ -47,7 +49,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch {
         localStorage.clear();
       }
+    } else if (!hasAccessTokenCookie) {
+      // Pas de cookie = pas connecté, nettoyer localStorage legacy
+      localStorage.clear();
     }
+
     setLoading(false);
   }, []);
 
@@ -59,10 +65,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return data as any;
     }
 
-    // Sinon, connexion réussie - sauvegarder les tokens
-    localStorage.setItem('accessToken', data.accessToken);
-    localStorage.setItem('refreshToken', data.refreshToken);
+    // Nouveau système: les tokens sont dans des cookies httpOnly
+    // Le backend retourne uniquement { user, csrfToken }
+    // On stocke UNIQUEMENT les infos utilisateur en localStorage (pas les tokens)
     localStorage.setItem('user', JSON.stringify(data.user));
+
+    // Rétrocompatibilité: si le backend renvoie encore les tokens (ancien format)
+    if (data.accessToken && data.refreshToken) {
+      localStorage.setItem('accessToken', data.accessToken);
+      localStorage.setItem('refreshToken', data.refreshToken);
+    }
+
     setUser(data.user);
     applyBrandColor(data.user?.organization?.brandColor);
 

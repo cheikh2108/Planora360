@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../common/prisma/prisma.service';
+import { Request } from 'express';
 
 export interface JwtPayload {
   sub: string;
@@ -18,9 +19,20 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private prisma: PrismaService,
   ) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      // Extraire le token depuis les cookies en priorité, fallback sur header Authorization
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (request: Request) => {
+          // Priorité 1: cookie httpOnly (nouveau système sécurisé)
+          if (request?.cookies?.['accessToken']) {
+            return request.cookies['accessToken'];
+          }
+          // Priorité 2: header Authorization (ancien système, rétrocompatibilité)
+          return ExtractJwt.fromAuthHeaderAsBearerToken()(request);
+        },
+      ]),
       ignoreExpiration: false,
       secretOrKey: config.get<string>('JWT_SECRET') as string,
+      passReqToCallback: false,
     });
   }
 

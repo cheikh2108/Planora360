@@ -5,9 +5,13 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import cookieParser = require('cookie-parser');
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Cookie parser pour lire les cookies httpOnly
+  app.use(cookieParser());
 
   app.setGlobalPrefix('api');
 

@@ -1,5 +1,5 @@
-import { Controller, Post, Patch, Body, UseGuards, HttpCode, HttpStatus, Req } from '@nestjs/common';
-import { Request } from 'express';
+import { Controller, Post, Patch, Body, UseGuards, HttpCode, HttpStatus, Req, Res } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -9,12 +9,14 @@ import { RegisterOrganizationDto } from './dto/register-organization.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { SecurityEventsService } from '../security-events/security-events.service';
+import { CsrfService } from '../common/csrf/csrf.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private authService: AuthService,
     private securityEventsService: SecurityEventsService,
+    private csrfService: CsrfService,
   ) {}
 
   @Post('register')
@@ -27,7 +29,7 @@ export class AuthController {
   @Post('login')
   @Throttle({ default: { limit: 5, ttl: 60000 } }) // 5 tentatives max par minute
   @HttpCode(HttpStatus.OK)
-  async login(@Body() dto: LoginDto, @Req() request: Request) {
+  async login(@Body() dto: LoginDto, @Req() request: Request, @Res({ passthrough: true }) response: Response) {
     const ipAddress = this.extractIpAddress(request);
     const userAgent = request.headers['user-agent'];
 
@@ -42,7 +44,22 @@ export class AuthController {
         userAgent,
       });
 
-      return result;
+      // Si 2FA requis, ne pas définir de cookies ni générer de CSRF
+      if ('requiresTwoFactor' in result) {
+        return result; // { requiresTwoFactor: true }
+      }
+
+      // Générer token CSRF
+      const csrfToken = this.csrfService.generateToken();
+
+      // Définir les cookies httpOnly (protection XSS)
+      this.setSecureCookies(response, result.accessToken, result.refreshToken, csrfToken);
+
+      // Retourner uniquement les infos utilisateur + CSRF token (pas les tokens dans le body)
+      return {
+        user: result.user,
+        csrfToken, // Le frontend en a besoin pour les requêtes futures
+      };
     } catch (error) {
       // Track failed login
       await this.securityEventsService.trackLoginAttempt({
@@ -54,6 +71,40 @@ export class AuthController {
 
       throw error;
     }
+  }
+
+  /**
+   * Définit les cookies sécurisés (httpOnly, secure, sameSite)
+   */
+  private setSecureCookies(response: Response, accessToken: string, refreshToken: string, csrfToken: string) {
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    // Access Token (15 minutes)
+    response.cookie('accessToken', accessToken, {
+      httpOnly: true, // Protection XSS
+      secure: isProduction, // HTTPS seulement en production
+      sameSite: 'lax', // Protection CSRF basique
+      maxAge: 15 * 60 * 1000, // 15 minutes
+      path: '/',
+    });
+
+    // Refresh Token (7 jours)
+    response.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 jours
+      path: '/',
+    });
+
+    // CSRF Token (non httpOnly, le frontend doit pouvoir le lire)
+    response.cookie('csrf-token', csrfToken, {
+      httpOnly: false, // Frontend doit le lire pour l'envoyer dans le header
+      secure: isProduction,
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/',
+    });
   }
 
   /**
@@ -81,17 +132,43 @@ export class AuthController {
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  refresh(@Body() dto: RefreshTokenDto, @Req() request: Request) {
+  async refresh(@Body() dto: RefreshTokenDto, @Req() request: Request, @Res({ passthrough: true }) response: Response) {
     const ipAddress = this.extractIpAddress(request);
     const userAgent = request.headers['user-agent'];
-    return this.authService.refresh(dto.refreshToken, ipAddress, userAgent);
+
+    // Priorité: cookie > body (rétrocompatibilité)
+    const refreshToken = request.cookies?.['refreshToken'] || dto.refreshToken;
+
+    if (!refreshToken) {
+      throw new Error('Refresh token manquant');
+    }
+
+    const result = await this.authService.refresh(refreshToken, ipAddress, userAgent);
+
+    // Générer nouveau token CSRF
+    const csrfToken = this.csrfService.generateToken();
+
+    // Définir les nouveaux cookies (token rotation)
+    this.setSecureCookies(response, result.accessToken, result.refreshToken, csrfToken);
+
+    return {
+      user: result.user,
+      csrfToken,
+    };
   }
 
   @Post('logout')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
-  logout(@CurrentUser() user: any) {
-    return this.authService.logout(user.id);
+  async logout(@CurrentUser() user: any, @Res({ passthrough: true }) response: Response) {
+    await this.authService.logout(user.id);
+
+    // Supprimer tous les cookies
+    response.clearCookie('accessToken', { path: '/' });
+    response.clearCookie('refreshToken', { path: '/' });
+    response.clearCookie('csrf-token', { path: '/' });
+
+    return { message: 'Déconnexion réussie' };
   }
 
   @Post('2fa/setup')
