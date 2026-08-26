@@ -8,10 +8,14 @@ const nextConfig: NextConfig = {
 
   // Proxy API calls to backend (évite problème cross-domain cookies)
   async rewrites() {
+    const apiUrl = process.env.NODE_ENV === 'production'
+      ? 'https://firebrick-lyrebird-183958.hostingersite.com'
+      : 'http://localhost:3000';
+
     return [
       {
         source: '/api/:path*',
-        destination: 'https://firebrick-lyrebird-183958.hostingersite.com/api/:path*',
+        destination: `${apiUrl}/api/:path*`,
       },
     ];
   },

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
+import { maintenanceApi } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { FormField, Input } from '@/components/ui/form-field';
 import { cn } from '@/lib/utils';
@@ -39,8 +40,7 @@ export default function SuperAdminSettingsPage() {
 
   const fetchMaintenanceStatus = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/maintenance/status`);
-      const data = await res.json();
+      const { data } = await maintenanceApi.getStatus();
       setMaintenanceStatus(data);
     } catch (error) {
       toast.error('Impossible de récupérer le status');
@@ -50,22 +50,11 @@ export default function SuperAdminSettingsPage() {
   const toggleMaintenance = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('accessToken');
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/maintenance`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          maintenanceMode: !maintenanceStatus.maintenanceMode,
-          maintenanceMessage: maintenanceStatus.maintenanceMessage,
-        }),
+      const { data } = await maintenanceApi.toggle({
+        maintenanceMode: !maintenanceStatus.maintenanceMode,
+        maintenanceMessage: maintenanceStatus.maintenanceMessage,
       });
 
-      if (!res.ok) throw new Error();
-
-      const data = await res.json();
       setMaintenanceStatus(data);
 
       toast.success(
@@ -223,20 +212,10 @@ export default function SuperAdminSettingsPage() {
                   onClick={async () => {
                     setLoading(true);
                     try {
-                      const token = localStorage.getItem('accessToken');
-                      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/maintenance`, {
-                        method: 'PUT',
-                        headers: {
-                          'Content-Type': 'application/json',
-                          Authorization: `Bearer ${token}`,
-                        },
-                        body: JSON.stringify({
-                          maintenanceMode: true,
-                          maintenanceMessage: maintenanceStatus.maintenanceMessage,
-                        }),
+                      await maintenanceApi.toggle({
+                        maintenanceMode: true,
+                        maintenanceMessage: maintenanceStatus.maintenanceMessage,
                       });
-
-                      if (!res.ok) throw new Error();
 
                       toast.success('Message mis à jour');
                     } catch (error) {

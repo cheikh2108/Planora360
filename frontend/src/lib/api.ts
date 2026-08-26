@@ -324,3 +324,10 @@ export const recommendationsApi = {
     api.post(`/recommendations/${id}/comments`, { content, isImportant }),
   getComments: (id: string) => api.get(`/recommendations/${id}/comments`),
 };
+
+// Maintenance
+export const maintenanceApi = {
+  getStatus: () => api.get('/maintenance/status'),
+  toggle: (data: { maintenanceMode: boolean; maintenanceMessage?: string }) =>
+    api.put('/maintenance', data),
+};
