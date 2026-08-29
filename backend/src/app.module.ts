@@ -31,6 +31,8 @@ import { MaintenanceModule } from './maintenance/maintenance.module';
 import { MaintenanceGuard } from './common/guards/maintenance.guard';
 import { CsrfModule } from './common/csrf/csrf.module';
 import { CsrfGuard } from './common/guards/csrf.guard';
+import { PassationModule } from './passation/passation.module';
+import { MessagerieModule } from './messagerie/messagerie.module';
 
 @Module({
   imports: [
@@ -66,6 +68,8 @@ import { CsrfGuard } from './common/guards/csrf.guard';
     CapitalizationModule,
     PlanningModule,
     RecommendationsModule,
+    PassationModule,
+    MessagerieModule,
   ],
   providers: [
     // Ordre d'exécution des guards globaux :
