@@ -156,8 +156,8 @@ export declare class MessagerieController {
                 mimeType: string;
                 width: number | null;
                 uploadedAt: Date;
-                fileUrl: string;
                 messageId: string;
+                fileUrl: string;
                 thumbnailUrl: string | null;
                 height: number | null;
                 duration: number | null;
@@ -218,8 +218,8 @@ export declare class MessagerieController {
             mimeType: string;
             width: number | null;
             uploadedAt: Date;
-            fileUrl: string;
             messageId: string;
+            fileUrl: string;
             thumbnailUrl: string | null;
             height: number | null;
             duration: number | null;

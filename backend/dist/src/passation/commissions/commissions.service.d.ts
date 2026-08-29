@@ -91,14 +91,14 @@ export declare class CommissionsService {
             updatedAt: Date;
             validatedAt: Date | null;
             soumissionId: string;
-            commentaires: string | null;
-            evaluateurId: string;
             commissionId: string;
             scoreAdmin: number | null;
             scoreTechnique: number | null;
             scoreFinancier: number | null;
             scoreGlobal: number | null;
             criteres: import("@prisma/client/runtime/client").JsonValue;
+            commentaires: string | null;
+            evaluateurId: string;
         })[];
         procedure: {
             id: string;

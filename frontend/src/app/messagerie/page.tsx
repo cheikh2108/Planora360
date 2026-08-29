@@ -191,7 +191,14 @@ export default function MessagingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="relative min-h-screen bg-slate-50">
+      {/* Subtle background pattern */}
+      <div className="fixed inset-0 opacity-[0.015] pointer-events-none"
+           style={{
+             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+           }}
+      />
+
       <Header
         title="Messagerie"
         subtitle="Conversations professionnelles et communications d'équipe"
@@ -203,28 +210,41 @@ export default function MessagingPage() {
         }
       />
 
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Search and filters */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-            <Input
+          <div className="relative flex-1 max-w-xl">
+            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+            <input
               type="text"
               placeholder="Rechercher une conversation..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="w-full rounded-2xl border border-slate-200 bg-white px-12 py-3 text-[14px] placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all duration-200"
             />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-400 transition-all duration-200 hover:bg-slate-100 hover:text-slate-600"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
           </div>
-          <div className="flex gap-2">
-            <Button
-              variant={showArchivedOnly ? 'primary' : 'secondary'}
-              onClick={() => setShowArchivedOnly(!showArchivedOnly)}
-            >
-              <Archive className="mr-2 h-4 w-4" />
-              {showArchivedOnly ? 'Toutes' : 'Archivées'}
-            </Button>
-          </div>
+          <button
+            onClick={() => setShowArchivedOnly(!showArchivedOnly)}
+            className={cn(
+              "flex items-center gap-2 rounded-2xl px-5 py-3 text-[14px] font-semibold transition-all duration-200 active:scale-95",
+              showArchivedOnly
+                ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 hover:bg-emerald-600"
+                : "border border-slate-200 bg-white text-slate-700 hover:border-emerald-200 hover:bg-emerald-50"
+            )}
+          >
+            <Archive className="h-4 w-4" />
+            {showArchivedOnly ? 'Toutes' : 'Archivées'}
+          </button>
         </div>
 
         {/* Conversations list */}
@@ -235,120 +255,145 @@ export default function MessagingPage() {
             ))}
           </div>
         ) : filteredConversations && filteredConversations.length > 0 ? (
-          <div className="space-y-2">
-            {filteredConversations.map((conversation) => (
-              <div
-                key={conversation.id}
-                role="button"
-                tabIndex={0}
-                onClick={() => router.push(`/messagerie/${conversation.id}`)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    router.push(`/messagerie/${conversation.id}`);
-                  }
-                }}
-                className="group w-full cursor-pointer rounded-lg bg-white p-4 text-left shadow-sm transition-all hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <div className="flex items-start gap-4">
-                  {/* Avatar */}
-                  <div className="flex-shrink-0">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                      {conversation.type === 'DIRECT' ? (
-                        <MessageSquare className="h-6 w-6" />
-                      ) : (
-                        <Users className="h-6 w-6" />
-                      )}
-                    </div>
-                  </div>
+          <div className="space-y-3">
+            {filteredConversations.map((conversation) => {
+              // Calculer initiales pour avatar
+              const getInitials = () => {
+                if (conversation.type === 'DIRECT') {
+                  const otherParticipant = conversation.participants?.find(
+                    (p) => p.userId !== user?.id
+                  );
+                  return `${otherParticipant?.user?.firstName?.[0] || ''}${otherParticipant?.user?.lastName?.[0] || ''}`.toUpperCase();
+                }
+                return getConversationTitle(conversation).substring(0, 2).toUpperCase();
+              };
 
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
-                        <p className="truncate font-semibold text-slate-900 group-hover:text-blue-600">
-                          {getConversationTitle(conversation)}
-                        </p>
-                        <p className="mt-1 truncate text-sm text-slate-600">
-                          {getConversationSubtitle(conversation)}
-                        </p>
+              const hasUnread = conversation.unreadCount && conversation.unreadCount > 0;
+
+              return (
+                <div
+                  key={conversation.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => router.push(`/messagerie/${conversation.id}`)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      router.push(`/messagerie/${conversation.id}`);
+                    }
+                  }}
+                  className="group relative w-full cursor-pointer overflow-hidden rounded-2xl border border-slate-200/80 bg-white px-5 py-4 text-left transition-all duration-200 hover:border-emerald-200 hover:shadow-lg hover:shadow-emerald-500/10 hover:-translate-y-0.5 active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                >
+                  {/* Subtle gradient overlay on hover */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-50/0 via-emerald-50/50 to-emerald-50/0 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+
+                  <div className="relative flex items-start gap-4">
+                    {/* Avatar */}
+                    <div className="flex-shrink-0">
+                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-[16px] font-bold text-white shadow-sm transition-transform duration-200 group-hover:scale-105 group-hover:shadow-md">
+                        {getInitials()}
                       </div>
-                      <div className="ml-4 flex flex-col items-end gap-2">
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h3 className={cn(
+                              "truncate text-[15px] font-bold text-slate-900 transition-colors duration-200",
+                              hasUnread && "text-emerald-900"
+                            )}>
+                              {getConversationTitle(conversation)}
+                            </h3>
+                            {hasUnread && (
+                              <span className="flex h-5 min-w-[1.25rem] flex-shrink-0 items-center justify-center rounded-full bg-emerald-500 px-1.5 text-[11px] font-bold text-white shadow-sm animate-in fade-in-0 zoom-in-95 duration-200">
+                                {conversation.unreadCount}
+                              </span>
+                            )}
+                          </div>
+                          <p className={cn(
+                            "mt-0.5 truncate text-[13px] leading-relaxed transition-colors duration-200",
+                            getConversationSubtitle(conversation) === 'Aucun message'
+                              ? 'italic text-slate-400'
+                              : 'text-slate-600'
+                          )}>
+                            {getConversationSubtitle(conversation)}
+                          </p>
+                        </div>
+
+                        {/* Timestamp */}
                         {conversation.lastMessage && (
-                          <span className="text-xs text-slate-500">
+                          <span className="flex-shrink-0 text-[11px] font-semibold text-slate-500">
                             {formatDate(conversation.lastMessage.createdAt)}
                           </span>
                         )}
-                        {conversation.unreadCount && conversation.unreadCount > 0 && (
-                          <span className="flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-blue-600 px-1.5 text-xs font-medium text-white">
-                            {conversation.unreadCount}
+                      </div>
+
+                      {/* Metadata - Natural language */}
+                      <div className="mt-3 flex items-center gap-3">
+                        {conversation.type !== 'DIRECT' && (
+                          <span className="flex items-center gap-1.5 text-[12px] font-medium text-slate-500">
+                            <Users className="h-3.5 w-3.5" />
+                            {conversation._count?.participants || 0} membres
+                          </span>
+                        )}
+                        {conversation._count?.messages && conversation._count.messages > 0 && (
+                          <span className="flex items-center gap-1.5 text-[12px] font-medium text-slate-500">
+                            <MessageSquare className="h-3.5 w-3.5" />
+                            {conversation._count.messages}
+                          </span>
+                        )}
+                        {conversation.isArchived && (
+                          <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-600 transition-colors duration-200 group-hover:bg-slate-200">
+                            Archivée
                           </span>
                         )}
                       </div>
                     </div>
 
-                    {/* Metadata */}
-                    <div className="mt-2 flex items-center gap-4 text-xs text-slate-500">
-                      <span className="flex items-center gap-1">
-                        <Users className="h-3 w-3" />
-                        {conversation._count?.participants || 0} participant(s)
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <MessageSquare className="h-3 w-3" />
-                        {conversation._count?.messages || 0} message(s)
-                      </span>
-                      {conversation.isArchived && (
-                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
-                          Archivée
-                        </span>
+                    {/* Actions - Hidden until hover */}
+                    <div className="flex flex-shrink-0 items-center gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                      {conversation.isArchived ? (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            unarchiveMutation.mutate(conversation.id);
+                          }}
+                          className="rounded-lg p-2 text-emerald-600 transition-all duration-200 hover:bg-emerald-50 active:scale-95"
+                          title="Restaurer"
+                        >
+                          <Archive className="h-4 w-4" />
+                        </button>
+                      ) : (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            archiveMutation.mutate(conversation.id);
+                          }}
+                          className="rounded-lg p-2 text-slate-600 transition-all duration-200 hover:bg-slate-100 active:scale-95"
+                          title="Archiver"
+                        >
+                          <Archive className="h-4 w-4" />
+                        </button>
                       )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (confirm('Voulez-vous vraiment supprimer cette conversation ?')) {
+                            deleteMutation.mutate(conversation.id);
+                          }
+                        }}
+                        className="rounded-lg p-2 text-red-600 transition-all duration-200 hover:bg-red-50 active:scale-95"
+                        title="Supprimer"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     </div>
                   </div>
-
-                  {/* Actions */}
-                  <div className="flex flex-shrink-0 gap-1">
-                    {conversation.isArchived ? (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          unarchiveMutation.mutate(conversation.id);
-                        }}
-                      >
-                        Restaurer
-                      </Button>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          archiveMutation.mutate(conversation.id);
-                        }}
-                        title="Archiver"
-                      >
-                        <Archive className="h-4 w-4" />
-                      </Button>
-                    )}
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (confirm('Voulez-vous vraiment supprimer cette conversation ?')) {
-                          deleteMutation.mutate(conversation.id);
-                        }
-                      }}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                      title="Supprimer"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <EmptyState
