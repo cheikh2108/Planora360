@@ -112,12 +112,20 @@ export default function ConversationPage() {
   // Send message mutation
   const sendMutation = useMutation({
     mutationFn: async (content: string) => {
-      sendMessage(content);
-      return Promise.resolve();
+      // Utiliser l'API REST pour envoyer le message (avec confirmation)
+      // Le WebSocket recevra le message via 'message:new' pour l'affichage temps réel
+      return messagesApi.send(conversationId, {
+        content,
+        contentType: 'TEXT',
+      });
     },
     onSuccess: () => {
       setMessageInput('');
       stopTyping();
+    },
+    onError: (error: any) => {
+      console.error('Erreur envoi message:', error);
+      // TODO: Afficher un toast d'erreur
     },
   });
 

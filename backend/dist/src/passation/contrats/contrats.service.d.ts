@@ -143,8 +143,8 @@ export declare class ContratsService {
             validatedBy: string | null;
             validatedAt: Date | null;
             dateSignature: Date;
-            contratId: string;
             motif: string;
+            contratId: string;
             numero: number;
             impactMontant: import("@prisma/client-runtime-utils").Decimal | null;
             impactDelai: number | null;

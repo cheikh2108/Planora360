@@ -161,8 +161,8 @@ export declare class MessagerieService {
             mimeType: string;
             width: number | null;
             uploadedAt: Date;
-            fileUrl: string;
             messageId: string;
+            fileUrl: string;
             thumbnailUrl: string | null;
             height: number | null;
             duration: number | null;
@@ -214,8 +214,8 @@ export declare class MessagerieService {
             mimeType: string;
             width: number | null;
             uploadedAt: Date;
-            fileUrl: string;
             messageId: string;
+            fileUrl: string;
             thumbnailUrl: string | null;
             height: number | null;
             duration: number | null;
@@ -295,8 +295,8 @@ export declare class MessagerieService {
                 mimeType: string;
                 width: number | null;
                 uploadedAt: Date;
-                fileUrl: string;
                 messageId: string;
+                fileUrl: string;
                 thumbnailUrl: string | null;
                 height: number | null;
                 duration: number | null;
