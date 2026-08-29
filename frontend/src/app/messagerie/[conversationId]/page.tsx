@@ -157,7 +157,10 @@ export default function ConversationPage() {
     if (!conversation) return '';
     if (conversation.titre) return conversation.titre;
     if (conversation.type === 'DIRECT') {
-      const otherParticipant = conversation.participants?.[0];
+      // Pour une conversation directe, afficher le nom de l'AUTRE personne (pas soi-même)
+      const otherParticipant = conversation.participants?.find(
+        (p) => p.userId !== user?.id
+      );
       return otherParticipant?.user
         ? `${otherParticipant.user.firstName} ${otherParticipant.user.lastName}`
         : 'Sans titre';

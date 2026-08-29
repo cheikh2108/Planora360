@@ -14,12 +14,14 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
 import { formatDate, cn } from '@/lib/utils';
+import { useAuth } from '@/lib/auth-context';
 import { MessageSquare, Plus, Search, Users, Archive, Circle, X, Trash2 } from 'lucide-react';
 
 export default function MessagingPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { success } = useToast();
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [showNewConversationModal, setShowNewConversationModal] = useState(false);
   const [showArchivedOnly, setShowArchivedOnly] = useState(false);
@@ -170,7 +172,10 @@ export default function MessagingPage() {
   const getConversationTitle = (conv: Conversation) => {
     if (conv.titre) return conv.titre;
     if (conv.type === 'DIRECT') {
-      const otherParticipant = conv.participants?.[0];
+      // Pour une conversation directe, afficher le nom de l'AUTRE personne (pas soi-même)
+      const otherParticipant = conv.participants?.find(
+        (p) => p.userId !== user?.id
+      );
       return otherParticipant?.user
         ? `${otherParticipant.user.firstName} ${otherParticipant.user.lastName}`
         : 'Sans titre';
