@@ -101,5 +101,9 @@ export declare class AuthService {
     private createJWTPayload;
     private signAccessToken;
     private createRefreshToken;
+    generateWebSocketToken(user: any): Promise<{
+        token: string;
+        expiresIn: number;
+    }>;
     private serializeUserResponse;
 }

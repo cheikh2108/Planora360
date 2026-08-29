@@ -355,6 +355,25 @@ export class AuthService {
     return token;
   }
 
+  /**
+   * Génère un token JWT temporaire pour l'authentification WebSocket
+   * Sécurité : token de courte durée (1h), scope limité au WebSocket
+   */
+  async generateWebSocketToken(user: any) {
+    const payload = {
+      id: user.id,
+      email: user.email,
+      organizationId: user.organizationId,
+      scope: 'websocket', // Limiter le scope pour sécurité
+    };
+
+    const token = this.jwtService.sign(payload, {
+      expiresIn: '1h', // Token de courte durée pour sécurité
+    });
+
+    return { token, expiresIn: 3600 };
+  }
+
   private serializeUserResponse(user: any) {
     return {
       id: user.id,

@@ -314,6 +314,18 @@ let AuthService = class AuthService {
         });
         return token;
     }
+    async generateWebSocketToken(user) {
+        const payload = {
+            id: user.id,
+            email: user.email,
+            organizationId: user.organizationId,
+            scope: 'websocket',
+        };
+        const token = this.jwtService.sign(payload, {
+            expiresIn: '1h',
+        });
+        return { token, expiresIn: 3600 };
+    }
     serializeUserResponse(user) {
         return {
             id: user.id,

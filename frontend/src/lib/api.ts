@@ -141,6 +141,7 @@ export const authApi = {
   enable2fa: (token: string) => api.post('/auth/2fa/enable', { token }),
   disable2fa: (token: string) => api.post('/auth/2fa/disable', { token }),
   changePassword: (newPassword: string) => api.patch('/auth/change-password', { newPassword }),
+  getWebSocketToken: () => api.get('/auth/ws-token'), // Token temporaire sécurisé pour WebSocket
 };
 
 // Dashboard

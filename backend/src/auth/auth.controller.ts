@@ -1,4 +1,4 @@
-import { Controller, Post, Patch, Body, UseGuards, HttpCode, HttpStatus, Req, Res, ServiceUnavailableException } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, UseGuards, HttpCode, HttpStatus, Req, Res, ServiceUnavailableException } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
@@ -20,6 +20,18 @@ export class AuthController {
     private csrfService: CsrfService,
     private prisma: PrismaService,
   ) {}
+
+  /**
+   * Génère un token temporaire pour l'authentification WebSocket
+   * Sécurité: endpoint protégé, token de courte durée (1h), scope limité
+   */
+  @Get('ws-token')
+  @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { limit: 10, ttl: 60000 } }) // Max 10 tokens/min
+  @HttpCode(HttpStatus.OK)
+  async getWebSocketToken(@CurrentUser() user: any) {
+    return this.authService.generateWebSocketToken(user);
+  }
 
   @Post('register')
   @Throttle({ default: { limit: 3, ttl: 60000 } }) // 3 inscriptions max par minute

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import type { Message, TypingIndicator, UserPresence } from '@/lib/types-messagerie';
-import { TokenStorage } from '@/lib/token-storage';
+import { authApi } from '@/lib/api';
 
 // WebSocket doit pointer directement vers le backend (le proxy Next.js ne fonctionne pas pour WS)
 const SOCKET_URL =
@@ -38,47 +38,56 @@ export function useMessagerieSocket(options: UseMessagerieSocketOptions = {}) {
   useEffect(() => {
     if (!conversationId) return;
 
-    // Récupérer le token depuis localStorage
-    const token = TokenStorage.getAccessToken();
+    // Fonction asynchrone pour obtenir le token WebSocket
+    const connectWebSocket = async () => {
+      try {
+        // Appeler l'endpoint sécurisé pour obtenir un token WebSocket
+        const response = await authApi.getWebSocketToken();
+        const { token } = response.data;
 
-    if (!token) {
-      setError('Authentification requise');
-      setIsConnected(false);
-      return;
-    }
+        if (!token) {
+          throw new Error('Token WebSocket non reçu');
+        }
 
-    const socket = io(`${SOCKET_URL}/messagerie`, {
-      withCredentials: true,
-      transports: ['websocket', 'polling'],
-      query: {
-        token, // Envoyer le token pour l'authentification WebSocket
-      },
-    });
+        const socket = io(`${SOCKET_URL}/messagerie`, {
+          withCredentials: true,
+          transports: ['websocket', 'polling'],
+          query: {
+            token, // Token temporaire de 1h, scope limité au WebSocket
+          },
+        });
 
-    socketRef.current = socket;
+        socketRef.current = socket;
 
-    socket.on('connect', () => {
-      setIsConnected(true);
-      setError(null);
-      // Join conversation room
-      socket.emit('conversation:join', { conversationId });
-    });
+        socket.on('connect', () => {
+          setIsConnected(true);
+          setError(null);
+          // Join conversation room
+          socket.emit('conversation:join', { conversationId });
+        });
 
-    socket.on('disconnect', () => {
-      setIsConnected(false);
-    });
+        socket.on('disconnect', () => {
+          setIsConnected(false);
+        });
 
-    socket.on('connect_error', (err: Error) => {
-      setError(err.message);
-      setIsConnected(false);
-    });
+        socket.on('connect_error', (err: Error) => {
+          setError(err.message);
+          setIsConnected(false);
+        });
+      } catch (err: any) {
+        setError('Erreur d\'authentification WebSocket');
+        setIsConnected(false);
+      }
+    };
+
+    connectWebSocket();
 
     return () => {
-      if (conversationId) {
-        socket.emit('conversation:leave', { conversationId });
+      if (conversationId && socketRef.current) {
+        socketRef.current.emit('conversation:leave', { conversationId });
+        socketRef.current.disconnect();
+        socketRef.current = null;
       }
-      socket.disconnect();
-      socketRef.current = null;
     };
   }, [conversationId]);
 

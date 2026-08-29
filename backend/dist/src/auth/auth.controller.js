@@ -36,6 +36,9 @@ let AuthController = class AuthController {
         this.csrfService = csrfService;
         this.prisma = prisma;
     }
+    async getWebSocketToken(user) {
+        return this.authService.generateWebSocketToken(user);
+    }
     register(dto) {
         return this.authService.register(dto);
     }
@@ -164,6 +167,16 @@ let AuthController = class AuthController {
     }
 };
 exports.AuthController = AuthController;
+__decorate([
+    (0, common_1.Get)('ws-token'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, throttler_1.Throttle)({ default: { limit: 10, ttl: 60000 } }),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "getWebSocketToken", null);
 __decorate([
     (0, common_1.Post)('register'),
     (0, throttler_1.Throttle)({ default: { limit: 3, ttl: 60000 } }),

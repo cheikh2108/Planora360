@@ -13,6 +13,10 @@ export declare class AuthController {
     private csrfService;
     private prisma;
     constructor(authService: AuthService, securityEventsService: SecurityEventsService, csrfService: CsrfService, prisma: PrismaService);
+    getWebSocketToken(user: any): Promise<{
+        token: string;
+        expiresIn: number;
+    }>;
     register(dto: RegisterOrganizationDto): Promise<{
         message: string;
     }>;
