@@ -133,17 +133,35 @@ let MessagerieGateway = class MessagerieGateway {
     }
     async handleTypingStart(client, data) {
         const user = client.user;
+        const userInfo = await this.messagerieService['prisma'].user.findUnique({
+            where: { id: user.id },
+            select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+            },
+        });
         client.to(`conversation:${data.conversationId}`).emit('typing:start', {
             userId: user.id,
             conversationId: data.conversationId,
+            user: userInfo,
         });
         return { success: true };
     }
     async handleTypingStop(client, data) {
         const user = client.user;
+        const userInfo = await this.messagerieService['prisma'].user.findUnique({
+            where: { id: user.id },
+            select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+            },
+        });
         client.to(`conversation:${data.conversationId}`).emit('typing:stop', {
             userId: user.id,
             conversationId: data.conversationId,
+            user: userInfo,
         });
         return { success: true };
     }

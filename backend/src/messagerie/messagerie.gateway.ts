@@ -254,10 +254,21 @@ export class MessagerieGateway implements OnGatewayConnection, OnGatewayDisconne
   ) {
     const user = (client as any).user;
 
+    // Récupérer les infos de l'utilisateur depuis la DB
+    const userInfo = await this.messagerieService['prisma'].user.findUnique({
+      where: { id: user.id },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+      },
+    });
+
     // Diffuser à tous sauf l'émetteur
     client.to(`conversation:${data.conversationId}`).emit('typing:start', {
       userId: user.id,
       conversationId: data.conversationId,
+      user: userInfo,
     });
 
     return { success: true };
@@ -273,10 +284,21 @@ export class MessagerieGateway implements OnGatewayConnection, OnGatewayDisconne
   ) {
     const user = (client as any).user;
 
+    // Récupérer les infos de l'utilisateur depuis la DB
+    const userInfo = await this.messagerieService['prisma'].user.findUnique({
+      where: { id: user.id },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+      },
+    });
+
     // Diffuser à tous sauf l'émetteur
     client.to(`conversation:${data.conversationId}`).emit('typing:stop', {
       userId: user.id,
       conversationId: data.conversationId,
+      user: userInfo,
     });
 
     return { success: true };

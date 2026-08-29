@@ -297,7 +297,11 @@ export default function ConversationPage() {
         {/* Typing indicators */}
         {typingUsers.length > 0 && (
           <div className="mt-2 text-sm text-slate-500">
-            {typingUsers.map((u) => `${u.user.firstName}`).join(', ')} en train d'écrire...
+            {typingUsers
+              .filter((u) => u.user?.firstName) // Filtrer ceux qui ont les infos user
+              .map((u) => u.user.firstName)
+              .join(', ')}{' '}
+            en train d'écrire...
           </div>
         )}
 
