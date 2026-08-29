@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import axios from 'axios';
+import api from '@/lib/api';
 
 export default function ConversationPage() {
   const params = useParams();
@@ -222,14 +223,13 @@ export default function ConversationPage() {
         formData.append('files', file);
       });
 
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/messagerie/upload`,
-        formData,
-        {
-          headers: { 'Content-Type': 'multipart/form-data' },
-          withCredentials: true,
-        }
-      );
+      // Utiliser URL relative pour que le proxy Next.js redirige vers le backend
+      // L'instance api ajoute automatiquement le CSRF token et withCredentials
+      const response = await api.post('/messagerie/upload', formData, {
+        headers: {
+          'Content-Type': undefined, // Laisser le navigateur définir multipart/form-data avec boundary
+        },
+      });
 
       // Envoyer message avec fichiers
       const fileUrls = response.data.files.map((f: any) => f.url).join('\n');

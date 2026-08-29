@@ -2,7 +2,9 @@
  * API Configuration Constants
  */
 
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000/api';
+// En dev : URL relative pour utiliser le proxy Next.js (gère cookies cross-domain)
+// En prod : URL absolue du backend
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? '/api';
 
 export const TOKEN_KEYS = {
   ACCESS: 'accessToken',
