@@ -9,8 +9,8 @@ export declare class ValidationsController {
         activityId: string;
         step: import(".prisma/client").$Enums.ValidationStep;
         decision: import(".prisma/client").$Enums.ValidationDecision;
-        comment: string | null;
         validatorId: string;
+        comment: string | null;
     }>;
     transition(activityId: string, dto: TransitionDto, user: any): Promise<{
         id: string;
@@ -18,8 +18,8 @@ export declare class ValidationsController {
         activityId: string;
         step: import(".prisma/client").$Enums.ValidationStep;
         decision: import(".prisma/client").$Enums.ValidationDecision;
-        comment: string | null;
         validatorId: string;
+        comment: string | null;
     }>;
     getHistory(activityId: string, user: any): Promise<{
         id: string;
@@ -27,8 +27,8 @@ export declare class ValidationsController {
         activityId: string;
         step: import(".prisma/client").$Enums.ValidationStep;
         decision: import(".prisma/client").$Enums.ValidationDecision;
-        comment: string | null;
         validatorId: string;
+        comment: string | null;
     }[]>;
     getCurrentStep(activityId: string, user: any): Promise<{
         activity: {
@@ -58,8 +58,8 @@ export declare class ValidationsController {
             activityId: string;
             step: import(".prisma/client").$Enums.ValidationStep;
             decision: import(".prisma/client").$Enums.ValidationDecision;
-            comment: string | null;
             validatorId: string;
+            comment: string | null;
         } | null;
     }>;
     getPending(user: any, page?: string, limit?: string): Promise<{
@@ -78,8 +78,8 @@ export declare class ValidationsController {
                 activityId: string;
                 step: import(".prisma/client").$Enums.ValidationStep;
                 decision: import(".prisma/client").$Enums.ValidationDecision;
-                comment: string | null;
                 validatorId: string;
+                comment: string | null;
             }[];
         } & {
             id: string;

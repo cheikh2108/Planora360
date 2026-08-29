@@ -4,6 +4,10 @@ export declare class MessagerieController {
     private readonly messagerieService;
     constructor(messagerieService: MessagerieService);
     getUserConversations(req: any): Promise<({
+        _count: {
+            participants: number;
+            messages: number;
+        };
         participants: ({
             user: {
                 id: string;
@@ -110,8 +114,8 @@ export declare class MessagerieController {
                 mimeType: string;
                 width: number | null;
                 uploadedAt: Date;
-                messageId: string;
                 fileUrl: string;
+                messageId: string;
                 thumbnailUrl: string | null;
                 height: number | null;
                 duration: number | null;
@@ -172,8 +176,8 @@ export declare class MessagerieController {
             mimeType: string;
             width: number | null;
             uploadedAt: Date;
-            messageId: string;
             fileUrl: string;
+            messageId: string;
             thumbnailUrl: string | null;
             height: number | null;
             duration: number | null;

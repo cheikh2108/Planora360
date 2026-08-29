@@ -4,6 +4,10 @@ export declare class MessagerieService {
     private prisma;
     constructor(prisma: PrismaService);
     getUserConversations(userId: string, organizationId: string): Promise<({
+        _count: {
+            participants: number;
+            messages: number;
+        };
         participants: ({
             user: {
                 id: string;
@@ -115,8 +119,8 @@ export declare class MessagerieService {
             mimeType: string;
             width: number | null;
             uploadedAt: Date;
-            messageId: string;
             fileUrl: string;
+            messageId: string;
             thumbnailUrl: string | null;
             height: number | null;
             duration: number | null;
@@ -168,8 +172,8 @@ export declare class MessagerieService {
             mimeType: string;
             width: number | null;
             uploadedAt: Date;
-            messageId: string;
             fileUrl: string;
+            messageId: string;
             thumbnailUrl: string | null;
             height: number | null;
             duration: number | null;
@@ -249,8 +253,8 @@ export declare class MessagerieService {
                 mimeType: string;
                 width: number | null;
                 uploadedAt: Date;
-                messageId: string;
                 fileUrl: string;
+                messageId: string;
                 thumbnailUrl: string | null;
                 height: number | null;
                 duration: number | null;

@@ -121,8 +121,8 @@ export interface Message {
   id: string;
   conversationId: string;
   conversation?: Conversation;
-  senderId: string;
-  sender?: {
+  authorId: string;
+  author?: {
     id: string;
     firstName: string;
     lastName: string;

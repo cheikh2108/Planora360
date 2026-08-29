@@ -90,8 +90,6 @@ export declare class FournisseursService {
             id: string;
             createdAt: Date;
             fournisseurId: string;
-            commentaires: string | null;
-            evaluateurId: string;
             contratId: string | null;
             qualite: number | null;
             delais: number | null;
@@ -101,6 +99,8 @@ export declare class FournisseursService {
             respectContractuel: number | null;
             rapportQualitePrix: number | null;
             noteGlobale: number;
+            commentaires: string | null;
+            evaluateurId: string;
         })[];
         documents: {
             url: string;

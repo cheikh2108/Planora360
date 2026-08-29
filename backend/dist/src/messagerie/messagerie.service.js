@@ -57,6 +57,12 @@ let MessagerieService = class MessagerieService {
                         },
                     },
                 },
+                _count: {
+                    select: {
+                        participants: true,
+                        messages: true,
+                    },
+                },
             },
             orderBy: { lastMessageAt: 'desc' },
         });

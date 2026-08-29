@@ -25,8 +25,8 @@ export declare class MessagerieGateway implements OnGatewayConnection, OnGateway
                 mimeType: string;
                 width: number | null;
                 uploadedAt: Date;
-                messageId: string;
                 fileUrl: string;
+                messageId: string;
                 thumbnailUrl: string | null;
                 height: number | null;
                 duration: number | null;
@@ -89,8 +89,8 @@ export declare class MessagerieGateway implements OnGatewayConnection, OnGateway
                 mimeType: string;
                 width: number | null;
                 uploadedAt: Date;
-                messageId: string;
                 fileUrl: string;
+                messageId: string;
                 thumbnailUrl: string | null;
                 height: number | null;
                 duration: number | null;

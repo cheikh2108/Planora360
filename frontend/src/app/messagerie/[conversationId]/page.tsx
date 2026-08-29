@@ -219,7 +219,7 @@ export default function ConversationPage() {
         {messages && messages.length > 0 ? (
           <div className="space-y-4">
             {messages.map((message) => {
-              const isOwn = message.sender?.id === user?.id;
+              const isOwn = message.author?.id === user?.id;
 
               return (
                 <div
@@ -241,9 +241,9 @@ export default function ConversationPage() {
                           : 'bg-white text-slate-900 shadow-sm',
                       )}
                     >
-                      {!isOwn && message.sender && (
+                      {!isOwn && message.author && (
                         <p className="mb-1 text-xs font-medium">
-                          {message.sender.firstName} {message.sender.lastName}
+                          {message.author.firstName} {message.author.lastName}
                         </p>
                       )}
                       <p className="whitespace-pre-wrap break-words">{message.content}</p>
