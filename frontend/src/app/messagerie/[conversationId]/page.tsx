@@ -461,8 +461,8 @@ export default function ConversationPage() {
                         </div>
                       )}
 
-                      {/* Contenu texte */}
-                      {message.content && (
+                      {/* Contenu texte (masquer si c'est juste le placeholder par défaut) */}
+                      {message.content && message.content !== 'Fichier(s) partagé(s)' && (
                         <p className="whitespace-pre-wrap break-words text-[13.5px] leading-[1.4]">
                           {message.content}
                         </p>
