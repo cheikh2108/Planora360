@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/form-field';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
-import { formatDate } from '@/lib/utils';
+import { formatMessageTime } from '@/lib/utils';
 import {
   ArrowLeft,
   Send,
@@ -274,7 +274,7 @@ export default function ConversationPage() {
                           isOwn ? 'text-blue-100' : 'text-slate-500',
                         )}
                       >
-                        <span>{formatDate(message.createdAt)}</span>
+                        <span>{formatMessageTime(message.createdAt)}</span>
                         {message.isEdited && <span>(modifié)</span>}
                       </div>
 

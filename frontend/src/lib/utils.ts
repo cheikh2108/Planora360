@@ -23,6 +23,49 @@ export function formatDateRelative(date: string | Date): string {
   return `dans ${diff} j`;
 }
 
+/**
+ * Format pour affichage dans messagerie (comme WhatsApp)
+ * - Aujourd'hui : "16:55"
+ * - Cette semaine : "Lun 16:55"
+ * - Plus ancien : "29 août"
+ */
+export function formatMessageTime(date: string | Date): string {
+  const d = new Date(date);
+  const now = new Date();
+
+  // Vérifier si c'est aujourd'hui
+  const isToday = d.getDate() === now.getDate() &&
+    d.getMonth() === now.getMonth() &&
+    d.getFullYear() === now.getFullYear();
+
+  if (isToday) {
+    // Afficher seulement l'heure : "16:55"
+    return new Intl.DateTimeFormat('fr-FR', {
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(d);
+  }
+
+  // Vérifier si c'est cette semaine (moins de 7 jours)
+  const diffDays = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 7) {
+    // Afficher jour de la semaine + heure : "Lun 16:55"
+    const dayName = new Intl.DateTimeFormat('fr-FR', { weekday: 'short' }).format(d);
+    const time = new Intl.DateTimeFormat('fr-FR', {
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(d);
+    return `${dayName} ${time}`;
+  }
+
+  // Plus ancien : afficher date courte : "29 août"
+  return new Intl.DateTimeFormat('fr-FR', {
+    day: 'numeric',
+    month: 'short'
+  }).format(d);
+}
+
 export const STATUS_LABELS: Record<ActivityStatus, string> = {
   NON_DEMARREE: 'Non démarrée',
   EN_PREPARATION: 'En préparation',
