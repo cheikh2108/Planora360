@@ -175,8 +175,11 @@ export default function ConversationPage() {
 
   if (!conversation) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex h-screen flex-col items-center justify-center gap-4">
         <p className="text-slate-600">Conversation introuvable</p>
+        <Button onClick={() => router.push('/messagerie')}>
+          Retour aux conversations
+        </Button>
       </div>
     );
   }
