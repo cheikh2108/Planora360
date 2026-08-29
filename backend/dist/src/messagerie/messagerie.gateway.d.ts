@@ -18,25 +18,25 @@ export declare class MessagerieGateway implements OnGatewayConnection, OnGateway
     }): Promise<{
         success: boolean;
         message: {
-            attachments: {
-                id: string;
-                fileSize: number;
-                fileName: string;
-                mimeType: string;
-                width: number | null;
-                uploadedAt: Date;
-                messageId: string;
-                fileUrl: string;
-                thumbnailUrl: string | null;
-                height: number | null;
-                duration: number | null;
-            }[];
             author: {
                 id: string;
                 email: string;
                 firstName: string;
                 lastName: string;
             };
+            attachments: {
+                id: string;
+                messageId: string;
+                fileName: string;
+                fileUrl: string;
+                fileSize: number;
+                mimeType: string;
+                thumbnailUrl: string | null;
+                width: number | null;
+                height: number | null;
+                duration: number | null;
+                uploadedAt: Date;
+            }[];
             reactions: {
                 id: string;
                 createdAt: Date;
@@ -46,9 +46,9 @@ export declare class MessagerieGateway implements OnGatewayConnection, OnGateway
             }[];
             mentions: {
                 id: string;
+                type: import(".prisma/client").$Enums.MentionType;
                 createdAt: Date;
                 userId: string;
-                type: import(".prisma/client").$Enums.MentionType;
                 messageId: string;
                 startPos: number | null;
                 endPos: number | null;
@@ -59,16 +59,16 @@ export declare class MessagerieGateway implements OnGatewayConnection, OnGateway
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
-            metadata: import("@prisma/client/runtime/client").JsonValue | null;
+            conversationId: string;
             authorId: string;
             content: string;
-            conversationId: string;
             contentType: import(".prisma/client").$Enums.MessageContentType;
+            parentId: string | null;
             isEdited: boolean;
             editedAt: Date | null;
             isDeleted: boolean;
             isSystem: boolean;
-            parentId: string | null;
+            metadata: import("@prisma/client/runtime/client").JsonValue | null;
         };
         error?: undefined;
     } | {
@@ -82,24 +82,24 @@ export declare class MessagerieGateway implements OnGatewayConnection, OnGateway
     }): Promise<{
         success: boolean;
         message: {
-            attachments: {
-                id: string;
-                fileSize: number;
-                fileName: string;
-                mimeType: string;
-                width: number | null;
-                uploadedAt: Date;
-                messageId: string;
-                fileUrl: string;
-                thumbnailUrl: string | null;
-                height: number | null;
-                duration: number | null;
-            }[];
             author: {
                 id: string;
                 firstName: string;
                 lastName: string;
             };
+            attachments: {
+                id: string;
+                messageId: string;
+                fileName: string;
+                fileUrl: string;
+                fileSize: number;
+                mimeType: string;
+                thumbnailUrl: string | null;
+                width: number | null;
+                height: number | null;
+                duration: number | null;
+                uploadedAt: Date;
+            }[];
             reactions: {
                 id: string;
                 createdAt: Date;
@@ -112,16 +112,16 @@ export declare class MessagerieGateway implements OnGatewayConnection, OnGateway
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
-            metadata: import("@prisma/client/runtime/client").JsonValue | null;
+            conversationId: string;
             authorId: string;
             content: string;
-            conversationId: string;
             contentType: import(".prisma/client").$Enums.MessageContentType;
+            parentId: string | null;
             isEdited: boolean;
             editedAt: Date | null;
             isDeleted: boolean;
             isSystem: boolean;
-            parentId: string | null;
+            metadata: import("@prisma/client/runtime/client").JsonValue | null;
         };
         error?: undefined;
     } | {

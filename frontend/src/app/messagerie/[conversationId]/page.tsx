@@ -40,6 +40,9 @@ export default function ConversationPage() {
 
   const [messageInput, setMessageInput] = useState('');
   const [typingUsers, setTypingUsers] = useState<TypingIndicator[]>([]);
+  const [showInfoPanel, setShowInfoPanel] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -111,22 +114,64 @@ export default function ConversationPage() {
     },
   });
 
-  // Send message mutation
+  // Send message mutation with optimistic update
   const sendMutation = useMutation({
     mutationFn: async (content: string) => {
       // Utiliser l'API REST pour envoyer le message (avec confirmation)
-      // Le WebSocket recevra le message via 'message:new' pour l'affichage temps réel
       return messagesApi.send(conversationId, {
         content,
         contentType: 'TEXT',
       });
     },
+    // Optimistic update : afficher le message IMMÉDIATEMENT
+    onMutate: async (content: string) => {
+      // Annuler les queries en cours pour éviter les conflits
+      await queryClient.cancelQueries({ queryKey: ['messages', conversationId] });
+
+      // Sauvegarder l'état précédent pour rollback
+      const previousMessages = queryClient.getQueryData(['messages', conversationId]);
+
+      // Créer le message optimiste (temporaire)
+      const optimisticMessage: Message = {
+        id: `temp-${Date.now()}`,
+        conversationId,
+        authorId: user?.id || '',
+        author: {
+          id: user?.id || '',
+          firstName: user?.firstName || '',
+          lastName: user?.lastName || '',
+          email: user?.email || '',
+        },
+        content,
+        contentType: 'TEXT',
+        createdAt: new Date().toISOString(),
+        isEdited: false,
+        isDeleted: false,
+        attachments: [],
+        reactions: [],
+        mentions: [],
+      };
+
+      // Ajouter immédiatement à l'UI
+      queryClient.setQueryData<Message[]>(['messages', conversationId], (old = []) => [
+        ...old,
+        optimisticMessage,
+      ]);
+
+      return { previousMessages };
+    },
     onSuccess: () => {
       setMessageInput('');
       stopTyping();
+      // Rafraîchir pour avoir les vraies données du serveur
+      queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
     },
-    onError: (error: any) => {
+    onError: (error: any, _content, context) => {
       console.error('Erreur envoi message:', error);
+      // Rollback : restaurer l'état précédent
+      if (context?.previousMessages) {
+        queryClient.setQueryData(['messages', conversationId], context.previousMessages);
+      }
       // TODO: Afficher un toast d'erreur
     },
   });
@@ -162,6 +207,22 @@ export default function ConversationPage() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
   }, [messages]);
+
+  // Fermer les menus quand on clique ailleurs
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.emoji-picker') && !target.closest('[data-emoji-button]')) {
+        setShowEmojiPicker(false);
+      }
+      if (!target.closest('.options-menu') && !target.closest('[data-options-button]')) {
+        setShowOptionsMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const getConversationTitle = () => {
     if (!conversation) return '';
@@ -220,16 +281,26 @@ export default function ConversationPage() {
                 )}
               />
               <span>{isConnected ? 'En ligne' : 'Hors ligne'}</span>
-              <span>•</span>
-              <span>{conversation._count?.participants || 0} participant(s)</span>
+              {/* Afficher nombre de participants seulement pour les groupes/channels */}
+              {conversation?.type !== 'DIRECT' && (
+                <>
+                  <span>•</span>
+                  <span>{conversation._count?.participants || 0} participant(s)</span>
+                </>
+              )}
             </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" onClick={() => setShowInfoPanel(!showInfoPanel)}>
             <Info className="h-5 w-5" />
           </Button>
-          <Button variant="ghost" size="sm">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowOptionsMenu(!showOptionsMenu)}
+            data-options-button
+          >
             <MoreVertical className="h-5 w-5" />
           </Button>
         </div>
@@ -321,10 +392,31 @@ export default function ConversationPage() {
       {/* Input */}
       <div className="border-t border-slate-200 bg-white p-4">
         <div className="flex items-end gap-2">
-          <Button variant="ghost" size="sm">
+          <input
+            type="file"
+            id="file-upload"
+            className="hidden"
+            multiple
+            accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx"
+            onChange={(e) => {
+              const files = Array.from(e.target.files || []);
+              console.log('Fichiers sélectionnés:', files);
+              // TODO: Implémenter upload
+            }}
+          />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => document.getElementById('file-upload')?.click()}
+          >
             <Paperclip className="h-5 w-5" />
           </Button>
-          <Button variant="ghost" size="sm">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+            data-emoji-button
+          >
             <Smile className="h-5 w-5" />
           </Button>
           <Textarea
@@ -338,7 +430,161 @@ export default function ConversationPage() {
             <Send className="h-5 w-5" />
           </Button>
         </div>
+
+        {/* Emoji Picker */}
+        {showEmojiPicker && (
+          <div className="emoji-picker absolute bottom-20 left-16 z-50 rounded-lg border border-slate-200 bg-white p-3 shadow-lg">
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-sm font-medium text-slate-700">Emojis</p>
+              <button
+                onClick={() => setShowEmojiPicker(false)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="grid grid-cols-8 gap-2">
+              {['😀', '😂', '😍', '🥰', '😎', '🤔', '👍', '👏', '🔥', '❤️', '🎉', '✅', '💪', '🙏', '👀', '🚀'].map(
+                (emoji) => (
+                  <button
+                    key={emoji}
+                    onClick={() => {
+                      setMessageInput((prev) => prev + emoji);
+                      setShowEmojiPicker(false);
+                    }}
+                    className="rounded p-2 text-2xl hover:bg-slate-100"
+                  >
+                    {emoji}
+                  </button>
+                ),
+              )}
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Menu Options (trois points) */}
+      {showOptionsMenu && (
+        <div className="options-menu absolute right-4 top-20 z-50 w-56 rounded-lg border border-slate-200 bg-white shadow-lg">
+          <div className="py-1">
+            <button
+              onClick={() => {
+                // TODO: Archiver conversation
+                setShowOptionsMenu(false);
+              }}
+              className="flex w-full items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+            >
+              <Archive className="h-4 w-4" />
+              Archiver la conversation
+            </button>
+            <button
+              onClick={() => {
+                if (confirm('Supprimer cette conversation ?')) {
+                  router.push('/messagerie');
+                }
+                setShowOptionsMenu(false);
+              }}
+              className="flex w-full items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+            >
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                />
+              </svg>
+              Supprimer la conversation
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Panneau Info Latéral */}
+      {showInfoPanel && (
+        <div className="fixed inset-y-0 right-0 z-50 w-80 border-l border-slate-200 bg-white shadow-xl">
+          <div className="flex h-full flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-slate-200 p-4">
+              <h3 className="font-semibold text-slate-900">Détails de la conversation</h3>
+              <button
+                onClick={() => setShowInfoPanel(false)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-4">
+              {/* Titre */}
+              <div className="mb-6">
+                <p className="mb-1 text-xs font-medium uppercase text-slate-500">Titre</p>
+                <p className="text-sm text-slate-900">{getConversationTitle()}</p>
+              </div>
+
+              {/* Type */}
+              <div className="mb-6">
+                <p className="mb-1 text-xs font-medium uppercase text-slate-500">Type</p>
+                <p className="text-sm text-slate-900">
+                  {conversation?.type === 'DIRECT' && 'Conversation directe'}
+                  {conversation?.type === 'GROUP' && 'Groupe'}
+                  {conversation?.type === 'CHANNEL_PROJECT' && 'Canal projet'}
+                  {conversation?.type === 'CHANNEL_TEAM' && 'Canal équipe'}
+                </p>
+              </div>
+
+              {/* Participants */}
+              <div className="mb-6">
+                <p className="mb-2 text-xs font-medium uppercase text-slate-500">
+                  Participants ({conversation?._count?.participants || 0})
+                </p>
+                <div className="space-y-2">
+                  {conversation?.participants?.map((participant) => (
+                    <div key={participant.id} className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600" />
+                      <div>
+                        <p className="text-sm font-medium text-slate-900">
+                          {participant.user?.firstName} {participant.user?.lastName}
+                        </p>
+                        <p className="text-xs text-slate-500">{participant.role}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Messages */}
+              <div className="mb-6">
+                <p className="mb-1 text-xs font-medium uppercase text-slate-500">Messages</p>
+                <p className="text-sm text-slate-900">
+                  {conversation?._count?.messages || 0} message(s)
+                </p>
+              </div>
+
+              {/* Date création */}
+              <div>
+                <p className="mb-1 text-xs font-medium uppercase text-slate-500">Créée le</p>
+                <p className="text-sm text-slate-900">
+                  {conversation?.createdAt &&
+                    new Date(conversation.createdAt).toLocaleDateString('fr-FR', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

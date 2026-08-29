@@ -108,4 +108,26 @@ export class MessagerieController {
       req.user.id,
     );
   }
+
+  @Post('conversations/:conversationId/archive')
+  archiveConversation(
+    @Req() req,
+    @Param('conversationId') conversationId: string,
+  ) {
+    return this.messagerieService.archiveConversation(
+      conversationId,
+      req.user.id,
+    );
+  }
+
+  @Post('conversations/:conversationId/unarchive')
+  unarchiveConversation(
+    @Req() req,
+    @Param('conversationId') conversationId: string,
+  ) {
+    return this.messagerieService.unarchiveConversation(
+      conversationId,
+      req.user.id,
+    );
+  }
 }

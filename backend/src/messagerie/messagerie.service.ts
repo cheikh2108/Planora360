@@ -583,4 +583,56 @@ export class MessagerieService {
 
     return { success: true, message: 'Conversation supprimée' };
   }
+
+  /**
+   * Archiver une conversation
+   */
+  async archiveConversation(conversationId: string, userId: string) {
+    // Vérifier que l'utilisateur est participant
+    const participant = await this.prisma.conversationParticipant.findFirst({
+      where: {
+        conversationId,
+        userId,
+        leftAt: null,
+      },
+    });
+
+    if (!participant) {
+      throw new ForbiddenException('Vous n\'êtes pas participant de cette conversation');
+    }
+
+    // Marquer la conversation comme archivée
+    const conversation = await this.prisma.conversation.update({
+      where: { id: conversationId },
+      data: { isArchived: true },
+    });
+
+    return { success: true, message: 'Conversation archivée', conversation };
+  }
+
+  /**
+   * Désarchiver une conversation
+   */
+  async unarchiveConversation(conversationId: string, userId: string) {
+    // Vérifier que l'utilisateur est participant
+    const participant = await this.prisma.conversationParticipant.findFirst({
+      where: {
+        conversationId,
+        userId,
+        leftAt: null,
+      },
+    });
+
+    if (!participant) {
+      throw new ForbiddenException('Vous n\'êtes pas participant de cette conversation');
+    }
+
+    // Marquer la conversation comme non-archivée
+    const conversation = await this.prisma.conversation.update({
+      where: { id: conversationId },
+      data: { isArchived: false },
+    });
+
+    return { success: true, message: 'Conversation restaurée', conversation };
+  }
 }

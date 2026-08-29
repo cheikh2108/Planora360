@@ -43,6 +43,12 @@ let MessagerieController = class MessagerieController {
     deleteConversation(req, conversationId) {
         return this.messagerieService.deleteConversation(conversationId, req.user.id);
     }
+    archiveConversation(req, conversationId) {
+        return this.messagerieService.archiveConversation(conversationId, req.user.id);
+    }
+    unarchiveConversation(req, conversationId) {
+        return this.messagerieService.unarchiveConversation(conversationId, req.user.id);
+    }
 };
 exports.MessagerieController = MessagerieController;
 __decorate([
@@ -108,6 +114,22 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], MessagerieController.prototype, "deleteConversation", null);
+__decorate([
+    (0, common_1.Post)('conversations/:conversationId/archive'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)('conversationId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], MessagerieController.prototype, "archiveConversation", null);
+__decorate([
+    (0, common_1.Post)('conversations/:conversationId/unarchive'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)('conversationId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], MessagerieController.prototype, "unarchiveConversation", null);
 exports.MessagerieController = MessagerieController = __decorate([
     (0, common_1.Controller)('messagerie'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
