@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import type { Message, TypingIndicator, UserPresence } from '@/lib/types-messagerie';
+import { TokenStorage } from '@/lib/token-storage';
 
 // WebSocket doit pointer directement vers le backend (le proxy Next.js ne fonctionne pas pour WS)
 const SOCKET_URL =
@@ -37,9 +38,21 @@ export function useMessagerieSocket(options: UseMessagerieSocketOptions = {}) {
   useEffect(() => {
     if (!conversationId) return;
 
+    // Récupérer le token depuis localStorage
+    const token = TokenStorage.getAccessToken();
+
+    if (!token) {
+      setError('Authentification requise');
+      setIsConnected(false);
+      return;
+    }
+
     const socket = io(`${SOCKET_URL}/messagerie`, {
       withCredentials: true,
       transports: ['websocket', 'polling'],
+      query: {
+        token, // Envoyer le token pour l'authentification WebSocket
+      },
     });
 
     socketRef.current = socket;
