@@ -14,6 +14,7 @@ import { useMessagerieSocket } from '@/hooks/useMessagerieSocket';
 import type { Conversation, Message, TypingIndicator } from '@/lib/types-messagerie';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/form-field';
+import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
 import { formatDate } from '@/lib/utils';
@@ -33,13 +34,12 @@ export default function ConversationPage() {
   const params = useParams();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { showToast } = useToast();
   const conversationId = params.conversationId as string;
 
   const [messageInput, setMessageInput] = useState('');
   const [typingUsers, setTypingUsers] = useState<TypingIndicator[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout>();
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // Fetch conversation
   const { data: conversation, isLoading: loadingConversation } = useQuery({
@@ -109,7 +109,10 @@ export default function ConversationPage() {
 
   // Send message mutation
   const sendMutation = useMutation({
-    mutationFn: (content: string) => sendMessage(content),
+    mutationFn: async (content: string) => {
+      sendMessage(content);
+      return Promise.resolve();
+    },
     onSuccess: () => {
       setMessageInput('');
       stopTyping();
@@ -297,13 +300,12 @@ export default function ConversationPage() {
           <Button variant="ghost" size="sm">
             <Smile className="h-5 w-5" />
           </Button>
-          <Input
+          <Textarea
             value={messageInput}
             onChange={(e) => handleInputChange(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
             placeholder="Écrivez votre message..."
-            className="flex-1"
-            multiline
+            className="flex-1 min-h-[40px] max-h-[120px]"
           />
           <Button onClick={handleSend} disabled={!messageInput.trim() || !isConnected}>
             <Send className="h-5 w-5" />

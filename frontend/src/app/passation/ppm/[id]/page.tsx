@@ -118,7 +118,7 @@ export default function PPMDetailPage() {
         actions={
           <div className="flex items-center gap-2">
             <Link href="/passation/ppm">
-              <Button variant="outline" size="sm" icon={<ArrowLeft size={14} />}>
+              <Button variant="secondary" size="sm" icon={<ArrowLeft size={14} />}>
                 Retour
               </Button>
             </Link>
@@ -152,7 +152,7 @@ export default function PPMDetailPage() {
                 </p>
                 <div className="flex items-center gap-2">
                   <Button
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
                     icon={<FileDown size={14} />}
                     onClick={() => handleExport('pdf')}
@@ -161,7 +161,7 @@ export default function PPMDetailPage() {
                     {exportingFormat === 'pdf' ? 'Export...' : 'PDF'}
                   </Button>
                   <Button
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
                     icon={<Download size={14} />}
                     onClick={() => handleExport('excel')}

@@ -109,7 +109,7 @@ export default function DemandeDetailPage() {
             Cette demande n'existe pas ou a été supprimée.
           </p>
           <Button
-            variant="outline"
+            variant="secondary"
             onClick={() => router.push('/passation/demandes')}
             className="mt-4"
           >
@@ -124,10 +124,10 @@ export default function DemandeDetailPage() {
     <div className="min-h-screen bg-slate-50">
       <Header
         title={`Demande ${demande.reference}`}
-        description="Détails et workflow de validation"
+        subtitle="Détails et workflow de validation"
         actions={
           <Button
-            variant="outline"
+            variant="secondary"
             icon={<ArrowLeft size={16} />}
             onClick={() => router.push('/passation/demandes')}
           >
@@ -171,7 +171,7 @@ export default function DemandeDetailPage() {
             </div>
 
             {/* Validation Form */}
-            {showValidationForm && canValidate && (
+            {showValidationForm && canValidate && pendingValidation && (
               <div className="rounded-lg border-2 border-blue-200 bg-blue-50 p-6 shadow-sm">
                 <div className="mb-4 flex items-center gap-2">
                   <AlertCircle className="h-5 w-5 text-blue-600" />
@@ -237,7 +237,7 @@ export default function DemandeDetailPage() {
 
                   <div className="flex justify-end gap-3">
                     <Button
-                      variant="outline"
+                      variant="secondary"
                       onClick={() => {
                         setShowValidationForm(false);
                         setCommentaire('');

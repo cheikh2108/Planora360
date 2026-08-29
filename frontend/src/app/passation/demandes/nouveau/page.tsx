@@ -19,7 +19,7 @@ const PRIORITES = [
 
 export default function NouvelleDemandePage() {
   const router = useRouter();
-  const { showToast } = useToast();
+  const { success, error } = useToast();
   const [formData, setFormData] = useState({
     objet: '',
     justification: '',
@@ -43,11 +43,11 @@ export default function NouvelleDemandePage() {
       montantEstime: parseFloat(data.montantEstime),
     }),
     onSuccess: (res) => {
-      showToast('Demande créée avec succès', 'success');
+      success('Demande créée avec succès');
       router.push(`/passation/demandes/${res.data.id}`);
     },
-    onError: (error: any) => {
-      showToast(error.message || 'Erreur lors de la création', 'error');
+    onError: (err: any) => {
+      error(err.message || 'Erreur lors de la création');
     },
   });
 
@@ -60,7 +60,7 @@ export default function NouvelleDemandePage() {
     <div className="min-h-screen bg-slate-50">
       <Header
         title="Nouvelle Demande d'Achat"
-        description="Créer une nouvelle demande et lancer le workflow de validation"
+        subtitle="Créer une nouvelle demande et lancer le workflow de validation"
       />
 
       <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">

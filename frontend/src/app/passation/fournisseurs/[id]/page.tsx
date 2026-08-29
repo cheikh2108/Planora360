@@ -128,7 +128,7 @@ export default function FournisseurDetailPage() {
           <Button
             key="blacklist"
             onClick={() => setShowBlacklistModal(true)}
-            variant="outline"
+            variant="secondary"
             icon={<Ban size={16} />}
             className="border-red-600 text-red-600 hover:bg-red-50"
           >
@@ -141,9 +141,9 @@ export default function FournisseurDetailPage() {
         actions.push(
           <Button
             key="suspend"
-            onClick={() => suspendMutation.mutate()}
+            onClick={() => suspendMutation.mutate(undefined)}
             disabled={suspendMutation.isPending}
-            variant="outline"
+            variant="secondary"
             icon={<PauseCircle size={16} />}
             className="border-orange-600 text-orange-600 hover:bg-orange-50"
           >
@@ -154,7 +154,7 @@ export default function FournisseurDetailPage() {
           <Button
             key="blacklist"
             onClick={() => setShowBlacklistModal(true)}
-            variant="outline"
+            variant="secondary"
             icon={<Ban size={16} />}
             className="border-red-600 text-red-600 hover:bg-red-50"
           >
@@ -179,7 +179,7 @@ export default function FournisseurDetailPage() {
           <Button
             key="blacklist"
             onClick={() => setShowBlacklistModal(true)}
-            variant="outline"
+            variant="secondary"
             icon={<Ban size={16} />}
             className="border-red-600 text-red-600 hover:bg-red-50"
           >
@@ -228,7 +228,7 @@ export default function FournisseurDetailPage() {
             Ce fournisseur n'existe pas ou a été supprimé.
           </p>
           <Button
-            variant="outline"
+            variant="secondary"
             onClick={() => router.push('/passation/fournisseurs')}
             className="mt-4"
           >
@@ -243,12 +243,12 @@ export default function FournisseurDetailPage() {
     <div className="min-h-screen bg-slate-50">
       <Header
         title={fournisseur.raisonSociale}
-        description={`Référence: ${fournisseur.reference}`}
+        subtitle={`Référence: ${fournisseur.reference}`}
         actions={
           <div className="flex items-center gap-3">
             {getStatusActions()}
             <Button
-              variant="outline"
+              variant="secondary"
               icon={<ArrowLeft size={16} />}
               onClick={() => router.push('/passation/fournisseurs')}
             >
@@ -480,9 +480,9 @@ export default function FournisseurDetailPage() {
 
               {fournisseur.evaluations && fournisseur.evaluations.length > 0 ? (
                 <div className="space-y-4">
-                  {fournisseur.evaluations.map((eval: EvaluationFournisseur) => (
+                  {fournisseur.evaluations.map((evaluation: EvaluationFournisseur) => (
                     <div
-                      key={eval.id}
+                      key={evaluation.id}
                       className="rounded-lg border border-slate-200 p-4"
                     >
                       <div className="flex items-start justify-between">
@@ -491,53 +491,53 @@ export default function FournisseurDetailPage() {
                             <div className="flex items-center gap-1">
                               <Star className="h-5 w-5 fill-amber-400 text-amber-400" />
                               <span className="text-xl font-bold text-slate-900">
-                                {eval.noteGlobale.toFixed(1)}
+                                {evaluation.noteGlobale.toFixed(1)}
                               </span>
                               <span className="text-sm text-slate-600">/5</span>
                             </div>
-                            {eval.evaluateur && (
+                            {evaluation.evaluateur && (
                               <span className="text-sm text-slate-600">
-                                par {eval.evaluateur.firstName} {eval.evaluateur.lastName}
+                                par {evaluation.evaluateur.firstName} {evaluation.evaluateur.lastName}
                               </span>
                             )}
                           </div>
 
                           <div className="mt-3 grid grid-cols-3 gap-4">
-                            {eval.noteQualite !== null && (
+                            {evaluation.noteQualite !== null && (
                               <div>
                                 <p className="text-xs text-slate-600">Qualité</p>
                                 <p className="mt-1 font-semibold text-slate-900">
-                                  {eval.noteQualite}/5
+                                  {evaluation.noteQualite}/5
                                 </p>
                               </div>
                             )}
-                            {eval.noteDelai !== null && (
+                            {evaluation.noteDelai !== null && (
                               <div>
                                 <p className="text-xs text-slate-600">Délai</p>
                                 <p className="mt-1 font-semibold text-slate-900">
-                                  {eval.noteDelai}/5
+                                  {evaluation.noteDelai}/5
                                 </p>
                               </div>
                             )}
-                            {eval.noteConformite !== null && (
+                            {evaluation.noteConformite !== null && (
                               <div>
                                 <p className="text-xs text-slate-600">Conformité</p>
                                 <p className="mt-1 font-semibold text-slate-900">
-                                  {eval.noteConformite}/5
+                                  {evaluation.noteConformite}/5
                                 </p>
                               </div>
                             )}
                           </div>
 
-                          {eval.commentaire && (
+                          {evaluation.commentaire && (
                             <p className="mt-3 text-sm text-slate-700 italic">
-                              "{eval.commentaire}"
+                              "{evaluation.commentaire}"
                             </p>
                           )}
                         </div>
 
                         <div className="text-right">
-                          <p className="text-xs text-slate-500">{formatDate(eval.createdAt)}</p>
+                          <p className="text-xs text-slate-500">{formatDate(evaluation.createdAt)}</p>
                         </div>
                       </div>
                     </div>
@@ -723,7 +723,7 @@ export default function FournisseurDetailPage() {
 
             <div className="flex justify-end gap-3">
               <Button
-                variant="outline"
+                variant="secondary"
                 onClick={() => {
                   setShowBlacklistModal(false);
                   setBlacklistMotif('');

@@ -147,7 +147,7 @@ export default function PassationHomePage() {
     <div className="min-h-screen bg-slate-50">
       <Header
         title="Passation de Marchés"
-        description="Gestion complète du cycle de passation des marchés publics"
+        subtitle="Gestion complète du cycle de passation des marchés publics"
       />
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">

@@ -12,7 +12,7 @@ import { ArrowLeft } from 'lucide-react';
 
 export default function NouveauFournisseurPage() {
   const router = useRouter();
-  const { showToast } = useToast();
+  const { success, error } = useToast();
   const [formData, setFormData] = useState({
     raisonSociale: '',
     identifiantFiscal: '',
@@ -29,11 +29,11 @@ export default function NouveauFournisseurPage() {
   const createMutation = useMutation({
     mutationFn: (data: any) => fournisseursApi.create(data),
     onSuccess: (res) => {
-      showToast('Fournisseur créé avec succès', 'success');
+      success('Fournisseur créé avec succès');
       router.push(`/passation/fournisseurs/${res.data.id}`);
     },
-    onError: (error: any) => {
-      showToast(error.message || 'Erreur lors de la création', 'error');
+    onError: (err: any) => {
+      error(err.message || 'Erreur lors de la création');
     },
   });
 
@@ -46,7 +46,7 @@ export default function NouveauFournisseurPage() {
     <div className="min-h-screen bg-slate-50">
       <Header
         title="Nouveau Fournisseur"
-        description="Ajouter un nouveau fournisseur au référentiel"
+        subtitle="Ajouter un nouveau fournisseur au référentiel"
       />
 
       <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">

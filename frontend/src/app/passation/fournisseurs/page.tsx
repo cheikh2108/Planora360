@@ -56,7 +56,7 @@ export default function FournisseursPage() {
     <div className="min-h-screen bg-slate-50">
       <Header
         title="Fournisseurs"
-        description="Gestion de la base des fournisseurs et prestataires"
+        subtitle="Gestion de la base des fournisseurs et prestataires"
         actions={
           <Button
             icon={<Plus size={16} />}

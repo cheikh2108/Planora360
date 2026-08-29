@@ -12,7 +12,7 @@ import { ArrowLeft } from 'lucide-react';
 
 export default function NouveauPPMPage() {
   const router = useRouter();
-  const { showToast } = useToast();
+  const { success, error } = useToast();
   const [formData, setFormData] = useState({
     year: new Date().getFullYear(),
     projectId: '',
@@ -21,7 +21,7 @@ export default function NouveauPPMPage() {
   const { data: projects } = useQuery({
     queryKey: ['projects'],
     queryFn: async () => {
-      const res = await plansApi.getAllProjects();
+      const res = await plansApi.list();
       return res.data;
     },
   });
@@ -29,11 +29,11 @@ export default function NouveauPPMPage() {
   const createMutation = useMutation({
     mutationFn: (data: any) => ppmApi.create(data),
     onSuccess: (res) => {
-      showToast('PPM créé avec succès', 'success');
+      success('PPM créé avec succès');
       router.push(`/passation/ppm/${res.data.id}`);
     },
-    onError: (error: any) => {
-      showToast(error.message || 'Erreur lors de la création', 'error');
+    onError: (err: any) => {
+      error(err.message || 'Erreur lors de la création');
     },
   });
 
@@ -46,7 +46,7 @@ export default function NouveauPPMPage() {
     <div className="min-h-screen bg-slate-50">
       <Header
         title="Nouveau Plan de Passation des Marchés"
-        description="Créer un nouveau PPM pour planifier les marchés de l'année"
+        subtitle="Créer un nouveau PPM pour planifier les marchés de l'année"
       />
 
       <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">

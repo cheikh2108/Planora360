@@ -51,7 +51,7 @@ export function useMessagerieSocket(options: UseMessagerieSocketOptions = {}) {
       setIsConnected(false);
     });
 
-    socket.on('connect_error', (err) => {
+    socket.on('connect_error', (err: Error) => {
       setError(err.message);
       setIsConnected(false);
     });
@@ -75,13 +75,13 @@ export function useMessagerieSocket(options: UseMessagerieSocketOptions = {}) {
     }
 
     if (onTyping) {
-      socket.on('typing:start', (data) => onTyping({ ...data, isTyping: true }));
-      socket.on('typing:stop', (data) => onTyping({ ...data, isTyping: false }));
+      socket.on('typing:start', (data: Omit<TypingIndicator, 'isTyping'>) => onTyping({ ...data, isTyping: true }));
+      socket.on('typing:stop', (data: Omit<TypingIndicator, 'isTyping'>) => onTyping({ ...data, isTyping: false }));
     }
 
     if (onUserPresence) {
-      socket.on('user:online', (data) => onUserPresence({ ...data, isOnline: true }));
-      socket.on('user:offline', (data) => onUserPresence({ ...data, isOnline: false }));
+      socket.on('user:online', (data: Omit<UserPresence, 'isOnline'>) => onUserPresence({ ...data, isOnline: true }));
+      socket.on('user:offline', (data: Omit<UserPresence, 'isOnline'>) => onUserPresence({ ...data, isOnline: false }));
     }
 
     if (onMessageEdit) {
@@ -89,7 +89,7 @@ export function useMessagerieSocket(options: UseMessagerieSocketOptions = {}) {
     }
 
     if (onMessageDelete) {
-      socket.on('message:deleted', (data) => onMessageDelete(data.messageId));
+      socket.on('message:deleted', (data: { messageId: string }) => onMessageDelete(data.messageId));
     }
 
     if (onReaction) {

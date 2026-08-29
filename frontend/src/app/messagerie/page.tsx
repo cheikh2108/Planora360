@@ -18,7 +18,7 @@ import { MessageSquare, Plus, Search, Users, Archive, Circle } from 'lucide-reac
 export default function MessagingPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { showToast } = useToast();
+  const { success } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [showNewConversationModal, setShowNewConversationModal] = useState(false);
   const [showArchivedOnly, setShowArchivedOnly] = useState(false);
@@ -53,7 +53,7 @@ export default function MessagingPage() {
     mutationFn: (conversationId: string) => conversationsApi.archive(conversationId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
-      showToast('Conversation archivée', 'success');
+      success('Conversation archivée');
     },
   });
 
@@ -62,7 +62,7 @@ export default function MessagingPage() {
     mutationFn: (conversationId: string) => conversationsApi.unarchive(conversationId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
-      showToast('Conversation restaurée', 'success');
+      success('Conversation restaurée');
     },
   });
 
@@ -88,8 +88,8 @@ export default function MessagingPage() {
     <div className="min-h-screen bg-slate-50">
       <Header
         title="Messagerie"
-        description="Conversations professionnelles et communications d'équipe"
-        action={
+        subtitle="Conversations professionnelles et communications d'équipe"
+        actions={
           <Button onClick={() => setShowNewConversationModal(true)}>
             <Plus className="mr-2 h-4 w-4" />
             Nouvelle conversation
@@ -245,7 +245,7 @@ export default function MessagingPage() {
       {/* New conversation modal (placeholder) */}
       {showNewConversationModal && (
         <Modal
-          isOpen={showNewConversationModal}
+          open={showNewConversationModal}
           onClose={() => setShowNewConversationModal(false)}
           title="Nouvelle conversation"
         >

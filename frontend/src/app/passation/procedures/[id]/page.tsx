@@ -16,7 +16,7 @@ import {
   Package, BadgeCheck
 } from 'lucide-react';
 import Link from 'next/link';
-import { toast } from '@/components/ui/toast';
+import { toast } from 'sonner';
 
 // Configuration des méthodes
 const METHODE_CONFIG = {

@@ -68,7 +68,7 @@ export default function DemandesAchatPage() {
     <div className="min-h-screen bg-slate-50">
       <Header
         title="Demandes d'Achat"
-        description="Gestion des demandes d'achat et workflows de validation"
+        subtitle="Gestion des demandes d'achat et workflows de validation"
         actions={
           <Button
             icon={<Plus size={16} />}
