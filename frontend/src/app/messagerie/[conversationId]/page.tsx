@@ -416,24 +416,22 @@ export default function ConversationPage() {
                         <div className="space-y-2 mb-2">
                           {message.attachments.map((attachment) => {
                             const isImage = attachment.mimeType.startsWith('image/');
-                            const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-                            const fullUrl = attachment.fileUrl.startsWith('http')
-                              ? attachment.fileUrl
-                              : `${baseUrl}${attachment.fileUrl}`;
+                            // Utiliser URL relative pour que le proxy Next.js redirige vers le backend
+                            const fileUrl = attachment.fileUrl;
 
                             return (
                               <div key={attachment.id} className="rounded-lg overflow-hidden bg-slate-50 dark:bg-slate-800">
                                 {isImage ? (
-                                  <a href={fullUrl} target="_blank" rel="noopener noreferrer">
+                                  <a href={fileUrl} target="_blank" rel="noopener noreferrer">
                                     <img
-                                      src={fullUrl}
+                                      src={fileUrl}
                                       alt={attachment.fileName}
                                       className="max-w-[280px] max-h-[200px] object-cover hover:opacity-90 transition-opacity cursor-pointer"
                                     />
                                   </a>
                                 ) : (
                                   <a
-                                    href={fullUrl}
+                                    href={fileUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className={cn(
