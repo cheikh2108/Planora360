@@ -35,14 +35,14 @@ export declare class EvaluationsController {
         updatedAt: Date;
         validatedAt: Date | null;
         soumissionId: string;
+        commentaires: string | null;
+        evaluateurId: string;
         commissionId: string;
         scoreAdmin: number | null;
         scoreTechnique: number | null;
         scoreFinancier: number | null;
         scoreGlobal: number | null;
         criteres: import("@prisma/client/runtime/client").JsonValue;
-        commentaires: string | null;
-        evaluateurId: string;
     }>;
     findAll(procedureId: string, req: any): Promise<({
         soumission: {
@@ -77,14 +77,14 @@ export declare class EvaluationsController {
         updatedAt: Date;
         validatedAt: Date | null;
         soumissionId: string;
+        commentaires: string | null;
+        evaluateurId: string;
         commissionId: string;
         scoreAdmin: number | null;
         scoreTechnique: number | null;
         scoreFinancier: number | null;
         scoreGlobal: number | null;
         criteres: import("@prisma/client/runtime/client").JsonValue;
-        commentaires: string | null;
-        evaluateurId: string;
     })[]>;
     getSynthese(procedureId: string, req: any): Promise<{
         soumission: any;

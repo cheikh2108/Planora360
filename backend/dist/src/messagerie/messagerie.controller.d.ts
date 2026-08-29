@@ -4,6 +4,10 @@ export declare class MessagerieController {
     private readonly messagerieService;
     constructor(messagerieService: MessagerieService);
     getUserConversations(req: any): Promise<({
+        _count: {
+            participants: number;
+            messages: number;
+        };
         participants: ({
             user: {
                 id: string;
@@ -13,15 +17,15 @@ export declare class MessagerieController {
             };
         } & {
             id: string;
+            role: import(".prisma/client").$Enums.ConversationRole;
             userId: string;
             leftAt: Date | null;
-            role: import(".prisma/client").$Enums.ConversationRole;
-            conversationId: string;
             isMuted: boolean;
             isPinned: boolean;
             lastReadAt: Date | null;
             unreadCount: number;
             joinedAt: Date;
+            conversationId: string;
         })[];
         messages: ({
             author: {
@@ -34,40 +38,40 @@ export declare class MessagerieController {
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
-            conversationId: string;
+            metadata: import("@prisma/client/runtime/client").JsonValue | null;
             authorId: string;
             content: string;
+            conversationId: string;
             contentType: import(".prisma/client").$Enums.MessageContentType;
-            parentId: string | null;
             isEdited: boolean;
             editedAt: Date | null;
             isDeleted: boolean;
             isSystem: boolean;
-            metadata: import("@prisma/client/runtime/client").JsonValue | null;
+            parentId: string | null;
         })[];
+    } & {
+        id: string;
+        organizationId: string;
+        createdAt: Date;
+        updatedAt: Date;
+        name: string | null;
+        activityId: string | null;
+        type: import(".prisma/client").$Enums.ConversationType;
+        description: string | null;
+        createdById: string;
+        recommendationId: string | null;
+        projectId: string | null;
+        procedureId: string | null;
+        contratId: string | null;
+        avatarUrl: string | null;
+        isArchived: boolean;
+        lastMessageAt: Date | null;
+    })[]>;
+    getConversation(req: any, conversationId: string): Promise<{
         _count: {
             participants: number;
             messages: number;
         };
-    } & {
-        id: string;
-        organizationId: string;
-        type: import(".prisma/client").$Enums.ConversationType;
-        name: string | null;
-        description: string | null;
-        avatarUrl: string | null;
-        projectId: string | null;
-        activityId: string | null;
-        recommendationId: string | null;
-        procedureId: string | null;
-        contratId: string | null;
-        isArchived: boolean;
-        lastMessageAt: Date | null;
-        createdById: string;
-        createdAt: Date;
-        updatedAt: Date;
-    })[]>;
-    getConversation(req: any, conversationId: string): Promise<{
         participants: ({
             user: {
                 id: string;
@@ -77,37 +81,33 @@ export declare class MessagerieController {
             };
         } & {
             id: string;
+            role: import(".prisma/client").$Enums.ConversationRole;
             userId: string;
             leftAt: Date | null;
-            role: import(".prisma/client").$Enums.ConversationRole;
-            conversationId: string;
             isMuted: boolean;
             isPinned: boolean;
             lastReadAt: Date | null;
             unreadCount: number;
             joinedAt: Date;
+            conversationId: string;
         })[];
-        _count: {
-            participants: number;
-            messages: number;
-        };
     } & {
         id: string;
         organizationId: string;
-        type: import(".prisma/client").$Enums.ConversationType;
-        name: string | null;
-        description: string | null;
-        avatarUrl: string | null;
-        projectId: string | null;
-        activityId: string | null;
-        recommendationId: string | null;
-        procedureId: string | null;
-        contratId: string | null;
-        isArchived: boolean;
-        lastMessageAt: Date | null;
-        createdById: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string | null;
+        activityId: string | null;
+        type: import(".prisma/client").$Enums.ConversationType;
+        description: string | null;
+        createdById: string;
+        recommendationId: string | null;
+        projectId: string | null;
+        procedureId: string | null;
+        contratId: string | null;
+        avatarUrl: string | null;
+        isArchived: boolean;
+        lastMessageAt: Date | null;
     }>;
     createConversation(req: any, type: ConversationType, name?: string, participantIds?: string[], context?: any): Promise<{
         participants: ({
@@ -119,55 +119,55 @@ export declare class MessagerieController {
             };
         } & {
             id: string;
+            role: import(".prisma/client").$Enums.ConversationRole;
             userId: string;
             leftAt: Date | null;
-            role: import(".prisma/client").$Enums.ConversationRole;
-            conversationId: string;
             isMuted: boolean;
             isPinned: boolean;
             lastReadAt: Date | null;
             unreadCount: number;
             joinedAt: Date;
+            conversationId: string;
         })[];
     } & {
         id: string;
         organizationId: string;
-        type: import(".prisma/client").$Enums.ConversationType;
-        name: string | null;
-        description: string | null;
-        avatarUrl: string | null;
-        projectId: string | null;
-        activityId: string | null;
-        recommendationId: string | null;
-        procedureId: string | null;
-        contratId: string | null;
-        isArchived: boolean;
-        lastMessageAt: Date | null;
-        createdById: string;
         createdAt: Date;
         updatedAt: Date;
+        name: string | null;
+        activityId: string | null;
+        type: import(".prisma/client").$Enums.ConversationType;
+        description: string | null;
+        createdById: string;
+        recommendationId: string | null;
+        projectId: string | null;
+        procedureId: string | null;
+        contratId: string | null;
+        avatarUrl: string | null;
+        isArchived: boolean;
+        lastMessageAt: Date | null;
     }>;
     getMessages(req: any, conversationId: string, limit?: number, before?: string): Promise<{
         messages: ({
+            attachments: {
+                id: string;
+                fileSize: number;
+                fileName: string;
+                mimeType: string;
+                width: number | null;
+                uploadedAt: Date;
+                fileUrl: string;
+                messageId: string;
+                thumbnailUrl: string | null;
+                height: number | null;
+                duration: number | null;
+            }[];
             author: {
                 id: string;
                 email: string;
                 firstName: string;
                 lastName: string;
             };
-            attachments: {
-                id: string;
-                messageId: string;
-                fileName: string;
-                fileUrl: string;
-                fileSize: number;
-                mimeType: string;
-                thumbnailUrl: string | null;
-                width: number | null;
-                height: number | null;
-                duration: number | null;
-                uploadedAt: Date;
-            }[];
             reactions: ({
                 user: {
                     id: string;
@@ -183,9 +183,9 @@ export declare class MessagerieController {
             })[];
             mentions: {
                 id: string;
-                type: import(".prisma/client").$Enums.MentionType;
                 createdAt: Date;
                 userId: string;
+                type: import(".prisma/client").$Enums.MentionType;
                 messageId: string;
                 startPos: number | null;
                 endPos: number | null;
@@ -196,40 +196,40 @@ export declare class MessagerieController {
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
-            conversationId: string;
+            metadata: import("@prisma/client/runtime/client").JsonValue | null;
             authorId: string;
             content: string;
+            conversationId: string;
             contentType: import(".prisma/client").$Enums.MessageContentType;
-            parentId: string | null;
             isEdited: boolean;
             editedAt: Date | null;
             isDeleted: boolean;
             isSystem: boolean;
-            metadata: import("@prisma/client/runtime/client").JsonValue | null;
+            parentId: string | null;
         })[];
         hasMore: boolean;
         nextCursor: string | null;
     }>;
     sendMessage(req: any, conversationId: string, content: string, contentType?: string, parentId?: string): Promise<{
+        attachments: {
+            id: string;
+            fileSize: number;
+            fileName: string;
+            mimeType: string;
+            width: number | null;
+            uploadedAt: Date;
+            fileUrl: string;
+            messageId: string;
+            thumbnailUrl: string | null;
+            height: number | null;
+            duration: number | null;
+        }[];
         author: {
             id: string;
             email: string;
             firstName: string;
             lastName: string;
         };
-        attachments: {
-            id: string;
-            messageId: string;
-            fileName: string;
-            fileUrl: string;
-            fileSize: number;
-            mimeType: string;
-            thumbnailUrl: string | null;
-            width: number | null;
-            height: number | null;
-            duration: number | null;
-            uploadedAt: Date;
-        }[];
         reactions: {
             id: string;
             createdAt: Date;
@@ -239,9 +239,9 @@ export declare class MessagerieController {
         }[];
         mentions: {
             id: string;
-            type: import(".prisma/client").$Enums.MentionType;
             createdAt: Date;
             userId: string;
+            type: import(".prisma/client").$Enums.MentionType;
             messageId: string;
             startPos: number | null;
             endPos: number | null;
@@ -252,16 +252,16 @@ export declare class MessagerieController {
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
-        conversationId: string;
+        metadata: import("@prisma/client/runtime/client").JsonValue | null;
         authorId: string;
         content: string;
+        conversationId: string;
         contentType: import(".prisma/client").$Enums.MessageContentType;
-        parentId: string | null;
         isEdited: boolean;
         editedAt: Date | null;
         isDeleted: boolean;
         isSystem: boolean;
-        metadata: import("@prisma/client/runtime/client").JsonValue | null;
+        parentId: string | null;
     }>;
     markConversationAsRead(req: any, conversationId: string): Promise<{
         success: boolean;
@@ -277,20 +277,20 @@ export declare class MessagerieController {
         conversation: {
             id: string;
             organizationId: string;
-            type: import(".prisma/client").$Enums.ConversationType;
-            name: string | null;
-            description: string | null;
-            avatarUrl: string | null;
-            projectId: string | null;
-            activityId: string | null;
-            recommendationId: string | null;
-            procedureId: string | null;
-            contratId: string | null;
-            isArchived: boolean;
-            lastMessageAt: Date | null;
-            createdById: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string | null;
+            activityId: string | null;
+            type: import(".prisma/client").$Enums.ConversationType;
+            description: string | null;
+            createdById: string;
+            recommendationId: string | null;
+            projectId: string | null;
+            procedureId: string | null;
+            contratId: string | null;
+            avatarUrl: string | null;
+            isArchived: boolean;
+            lastMessageAt: Date | null;
         };
     }>;
     unarchiveConversation(req: any, conversationId: string): Promise<{
@@ -299,20 +299,20 @@ export declare class MessagerieController {
         conversation: {
             id: string;
             organizationId: string;
-            type: import(".prisma/client").$Enums.ConversationType;
-            name: string | null;
-            description: string | null;
-            avatarUrl: string | null;
-            projectId: string | null;
-            activityId: string | null;
-            recommendationId: string | null;
-            procedureId: string | null;
-            contratId: string | null;
-            isArchived: boolean;
-            lastMessageAt: Date | null;
-            createdById: string;
             createdAt: Date;
             updatedAt: Date;
+            name: string | null;
+            activityId: string | null;
+            type: import(".prisma/client").$Enums.ConversationType;
+            description: string | null;
+            createdById: string;
+            recommendationId: string | null;
+            projectId: string | null;
+            procedureId: string | null;
+            contratId: string | null;
+            avatarUrl: string | null;
+            isArchived: boolean;
+            lastMessageAt: Date | null;
         };
     }>;
 }

@@ -264,23 +264,30 @@ export default function ConversationPage() {
   }
 
   return (
-    <div className="flex h-screen flex-col bg-slate-50">
+    <div className="flex h-screen flex-col bg-[#efeae2] relative">
+      {/* WhatsApp-style background pattern */}
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
+           style={{
+             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+           }}
+      />
+
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3">
+      <div className="relative flex items-center justify-between border-b border-slate-200/80 bg-white/95 backdrop-blur-xl px-6 py-4 shadow-sm">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="sm" onClick={() => router.back()}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h2 className="font-semibold text-slate-900">{getConversationTitle()}</h2>
-            <div className="flex items-center gap-2 text-sm text-slate-500">
+            <h2 className="font-semibold text-slate-900 text-[15px]">{getConversationTitle()}</h2>
+            <div className="flex items-center gap-2 text-[13px] text-slate-600">
               <div
                 className={cn(
-                  'h-2 w-2 rounded-full',
-                  isConnected ? 'bg-green-500' : 'bg-slate-400',
+                  'h-2 w-2 rounded-full transition-all duration-300',
+                  isConnected ? 'bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.6)]' : 'bg-slate-400',
                 )}
               />
-              <span>{isConnected ? 'En ligne' : 'Hors ligne'}</span>
+              <span className="font-medium">{isConnected ? 'En ligne' : 'Hors ligne'}</span>
               {/* Afficher nombre de participants seulement pour les groupes/channels */}
               {conversation?.type !== 'DIRECT' && (
                 <>
@@ -291,62 +298,88 @@ export default function ConversationPage() {
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={() => setShowInfoPanel(!showInfoPanel)}>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setShowInfoPanel(!showInfoPanel)}
+            className="rounded-full p-2 text-slate-600 transition-all duration-200 hover:bg-slate-100 hover:text-slate-900 active:scale-95"
+          >
             <Info className="h-5 w-5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
+          </button>
+          <button
             onClick={() => setShowOptionsMenu(!showOptionsMenu)}
             data-options-button
+            className="rounded-full p-2 text-slate-600 transition-all duration-200 hover:bg-slate-100 hover:text-slate-900 active:scale-95"
           >
             <MoreVertical className="h-5 w-5" />
-          </Button>
+          </button>
         </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="relative flex-1 overflow-y-auto px-6 py-4">
         {messages && messages.length > 0 ? (
-          <div className="space-y-4">
-            {messages.map((message) => {
+          <div className="space-y-3">
+            {messages.map((message, index) => {
               const isOwn = message.author?.id === user?.id;
+              const isFirstInGroup = index === 0 || messages[index - 1]?.author?.id !== message.author?.id;
+
+              // Initiales pour l'avatar
+              const getInitials = (firstName?: string, lastName?: string) => {
+                return `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase();
+              };
 
               return (
                 <div
                   key={message.id}
-                  className={cn('flex', isOwn ? 'justify-end' : 'justify-start')}
+                  className={cn(
+                    'flex animate-in fade-in-0 slide-in-from-bottom-4 duration-300',
+                    isOwn ? 'justify-end' : 'justify-start'
+                  )}
+                  style={{ animationDelay: `${index * 30}ms` }}
                 >
-                  <div className={cn('flex gap-2', isOwn && 'flex-row-reverse')}>
+                  <div className={cn('flex gap-2 max-w-[70%]', isOwn && 'flex-row-reverse')}>
                     {/* Avatar */}
                     {!isOwn && (
-                      <div className="h-8 w-8 flex-shrink-0 rounded-full bg-gradient-to-br from-blue-500 to-purple-600" />
+                      <div className={cn(
+                        'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white transition-all duration-200',
+                        'bg-gradient-to-br from-emerald-500 to-teal-600 shadow-sm',
+                        !isFirstInGroup && 'opacity-0'
+                      )}>
+                        {getInitials(message.author?.firstName, message.author?.lastName)}
+                      </div>
                     )}
 
                     {/* Message bubble */}
                     <div
                       className={cn(
-                        'max-w-md rounded-lg px-4 py-2',
+                        'group relative px-3 py-2 transition-all duration-200',
                         isOwn
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-white text-slate-900 shadow-sm',
+                          ? 'bg-[#005c4b] text-white rounded-2xl rounded-tr-md shadow-sm'
+                          : 'bg-white text-slate-900 rounded-2xl rounded-tl-md shadow-[0_1px_2px_rgba(0,0,0,0.1)]',
+                        'hover:shadow-md'
                       )}
                     >
-                      {!isOwn && message.author && (
-                        <p className="mb-1 text-xs font-medium">
+                      {!isOwn && message.author && isFirstInGroup && (
+                        <p className="mb-0.5 text-[13px] font-semibold text-emerald-600">
                           {message.author.firstName} {message.author.lastName}
                         </p>
                       )}
-                      <p className="whitespace-pre-wrap break-words">{message.content}</p>
+                      <p className="whitespace-pre-wrap break-words text-[14.5px] leading-[1.4]">
+                        {message.content}
+                      </p>
                       <div
                         className={cn(
-                          'mt-1 flex items-center gap-2 text-xs',
-                          isOwn ? 'text-blue-100' : 'text-slate-500',
+                          'mt-1 flex items-center gap-1.5 text-[11px]',
+                          isOwn ? 'text-emerald-200/80' : 'text-slate-500',
                         )}
                       >
-                        <span>{formatMessageTime(message.createdAt)}</span>
-                        {message.isEdited && <span>(modifié)</span>}
+                        <span className="font-medium">{formatMessageTime(message.createdAt)}</span>
+                        {message.isEdited && <span className="opacity-70">(modifié)</span>}
+                        {isOwn && (
+                          <svg className="h-4 w-4 ml-0.5 opacity-80" viewBox="0 0 16 15" fill="currentColor">
+                            <path d="M15.01 3.316l-.478-.372a.365.365 0 0 0-.51.063L8.666 9.879a.32.32 0 0 1-.484.033l-.358-.325a.319.319 0 0 0-.484.032l-.378.483a.418.418 0 0 0 .036.541l1.32 1.266c.143.14.361.125.484-.033l6.272-8.048a.366.366 0 0 0-.064-.512zm-4.1 0l-.478-.372a.365.365 0 0 0-.51.063L4.566 9.879a.32.32 0 0 1-.484.033L1.891 7.769a.366.366 0 0 0-.515.006l-.423.433a.364.364 0 0 0 .006.514l3.258 3.185c.143.14.361.125.484-.033l6.272-8.048a.365.365 0 0 0-.063-.51z"/>
+                          </svg>
+                        )}
                       </div>
 
                       {/* Reactions */}
@@ -377,12 +410,19 @@ export default function ConversationPage() {
 
         {/* Typing indicators */}
         {typingUsers.length > 0 && (
-          <div className="mt-2 text-sm text-slate-500">
-            {typingUsers
-              .filter((u) => u.user?.firstName) // Filtrer ceux qui ont les infos user
-              .map((u) => u.user.firstName)
-              .join(', ')}{' '}
-            en train d'écrire...
+          <div className="mt-3 flex items-center gap-2 px-4">
+            <div className="flex items-center gap-1">
+              <div className="h-2 w-2 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+              <div className="h-2 w-2 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+              <div className="h-2 w-2 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+            </div>
+            <span className="text-[13px] font-medium text-slate-600">
+              {typingUsers
+                .filter((u) => u.user?.firstName)
+                .map((u) => u.user.firstName)
+                .join(', ')}{' '}
+              en train d'écrire...
+            </span>
           </div>
         )}
 
@@ -390,8 +430,8 @@ export default function ConversationPage() {
       </div>
 
       {/* Input */}
-      <div className="border-t border-slate-200 bg-white p-4">
-        <div className="flex items-end gap-2">
+      <div className="relative border-t border-slate-200/80 bg-white/95 backdrop-blur-xl px-6 py-4">
+        <div className="flex items-end gap-3">
           <input
             type="file"
             id="file-upload"
@@ -404,46 +444,58 @@ export default function ConversationPage() {
               // TODO: Implémenter upload
             }}
           />
-          <Button
-            variant="ghost"
-            size="sm"
+          <button
             onClick={() => document.getElementById('file-upload')?.click()}
+            className="rounded-full p-2.5 text-slate-600 transition-all duration-200 hover:bg-slate-100 hover:text-slate-900 active:scale-90"
           >
             <Paperclip className="h-5 w-5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
+          </button>
+          <button
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
             data-emoji-button
+            className="rounded-full p-2.5 text-slate-600 transition-all duration-200 hover:bg-slate-100 hover:text-slate-900 active:scale-90"
           >
             <Smile className="h-5 w-5" />
-          </Button>
-          <Textarea
-            value={messageInput}
-            onChange={(e) => handleInputChange(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-            placeholder="Écrivez votre message..."
-            className="flex-1 min-h-[40px] max-h-[120px]"
-          />
-          <Button onClick={handleSend} disabled={!messageInput.trim() || !isConnected}>
+          </button>
+          <div className="relative flex-1">
+            <Textarea
+              value={messageInput}
+              onChange={(e) => handleInputChange(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
+              placeholder="Écrivez votre message..."
+              className="w-full resize-none rounded-2xl border-slate-200 bg-slate-50 px-4 py-3 text-[15px] leading-[1.4] placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 transition-all duration-200"
+              style={{ minHeight: '44px', maxHeight: '120px' }}
+            />
+          </div>
+          <button
+            onClick={handleSend}
+            disabled={!messageInput.trim() || !isConnected}
+            className={cn(
+              'rounded-full p-3 transition-all duration-200 active:scale-90',
+              messageInput.trim() && isConnected
+                ? 'bg-[#005c4b] text-white shadow-lg shadow-emerald-900/20 hover:bg-[#004a3d] hover:shadow-xl'
+                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+            )}
+          >
             <Send className="h-5 w-5" />
-          </Button>
+          </button>
         </div>
 
         {/* Emoji Picker */}
         {showEmojiPicker && (
-          <div className="emoji-picker absolute bottom-20 left-16 z-50 rounded-lg border border-slate-200 bg-white p-3 shadow-lg">
-            <div className="mb-2 flex items-center justify-between">
-              <p className="text-sm font-medium text-slate-700">Emojis</p>
+          <div className="emoji-picker absolute bottom-20 left-20 z-50 animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-4 duration-200 rounded-2xl border border-slate-200/80 bg-white/95 backdrop-blur-xl p-4 shadow-2xl shadow-slate-900/10">
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-[13px] font-semibold text-slate-700">Réactions rapides</p>
               <button
                 onClick={() => setShowEmojiPicker(false)}
-                className="text-slate-400 hover:text-slate-600"
+                className="rounded-full p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
               >
-                ✕
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
-            <div className="grid grid-cols-8 gap-2">
+            <div className="grid grid-cols-8 gap-1">
               {['😀', '😂', '😍', '🥰', '😎', '🤔', '👍', '👏', '🔥', '❤️', '🎉', '✅', '💪', '🙏', '👀', '🚀'].map(
                 (emoji) => (
                   <button
@@ -452,9 +504,11 @@ export default function ConversationPage() {
                       setMessageInput((prev) => prev + emoji);
                       setShowEmojiPicker(false);
                     }}
-                    className="rounded p-2 text-2xl hover:bg-slate-100"
+                    className="group relative rounded-lg p-2.5 text-2xl transition-all duration-200 hover:bg-emerald-50 hover:scale-110 active:scale-95"
                   >
-                    {emoji}
+                    <span className="block transition-transform duration-200 group-hover:scale-110">
+                      {emoji}
+                    </span>
                   </button>
                 ),
               )}
@@ -465,18 +519,19 @@ export default function ConversationPage() {
 
       {/* Menu Options (trois points) */}
       {showOptionsMenu && (
-        <div className="options-menu absolute right-4 top-20 z-50 w-56 rounded-lg border border-slate-200 bg-white shadow-lg">
-          <div className="py-1">
+        <div className="options-menu absolute right-4 top-20 z-50 w-60 animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-200 overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 backdrop-blur-xl shadow-2xl shadow-slate-900/10">
+          <div className="p-2">
             <button
               onClick={() => {
                 // TODO: Archiver conversation
                 setShowOptionsMenu(false);
               }}
-              className="flex w-full items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+              className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-[14px] font-medium text-slate-700 transition-all duration-200 hover:bg-slate-100 active:scale-[0.98]"
             >
               <Archive className="h-4 w-4" />
               Archiver la conversation
             </button>
+            <div className="my-1 h-px bg-slate-100" />
             <button
               onClick={() => {
                 if (confirm('Supprimer cette conversation ?')) {
@@ -484,7 +539,7 @@ export default function ConversationPage() {
                 }
                 setShowOptionsMenu(false);
               }}
-              className="flex w-full items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+              className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-[14px] font-medium text-red-600 transition-all duration-200 hover:bg-red-50 active:scale-[0.98]"
             >
               <svg
                 className="h-4 w-4"
@@ -507,70 +562,95 @@ export default function ConversationPage() {
 
       {/* Panneau Info Latéral */}
       {showInfoPanel && (
-        <div className="fixed inset-y-0 right-0 z-50 w-80 border-l border-slate-200 bg-white shadow-xl">
-          <div className="flex h-full flex-col">
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-slate-200 p-4">
-              <h3 className="font-semibold text-slate-900">Détails de la conversation</h3>
-              <button
-                onClick={() => setShowInfoPanel(false)}
-                className="text-slate-400 hover:text-slate-600"
-              >
-                ✕
-              </button>
-            </div>
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm animate-in fade-in-0 duration-300"
+            onClick={() => setShowInfoPanel(false)}
+          />
+
+          <div className="fixed inset-y-0 right-0 z-50 w-96 animate-in slide-in-from-right-full duration-300 border-l border-slate-200/80 bg-white shadow-2xl">
+            <div className="flex h-full flex-col">
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-slate-200/80 px-6 py-5">
+                <h3 className="text-[16px] font-semibold text-slate-900">Détails de la conversation</h3>
+                <button
+                  onClick={() => setShowInfoPanel(false)}
+                  className="rounded-full p-2 text-slate-400 transition-all duration-200 hover:bg-slate-100 hover:text-slate-600 active:scale-90"
+                >
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 overflow-y-auto px-6 py-6">
               {/* Titre */}
-              <div className="mb-6">
-                <p className="mb-1 text-xs font-medium uppercase text-slate-500">Titre</p>
-                <p className="text-sm text-slate-900">{getConversationTitle()}</p>
+              <div className="mb-8 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 p-5 shadow-sm">
+                <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-emerald-700">Titre</p>
+                <p className="text-[15px] font-semibold text-slate-900">{getConversationTitle()}</p>
               </div>
 
               {/* Type */}
-              <div className="mb-6">
-                <p className="mb-1 text-xs font-medium uppercase text-slate-500">Type</p>
-                <p className="text-sm text-slate-900">
-                  {conversation?.type === 'DIRECT' && 'Conversation directe'}
-                  {conversation?.type === 'GROUP' && 'Groupe'}
-                  {conversation?.type === 'CHANNEL_PROJECT' && 'Canal projet'}
-                  {conversation?.type === 'CHANNEL_TEAM' && 'Canal équipe'}
-                </p>
-              </div>
-
-              {/* Participants */}
-              <div className="mb-6">
-                <p className="mb-2 text-xs font-medium uppercase text-slate-500">
-                  Participants ({conversation?._count?.participants || 0})
-                </p>
-                <div className="space-y-2">
-                  {conversation?.participants?.map((participant) => (
-                    <div key={participant.id} className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600" />
-                      <div>
-                        <p className="text-sm font-medium text-slate-900">
-                          {participant.user?.firstName} {participant.user?.lastName}
-                        </p>
-                        <p className="text-xs text-slate-500">{participant.role}</p>
-                      </div>
-                    </div>
-                  ))}
+              <div className="mb-8">
+                <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Type</p>
+                <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2">
+                  <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                  <p className="text-[13px] font-medium text-slate-900">
+                    {conversation?.type === 'DIRECT' && 'Conversation directe'}
+                    {conversation?.type === 'GROUP' && 'Groupe'}
+                    {conversation?.type === 'CHANNEL_PROJECT' && 'Canal projet'}
+                    {conversation?.type === 'CHANNEL_TEAM' && 'Canal équipe'}
+                  </p>
                 </div>
               </div>
 
-              {/* Messages */}
-              <div className="mb-6">
-                <p className="mb-1 text-xs font-medium uppercase text-slate-500">Messages</p>
-                <p className="text-sm text-slate-900">
-                  {conversation?._count?.messages || 0} message(s)
+              {/* Participants */}
+              <div className="mb-8">
+                <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  Participants ({conversation?._count?.participants || 0})
                 </p>
+                <div className="space-y-2">
+                  {conversation?.participants?.map((participant) => {
+                    const initials = `${participant.user?.firstName?.[0] || ''}${participant.user?.lastName?.[0] || ''}`.toUpperCase();
+                    return (
+                      <div key={participant.id} className="group flex items-center gap-3 rounded-xl p-2 transition-all duration-200 hover:bg-slate-50">
+                        <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-[13px] font-semibold text-white shadow-sm">
+                          {initials}
+                        </div>
+                        <div>
+                          <p className="text-[14px] font-semibold text-slate-900">
+                            {participant.user?.firstName} {participant.user?.lastName}
+                          </p>
+                          <p className="text-[12px] font-medium text-slate-500">{participant.role}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Stats */}
+              <div className="mb-8 grid grid-cols-2 gap-3">
+                <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm">
+                  <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Messages</p>
+                  <p className="text-2xl font-bold text-slate-900">
+                    {conversation?._count?.messages || 0}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm">
+                  <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Membres</p>
+                  <p className="text-2xl font-bold text-slate-900">
+                    {conversation?._count?.participants || 0}
+                  </p>
+                </div>
               </div>
 
               {/* Date création */}
               <div>
-                <p className="mb-1 text-xs font-medium uppercase text-slate-500">Créée le</p>
-                <p className="text-sm text-slate-900">
+                <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Créée le</p>
+                <p className="text-[14px] font-medium text-slate-700">
                   {conversation?.createdAt &&
                     new Date(conversation.createdAt).toLocaleDateString('fr-FR', {
                       day: 'numeric',
@@ -584,6 +664,7 @@ export default function ConversationPage() {
             </div>
           </div>
         </div>
+        </>
       )}
     </div>
   );

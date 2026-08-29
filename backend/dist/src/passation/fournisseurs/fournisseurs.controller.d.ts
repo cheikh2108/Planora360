@@ -87,8 +87,6 @@ export declare class FournisseursController {
             id: string;
             createdAt: Date;
             fournisseurId: string;
-            commentaires: string | null;
-            evaluateurId: string;
             contratId: string | null;
             qualite: number | null;
             delais: number | null;
@@ -98,6 +96,8 @@ export declare class FournisseursController {
             respectContractuel: number | null;
             rapportQualitePrix: number | null;
             noteGlobale: number;
+            commentaires: string | null;
+            evaluateurId: string;
         })[];
         documents: {
             url: string;
@@ -305,8 +305,6 @@ export declare class FournisseursController {
             id: string;
             createdAt: Date;
             fournisseurId: string;
-            commentaires: string | null;
-            evaluateurId: string;
             contratId: string | null;
             qualite: number | null;
             delais: number | null;
@@ -316,6 +314,8 @@ export declare class FournisseursController {
             respectContractuel: number | null;
             rapportQualitePrix: number | null;
             noteGlobale: number;
+            commentaires: string | null;
+            evaluateurId: string;
         })[];
         documents: {
             url: string;
