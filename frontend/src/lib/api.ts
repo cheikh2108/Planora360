@@ -331,3 +331,158 @@ export const maintenanceApi = {
   toggle: (data: { maintenanceMode: boolean; maintenanceMessage?: string }) =>
     api.put('/maintenance', data),
 };
+
+// ============================================================================
+// PASSATION DE MARCHÉS
+// ============================================================================
+
+// PPM (Plan Passation des Marchés)
+export const ppmApi = {
+  getAll: (filters?: { year?: number; status?: string; projectId?: string }) =>
+    api.get('/passation/ppm', { params: filters }),
+  getOne: (id: string) => api.get(`/passation/ppm/${id}`),
+  create: (data: any) => api.post('/passation/ppm', data),
+  update: (id: string, data: any) => api.patch(`/passation/ppm/${id}`, data),
+  remove: (id: string) => api.delete(`/passation/ppm/${id}`),
+  validate: (id: string) => api.post(`/passation/ppm/${id}/validate`),
+  export: (id: string, format: 'pdf' | 'excel') =>
+    api.get(`/passation/ppm/${id}/export`, { params: { format } }),
+};
+
+// Demandes d'achat
+export const demandesApi = {
+  getAll: (filters?: { status?: string }) =>
+    api.get('/passation/demandes', { params: filters }),
+  getOne: (id: string) => api.get(`/passation/demandes/${id}`),
+  create: (data: any) => api.post('/passation/demandes', data),
+  update: (id: string, data: any) => api.patch(`/passation/demandes/${id}`, data),
+  remove: (id: string) => api.delete(`/passation/demandes/${id}`),
+  submit: (id: string) => api.post(`/passation/demandes/${id}/submit`),
+  validate: (id: string, data: { decision: 'APPROUVE' | 'REJETE'; commentaire?: string }) =>
+    api.post(`/passation/demandes/${id}/validate`, data),
+  getValidations: (id: string) => api.get(`/passation/demandes/${id}/validations`),
+};
+
+// Fournisseurs
+export const fournisseursApi = {
+  getAll: (filters?: { status?: string; search?: string }) =>
+    api.get('/passation/fournisseurs', { params: filters }),
+  getOne: (id: string) => api.get(`/passation/fournisseurs/${id}`),
+  create: (data: any) => api.post('/passation/fournisseurs', data),
+  update: (id: string, data: any) => api.patch(`/passation/fournisseurs/${id}`, data),
+  remove: (id: string) => api.delete(`/passation/fournisseurs/${id}`),
+  suspend: (id: string, motif?: string) =>
+    api.post(`/passation/fournisseurs/${id}/suspend`, { motif }),
+  blacklist: (id: string, motif: string) =>
+    api.post(`/passation/fournisseurs/${id}/blacklist`, { motif }),
+  activate: (id: string) => api.post(`/passation/fournisseurs/${id}/activate`),
+  addDocument: (id: string, data: any) =>
+    api.post(`/passation/fournisseurs/${id}/documents`, data),
+  removeDocument: (id: string, docId: string) =>
+    api.delete(`/passation/fournisseurs/${id}/documents/${docId}`),
+};
+
+// Procédures
+export const proceduresApi = {
+  getAll: (filters?: { status?: string; methode?: string }) =>
+    api.get('/passation/procedures', { params: filters }),
+  getOne: (id: string) => api.get(`/passation/procedures/${id}`),
+  create: (data: any) => api.post('/passation/procedures', data),
+  update: (id: string, data: any) => api.patch(`/passation/procedures/${id}`, data),
+  remove: (id: string) => api.delete(`/passation/procedures/${id}`),
+  publish: (id: string) => api.post(`/passation/procedures/${id}/publish`),
+  close: (id: string) => api.post(`/passation/procedures/${id}/close`),
+  attribuer: (id: string, data: { soumissionId: string }) =>
+    api.post(`/passation/procedures/${id}/attribuer`, data),
+};
+
+// Soumissions
+export const soumissionsApi = {
+  getAll: (procedureId: string) =>
+    api.get(`/passation/procedures/${procedureId}/soumissions`),
+  getOne: (procedureId: string, id: string) =>
+    api.get(`/passation/procedures/${procedureId}/soumissions/${id}`),
+  create: (procedureId: string, data: any) =>
+    api.post(`/passation/procedures/${procedureId}/soumissions`, data),
+};
+
+// Commissions
+export const commissionsApi = {
+  getAll: () => api.get('/passation/commissions'),
+  getOne: (id: string) => api.get(`/passation/commissions/${id}`),
+  create: (data: any) => api.post('/passation/commissions', data),
+  addMember: (id: string, data: { userId: string; role: string }) =>
+    api.post(`/passation/commissions/${id}/membres`, data),
+  removeMember: (id: string, membreId: string) =>
+    api.delete(`/passation/commissions/${id}/membres/${membreId}`),
+};
+
+// Évaluations
+export const evaluationsApi = {
+  getAll: (procedureId: string) =>
+    api.get(`/passation/procedures/${procedureId}/evaluations`),
+  create: (procedureId: string, data: any) =>
+    api.post(`/passation/procedures/${procedureId}/evaluations`, data),
+  getSynthese: (procedureId: string) =>
+    api.get(`/passation/procedures/${procedureId}/evaluations/synthese`),
+};
+
+// Contrats
+export const contratsApi = {
+  getAll: (filters?: { status?: string; fournisseurId?: string }) =>
+    api.get('/passation/contrats', { params: filters }),
+  getOne: (id: string) => api.get(`/passation/contrats/${id}`),
+  create: (data: any) => api.post('/passation/contrats', data),
+  update: (id: string, data: any) => api.patch(`/passation/contrats/${id}`, data),
+  changeStatus: (id: string, status: string, motif?: string) =>
+    api.post(`/passation/contrats/${id}/status`, { status, motif }),
+  getDashboard: (id: string) => api.get(`/passation/contrats/${id}/dashboard`),
+};
+
+// ============================================================================
+// MESSAGERIE PROFESSIONNELLE
+// ============================================================================
+
+// Conversations
+export const conversationsApi = {
+  getAll: () => api.get('/messagerie/conversations'),
+  getOne: (id: string) => api.get(`/messagerie/conversations/${id}`),
+  create: (data: {
+    titre?: string;
+    type: string;
+    contextId?: string;
+    participantIds: string[];
+  }) => api.post('/messagerie/conversations', data),
+  addParticipant: (id: string, data: { userId: string; role?: string }) =>
+    api.post(`/messagerie/conversations/${id}/participants`, data),
+  removeParticipant: (id: string, userId: string) =>
+    api.delete(`/messagerie/conversations/${id}/participants/${userId}`),
+  archive: (id: string) => api.post(`/messagerie/conversations/${id}/archive`),
+  unarchive: (id: string) => api.post(`/messagerie/conversations/${id}/unarchive`),
+};
+
+// Messages (REST API pour historique, WebSocket pour temps réel)
+export const messagesApi = {
+  getAll: (conversationId: string, params?: { limit?: number; before?: string }) =>
+    api.get(`/messagerie/conversations/${conversationId}/messages`, { params }),
+  send: (conversationId: string, data: {
+    content: string;
+    contentType?: string;
+    parentId?: string;
+    mentionedUserIds?: string[];
+  }) => api.post(`/messagerie/conversations/${conversationId}/messages`, data),
+  edit: (conversationId: string, messageId: string, content: string) =>
+    api.patch(`/messagerie/conversations/${conversationId}/messages/${messageId}`, { content }),
+  remove: (conversationId: string, messageId: string) =>
+    api.delete(`/messagerie/conversations/${conversationId}/messages/${messageId}`),
+  markAsRead: (conversationId: string, messageId: string) =>
+    api.post(`/messagerie/conversations/${conversationId}/messages/${messageId}/read`),
+  addReaction: (conversationId: string, messageId: string, emoji: string) =>
+    api.post(`/messagerie/conversations/${conversationId}/messages/${messageId}/reactions`, {
+      emoji,
+    }),
+  removeReaction: (conversationId: string, messageId: string, reactionId: string) =>
+    api.delete(
+      `/messagerie/conversations/${conversationId}/messages/${messageId}/reactions/${reactionId}`,
+    ),
+};
