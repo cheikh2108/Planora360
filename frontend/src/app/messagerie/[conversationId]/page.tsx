@@ -217,25 +217,23 @@ export default function ConversationPage() {
     setIsUploading(true);
 
     try {
-      // Upload fichiers vers backend
+      // Upload fichiers vers backend (crée automatiquement le message)
       const formData = new FormData();
       selectedFiles.forEach((file) => {
         formData.append('files', file);
       });
 
+      // Ajouter le message optionnel
+      if (messageInput.trim()) {
+        formData.append('content', messageInput.trim());
+      }
+
       // Utiliser URL relative pour que le proxy Next.js redirige vers le backend
       // L'instance api ajoute automatiquement le CSRF token et withCredentials
-      const response = await api.post('/messagerie/upload', formData, {
+      await api.post(`/messagerie/conversations/${conversationId}/upload`, formData, {
         headers: {
           'Content-Type': undefined, // Laisser le navigateur définir multipart/form-data avec boundary
         },
-      });
-
-      // Envoyer message avec fichiers
-      const fileUrls = response.data.files.map((f: any) => f.url).join('\n');
-      await messagesApi.send(conversationId, {
-        content: messageInput.trim() || 'Fichier(s) partagé(s)',
-        contentType: 'TEXT',
       });
 
       // Reset
@@ -408,16 +406,71 @@ export default function ConversationPage() {
                       )}
                     >
                       {!isOwn && message.author && isFirstInGroup && (
-                        <p className="mb-0.5 text-[13px] font-semibold text-emerald-600">
+                        <p className="mb-0.5 text-[11px] font-semibold text-emerald-600">
                           {message.author.firstName} {message.author.lastName}
                         </p>
                       )}
-                      <p className="whitespace-pre-wrap break-words text-[14.5px] leading-[1.4]">
-                        {message.content}
-                      </p>
+
+                      {/* Fichiers attachés */}
+                      {message.attachments && message.attachments.length > 0 && (
+                        <div className="space-y-2 mb-2">
+                          {message.attachments.map((attachment) => {
+                            const isImage = attachment.mimeType.startsWith('image/');
+                            const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+                            const fullUrl = attachment.fileUrl.startsWith('http')
+                              ? attachment.fileUrl
+                              : `${baseUrl}${attachment.fileUrl}`;
+
+                            return (
+                              <div key={attachment.id} className="rounded-lg overflow-hidden bg-slate-50 dark:bg-slate-800">
+                                {isImage ? (
+                                  <a href={fullUrl} target="_blank" rel="noopener noreferrer">
+                                    <img
+                                      src={fullUrl}
+                                      alt={attachment.fileName}
+                                      className="max-w-[280px] max-h-[200px] object-cover hover:opacity-90 transition-opacity cursor-pointer"
+                                    />
+                                  </a>
+                                ) : (
+                                  <a
+                                    href={fullUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className={cn(
+                                      'flex items-center gap-2 px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors',
+                                      isOwn ? 'text-white hover:bg-white/10' : 'text-slate-700'
+                                    )}
+                                  >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                    </svg>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-[13px] font-medium truncate">{attachment.fileName}</p>
+                                      <p className="text-[11px] opacity-70">
+                                        {(attachment.fileSize / 1024 / 1024).toFixed(2)} MB
+                                      </p>
+                                    </div>
+                                    <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                  </a>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* Contenu texte */}
+                      {message.content && (
+                        <p className="whitespace-pre-wrap break-words text-[13.5px] leading-[1.4]">
+                          {message.content}
+                        </p>
+                      )}
+
                       <div
                         className={cn(
-                          'mt-1 flex items-center gap-1.5 text-[11px]',
+                          'mt-1 flex items-center gap-1.5 text-[10px]',
                           isOwn ? 'text-emerald-200/80' : 'text-slate-500',
                         )}
                       >

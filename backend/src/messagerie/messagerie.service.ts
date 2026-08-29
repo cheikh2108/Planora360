@@ -245,6 +245,80 @@ export class MessagerieService {
   }
 
   /**
+   * Envoyer un message avec fichiers attachés
+   */
+  async sendMessageWithAttachments(
+    conversationId: string,
+    authorId: string,
+    content: string,
+    attachments: Array<{
+      fileName: string;
+      fileUrl: string;
+      fileSize: number;
+      mimeType: string;
+    }>,
+  ) {
+    // Vérifier que l'utilisateur est participant
+    const participant = await this.prisma.conversationParticipant.findFirst({
+      where: {
+        conversationId,
+        userId: authorId,
+        leftAt: null,
+      },
+    });
+
+    if (!participant) {
+      throw new ForbiddenException('Vous n\'êtes pas participant de cette conversation');
+    }
+
+    // Créer le message avec les attachments en transaction
+    const message = await this.prisma.message.create({
+      data: {
+        conversationId,
+        authorId,
+        content,
+        contentType: 'TEXT',
+        attachments: {
+          create: attachments,
+        },
+      },
+      include: {
+        author: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+        attachments: true,
+        reactions: true,
+        mentions: true,
+      },
+    });
+
+    // Mettre à jour lastMessageAt de la conversation
+    await this.prisma.conversation.update({
+      where: { id: conversationId },
+      data: { lastMessageAt: new Date() },
+    });
+
+    // Incrémenter unreadCount pour tous les participants sauf l'auteur
+    await this.prisma.conversationParticipant.updateMany({
+      where: {
+        conversationId,
+        userId: { not: authorId },
+        leftAt: null,
+      },
+      data: {
+        unreadCount: { increment: 1 },
+      },
+    });
+
+    return message;
+  }
+
+  /**
    * Modifier un message
    */
   async editMessage(messageId: string, authorId: string, content: string) {

@@ -6,9 +6,12 @@ import {
   UploadedFiles,
   BadRequestException,
   Req,
+  Body,
+  Param,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { MessagerieService } from './messagerie.service';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { existsSync, mkdirSync } from 'fs';
@@ -31,10 +34,12 @@ const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.pdf', '.
 // Limite de taille : 10MB par fichier
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
-@Controller('messagerie/upload')
+@Controller('messagerie')
 @UseGuards(JwtAuthGuard)
 export class UploadController {
-  @Post()
+  constructor(private readonly messagerieService: MessagerieService) {}
+
+  @Post('conversations/:conversationId/upload')
   @UseInterceptors(
     FilesInterceptor('files', 3, {
       // Max 3 fichiers
@@ -80,21 +85,24 @@ export class UploadController {
       },
     }),
   )
-  async uploadFiles(@UploadedFiles() files: Express.Multer.File[], @Req() req) {
+  async uploadFiles(
+    @Param('conversationId') conversationId: string,
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body('content') content: string,
+    @Req() req,
+  ) {
     if (!files || files.length === 0) {
       throw new BadRequestException('Aucun fichier fourni');
     }
 
     // Double validation de sécurité côté serveur
     for (const file of files) {
-      // Vérifier taille
       if (file.size > MAX_FILE_SIZE) {
         throw new BadRequestException(
           `Fichier trop volumineux: ${file.originalname} (max 10MB)`,
         );
       }
 
-      // Vérifier MIME type
       if (!ALLOWED_MIME_TYPES.includes(file.mimetype)) {
         throw new BadRequestException(
           `Type non autorisé: ${file.originalname} (${file.mimetype})`,
@@ -102,17 +110,25 @@ export class UploadController {
       }
     }
 
-    // Retourner les infos des fichiers uploadés
+    // Créer le message avec les fichiers attachés
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const attachments = files.map((file) => ({
+      fileName: file.originalname,
+      fileUrl: `/uploads/messagerie/${file.filename}`,
+      fileSize: file.size,
+      mimeType: file.mimetype,
+    }));
+
+    const message = await this.messagerieService.sendMessageWithAttachments(
+      conversationId,
+      req.user.id,
+      content || 'Fichier(s) partagé(s)',
+      attachments,
+    );
+
     return {
       success: true,
-      files: files.map((file) => ({
-        filename: file.filename,
-        originalName: file.originalname,
-        mimeType: file.mimetype,
-        size: file.size,
-        path: `/uploads/messagerie/${file.filename}`,
-        url: `${req.protocol}://${req.get('host')}/uploads/messagerie/${file.filename}`,
-      })),
+      message,
     };
   }
 }

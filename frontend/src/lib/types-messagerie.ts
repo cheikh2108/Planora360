@@ -75,10 +75,14 @@ export interface Conversation {
 export interface MessageAttachment {
   id: string;
   messageId: string;
-  nom: string;
-  url: string;
+  fileName: string;
+  fileUrl: string;
+  fileSize: number;
   mimeType: string;
-  size: number;
+  thumbnailUrl?: string | null;
+  width?: number | null;
+  height?: number | null;
+  duration?: number | null;
   uploadedAt: string;
 }
 
