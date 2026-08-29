@@ -219,10 +219,18 @@ export default function MessagingPage() {
         ) : filteredConversations && filteredConversations.length > 0 ? (
           <div className="space-y-2">
             {filteredConversations.map((conversation) => (
-              <button
+              <div
                 key={conversation.id}
+                role="button"
+                tabIndex={0}
                 onClick={() => router.push(`/messagerie/${conversation.id}`)}
-                className="group w-full rounded-lg bg-white p-4 text-left shadow-sm transition-all hover:shadow-md"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    router.push(`/messagerie/${conversation.id}`);
+                  }
+                }}
+                className="group w-full cursor-pointer rounded-lg bg-white p-4 text-left shadow-sm transition-all hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <div className="flex items-start gap-4">
                   {/* Avatar */}
@@ -306,7 +314,7 @@ export default function MessagingPage() {
                     )}
                   </div>
                 </div>
-              </button>
+              </div>
             ))}
           </div>
         ) : (
