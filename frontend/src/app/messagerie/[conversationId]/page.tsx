@@ -19,6 +19,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
 import { formatMessageTime } from '@/lib/utils';
+import { FileUpload } from '@/components/messagerie/FileUpload';
 import {
   ArrowLeft,
   Send,
@@ -28,8 +29,10 @@ import {
   Users,
   Archive,
   Info,
+  X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import axios from 'axios';
 
 export default function ConversationPage() {
   const params = useParams();
@@ -43,6 +46,9 @@ export default function ConversationPage() {
   const [showInfoPanel, setShowInfoPanel] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+  const [showFileUpload, setShowFileUpload] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -201,6 +207,48 @@ export default function ConversationPage() {
   const handleSend = () => {
     if (!messageInput.trim()) return;
     sendMutation.mutate(messageInput);
+  };
+
+  // Handle file upload
+  const handleUploadFiles = async () => {
+    if (selectedFiles.length === 0) return;
+
+    setIsUploading(true);
+
+    try {
+      // Upload fichiers vers backend
+      const formData = new FormData();
+      selectedFiles.forEach((file) => {
+        formData.append('files', file);
+      });
+
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/messagerie/upload`,
+        formData,
+        {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          withCredentials: true,
+        }
+      );
+
+      // Envoyer message avec fichiers
+      const fileUrls = response.data.files.map((f: any) => f.url).join('\n');
+      await messagesApi.send(conversationId, {
+        content: messageInput.trim() || 'Fichier(s) partagé(s)',
+        contentType: 'TEXT',
+      });
+
+      // Reset
+      setSelectedFiles([]);
+      setMessageInput('');
+      setShowFileUpload(false);
+      queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
+    } catch (error) {
+      console.error('Erreur upload:', error);
+      alert('Erreur lors de l\'upload des fichiers');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   // Auto scroll on mount
@@ -432,20 +480,8 @@ export default function ConversationPage() {
       {/* Input */}
       <div className="relative border-t border-slate-200/80 bg-white/95 backdrop-blur-xl px-6 py-4">
         <div className="flex items-end gap-3">
-          <input
-            type="file"
-            id="file-upload"
-            className="hidden"
-            multiple
-            accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx"
-            onChange={(e) => {
-              const files = Array.from(e.target.files || []);
-              console.log('Fichiers sélectionnés:', files);
-              // TODO: Implémenter upload
-            }}
-          />
           <button
-            onClick={() => document.getElementById('file-upload')?.click()}
+            onClick={() => setShowFileUpload(true)}
             className="rounded-full p-2.5 text-slate-600 transition-all duration-200 hover:bg-slate-100 hover:text-slate-900 active:scale-90"
           >
             <Paperclip className="h-5 w-5" />
@@ -664,6 +700,95 @@ export default function ConversationPage() {
             </div>
           </div>
         </div>
+        </>
+      )}
+
+      {/* Modal Upload Fichiers */}
+      {showFileUpload && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm animate-in fade-in-0 duration-200"
+            onClick={() => {
+              if (!isUploading) {
+                setShowFileUpload(false);
+                setSelectedFiles([]);
+              }
+            }}
+          />
+
+          {/* Modal */}
+          <div className="fixed inset-x-4 top-1/2 z-50 max-w-2xl -translate-y-1/2 mx-auto animate-in zoom-in-95 fade-in-0 slide-in-from-bottom-4 duration-300">
+            <div className="rounded-2xl border border-slate-200/80 bg-white shadow-2xl">
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-slate-200/80 px-6 py-4">
+                <h3 className="text-[16px] font-bold text-slate-900">Envoyer des fichiers</h3>
+                <button
+                  onClick={() => {
+                    if (!isUploading) {
+                      setShowFileUpload(false);
+                      setSelectedFiles([]);
+                    }
+                  }}
+                  disabled={isUploading}
+                  className="rounded-full p-2 text-slate-400 transition-all duration-200 hover:bg-slate-100 hover:text-slate-600 active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="p-6">
+                <FileUpload
+                  onFilesSelected={setSelectedFiles}
+                  maxFiles={3}
+                  maxSizeMB={10}
+                />
+
+                {/* Message optionnel */}
+                {selectedFiles.length > 0 && (
+                  <div className="mt-4">
+                    <label className="mb-2 block text-[13px] font-semibold text-slate-700">
+                      Message (optionnel)
+                    </label>
+                    <Textarea
+                      value={messageInput}
+                      onChange={(e) => setMessageInput(e.target.value)}
+                      placeholder="Ajouter un message avec vos fichiers..."
+                      className="w-full resize-none rounded-xl border-slate-200 px-4 py-3 text-[14px] focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                      style={{ minHeight: '80px', maxHeight: '120px' }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center justify-end gap-3 border-t border-slate-200/80 px-6 py-4">
+                <button
+                  onClick={() => {
+                    setShowFileUpload(false);
+                    setSelectedFiles([]);
+                  }}
+                  disabled={isUploading}
+                  className="rounded-xl px-4 py-2 text-[14px] font-semibold text-slate-600 transition-all duration-200 hover:bg-slate-100 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={handleUploadFiles}
+                  disabled={selectedFiles.length === 0 || isUploading}
+                  className={cn(
+                    "rounded-xl px-5 py-2 text-[14px] font-semibold text-white transition-all duration-200 active:scale-95",
+                    selectedFiles.length > 0 && !isUploading
+                      ? "bg-emerald-500 shadow-lg shadow-emerald-500/30 hover:bg-emerald-600"
+                      : "bg-slate-300 cursor-not-allowed"
+                  )}
+                >
+                  {isUploading ? 'Envoi en cours...' : `Envoyer (${selectedFiles.length})`}
+                </button>
+              </div>
+            </div>
+          </div>
         </>
       )}
     </div>
