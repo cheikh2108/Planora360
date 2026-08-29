@@ -59,6 +59,9 @@ let OrganizationsController = class OrganizationsController {
     restore(id) {
         return this.organizationsService.restore(id);
     }
+    hardDelete(id) {
+        return this.organizationsService.hardDelete(id);
+    }
 };
 exports.OrganizationsController = OrganizationsController;
 __decorate([
@@ -154,6 +157,15 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], OrganizationsController.prototype, "restore", null);
+__decorate([
+    (0, common_1.Delete)(':id/hard'),
+    (0, roles_decorator_1.Roles)('Super administrateur'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], OrganizationsController.prototype, "hardDelete", null);
 exports.OrganizationsController = OrganizationsController = __decorate([
     (0, common_1.Controller)('organizations'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),

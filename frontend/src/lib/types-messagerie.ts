@@ -8,12 +8,11 @@
 // ============================================================================
 
 export type ConversationType =
-  | 'DIRECTE'
-  | 'GROUPE'
-  | 'PROJET'
-  | 'ACTIVITE'
-  | 'DEMANDE'
-  | 'CONTRAT';
+  | 'DIRECT'
+  | 'GROUP'
+  | 'CHANNEL_PROJECT'
+  | 'CHANNEL_TEAM'
+  | 'CONTEXTUAL';
 
 export type ConversationRole = 'ADMIN' | 'MEMBER';
 

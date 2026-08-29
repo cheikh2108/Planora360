@@ -16,7 +16,7 @@ import { CreatePpmDto } from './dto/create-ppm.dto';
 import { UpdatePpmDto } from './dto/update-ppm.dto';
 import { StatusPPM } from '@prisma/client';
 
-@Controller('api/passation/ppm')
+@Controller('passation/ppm')
 @UseGuards(JwtAuthGuard)
 export class PpmController {
   constructor(private readonly ppmService: PpmService) {}

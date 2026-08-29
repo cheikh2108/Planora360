@@ -14,7 +14,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { DemandesService } from './demandes.service';
 import { ValidationDecision } from '@prisma/client';
 
-@Controller('api/passation/demandes')
+@Controller('passation/demandes')
 @UseGuards(JwtAuthGuard)
 export class DemandesController {
   constructor(private readonly demandesService: DemandesService) {}

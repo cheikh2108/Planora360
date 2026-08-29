@@ -55,31 +55,34 @@ let HttpExceptionFilter = HttpExceptionFilter_1 = class HttpExceptionFilter {
         const message = exception instanceof common_1.HttpException
             ? exception.getResponse()
             : 'Une erreur interne est survenue';
+        const shouldIgnoreForSentry = this.shouldIgnoreForSentry(exception, status);
         if (status >= 500) {
             this.logger.error(`${request.method} ${request.url}`, exception instanceof Error ? exception.stack : exception);
-            Sentry.withScope((scope) => {
-                scope.setContext('http', {
-                    method: request.method,
-                    url: request.url,
-                    query: request.query,
-                    statusCode: status,
-                });
-                if (request.user) {
-                    scope.setUser({
-                        id: request.user.sub || request.user.id,
-                        email: request.user.email,
+            if (!shouldIgnoreForSentry) {
+                Sentry.withScope((scope) => {
+                    scope.setContext('http', {
+                        method: request.method,
+                        url: request.url,
+                        query: request.query,
+                        statusCode: status,
                     });
-                }
-                if (request.organizationId) {
-                    scope.setTag('organizationId', request.organizationId);
-                }
-                if (exception instanceof Error) {
-                    Sentry.captureException(exception);
-                }
-                else {
-                    Sentry.captureMessage(`Unhandled error: ${JSON.stringify(exception)}`, 'error');
-                }
-            });
+                    if (request.user) {
+                        scope.setUser({
+                            id: request.user.sub || request.user.id,
+                            email: request.user.email,
+                        });
+                    }
+                    if (request.organizationId) {
+                        scope.setTag('organizationId', request.organizationId);
+                    }
+                    if (exception instanceof Error) {
+                        Sentry.captureException(exception);
+                    }
+                    else {
+                        Sentry.captureMessage(`Unhandled error: ${JSON.stringify(exception)}`, 'error');
+                    }
+                });
+            }
         }
         const errorResponse = {
             statusCode: status,
@@ -91,6 +94,20 @@ let HttpExceptionFilter = HttpExceptionFilter_1 = class HttpExceptionFilter {
                 : {}),
         };
         response.status(status).json(errorResponse);
+    }
+    shouldIgnoreForSentry(exception, status) {
+        if (status === common_1.HttpStatus.SERVICE_UNAVAILABLE) {
+            if (exception instanceof common_1.ServiceUnavailableException) {
+                const response = exception.getResponse();
+                if (typeof response === 'object' && 'message' in response) {
+                    const message = response.message;
+                    if (typeof message === 'string' && message.toLowerCase().includes('maintenance')) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 };
 exports.HttpExceptionFilter = HttpExceptionFilter;

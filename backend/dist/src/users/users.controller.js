@@ -41,14 +41,23 @@ let UsersController = class UsersController {
     findAll(user, page, limit) {
         return this.usersService.findAll(user.organizationId, page ? parseInt(page) : 1, limit ? parseInt(limit) : 10);
     }
+    findDeleted(user) {
+        return this.usersService.findDeleted(user.organizationId);
+    }
     findOne(id, user) {
         return this.usersService.findOne(id, user.organizationId);
+    }
+    restore(id, user) {
+        return this.usersService.restore(id, user.organizationId);
     }
     update(id, dto, user) {
         return this.usersService.update(id, dto, user.organizationId);
     }
     remove(id, user) {
         return this.usersService.remove(id, user.organizationId);
+    }
+    hardDelete(id, user) {
+        return this.usersService.hardDelete(id, user.organizationId);
     }
 };
 exports.UsersController = UsersController;
@@ -94,6 +103,14 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "findAll", null);
 __decorate([
+    (0, common_1.Get)('deleted'),
+    (0, roles_decorator_1.Roles)('Super administrateur', 'Administrateur'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "findDeleted", null);
+__decorate([
     (0, common_1.Get)(':id'),
     (0, roles_decorator_1.Roles)('Super administrateur', 'Administrateur', 'Coordinateur'),
     __param(0, (0, common_1.Param)('id')),
@@ -102,6 +119,16 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "findOne", null);
+__decorate([
+    (0, common_1.Post)(':id/restore'),
+    (0, roles_decorator_1.Roles)('Super administrateur', 'Administrateur'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "restore", null);
 __decorate([
     (0, common_1.Patch)(':id'),
     (0, roles_decorator_1.Roles)('Super administrateur', 'Administrateur'),
@@ -122,6 +149,16 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "remove", null);
+__decorate([
+    (0, common_1.Delete)(':id/hard'),
+    (0, roles_decorator_1.Roles)('Super administrateur', 'Administrateur'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "hardDelete", null);
 exports.UsersController = UsersController = __decorate([
     (0, common_1.Controller)('users'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),

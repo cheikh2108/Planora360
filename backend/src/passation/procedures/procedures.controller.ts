@@ -13,7 +13,7 @@ import {
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { ProceduresService } from './procedures.service';
 
-@Controller('api/passation/procedures')
+@Controller('passation/procedures')
 @UseGuards(JwtAuthGuard)
 export class ProceduresController {
   constructor(private readonly proceduresService: ProceduresService) {}

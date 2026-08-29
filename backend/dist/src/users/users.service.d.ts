@@ -37,6 +37,58 @@ export declare class UsersService {
     findOne(id: string, organizationId: string): Promise<any>;
     update(id: string, dto: UpdateUserDto, organizationId: string): Promise<any>;
     remove(id: string, organizationId: string): Promise<void>;
+    findDeleted(organizationId: string): Promise<({
+        role: {
+            id: string;
+            organizationId: string | null;
+            name: string;
+            permissions: import("@prisma/client/runtime/client").JsonValue;
+        };
+    } & {
+        id: string;
+        email: string;
+        organizationId: string;
+        roleId: string;
+        firstName: string;
+        lastName: string;
+        passwordHash: string;
+        twoFactorSecret: string | null;
+        isTwoFactorEnabled: boolean;
+        isActive: boolean;
+        mustChangePassword: boolean;
+        lastLoginAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        deletedAt: Date | null;
+    })[]>;
+    restore(id: string, organizationId: string): Promise<{
+        role: {
+            id: string;
+            organizationId: string | null;
+            name: string;
+            permissions: import("@prisma/client/runtime/client").JsonValue;
+        };
+    } & {
+        id: string;
+        email: string;
+        organizationId: string;
+        roleId: string;
+        firstName: string;
+        lastName: string;
+        passwordHash: string;
+        twoFactorSecret: string | null;
+        isTwoFactorEnabled: boolean;
+        isActive: boolean;
+        mustChangePassword: boolean;
+        lastLoginAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        deletedAt: Date | null;
+    }>;
+    hardDelete(id: string, organizationId: string): Promise<void>;
+    cleanupOldDeletedUsers(): Promise<{
+        count: number;
+    }>;
     findRoles(organizationId?: string, callerRole?: string): import(".prisma/client").Prisma.PrismaPromise<{
         id: string;
         organizationId: string | null;

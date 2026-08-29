@@ -76,6 +76,34 @@ let SchedulerService = SchedulerService_1 = class SchedulerService {
         this.logger.log(`✅ ${organizations.length} organisation(s) supprimée(s) définitivement :`);
         organizations.forEach(org => this.logger.log(`   - ${org.name} (${org.id})`));
     }
+    async cleanupOldDeletedUsers() {
+        this.logger.log('Démarrage du nettoyage des utilisateurs supprimés...');
+        try {
+            const ninetyDaysAgo = new Date();
+            ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+            const deletedUsers = await this.prisma.user.findMany({
+                where: {
+                    deletedAt: { lte: ninetyDaysAgo },
+                    NOT: { deletedAt: null },
+                },
+                select: { id: true, email: true, firstName: true, lastName: true },
+            });
+            if (deletedUsers.length === 0) {
+                this.logger.log('Aucun utilisateur à nettoyer.');
+                return;
+            }
+            const result = await this.prisma.user.deleteMany({
+                where: {
+                    id: { in: deletedUsers.map(u => u.id) },
+                },
+            });
+            this.logger.log(`✅ ${result.count} utilisateur(s) supprimé(s) définitivement (> 90 jours) :`);
+            deletedUsers.forEach(user => this.logger.log(`   - ${user.firstName} ${user.lastName} (${user.email})`));
+        }
+        catch (error) {
+            this.logger.error('Erreur lors du nettoyage des utilisateurs:', error);
+        }
+    }
 };
 exports.SchedulerService = SchedulerService;
 __decorate([
@@ -90,6 +118,12 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], SchedulerService.prototype, "cleanupOldDeletedOrganizations", null);
+__decorate([
+    (0, schedule_1.Cron)('0 4 * * *'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], SchedulerService.prototype, "cleanupOldDeletedUsers", null);
 exports.SchedulerService = SchedulerService = SchedulerService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,

@@ -16,7 +16,7 @@ import { CreateFournisseurDto } from './dto/create-fournisseur.dto';
 import { UpdateFournisseurDto } from './dto/update-fournisseur.dto';
 import { StatusFournisseur } from '@prisma/client';
 
-@Controller('api/passation/fournisseurs')
+@Controller('passation/fournisseurs')
 @UseGuards(JwtAuthGuard)
 export class FournisseursController {
   constructor(private readonly fournisseursService: FournisseursService) {}

@@ -1,0 +1,14 @@
+export declare const VALIDATION_THRESHOLDS: {
+    readonly TECHNICAL_VALIDATION: 5000;
+    readonly ADMINISTRATIVE_VALIDATION: 50000;
+};
+export declare const VALIDATION_STEPS: {
+    readonly HIERARCHICAL: "VERIFICATION_HIERARCHIQUE";
+    readonly TECHNICAL: "VALIDATION_TECHNIQUE";
+    readonly ADMINISTRATIVE: "VALIDATION_ADMINISTRATIVE";
+};
+export declare const VALIDATION_ORDER: {
+    readonly HIERARCHICAL: 1;
+    readonly TECHNICAL: 2;
+    readonly ADMINISTRATIVE: 3;
+};

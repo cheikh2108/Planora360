@@ -1,0 +1,18 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.VALIDATION_ORDER = exports.VALIDATION_STEPS = exports.VALIDATION_THRESHOLDS = void 0;
+exports.VALIDATION_THRESHOLDS = {
+    TECHNICAL_VALIDATION: 5000,
+    ADMINISTRATIVE_VALIDATION: 50000,
+};
+exports.VALIDATION_STEPS = {
+    HIERARCHICAL: 'VERIFICATION_HIERARCHIQUE',
+    TECHNICAL: 'VALIDATION_TECHNIQUE',
+    ADMINISTRATIVE: 'VALIDATION_ADMINISTRATIVE',
+};
+exports.VALIDATION_ORDER = {
+    HIERARCHICAL: 1,
+    TECHNICAL: 2,
+    ADMINISTRATIVE: 3,
+};
+//# sourceMappingURL=validation-thresholds.js.map

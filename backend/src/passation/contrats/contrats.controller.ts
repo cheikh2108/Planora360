@@ -3,7 +3,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { ContratsService } from './contrats.service';
 import { StatusContrat } from '@prisma/client';
 
-@Controller('api/passation/contrats')
+@Controller('passation/contrats')
 @UseGuards(JwtAuthGuard)
 export class ContratsController {
   constructor(private readonly contratsService: ContratsService) {}

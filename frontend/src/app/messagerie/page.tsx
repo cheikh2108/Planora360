@@ -13,7 +13,7 @@ import { Modal } from '@/components/ui/modal';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
-import { formatDate } from '@/lib/utils';
+import { formatDate, cn } from '@/lib/utils';
 import { MessageSquare, Plus, Search, Users, Archive, Circle, X } from 'lucide-react';
 
 export default function MessagingPage() {
@@ -31,7 +31,7 @@ export default function MessagingPage() {
     contextId: string;
     selectedParticipants: string[];
   }>({
-    type: 'DIRECTE',
+    type: 'DIRECT',
     titre: '',
     contextId: '',
     selectedParticipants: [],
@@ -102,7 +102,7 @@ export default function MessagingPage() {
       success('Conversation créée avec succès');
       setShowNewConversationModal(false);
       setFormData({
-        type: 'DIRECTE',
+        type: 'DIRECT',
         titre: '',
         contextId: '',
         selectedParticipants: [],
@@ -121,6 +121,11 @@ export default function MessagingPage() {
       return;
     }
 
+    // Validation pour DIRECT: exactement 1 participant
+    if (formData.type === 'DIRECT' && formData.selectedParticipants.length !== 1) {
+      return;
+    }
+
     createMutation.mutate({
       titre: formData.titre || undefined,
       type: formData.type,
@@ -131,17 +136,27 @@ export default function MessagingPage() {
 
   // Toggle participant selection
   const toggleParticipant = (userId: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      selectedParticipants: prev.selectedParticipants.includes(userId)
+    setFormData((prev) => {
+      const isSelected = prev.selectedParticipants.includes(userId);
+      const newSelection = isSelected
         ? prev.selectedParticipants.filter((id) => id !== userId)
-        : [...prev.selectedParticipants, userId],
-    }));
+        : [...prev.selectedParticipants, userId];
+
+      // Pour DIRECT, limiter à 1 participant
+      if (prev.type === 'DIRECT' && newSelection.length > 1) {
+        return prev; // Ne pas ajouter si déjà 1 participant
+      }
+
+      return {
+        ...prev,
+        selectedParticipants: newSelection,
+      };
+    });
   };
 
   const getConversationTitle = (conv: Conversation) => {
     if (conv.titre) return conv.titre;
-    if (conv.type === 'DIRECTE') {
+    if (conv.type === 'DIRECT') {
       const otherParticipant = conv.participants?.[0];
       return otherParticipant?.user
         ? `${otherParticipant.user.firstName} ${otherParticipant.user.lastName}`
@@ -213,7 +228,7 @@ export default function MessagingPage() {
                   {/* Avatar */}
                   <div className="flex-shrink-0">
                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                      {conversation.type === 'DIRECTE' ? (
+                      {conversation.type === 'DIRECT' ? (
                         <MessageSquare className="h-6 w-6" />
                       ) : (
                         <Users className="h-6 w-6" />
@@ -322,7 +337,7 @@ export default function MessagingPage() {
           onClose={() => {
             setShowNewConversationModal(false);
             setFormData({
-              type: 'DIRECTE',
+              type: 'DIRECT',
               titre: '',
               contextId: '',
               selectedParticipants: [],
@@ -339,47 +354,82 @@ export default function MessagingPage() {
               <select
                 value={formData.type}
                 onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, type: e.target.value as ConversationType }))
+                  setFormData((prev) => ({
+                    ...prev,
+                    type: e.target.value as ConversationType,
+                    selectedParticipants: [], // Réinitialiser les participants lors du changement de type
+                  }))
                 }
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
-                <option value="DIRECTE">Conversation directe</option>
-                <option value="GROUPE">Groupe</option>
-                <option value="PROJET">Projet</option>
-                <option value="ACTIVITE">Activité</option>
-                <option value="DEMANDE">Demande d'achat</option>
-                <option value="CONTRAT">Contrat</option>
+                <option value="DIRECT">Conversation directe (1-to-1)</option>
+                <option value="GROUP">Groupe</option>
+                <option value="CHANNEL_PROJECT">Canal Projet</option>
+                <option value="CHANNEL_TEAM">Canal Équipe</option>
+                <option value="CONTEXTUAL">Contextuelle</option>
               </select>
+              {formData.type === 'DIRECT' && (
+                <p className="mt-1 text-xs text-amber-600">
+                  Une conversation directe est limitée à 2 personnes (vous + 1 autre)
+                </p>
+              )}
             </div>
 
-            {/* Titre (optionnel) */}
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">
-                Titre (optionnel)
-              </label>
-              <Input
-                type="text"
-                placeholder="Ex: Discussion projet Q2"
-                value={formData.titre}
-                onChange={(e) => setFormData((prev) => ({ ...prev, titre: e.target.value }))}
-              />
-              <p className="mt-1 text-xs text-slate-500">
-                Laissez vide pour générer automatiquement
-              </p>
-            </div>
-
-            {/* Context ID (pour types contextuels) */}
-            {['PROJET', 'ACTIVITE', 'DEMANDE', 'CONTRAT'].includes(formData.type) && (
+            {/* Titre (conditionnel selon le type) */}
+            {formData.type !== 'DIRECT' && (
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-700">
-                  ID {formData.type.toLowerCase()} (optionnel)
+                  Titre {formData.type === 'CONTEXTUAL' ? '(basé sur le contexte)' : '(recommandé)'}
                 </label>
+                <Input
+                  type="text"
+                  placeholder={
+                    formData.type === 'GROUP'
+                      ? 'Ex: Discussion équipe marketing'
+                      : formData.type === 'CHANNEL_PROJECT'
+                        ? 'Ex: Projet Q2 - Planning'
+                        : formData.type === 'CHANNEL_TEAM'
+                          ? 'Ex: Équipe Dev - Général'
+                          : 'Ex: Titre de la conversation'
+                  }
+                  value={formData.titre}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, titre: e.target.value }))}
+                />
+                <p className="mt-1 text-xs text-slate-500">
+                  Recommandé pour une meilleure organisation
+                </p>
+              </div>
+            )}
+
+            {/* Context ID (uniquement pour CONTEXTUAL) */}
+            {formData.type === 'CONTEXTUAL' && (
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700">
+                  Contexte
+                </label>
+                <select
+                  className="mb-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  onChange={(e) => {
+                    // Logique pour sélectionner le type de contexte
+                    const contextType = e.target.value;
+                    // À implémenter: charger les entités du type sélectionné
+                  }}
+                >
+                  <option value="">Sélectionnez un type de contexte</option>
+                  <option value="projet">Projet</option>
+                  <option value="activite">Activité</option>
+                  <option value="procedure">Procédure</option>
+                  <option value="contrat">Contrat</option>
+                </select>
                 <Input
                   type="text"
                   placeholder="ID de l'entité liée"
                   value={formData.contextId}
                   onChange={(e) => setFormData((prev) => ({ ...prev, contextId: e.target.value }))}
                 />
+                <p className="mt-1 text-xs text-slate-500">
+                  Lié à un projet, activité, procédure ou contrat spécifique
+                </p>
               </div>
             )}
 
@@ -388,27 +438,51 @@ export default function MessagingPage() {
               <label className="mb-2 block text-sm font-medium text-slate-700">
                 Participants <span className="text-red-500">*</span>
               </label>
+              {formData.type === 'DIRECT' && (
+                <p className="mb-2 text-xs text-slate-600">
+                  Sélectionnez 1 personne pour créer une conversation directe
+                </p>
+              )}
+              {formData.type !== 'DIRECT' && (
+                <p className="mb-2 text-xs text-slate-600">
+                  Sélectionnez au moins 2 personnes pour créer un groupe
+                </p>
+              )}
               <div className="max-h-64 space-y-2 overflow-y-auto rounded-lg border border-slate-200 p-3">
                 {users && users.length > 0 ? (
-                  users.map((user) => (
-                    <label
-                      key={user.id}
-                      className="flex cursor-pointer items-center gap-3 rounded-lg p-2 hover:bg-slate-50"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={formData.selectedParticipants.includes(user.id)}
-                        onChange={() => toggleParticipant(user.id)}
-                        className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                      />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-slate-900">
-                          {user.firstName} {user.lastName}
-                        </p>
-                        <p className="text-xs text-slate-500">{user.email}</p>
-                      </div>
-                    </label>
-                  ))
+                  users.map((user) => {
+                    const isSelected = formData.selectedParticipants.includes(user.id);
+                    const isDisabled =
+                      formData.type === 'DIRECT' &&
+                      !isSelected &&
+                      formData.selectedParticipants.length >= 1;
+
+                    return (
+                      <label
+                        key={user.id}
+                        className={cn(
+                          'flex cursor-pointer items-center gap-3 rounded-lg p-2',
+                          isDisabled
+                            ? 'cursor-not-allowed opacity-50'
+                            : 'hover:bg-slate-50',
+                        )}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleParticipant(user.id)}
+                          disabled={isDisabled}
+                          className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed"
+                        />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-slate-900">
+                            {user.firstName} {user.lastName}
+                          </p>
+                          <p className="text-xs text-slate-500">{user.email}</p>
+                        </div>
+                      </label>
+                    );
+                  })
                 ) : (
                   <p className="text-center text-sm text-slate-500">Aucun utilisateur disponible</p>
                 )}
@@ -445,7 +519,7 @@ export default function MessagingPage() {
                 onClick={() => {
                   setShowNewConversationModal(false);
                   setFormData({
-                    type: 'DIRECTE',
+                    type: 'DIRECT',
                     titre: '',
                     contextId: '',
                     selectedParticipants: [],
@@ -457,7 +531,10 @@ export default function MessagingPage() {
               <Button
                 onClick={handleCreateConversation}
                 disabled={
-                  formData.selectedParticipants.length === 0 || createMutation.isPending
+                  formData.selectedParticipants.length === 0 ||
+                  (formData.type === 'DIRECT' && formData.selectedParticipants.length !== 1) ||
+                  (formData.type !== 'DIRECT' && formData.selectedParticipants.length < 1) ||
+                  createMutation.isPending
                 }
               >
                 {createMutation.isPending ? 'Création...' : 'Créer la conversation'}

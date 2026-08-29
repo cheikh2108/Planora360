@@ -119,4 +119,8 @@ export declare class OrganizationsController {
         message: string;
         usersRestored: number;
     }>;
+    hardDelete(id: string): Promise<{
+        message: string;
+        usersDeleted: number;
+    }>;
 }

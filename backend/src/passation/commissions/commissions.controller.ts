@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Param, Delete, UseGuards, Req } from '@nes
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CommissionsService } from './commissions.service';
 
-@Controller('api/passation/commissions')
+@Controller('passation/commissions')
 @UseGuards(JwtAuthGuard)
 export class CommissionsController {
   constructor(private readonly commissionsService: CommissionsService) {}

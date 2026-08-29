@@ -10,4 +10,5 @@ export declare class SchedulerService {
     private findExpiredOrganizations;
     private permanentlyDeleteOrganizations;
     private logDeletedOrganizations;
+    cleanupOldDeletedUsers(): Promise<void>;
 }

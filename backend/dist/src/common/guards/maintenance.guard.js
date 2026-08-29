@@ -12,21 +12,28 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MaintenanceGuard = void 0;
 const common_1 = require("@nestjs/common");
 const core_1 = require("@nestjs/core");
+const jwt_1 = require("@nestjs/jwt");
+const config_1 = require("@nestjs/config");
 const prisma_service_1 = require("../prisma/prisma.service");
 let MaintenanceGuard = class MaintenanceGuard {
     prisma;
     reflector;
-    constructor(prisma, reflector) {
+    jwtService;
+    config;
+    constructor(prisma, reflector, jwtService, config) {
         this.prisma = prisma;
         this.reflector = reflector;
+        this.jwtService = jwtService;
+        this.config = config;
     }
     async canActivate(context) {
         const request = context.switchToHttp().getRequest();
         const url = request.url;
-        if (url.match(/^\/(health|api\/auth)/)) {
+        if (url.match(/^\/(health|api\/auth|api\/maintenance)/)) {
             return true;
         }
-        if (url.match(/^\/api\/(super-admin|admin|maintenance)/)) {
+        const token = this.extractTokenFromHeader(request);
+        if (token && await this.isSuperAdmin(token)) {
             return true;
         }
         const settings = await this.prisma.systemSettings.findFirst({
@@ -60,11 +67,39 @@ let MaintenanceGuard = class MaintenanceGuard {
             request.socket.remoteAddress ||
             '');
     }
+    extractTokenFromHeader(request) {
+        if (request.cookies?.['accessToken']) {
+            return request.cookies['accessToken'];
+        }
+        const authHeader = request.headers.authorization;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            return authHeader.substring(7);
+        }
+        return null;
+    }
+    async isSuperAdmin(token) {
+        try {
+            const payload = this.jwtService.verify(token, {
+                secret: this.config.get('JWT_SECRET'),
+            });
+            const user = await this.prisma.user.findUnique({
+                where: { id: payload.sub },
+                include: { role: true },
+            });
+            const permissions = user?.role?.permissions;
+            return permissions?.includes('*') ?? false;
+        }
+        catch {
+            return false;
+        }
+    }
 };
 exports.MaintenanceGuard = MaintenanceGuard;
 exports.MaintenanceGuard = MaintenanceGuard = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        core_1.Reflector])
+        core_1.Reflector,
+        jwt_1.JwtService,
+        config_1.ConfigService])
 ], MaintenanceGuard);
 //# sourceMappingURL=maintenance.guard.js.map

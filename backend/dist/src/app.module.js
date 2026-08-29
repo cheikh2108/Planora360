@@ -38,6 +38,10 @@ const planning_module_1 = require("./planning/planning.module");
 const recommendations_module_1 = require("./recommendations/recommendations.module");
 const maintenance_module_1 = require("./maintenance/maintenance.module");
 const maintenance_guard_1 = require("./common/guards/maintenance.guard");
+const csrf_module_1 = require("./common/csrf/csrf.module");
+const csrf_guard_1 = require("./common/guards/csrf.guard");
+const passation_module_1 = require("./passation/passation.module");
+const messagerie_module_1 = require("./messagerie/messagerie.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -52,6 +56,7 @@ exports.AppModule = AppModule = __decorate([
                 }]),
             prisma_module_1.PrismaModule,
             maintenance_module_1.MaintenanceModule,
+            csrf_module_1.CsrfModule,
             analytics_module_1.AnalyticsModule,
             audit_module_1.AuditModule,
             security_events_module_1.SecurityEventsModule,
@@ -75,6 +80,8 @@ exports.AppModule = AppModule = __decorate([
             capitalization_module_1.CapitalizationModule,
             planning_module_1.PlanningModule,
             recommendations_module_1.RecommendationsModule,
+            passation_module_1.PassationModule,
+            messagerie_module_1.MessagerieModule,
         ],
         providers: [
             {
@@ -84,6 +91,10 @@ exports.AppModule = AppModule = __decorate([
             {
                 provide: core_1.APP_GUARD,
                 useClass: throttler_1.ThrottlerGuard,
+            },
+            {
+                provide: core_1.APP_GUARD,
+                useClass: csrf_guard_1.CsrfGuard,
             },
         ],
     })

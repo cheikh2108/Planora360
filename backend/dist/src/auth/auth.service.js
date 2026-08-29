@@ -68,8 +68,11 @@ let AuthService = class AuthService {
         await this.validateUniqueOrganization(dto.organizationName);
         await this.validateUniqueEmail(dto.email);
         const adminRole = await this.findAdminRole();
-        const organization = await this.createOrganization(dto);
-        const user = await this.createAdminUser(dto, organization.id, adminRole.id);
+        const { organization, user } = await this.prisma.$transaction(async (tx) => {
+            const organization = await this.createOrganization(dto, tx);
+            const user = await this.createAdminUser(dto, organization.id, adminRole.id, tx);
+            return { organization, user };
+        });
         this.posthog.trackRegistration(user.id, organization.id, dto.subscriptionPlan ?? 'DECOUVERTE');
         return { message: 'Votre demande a été enregistrée. Vous serez notifié par email après validation.' };
     }
@@ -95,10 +98,11 @@ let AuthService = class AuthService {
             throw new common_1.NotFoundException('Rôle Administrateur introuvable');
         return adminRole;
     }
-    async createOrganization(dto) {
+    async createOrganization(dto, tx) {
         const isTrialPlan = !dto.subscriptionPlan || dto.subscriptionPlan === 'DECOUVERTE';
         const trialEndsAt = isTrialPlan ? (0, auth_constants_1.calculateTrialEndDate)() : undefined;
-        return this.prisma.organization.create({
+        const prismaClient = tx || this.prisma;
+        return prismaClient.organization.create({
             data: {
                 name: dto.organizationName,
                 subscriptionPlan: dto.subscriptionPlan ?? 'DECOUVERTE',
@@ -108,9 +112,10 @@ let AuthService = class AuthService {
             },
         });
     }
-    async createAdminUser(dto, organizationId, roleId) {
+    async createAdminUser(dto, organizationId, roleId, tx) {
         const passwordHash = await this.hashPassword(dto.password);
-        return this.prisma.user.create({
+        const prismaClient = tx || this.prisma;
+        return prismaClient.user.create({
             data: {
                 email: dto.email,
                 firstName: dto.firstName,

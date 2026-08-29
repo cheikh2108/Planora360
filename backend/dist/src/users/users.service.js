@@ -212,6 +212,62 @@ let UsersService = class UsersService {
             data: { deletedAt: new Date(), isActive: false },
         });
     }
+    async findDeleted(organizationId) {
+        return this.prisma.user.findMany({
+            where: {
+                organizationId,
+                deletedAt: { not: null },
+            },
+            include: {
+                role: true,
+            },
+            orderBy: { deletedAt: 'desc' },
+        });
+    }
+    async restore(id, organizationId) {
+        const user = await this.prisma.user.findFirst({
+            where: { id, organizationId, deletedAt: { not: null } },
+        });
+        if (!user) {
+            throw new common_1.NotFoundException('Utilisateur introuvable dans la corbeille');
+        }
+        const emailTaken = await this.prisma.user.findFirst({
+            where: {
+                email: user.email,
+                deletedAt: null,
+                id: { not: id },
+            },
+        });
+        if (emailTaken) {
+            throw new common_1.ConflictException('Impossible de récupérer : un utilisateur actif utilise déjà cet email');
+        }
+        return this.prisma.user.update({
+            where: { id },
+            data: { deletedAt: null, isActive: true },
+            include: { role: true },
+        });
+    }
+    async hardDelete(id, organizationId) {
+        const user = await this.prisma.user.findFirst({
+            where: { id, organizationId, deletedAt: { not: null } },
+        });
+        if (!user) {
+            throw new common_1.NotFoundException('Utilisateur introuvable dans la corbeille');
+        }
+        await this.prisma.user.delete({
+            where: { id },
+        });
+    }
+    async cleanupOldDeletedUsers() {
+        const ninetyDaysAgo = new Date();
+        ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+        const deleted = await this.prisma.user.deleteMany({
+            where: {
+                deletedAt: { lt: ninetyDaysAgo },
+            },
+        });
+        return { count: deleted.count };
+    }
     findRoles(organizationId, callerRole) {
         const isSuperAdmin = callerRole === auth_constants_1.ROLE_SUPER_ADMIN;
         return this.prisma.role.findMany({

@@ -156,7 +156,7 @@ export default function ConversationPage() {
   const getConversationTitle = () => {
     if (!conversation) return '';
     if (conversation.titre) return conversation.titre;
-    if (conversation.type === 'DIRECTE') {
+    if (conversation.type === 'DIRECT') {
       const otherParticipant = conversation.participants?.[0];
       return otherParticipant?.user
         ? `${otherParticipant.user.firstName} ${otherParticipant.user.lastName}`

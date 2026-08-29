@@ -33,7 +33,56 @@ export declare class UsersController {
         page: number;
         limit: number;
     }>;
+    findDeleted(user: any): Promise<({
+        role: {
+            id: string;
+            organizationId: string | null;
+            name: string;
+            permissions: import("@prisma/client/runtime/client").JsonValue;
+        };
+    } & {
+        id: string;
+        email: string;
+        organizationId: string;
+        roleId: string;
+        firstName: string;
+        lastName: string;
+        passwordHash: string;
+        twoFactorSecret: string | null;
+        isTwoFactorEnabled: boolean;
+        isActive: boolean;
+        mustChangePassword: boolean;
+        lastLoginAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        deletedAt: Date | null;
+    })[]>;
     findOne(id: string, user: any): Promise<any>;
+    restore(id: string, user: any): Promise<{
+        role: {
+            id: string;
+            organizationId: string | null;
+            name: string;
+            permissions: import("@prisma/client/runtime/client").JsonValue;
+        };
+    } & {
+        id: string;
+        email: string;
+        organizationId: string;
+        roleId: string;
+        firstName: string;
+        lastName: string;
+        passwordHash: string;
+        twoFactorSecret: string | null;
+        isTwoFactorEnabled: boolean;
+        isActive: boolean;
+        mustChangePassword: boolean;
+        lastLoginAt: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        deletedAt: Date | null;
+    }>;
     update(id: string, dto: UpdateUserDto, user: any): Promise<any>;
     remove(id: string, user: any): Promise<void>;
+    hardDelete(id: string, user: any): Promise<void>;
 }

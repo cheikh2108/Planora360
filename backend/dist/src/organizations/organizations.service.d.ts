@@ -119,6 +119,10 @@ export declare class OrganizationsService {
         message: string;
         usersRestored: number;
     }>;
+    hardDelete(id: string): Promise<{
+        message: string;
+        usersDeleted: number;
+    }>;
     private validateCurrentUserId;
     private getCurrentUser;
     private preventSelfDeletion;

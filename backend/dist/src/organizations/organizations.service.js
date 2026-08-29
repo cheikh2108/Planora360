@@ -192,6 +192,21 @@ let OrganizationsService = class OrganizationsService {
             usersRestored: organization._count.users,
         };
     }
+    async hardDelete(id) {
+        const organization = await this.findDeletedOrganization(id);
+        await this.prisma.$transaction([
+            this.prisma.user.deleteMany({
+                where: { organizationId: id },
+            }),
+            this.prisma.organization.delete({
+                where: { id },
+            }),
+        ]);
+        return {
+            message: 'Organisation supprimée définitivement',
+            usersDeleted: organization._count.users,
+        };
+    }
     validateCurrentUserId(currentUserId) {
         if (!currentUserId) {
             throw new common_1.BadRequestException('Impossible d\'identifier l\'utilisateur actuel.');

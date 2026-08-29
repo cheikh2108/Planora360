@@ -3,7 +3,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { SoumissionConfidentialityGuard } from '../common/guards/soumission-confidentiality.guard';
 import { SoumissionsService } from './soumissions.service';
 
-@Controller('api/passation/procedures/:procedureId/soumissions')
+@Controller('passation/procedures/:procedureId/soumissions')
 @UseGuards(JwtAuthGuard)
 export class SoumissionsController {
   constructor(private readonly soumissionsService: SoumissionsService) {}

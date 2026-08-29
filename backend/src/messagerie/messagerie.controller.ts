@@ -12,7 +12,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { MessagerieService } from './messagerie.service';
 import { ConversationType } from '@prisma/client';
 
-@Controller('api/messagerie')
+@Controller('messagerie')
 @UseGuards(JwtAuthGuard)
 export class MessagerieController {
   constructor(private readonly messagerieService: MessagerieService) {}
