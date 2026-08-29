@@ -5,7 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
-import { ConversationType, MessageContentType } from '@prisma/client';
+import { ConversationType, ConversationRole, MessageContentType } from '@prisma/client';
 
 @Injectable()
 export class MessagerieService {
@@ -84,10 +84,13 @@ export class MessagerieService {
         ...context,
         participants: {
           create: [
-            { userId: createdById, role: 'ADMIN' },
+            {
+              userId: createdById,
+              role: ConversationRole.ADMIN
+            },
             ...(participantIds || []).map(userId => ({
               userId,
-              role: 'MEMBER',
+              role: ConversationRole.MEMBER,
             })),
           ],
         },

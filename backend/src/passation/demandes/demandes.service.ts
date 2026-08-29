@@ -6,10 +6,30 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { StatusDemandeAchat, ValidationDecision } from '@prisma/client';
+import { ValidationWorkflowService } from '../common/services/validation-workflow.service';
+import { ERROR_MESSAGES } from '../common/constants/error-messages';
 
+/**
+ * Service de gestion des demandes d'achat
+ *
+ * Gère le cycle de vie complet des demandes d'achat :
+ * - Création et modification
+ * - Soumission pour validation
+ * - Workflow de validation multi-étapes
+ * - Gestion des statuts
+ *
+ * @remarks
+ * Les demandes suivent un workflow strict basé sur le montant :
+ * - < 5000 : Validation hiérarchique uniquement
+ * - 5000-50000 : Validation hiérarchique + technique
+ * - > 50000 : Validation complète (hiérarchique + technique + administrative)
+ */
 @Injectable()
 export class DemandesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly workflowService: ValidationWorkflowService,
+  ) {}
 
   async create(organizationId: string, userId: string, dto: any) {
     // Générer référence unique
@@ -37,7 +57,6 @@ export class DemandesService {
     return this.prisma.demandeAchat.findMany({
       where: {
         organizationId,
-        deletedAt: null,
         ...(filters?.status && { status: filters.status }),
         ...(filters?.demandeurId && { demandeurId: filters.demandeurId }),
         ...(filters?.activityId && { activityId: filters.activityId }),
@@ -58,14 +77,33 @@ export class DemandesService {
 
   async findOne(id: string, organizationId: string) {
     const demande = await this.prisma.demandeAchat.findFirst({
-      where: { id, organizationId, deletedAt: null },
+      where: { id, organizationId },
       include: {
-        demandeur: { select: { id: true, firstName: true, lastName: true, email: true } },
+        demandeur: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true
+          }
+        },
         lignePPM: true,
-        activity: { select: { id: true, title: true } },
+        activity: {
+          select: {
+            id: true,
+            title: true
+          }
+        },
         validations: {
           include: {
-            validateur: { select: { id: true, firstName: true, lastName: true, email: true } },
+            validateur: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true
+              }
+            },
           },
           orderBy: { ordre: 'asc' },
         },
@@ -82,7 +120,11 @@ export class DemandesService {
   async update(id: string, organizationId: string, dto: any) {
     const demande = await this.findOne(id, organizationId);
 
-    if ([StatusDemandeAchat.APPROUVEE, StatusDemandeAchat.REJETEE].includes(demande.status)) {
+    // Ne pas permettre la modification si approuvée ou rejetée
+    if (
+      demande.status === StatusDemandeAchat.APPROUVEE ||
+      demande.status === StatusDemandeAchat.REJETEE
+    ) {
       throw new ForbiddenException('Impossible de modifier une demande approuvée ou rejetée');
     }
 
@@ -97,32 +139,58 @@ export class DemandesService {
   }
 
   async remove(id: string, organizationId: string) {
-    await this.findOne(id, organizationId);
+    const demande = await this.findOne(id, organizationId);
+
+    // Seules les demandes en brouillon ou rejetées peuvent être supprimées
+    if (
+      demande.status !== StatusDemandeAchat.BROUILLON &&
+      demande.status !== StatusDemandeAchat.REJETEE
+    ) {
+      throw new ForbiddenException(
+        'Seules les demandes en brouillon ou rejetées peuvent être supprimées'
+      );
+    }
+
+    // Soft delete via statut ANNULEE
     return this.prisma.demandeAchat.update({
       where: { id },
-      data: { deletedAt: new Date() },
+      data: { status: StatusDemandeAchat.ANNULEE },
     });
   }
 
   /**
-   * Soumettre la demande pour validation (lance le workflow)
+   * Soumet une demande pour validation
+   *
+   * Lance le workflow de validation adapté au montant de la demande.
+   * Les étapes de validation sont créées automatiquement selon les seuils.
+   *
+   * @param id ID de la demande
+   * @param organizationId ID de l'organisation
+   * @param userId ID de l'utilisateur soumettant
+   * @returns Demande mise à jour avec les validations créées
+   *
+   * @throws {BadRequestException} Si la demande n'est pas en brouillon
    */
   async submit(id: string, organizationId: string, userId: string) {
     const demande = await this.findOne(id, organizationId);
 
     if (demande.status !== StatusDemandeAchat.BROUILLON) {
-      throw new BadRequestException('Seules les demandes en brouillon peuvent être soumises');
+      throw new BadRequestException(ERROR_MESSAGES.DEMANDE.ONLY_DRAFT_CAN_BE_SUBMITTED);
     }
 
-    // Créer les étapes de validation
-    const validationSteps = await this.createValidationWorkflow(demande);
+    // Créer le workflow de validation adapté au montant
+    const workflow = await this.workflowService.createWorkflow({
+      amount: Number(demande.montantEstimatif),
+      organizationId,
+      requesterId: userId,
+    });
 
     return this.prisma.demandeAchat.update({
       where: { id },
       data: {
         status: StatusDemandeAchat.SOUMISE,
         validations: {
-          create: validationSteps,
+          create: workflow.steps,
         },
       },
       include: {
@@ -136,7 +204,23 @@ export class DemandesService {
   }
 
   /**
-   * Valider ou rejeter une demande (workflow)
+   * Valide ou rejette une demande d'achat
+   *
+   * Traite la décision d'un validateur dans le workflow.
+   * Met à jour automatiquement le statut de la demande selon les règles :
+   * - Si rejeté : demande passe en REJETEE
+   * - Si toutes validations approuvées : demande passe en APPROUVEE
+}
+   * - Sinon : demande reste EN_VALIDATION
+   *
+   * @param id ID de la demande
+   * @param organizationId ID de l'organisation
+   * @param userId ID du validateur
+   * @param decision Décision (APPROUVE ou REJETE)
+   * @param commentaire Commentaire optionnel
+   * @returns Demande mise à jour
+   *
+   * @throws {ForbiddenException} Si aucune validation en attente pour cet utilisateur
    */
   async validate(
     id: string,
@@ -153,7 +237,7 @@ export class DemandesService {
     );
 
     if (!validation) {
-      throw new ForbiddenException('Aucune validation en attente pour cet utilisateur');
+      throw new ForbiddenException(ERROR_MESSAGES.DEMANDE.NO_PENDING_VALIDATION);
     }
 
     // Mettre à jour la validation
@@ -162,7 +246,7 @@ export class DemandesService {
       data: {
         decision,
         commentaire,
-        dateDecision: new Date(),
+        validatedAt: new Date(),
       },
     });
 
@@ -173,13 +257,7 @@ export class DemandesService {
       newStatus = StatusDemandeAchat.REJETEE;
     } else {
       // Vérifier si toutes les validations sont approuvées
-      const allValidations = await this.prisma.validationDemande.findMany({
-        where: { demandeId: id },
-      });
-
-      const allApproved = allValidations.every(
-        v => v.decision === ValidationDecision.APPROUVE,
-      );
+      const allApproved = await this.workflowService.areAllValidationsApproved(id);
 
       if (allApproved) {
         newStatus = StatusDemandeAchat.APPROUVEE;
@@ -199,96 +277,5 @@ export class DemandesService {
         },
       },
     });
-  }
-
-  /**
-   * Créer le workflow de validation selon le montant
-   */
-  private async createValidationWorkflow(demande: any) {
-    const montant = Number(demande.montantEstimatif);
-    const steps = [];
-
-    // Règles de validation par tranche de montant
-    if (montant < 5000) {
-      // < 5000 : Validation hiérarchique uniquement
-      steps.push({
-        etape: 'VERIFICATION_HIERARCHIQUE',
-        ordre: 1,
-        validateurId: await this.getHierarchicalValidator(demande.demandeurId),
-      });
-    } else if (montant < 50000) {
-      // 5000-50000 : Hiérarchique + Technique
-      steps.push({
-        etape: 'VERIFICATION_HIERARCHIQUE',
-        ordre: 1,
-        validateurId: await this.getHierarchicalValidator(demande.demandeurId),
-      });
-      steps.push({
-        etape: 'VALIDATION_TECHNIQUE',
-        ordre: 2,
-        validateurId: await this.getTechnicalValidator(demande.organizationId),
-      });
-    } else {
-      // > 50000 : Hiérarchique + Technique + Administrative
-      steps.push({
-        etape: 'VERIFICATION_HIERARCHIQUE',
-        ordre: 1,
-        validateurId: await this.getHierarchicalValidator(demande.demandeurId),
-      });
-      steps.push({
-        etape: 'VALIDATION_TECHNIQUE',
-        ordre: 2,
-        validateurId: await this.getTechnicalValidator(demande.organizationId),
-      });
-      steps.push({
-        etape: 'VALIDATION_ADMINISTRATIVE',
-        ordre: 3,
-        validateurId: await this.getAdministrativeValidator(demande.organizationId),
-      });
-    }
-
-    return steps;
-  }
-
-  private async getHierarchicalValidator(userId: string): Promise<string> {
-    // TODO: Implémenter la logique de récupération du supérieur hiérarchique
-    // Pour l'instant, retourner le premier admin de l'organisation
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { organizationId: true },
-    });
-
-    const admin = await this.prisma.user.findFirst({
-      where: {
-        organizationId: user.organizationId,
-        role: { name: 'Admin' },
-      },
-    });
-
-    return admin?.id || userId;
-  }
-
-  private async getTechnicalValidator(organizationId: string): Promise<string> {
-    // TODO: Récupérer l'utilisateur avec permission 'passation:demandes:validate:technique'
-    const admin = await this.prisma.user.findFirst({
-      where: {
-        organizationId,
-        role: { name: 'Admin' },
-      },
-    });
-
-    return admin?.id;
-  }
-
-  private async getAdministrativeValidator(organizationId: string): Promise<string> {
-    // TODO: Récupérer l'utilisateur avec permission 'passation:demandes:validate:admin'
-    const admin = await this.prisma.user.findFirst({
-      where: {
-        organizationId,
-        role: { name: 'Admin' },
-      },
-    });
-
-    return admin?.id;
   }
 }

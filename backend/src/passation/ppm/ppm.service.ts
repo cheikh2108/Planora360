@@ -8,10 +8,25 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 import { CreatePpmDto } from './dto/create-ppm.dto';
 import { UpdatePpmDto } from './dto/update-ppm.dto';
 import { StatusPPM } from '@prisma/client';
+import { ERROR_MESSAGES } from '../common/constants/error-messages';
 
+/**
+ * Service de gestion des Plans de Passation des Marchés (PPM)
+ *
+ * Gère le cycle de vie complet des PPM :
+ * - Création et modification des plans annuels
+ * - Gestion des lignes PPM (marchés prévus)
+ * - Validation des plans
+ * - Export des plans (PDF/Excel)
+ *
+ * @remarks
+ * Un PPM est un document annuel qui planifie tous les marchés
+ * qu'une organisation prévoit de lancer dans l'année.
+ * Chaque organisation ne peut avoir qu'un seul PPM par année.
+ */
 @Injectable()
 export class PpmService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async create(organizationId: string, userId: string, dto: CreatePpmDto) {
     // Vérifier qu'il n'existe pas déjà un PPM pour cette année
@@ -19,14 +34,11 @@ export class PpmService {
       where: {
         organizationId,
         year: dto.year,
-        deletedAt: null,
       },
     });
 
     if (existing) {
-      throw new BadRequestException(
-        `Un PPM existe déjà pour l'année ${dto.year}`,
-      );
+      throw new BadRequestException(ERROR_MESSAGES.PPM.DUPLICATE_YEAR(dto.year));
     }
 
     return this.prisma.planPassationMarche.create({
@@ -55,15 +67,12 @@ export class PpmService {
     return this.prisma.planPassationMarche.findMany({
       where: {
         organizationId,
-        deletedAt: null,
         ...(filters?.year && { year: filters.year }),
         ...(filters?.status && { status: filters.status }),
         ...(filters?.projectId && { projectId: filters.projectId }),
       },
       include: {
-        lignes: {
-          where: { deletedAt: null },
-        },
+        lignes: true,
         project: {
           select: {
             id: true,
@@ -83,11 +92,9 @@ export class PpmService {
       where: {
         id,
         organizationId,
-        deletedAt: null,
       },
       include: {
         lignes: {
-          where: { deletedAt: null },
           include: {
             responsable: {
               select: {
@@ -116,7 +123,7 @@ export class PpmService {
     });
 
     if (!ppm) {
-      throw new NotFoundException(`PPM #${id} introuvable`);
+      throw new NotFoundException(ERROR_MESSAGES.PPM.NOT_FOUND(id));
     }
 
     return ppm;
@@ -127,9 +134,7 @@ export class PpmService {
 
     // Ne pas permettre la modification si déjà validé
     if (ppm.status === StatusPPM.VALIDE) {
-      throw new ForbiddenException(
-        'Impossible de modifier un PPM déjà validé',
-      );
+      throw new ForbiddenException(ERROR_MESSAGES.PPM.CANNOT_MODIFY_VALIDATED);
     }
 
     return this.prisma.planPassationMarche.update({
@@ -150,10 +155,14 @@ export class PpmService {
   async remove(id: string, organizationId: string) {
     const ppm = await this.findOne(id, organizationId);
 
-    // Soft delete
-    return this.prisma.planPassationMarche.update({
+    // Seuls les PPM en brouillon peuvent être supprimés
+    if (ppm.status !== StatusPPM.BROUILLON) {
+      throw new ForbiddenException(ERROR_MESSAGES.PPM.ONLY_DRAFT_CAN_BE_DELETED);
+    }
+
+    // Suppression définitive (ou on pourrait utiliser un statut ARCHIVE)
+    return this.prisma.planPassationMarche.delete({
       where: { id },
-      data: { deletedAt: new Date() },
     });
   }
 
@@ -161,14 +170,12 @@ export class PpmService {
     const ppm = await this.findOne(id, organizationId);
 
     if (ppm.status === StatusPPM.VALIDE) {
-      throw new BadRequestException('Ce PPM est déjà validé');
+      throw new BadRequestException(ERROR_MESSAGES.PPM.ALREADY_VALIDATED);
     }
 
     // Vérifier qu'il y a au moins une ligne
     if (!ppm.lignes || ppm.lignes.length === 0) {
-      throw new BadRequestException(
-        'Impossible de valider un PPM sans lignes',
-      );
+      throw new BadRequestException(ERROR_MESSAGES.PPM.NO_LINES);
     }
 
     return this.prisma.planPassationMarche.update({

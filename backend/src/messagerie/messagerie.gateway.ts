@@ -55,7 +55,11 @@ export class MessagerieGateway implements OnGatewayConnection, OnGatewayDisconne
       if (!this.connectedUsers.has(userId)) {
         this.connectedUsers.set(userId, new Set());
       }
-      this.connectedUsers.get(userId).add(client.id);
+
+      const userSockets = this.connectedUsers.get(userId);
+      if (userSockets) {
+        userSockets.add(client.id);
+      }
 
       // Joindre les rooms des conversations de l'utilisateur
       const conversations = await this.messagerieService.getUserConversations(

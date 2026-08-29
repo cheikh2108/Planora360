@@ -5,10 +5,25 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../../../common/prisma/prisma.service';
+import { ERROR_MESSAGES } from '../constants/error-messages';
 
 /**
  * Guard critique : Empêche l'accès aux soumissions avant la date d'ouverture des offres
- * Exception : Super Admin uniquement (pour audit)
+ *
+ * Ce guard implémente une règle de sécurité fondamentale dans les marchés publics :
+ * la confidentialité absolue des soumissions jusqu'à la date d'ouverture officielle.
+ *
+ * @remarks
+ * - Exception unique : Super Admin (pour audit et conformité)
+ * - Basé sur procedure.dateOuverture
+ * - Retourne une erreur explicite avec la date/heure d'ouverture
+ *
+ * @example
+ * ```typescript
+ * @UseGuards(SoumissionConfidentialityGuard)
+ * @Get(':procedureId/soumissions')
+ * getSoumissions(@Param('procedureId') id: string) {}
+ * ```
  */
 @Injectable()
 export class SoumissionConfidentialityGuard implements CanActivate {
@@ -35,23 +50,26 @@ export class SoumissionConfidentialityGuard implements CanActivate {
       where: { id: procedureId },
       select: {
         id: true,
-        dateOuvertureOffres: true,
+        dateOuverture: true,
         status: true,
       },
     });
 
     if (!procedure) {
-      throw new ForbiddenException('Procédure introuvable');
+      throw new ForbiddenException(ERROR_MESSAGES.PROCEDURE.NOT_FOUND);
+    }
+
+    if (!procedure.dateOuverture) {
+      throw new ForbiddenException(ERROR_MESSAGES.PROCEDURE.NO_OPENING_DATE);
     }
 
     const now = new Date();
-    const dateOuverture = new Date(procedure.dateOuvertureOffres);
+    const dateOuverture = new Date(procedure.dateOuverture);
 
     // Accès interdit avant la date d'ouverture
     if (now < dateOuverture) {
       throw new ForbiddenException(
-        `Accès aux soumissions interdit avant le ${dateOuverture.toLocaleDateString('fr-FR')} à ${dateOuverture.toLocaleTimeString('fr-FR')}. ` +
-          `Cette mesure garantit la confidentialité et l'intégrité du processus de passation de marchés.`,
+        ERROR_MESSAGES.SOUMISSION.CONFIDENTIALITY_BREACH(dateOuverture)
       );
     }
 
