@@ -53,11 +53,13 @@ export default function ConversationPage() {
   });
 
   // Fetch messages
-  const { data: messages, isLoading: loadingMessages } = useQuery({
+  const { data: messages = [], isLoading: loadingMessages } = useQuery<Message[]>({
     queryKey: ['messages', conversationId],
     queryFn: async () => {
       const res = await messagesApi.getAll(conversationId);
-      return (res.data as Message[]).sort(
+      // Le backend retourne { messages: [], hasMore, nextCursor }
+      const data = res.data as { messages: Message[]; hasMore: boolean; nextCursor: string | null };
+      return data.messages.sort(
         (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
       );
     },
