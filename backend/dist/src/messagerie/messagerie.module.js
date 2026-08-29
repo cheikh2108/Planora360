@@ -9,9 +9,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MessagerieModule = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
+const platform_express_1 = require("@nestjs/platform-express");
 const messagerie_service_1 = require("./messagerie.service");
 const messagerie_controller_1 = require("./messagerie.controller");
 const messagerie_gateway_1 = require("./messagerie.gateway");
+const upload_controller_1 = require("./upload.controller");
 const prisma_module_1 = require("../common/prisma/prisma.module");
 let MessagerieModule = class MessagerieModule {
 };
@@ -24,8 +26,11 @@ exports.MessagerieModule = MessagerieModule = __decorate([
                 secret: process.env.JWT_SECRET,
                 signOptions: { expiresIn: '7d' },
             }),
+            platform_express_1.MulterModule.register({
+                dest: './uploads/messagerie',
+            }),
         ],
-        controllers: [messagerie_controller_1.MessagerieController],
+        controllers: [messagerie_controller_1.MessagerieController, upload_controller_1.UploadController],
         providers: [messagerie_service_1.MessagerieService, messagerie_gateway_1.MessagerieGateway],
         exports: [messagerie_service_1.MessagerieService, messagerie_gateway_1.MessagerieGateway],
     })

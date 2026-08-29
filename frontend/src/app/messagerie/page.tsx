@@ -184,8 +184,10 @@ export default function MessagingPage() {
   };
 
   const getConversationSubtitle = (conv: Conversation) => {
-    if (conv.lastMessage) {
-      return conv.lastMessage.content.substring(0, 80);
+    // Backend renvoie messages: [...] avec take: 1, pas lastMessage
+    const lastMessage = conv.messages?.[0] || conv.lastMessage;
+    if (lastMessage) {
+      return lastMessage.content.substring(0, 80);
     }
     return 'Aucun message';
   };
@@ -323,11 +325,14 @@ export default function MessagingPage() {
                         </div>
 
                         {/* Timestamp */}
-                        {conversation.lastMessage && (
-                          <span className="flex-shrink-0 text-[11px] font-semibold text-slate-500">
-                            {formatDate(conversation.lastMessage.createdAt)}
-                          </span>
-                        )}
+                        {(() => {
+                          const lastMsg = conversation.messages?.[0] || conversation.lastMessage;
+                          return lastMsg && (
+                            <span className="flex-shrink-0 text-[11px] font-semibold text-slate-500">
+                              {formatDate(lastMsg.createdAt)}
+                            </span>
+                          );
+                        })()}
                       </div>
 
                       {/* Metadata - Natural language */}
