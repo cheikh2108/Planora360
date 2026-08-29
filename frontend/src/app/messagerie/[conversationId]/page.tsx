@@ -176,10 +176,15 @@ export default function ConversationPage() {
   if (!conversation) {
     return (
       <div className="flex h-screen flex-col items-center justify-center gap-4">
-        <p className="text-slate-600">Conversation introuvable</p>
-        <Button onClick={() => router.push('/messagerie')}>
-          Retour aux conversations
-        </Button>
+        <p className="text-lg font-medium text-slate-900">Conversation introuvable</p>
+        <p className="text-sm text-slate-600">
+          Cette conversation n'existe pas ou a été supprimée
+        </p>
+        <div className="flex gap-3">
+          <Button variant="secondary" onClick={() => router.push('/messagerie')}>
+            Retour aux conversations
+          </Button>
+        </div>
       </div>
     );
   }

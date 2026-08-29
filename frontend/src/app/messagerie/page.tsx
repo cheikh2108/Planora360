@@ -14,7 +14,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
 import { formatDate, cn } from '@/lib/utils';
-import { MessageSquare, Plus, Search, Users, Archive, Circle, X } from 'lucide-react';
+import { MessageSquare, Plus, Search, Users, Archive, Circle, X, Trash2 } from 'lucide-react';
 
 export default function MessagingPage() {
   const router = useRouter();
@@ -86,6 +86,19 @@ export default function MessagingPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
       success('Conversation restaurée');
+    },
+  });
+
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: (conversationId: string) => conversationsApi.delete(conversationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      success('Conversation supprimée');
+    },
+    onError: () => {
+      // Ignore errors silently (conversation may not exist)
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
   });
 
@@ -288,7 +301,7 @@ export default function MessagingPage() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex-shrink-0">
+                  <div className="flex flex-shrink-0 gap-1">
                     {conversation.isArchived ? (
                       <Button
                         size="sm"
@@ -308,10 +321,25 @@ export default function MessagingPage() {
                           e.stopPropagation();
                           archiveMutation.mutate(conversation.id);
                         }}
+                        title="Archiver"
                       >
                         <Archive className="h-4 w-4" />
                       </Button>
                     )}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (confirm('Voulez-vous vraiment supprimer cette conversation ?')) {
+                          deleteMutation.mutate(conversation.id);
+                        }
+                      }}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      title="Supprimer"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
               </div>

@@ -37,6 +37,9 @@ let MessagerieController = class MessagerieController {
     markConversationAsRead(req, conversationId) {
         return this.messagerieService.markConversationAsRead(conversationId, req.user.id);
     }
+    deleteConversation(req, conversationId) {
+        return this.messagerieService.deleteConversation(conversationId, req.user.id);
+    }
 };
 exports.MessagerieController = MessagerieController;
 __decorate([
@@ -86,6 +89,14 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", void 0)
 ], MessagerieController.prototype, "markConversationAsRead", null);
+__decorate([
+    (0, common_1.Delete)('conversations/:conversationId'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)('conversationId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], MessagerieController.prototype, "deleteConversation", null);
 exports.MessagerieController = MessagerieController = __decorate([
     (0, common_1.Controller)('messagerie'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

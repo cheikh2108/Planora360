@@ -225,4 +225,8 @@ export declare class MessagerieController {
         success: boolean;
         markedCount: number;
     }>;
+    deleteConversation(req: any, conversationId: string): Promise<{
+        success: boolean;
+        message: string;
+    }>;
 }

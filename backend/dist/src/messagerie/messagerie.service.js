@@ -393,6 +393,31 @@ let MessagerieService = class MessagerieService {
         });
         return { success: true, markedCount: unreadMessages.length };
     }
+    async deleteConversation(conversationId, userId) {
+        const participant = await this.prisma.conversationParticipant.findFirst({
+            where: {
+                conversationId,
+                userId,
+                leftAt: null,
+            },
+        });
+        if (!participant) {
+            throw new common_1.ForbiddenException('Vous n\'êtes pas participant de cette conversation');
+        }
+        const conversation = await this.prisma.conversation.findUnique({
+            where: { id: conversationId },
+        });
+        if (!conversation) {
+            throw new common_1.NotFoundException('Conversation introuvable');
+        }
+        if (conversation.createdById !== userId && participant.role !== 'ADMIN') {
+            throw new common_1.ForbiddenException('Seul le créateur ou un admin peut supprimer cette conversation');
+        }
+        await this.prisma.conversation.delete({
+            where: { id: conversationId },
+        });
+        return { success: true, message: 'Conversation supprimée' };
+    }
 };
 exports.MessagerieService = MessagerieService;
 exports.MessagerieService = MessagerieService = __decorate([

@@ -328,4 +328,8 @@ export declare class MessagerieService {
         success: boolean;
         markedCount: number;
     }>;
+    deleteConversation(conversationId: string, userId: string): Promise<{
+        success: boolean;
+        message: string;
+    }>;
 }

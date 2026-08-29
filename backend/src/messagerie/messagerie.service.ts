@@ -501,4 +501,42 @@ export class MessagerieService {
 
     return { success: true, markedCount: unreadMessages.length };
   }
+
+  /**
+   * Supprimer une conversation (hard delete)
+   */
+  async deleteConversation(conversationId: string, userId: string) {
+    // Vérifier que l'utilisateur est participant
+    const participant = await this.prisma.conversationParticipant.findFirst({
+      where: {
+        conversationId,
+        userId,
+        leftAt: null,
+      },
+    });
+
+    if (!participant) {
+      throw new ForbiddenException('Vous n\'êtes pas participant de cette conversation');
+    }
+
+    // Vérifier que l'utilisateur est ADMIN de la conversation
+    const conversation = await this.prisma.conversation.findUnique({
+      where: { id: conversationId },
+    });
+
+    if (!conversation) {
+      throw new NotFoundException('Conversation introuvable');
+    }
+
+    if (conversation.createdById !== userId && participant.role !== 'ADMIN') {
+      throw new ForbiddenException('Seul le créateur ou un admin peut supprimer cette conversation');
+    }
+
+    // Supprimer la conversation (cascade sur participants et messages)
+    await this.prisma.conversation.delete({
+      where: { id: conversationId },
+    });
+
+    return { success: true, message: 'Conversation supprimée' };
+  }
 }

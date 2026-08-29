@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Delete,
   Body,
   Param,
   Query,
@@ -81,6 +82,17 @@ export class MessagerieController {
     @Param('conversationId') conversationId: string,
   ) {
     return this.messagerieService.markConversationAsRead(
+      conversationId,
+      req.user.id,
+    );
+  }
+
+  @Delete('conversations/:conversationId')
+  deleteConversation(
+    @Req() req,
+    @Param('conversationId') conversationId: string,
+  ) {
+    return this.messagerieService.deleteConversation(
       conversationId,
       req.user.id,
     );

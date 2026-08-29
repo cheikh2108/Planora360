@@ -459,6 +459,7 @@ export const conversationsApi = {
     api.delete(`/messagerie/conversations/${id}/participants/${userId}`),
   archive: (id: string) => api.post(`/messagerie/conversations/${id}/archive`),
   unarchive: (id: string) => api.post(`/messagerie/conversations/${id}/unarchive`),
+  delete: (id: string) => api.delete(`/messagerie/conversations/${id}`),
 };
 
 // Messages (REST API pour historique, WebSocket pour temps réel)
