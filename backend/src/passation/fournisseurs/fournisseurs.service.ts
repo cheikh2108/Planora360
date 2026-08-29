@@ -35,7 +35,7 @@ export class FournisseursService {
       const existing = await this.prisma.fournisseur.findFirst({
         where: {
           organizationId,
-          siret: dto.identifiantFiscal,
+          identifiantFiscal: dto.identifiantFiscal,
         },
       });
 
@@ -74,7 +74,7 @@ export class FournisseursService {
         ...(filters?.search && {
           OR: [
             { raisonSociale: { contains: filters.search, mode: 'insensitive' } },
-            { siret: { contains: filters.search, mode: 'insensitive' } },
+            { identifiantFiscal: { contains: filters.search, mode: 'insensitive' } },
             { email: { contains: filters.search, mode: 'insensitive' } },
           ],
         }),
@@ -110,7 +110,7 @@ export class FournisseursService {
       },
       include: {
         documents: {
-          orderBy: { createdAt: 'desc' },
+          orderBy: { uploadedAt: 'desc' },
         },
         soumissions: {
           include: {
@@ -118,11 +118,10 @@ export class FournisseursService {
               select: {
                 id: true,
                 reference: true,
-                objet: true,
               },
             },
           },
-          orderBy: { createdAt: 'desc' },
+          orderBy: { dateDepot: 'desc' },
           take: 10,
         },
         evaluations: {
@@ -141,8 +140,8 @@ export class FournisseursService {
           select: {
             id: true,
             reference: true,
-            objet: true,
-            montant: true,
+            montantInitial: true,
+            montantRevise: true,
             status: true,
           },
           orderBy: { createdAt: 'desc' },

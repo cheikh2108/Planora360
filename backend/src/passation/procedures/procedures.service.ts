@@ -108,7 +108,7 @@ export class ProceduresService {
           },
           orderBy: { dateDepot: 'desc' },
         },
-        commission: {
+        commissions: {
           include: {
             membres: {
               include: {

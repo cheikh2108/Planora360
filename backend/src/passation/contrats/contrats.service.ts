@@ -17,7 +17,7 @@ export class ContratsService {
         ...dto,
         reference,
         organizationId,
-        gestionnaireId: userId,
+        gestionnaire: userId,
       },
       include: {
         fournisseur: {
@@ -34,7 +34,7 @@ export class ContratsService {
             objet: true,
           },
         },
-        gestionnaire: {
+        gestionnaireUser: {
           select: {
             id: true,
             firstName: true,
@@ -60,7 +60,7 @@ export class ContratsService {
             identifiantFiscal: true,
           },
         },
-        gestionnaire: {
+        gestionnaireUser: {
           select: {
             id: true,
             firstName: true,
@@ -88,7 +88,7 @@ export class ContratsService {
       include: {
         fournisseur: true,
         procedure: true,
-        gestionnaire: {
+        gestionnaireUser: {
           select: {
             id: true,
             firstName: true,
@@ -107,10 +107,10 @@ export class ContratsService {
             },
             receptions: true,
           },
-          orderBy: { datePrevisionnelle: 'asc' },
+          orderBy: { dateEcheance: 'asc' },
         },
         paiements: {
-          orderBy: { datePrevisionnelle: 'asc' },
+          orderBy: { dateEcheance: 'asc' },
         },
         avenants: {
           orderBy: { createdAt: 'desc' },
@@ -154,10 +154,10 @@ export class ContratsService {
     const contrat = await this.findOne(id, organizationId);
 
     const totalPaiements = contrat.paiements.reduce(
-      (sum, p) => sum + Number(p.montant),
+      (sum, p) => sum + Number(p.montantNet),
       0
     );
-    const paiementsEffectues = contrat.paiements.filter(p => p.dateEffective).length;
+    const paiementsEffectues = contrat.paiements.filter(p => p.datePaiement).length;
     const livrablesReceptionnes = contrat.livrables.filter(
       l => l.receptions && l.receptions.length > 0
     ).length;
@@ -166,18 +166,18 @@ export class ContratsService {
       contrat: {
         id: contrat.id,
         reference: contrat.reference,
-        objet: contrat.objet,
-        montant: contrat.montant,
+        montantInitial: contrat.montantInitial,
+        montantRevise: contrat.montantRevise,
         status: contrat.status,
         dateSignature: contrat.dateSignature,
-        dateDebut: contrat.dateDebut,
-        dateFin: contrat.dateFin,
+        dateDemarrage: contrat.dateDemarrage,
+        dateEcheance: contrat.dateEcheance,
       },
       fournisseur: contrat.fournisseur,
       statistiques: {
-        montantTotal: Number(contrat.montant),
+        montantTotal: Number(contrat.montantRevise || contrat.montantInitial),
         montantPaye: totalPaiements,
-        tauxExecution: (totalPaiements / Number(contrat.montant)) * 100,
+        tauxExecution: (totalPaiements / Number(contrat.montantRevise || contrat.montantInitial)) * 100,
         nombreLivrables: contrat.livrables.length,
         livrablesReceptionnes,
         nombrePaiements: contrat.paiements.length,

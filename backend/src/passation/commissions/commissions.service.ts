@@ -33,7 +33,7 @@ export class CommissionsService {
 
   async findAll(organizationId: string) {
     return this.prisma.commission.findMany({
-      where: { organizationId },
+      where: { procedure: { organizationId } },
       include: {
         president: {
           select: {
@@ -74,7 +74,9 @@ export class CommissionsService {
     const commission = await this.prisma.commission.findFirst({
       where: {
         id,
-        organizationId,
+        procedure: {
+          organizationId,
+        },
       },
       include: {
         president: {

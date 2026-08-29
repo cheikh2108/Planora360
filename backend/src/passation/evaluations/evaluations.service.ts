@@ -55,7 +55,6 @@ export class EvaluationsService {
       where: {
         commission: {
           procedureId,
-          organizationId,
         },
       },
       include: {
@@ -85,7 +84,7 @@ export class EvaluationsService {
     const evaluations = await this.findAll(procedureId, organizationId);
 
     // Grouper par soumission et calculer les moyennes
-    const grouped = evaluations.reduce((acc, evaluation) => {
+    const grouped = evaluations.reduce((acc: any, evaluation) => {
       const soumissionId = evaluation.soumissionId;
       if (!acc[soumissionId]) {
         acc[soumissionId] = {
@@ -96,7 +95,10 @@ export class EvaluationsService {
         };
       }
       acc[soumissionId].evaluations.push(evaluation);
-      acc[soumissionId].noteTotale += evaluation.noteFinale;
+      // Utiliser scoreGlobal avec vérification null
+      if (evaluation.scoreGlobal !== null) {
+        acc[soumissionId].noteTotale += evaluation.scoreGlobal;
+      }
       acc[soumissionId].count += 1;
       return acc;
     }, {});
@@ -104,7 +106,7 @@ export class EvaluationsService {
     return Object.values(grouped).map((item: any) => ({
       soumission: item.soumission,
       evaluations: item.evaluations,
-      moyenne: item.noteTotale / item.count,
+      moyenne: item.count > 0 ? item.noteTotale / item.count : 0,
       nombreEvaluations: item.count,
     })).sort((a: any, b: any) => b.moyenne - a.moyenne);
   }
