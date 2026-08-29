@@ -67,6 +67,48 @@ export declare class MessagerieController {
         isArchived: boolean;
         lastMessageAt: Date | null;
     })[]>;
+    getConversation(req: any, conversationId: string): Promise<{
+        _count: {
+            participants: number;
+            messages: number;
+        };
+        participants: ({
+            user: {
+                id: string;
+                email: string;
+                firstName: string;
+                lastName: string;
+            };
+        } & {
+            id: string;
+            role: import(".prisma/client").$Enums.ConversationRole;
+            userId: string;
+            leftAt: Date | null;
+            isMuted: boolean;
+            isPinned: boolean;
+            lastReadAt: Date | null;
+            unreadCount: number;
+            joinedAt: Date;
+            conversationId: string;
+        })[];
+    } & {
+        id: string;
+        organizationId: string;
+        createdAt: Date;
+        updatedAt: Date;
+        name: string | null;
+        activityId: string | null;
+        type: import(".prisma/client").$Enums.ConversationType;
+        description: string | null;
+        createdById: string;
+        recommendationId: string | null;
+        projectId: string | null;
+        procedureId: string | null;
+        contratId: string | null;
+        avatarUrl: string | null;
+        isArchived: boolean;
+        lastMessageAt: Date | null;
+    }>;
     createConversation(req: any, type: ConversationType, name?: string, participantIds?: string[], context?: any): Promise<{
         participants: ({
             user: {

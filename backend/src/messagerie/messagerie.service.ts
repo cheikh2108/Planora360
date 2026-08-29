@@ -65,6 +65,50 @@ export class MessagerieService {
   }
 
   /**
+   * Récupérer une conversation spécifique
+   */
+  async getConversation(conversationId: string, userId: string) {
+    const conversation = await this.prisma.conversation.findFirst({
+      where: {
+        id: conversationId,
+        participants: {
+          some: {
+            userId,
+            leftAt: null,
+          },
+        },
+      },
+      include: {
+        participants: {
+          where: { leftAt: null },
+          include: {
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
+            },
+          },
+        },
+        _count: {
+          select: {
+            participants: true,
+            messages: true,
+          },
+        },
+      },
+    });
+
+    if (!conversation) {
+      throw new NotFoundException('Conversation introuvable');
+    }
+
+    return conversation;
+  }
+
+  /**
    * Créer une conversation
    */
   async createConversation(

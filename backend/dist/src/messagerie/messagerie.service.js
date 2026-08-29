@@ -67,6 +67,44 @@ let MessagerieService = class MessagerieService {
             orderBy: { lastMessageAt: 'desc' },
         });
     }
+    async getConversation(conversationId, userId) {
+        const conversation = await this.prisma.conversation.findFirst({
+            where: {
+                id: conversationId,
+                participants: {
+                    some: {
+                        userId,
+                        leftAt: null,
+                    },
+                },
+            },
+            include: {
+                participants: {
+                    where: { leftAt: null },
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                firstName: true,
+                                lastName: true,
+                                email: true,
+                            },
+                        },
+                    },
+                },
+                _count: {
+                    select: {
+                        participants: true,
+                        messages: true,
+                    },
+                },
+            },
+        });
+        if (!conversation) {
+            throw new common_1.NotFoundException('Conversation introuvable');
+        }
+        return conversation;
+    }
     async createConversation(organizationId, createdById, type, name, participantIds, context) {
         return this.prisma.conversation.create({
             data: {

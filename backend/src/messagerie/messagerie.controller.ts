@@ -26,6 +26,17 @@ export class MessagerieController {
     );
   }
 
+  @Get('conversations/:conversationId')
+  getConversation(
+    @Req() req,
+    @Param('conversationId') conversationId: string,
+  ) {
+    return this.messagerieService.getConversation(
+      conversationId,
+      req.user.id,
+    );
+  }
+
   @Post('conversations')
   createConversation(
     @Req() req,

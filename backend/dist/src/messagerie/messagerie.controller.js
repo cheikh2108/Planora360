@@ -25,6 +25,9 @@ let MessagerieController = class MessagerieController {
     getUserConversations(req) {
         return this.messagerieService.getUserConversations(req.user.id, req.user.organizationId);
     }
+    getConversation(req, conversationId) {
+        return this.messagerieService.getConversation(conversationId, req.user.id);
+    }
     createConversation(req, type, name, participantIds, context) {
         return this.messagerieService.createConversation(req.user.organizationId, req.user.id, type, name, participantIds, context);
     }
@@ -49,6 +52,14 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], MessagerieController.prototype, "getUserConversations", null);
+__decorate([
+    (0, common_1.Get)('conversations/:conversationId'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)('conversationId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], MessagerieController.prototype, "getConversation", null);
 __decorate([
     (0, common_1.Post)('conversations'),
     __param(0, (0, common_1.Req)()),
