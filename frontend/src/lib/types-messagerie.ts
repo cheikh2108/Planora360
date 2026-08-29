@@ -135,6 +135,7 @@ export interface Message {
   parent?: Message | null;
   isEdited: boolean;
   editedAt?: string | null;
+  isDeleted: boolean;
   deletedAt?: string | null;
   createdAt: string;
   attachments?: MessageAttachment[];
