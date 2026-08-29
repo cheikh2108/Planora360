@@ -138,6 +138,12 @@ model Organization {
   recommendations       Recommendation[]
   helpArticles          HelpArticle[]
 
+  // Passation de marchés
+  planPassationMarches PlanPassationMarche[]
+
+  // Messagerie
+  conversations Conversation[]
+
   @@map("organizations")
 }
 
@@ -192,6 +198,27 @@ model User {
   recommendationHistory       RecommendationHistory[]
   sessions                    Session[]
 
+  // Passation de marchés
+  lignesPPMResponsable    LignePPM[]              @relation("LignePPMResponsable")
+  demandesAchat           DemandeAchat[]          @relation("DemandeurAchat")
+  validationsDemandes     ValidationDemande[]     @relation("ValidateurDemande")
+  proceduresResponsable   Procedure[]             @relation("ProcedureResponsable")
+  commissionsPresident    Commission[]            @relation("CommissionPresident")
+  membresCommission       MembreCommission[]
+  evaluations             Evaluation[]            @relation("Evaluateur")
+  contratsGestionnaire    Contrat[]               @relation("ContratGestionnaire")
+  livrablesResponsable    Livrable[]              @relation("LivrableResponsable")
+  receptions              ReceptionLivrable[]     @relation("Receptionneur")
+  evaluationsFournisseurs EvaluationFournisseur[] @relation("EvaluateurFournisseur")
+
+  // Messagerie
+  conversationsCreated     Conversation[]            @relation("ConversationCreator")
+  conversationParticipants ConversationParticipant[] @relation("ConversationParticipant")
+  messagesAuthored         Message[]                 @relation("MessageAuthor")
+  messageReactions         MessageReaction[]         @relation("MessageReaction")
+  messageReads             MessageRead[]             @relation("MessageRead")
+  messageMentions          MessageMention[]          @relation("MessageMention")
+
   @@index([organizationId])
   @@map("users")
 }
@@ -209,29 +236,29 @@ model RefreshToken {
 }
 
 model Session {
-  id             String   @id @default(cuid())
-  userId         String
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Device & Browser
-  deviceName     String?
-  browser        String?
-  os             String?
+  deviceName String?
+  browser    String?
+  os         String?
 
   // Location
-  ipAddress      String
-  country        String?
-  city           String?
+  ipAddress String
+  country   String?
+  city      String?
 
   // Activity tracking
   lastActivityAt DateTime @default(now())
   expiresAt      DateTime
 
   // Metadata
-  userAgent      String?
-  metadata       Json?
+  userAgent String?
+  metadata  Json?
 
-  createdAt      DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@index([userId])
   @@index([expiresAt])
@@ -255,6 +282,12 @@ model ActionPlan {
 
   axes            Axis[]
   recommendations Recommendation[]
+
+  // Passation de marchés
+  planPassationMarches PlanPassationMarche[]
+
+  // Messagerie (canaux projet)
+  conversations Conversation[]
 
   @@index([organizationId])
   @@map("action_plans")
@@ -304,6 +337,13 @@ model Activity {
   indicators      Indicator[]
   participants    Participant[]
   recommendations Recommendation[]
+
+  // Passation de marchés
+  lignesPPM     LignePPM[]
+  demandesAchat DemandeAchat[]
+
+  // Messagerie contextuelle
+  conversations Conversation[]
 
   @@index([organizationId])
   @@index([organizationId, status])
@@ -425,13 +465,13 @@ model AuditLog {
   metadata       Json?
 
   // Enhanced audit fields (Phase 3)
-  ipAddress      String?
-  userAgent      String?
-  requestId      String?
-  oldValues      Json?
-  newValues      Json?
+  ipAddress String?
+  userAgent String?
+  requestId String?
+  oldValues Json?
+  newValues Json?
 
-  createdAt      DateTime     @default(now())
+  createdAt DateTime @default(now())
 
   @@index([organizationId])
   @@index([organizationId, createdAt])
@@ -441,31 +481,31 @@ model AuditLog {
 }
 
 model SecurityEvent {
-  id             String                 @id @default(cuid())
+  id             String        @id @default(cuid())
   organizationId String?
-  organization   Organization?          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  type           SecurityEventType
-  severity       SecurityEventSeverity
-  status         SecurityEventStatus    @default(DETECTED)
+  type     SecurityEventType
+  severity SecurityEventSeverity
+  status   SecurityEventStatus   @default(DETECTED)
 
   // Context
-  userId         String?
-  email          String?
-  ipAddress      String?
-  userAgent      String?
+  userId    String?
+  email     String?
+  ipAddress String?
+  userAgent String?
 
   // Details
-  description    String
-  metadata       Json?
+  description String
+  metadata    Json?
 
   // Resolution
-  resolvedAt     DateTime?
-  resolvedBy     String?
-  resolution     String?
+  resolvedAt DateTime?
+  resolvedBy String?
+  resolution String?
 
-  createdAt      DateTime               @default(now())
-  updatedAt      DateTime               @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([organizationId])
   @@index([type])
@@ -619,6 +659,9 @@ model Recommendation {
   // Métadonnées
   isRecurrent    Boolean @default(false)
   recurrenceNote String? @db.Text
+
+  // Messagerie contextuelle
+  conversations Conversation[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -796,7 +839,838 @@ model SystemSettings {
   allowedIPs         String[]  @default([])
   allowedUserIds     String[]  @default([])
   updatedAt          DateTime  @updatedAt
-  updatedBy          String?   // userId du super admin qui a fait le changement
+  updatedBy          String? // userId du super admin qui a fait le changement
 
   @@map("system_settings")
+}
+
+// ==================== MODULE PASSATION DE MARCHÉS ====================
+
+enum MethodeProcedure {
+  ACHAT_DIRECT
+  DEMANDE_COTATION
+  CONSULTATION_RESTREINTE
+  APPEL_OFFRES_OUVERT
+  APPEL_OFFRES_RESTREINT
+  DEMANDE_PROPOSITIONS
+  MANIFESTATION_INTERET
+  SELECTION_CONSULTANT
+  PROCEDURE_URGENCE
+  AUTRE
+}
+
+enum StatusPPM {
+  BROUILLON
+  VALIDE
+  EN_COURS
+  CLOTURE
+}
+
+enum StatusDemandeAchat {
+  BROUILLON
+  SOUMISE
+  EN_VALIDATION
+  APPROUVEE
+  REJETEE
+  ANNULEE
+}
+
+enum StatusProcedure {
+  BROUILLON
+  PUBLIEE
+  EN_COURS
+  CLOTUREE_OFFRES
+  EVALUATION
+  ATTRIBUEE
+  INFRUCTUEUSE
+  ANNULEE
+}
+
+enum StatusContrat {
+  SIGNE
+  EN_COURS
+  SUSPENDU
+  TERMINE
+  CLOTURE
+  RESILIE
+}
+
+enum StatusFournisseur {
+  A_VALIDER
+  ACTIF
+  SUSPENDU
+  BLACKLISTE
+  ARCHIVE
+}
+
+// 1. Plan de Passation des Marchés
+model PlanPassationMarche {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  year      Int
+  title     String
+  projectId String?
+  project   ActionPlan? @relation(fields: [projectId], references: [id])
+
+  status      StatusPPM @default(BROUILLON)
+  validatedBy String?
+  validatedAt DateTime?
+
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lignes LignePPM[]
+
+  @@index([organizationId])
+  @@index([year])
+  @@index([projectId])
+  @@map("plan_passation_marches")
+}
+
+model LignePPM {
+  id    String              @id @default(cuid())
+  ppmId String
+  ppm   PlanPassationMarche @relation(fields: [ppmId], references: [id], onDelete: Cascade)
+
+  reference String
+  objet     String
+
+  activityId String?
+  activity   Activity? @relation(fields: [activityId], references: [id])
+
+  montantEstimatif  Decimal @db.Decimal(14, 2)
+  sourceFinancement String?
+  ligneBudgetaire   String?
+
+  methodeProcedure MethodeProcedure
+
+  dateLancement   DateTime?
+  dateAttribution DateTime?
+  dateSignature   DateTime?
+  dateExecution   DateTime?
+
+  responsableId String
+  responsable   User   @relation("LignePPMResponsable", fields: [responsableId], references: [id])
+
+  status String @default("PREVISIONNEL")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  demandeAchat DemandeAchat?
+  procedure    Procedure?
+
+  @@index([ppmId])
+  @@index([activityId])
+  @@index([responsableId])
+  @@index([status])
+  @@map("lignes_ppm")
+}
+
+// 2. Demandes d'achat
+model DemandeAchat {
+  id             String @id @default(cuid())
+  organizationId String
+  reference      String @unique
+
+  lignePPMId String?   @unique
+  lignePPM   LignePPM? @relation(fields: [lignePPMId], references: [id])
+  activityId String?
+  activity   Activity? @relation(fields: [activityId], references: [id])
+
+  objet          String
+  description    String  @db.Text
+  justification  String  @db.Text
+  quantite       Float?
+  specifications String? @db.Text
+
+  montantEstimatif  Decimal @db.Decimal(14, 2)
+  ligneBudgetaire   String?
+  sourceFinancement String?
+
+  echeanceSouhaitee DateTime?
+
+  status StatusDemandeAchat @default(BROUILLON)
+
+  demandeurId String
+  demandeur   User   @relation("DemandeurAchat", fields: [demandeurId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  validations ValidationDemande[]
+  procedure   Procedure?
+
+  @@index([organizationId])
+  @@index([activityId])
+  @@index([demandeurId])
+  @@index([status])
+  @@map("demandes_achat")
+}
+
+model ValidationDemande {
+  id        String       @id @default(cuid())
+  demandeId String
+  demande   DemandeAchat @relation(fields: [demandeId], references: [id], onDelete: Cascade)
+
+  etape String
+  ordre Int
+
+  validateurId String
+  validateur   User   @relation("ValidateurDemande", fields: [validateurId], references: [id])
+
+  decision    String  @default("EN_ATTENTE")
+  commentaire String? @db.Text
+
+  validatedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([demandeId])
+  @@index([validateurId])
+  @@map("validations_demande")
+}
+
+// 3. Fournisseurs
+model Fournisseur {
+  id             String @id @default(cuid())
+  organizationId String
+
+  raisonSociale     String
+  identifiantFiscal String?
+  registreCommerce  String?
+
+  adresse   String?
+  ville     String?
+  pays      String  @default("Sénégal")
+  telephone String?
+  email     String?
+  siteWeb   String?
+
+  nomContact       String?
+  prenomContact    String?
+  fonctionContact  String?
+  telephoneContact String?
+  emailContact     String?
+
+  domainesActivite  String[]
+  categoriesBiens   String[]
+  zonesIntervention String[]
+
+  status StatusFournisseur @default(A_VALIDER)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  documents   FournisseurDocument[]
+  soumissions Soumission[]
+  contrats    Contrat[]
+  evaluations EvaluationFournisseur[]
+
+  @@index([organizationId])
+  @@index([status])
+  @@map("fournisseurs")
+}
+
+model FournisseurDocument {
+  id            String      @id @default(cuid())
+  fournisseurId String
+  fournisseur   Fournisseur @relation(fields: [fournisseurId], references: [id], onDelete: Cascade)
+
+  type     String
+  nom      String
+  url      String
+  fileSize Int?
+  mimeType String?
+
+  dateExpiration DateTime?
+
+  uploadedAt DateTime @default(now())
+
+  @@index([fournisseurId])
+  @@map("fournisseur_documents")
+}
+
+// 4. Procédures
+model Procedure {
+  id             String @id @default(cuid())
+  organizationId String
+  reference      String @unique
+
+  demandeAchatId String?       @unique
+  demandeAchat   DemandeAchat? @relation(fields: [demandeAchatId], references: [id])
+  lignePPMId     String?       @unique
+  lignePPM       LignePPM?     @relation(fields: [lignePPMId], references: [id])
+
+  methode     MethodeProcedure
+  objet       String
+  description String           @db.Text
+
+  montantEstimatif Decimal @db.Decimal(14, 2)
+
+  datePublication   DateTime?
+  dateLimite        DateTime?
+  dateOuverture     DateTime?
+  dateClarification DateTime?
+  dateAttribution   DateTime?
+
+  responsableId String
+  responsable   User   @relation("ProcedureResponsable", fields: [responsableId], references: [id])
+
+  status StatusProcedure @default(BROUILLON)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  documents     DossierConsultation[]
+  soumissions   Soumission[]
+  commissions   Commission[]
+  contrat       Contrat?
+  conversations Conversation[]
+
+  @@index([organizationId])
+  @@index([responsableId])
+  @@index([status])
+  @@map("procedures")
+}
+
+model DossierConsultation {
+  id          String    @id @default(cuid())
+  procedureId String
+  procedure   Procedure @relation(fields: [procedureId], references: [id], onDelete: Cascade)
+
+  type    String
+  titre   String
+  version String @default("1.0")
+
+  documentUrl String
+  fileName    String
+  fileSize    Int?
+
+  uploadedBy String
+  uploadedAt DateTime @default(now())
+
+  @@index([procedureId])
+  @@map("dossier_consultation")
+}
+
+// 5. Soumissions et évaluation
+model Soumission {
+  id          String    @id @default(cuid())
+  procedureId String
+  procedure   Procedure @relation(fields: [procedureId], references: [id], onDelete: Cascade)
+
+  numeroDepot String @unique
+
+  fournisseurId String
+  fournisseur   Fournisseur @relation(fields: [fournisseurId], references: [id])
+
+  montantTechnique Decimal? @db.Decimal(14, 2)
+  montantFinancier Decimal  @db.Decimal(14, 2)
+  montantTotal     Decimal  @db.Decimal(14, 2)
+  devise           String   @default("XOF")
+
+  conformeAdmin     Boolean?
+  conformeTechnique Boolean?
+  conformeFinancier Boolean?
+
+  dateDepot DateTime @default(now())
+  horsDelai Boolean  @default(false)
+
+  status String @default("DEPOSEE")
+
+  documents   SoumissionDocument[]
+  evaluations Evaluation[]
+  contrat     Contrat?
+
+  @@index([procedureId])
+  @@index([fournisseurId])
+  @@index([status])
+  @@map("soumissions")
+}
+
+model SoumissionDocument {
+  id           String     @id @default(cuid())
+  soumissionId String
+  soumission   Soumission @relation(fields: [soumissionId], references: [id], onDelete: Cascade)
+
+  type     String
+  nom      String
+  url      String
+  fileSize Int?
+
+  uploadedAt DateTime @default(now())
+
+  @@index([soumissionId])
+  @@map("soumission_documents")
+}
+
+model Commission {
+  id          String    @id @default(cuid())
+  procedureId String
+  procedure   Procedure @relation(fields: [procedureId], references: [id], onDelete: Cascade)
+
+  nom        String
+  type       String
+  dateSeance DateTime
+
+  presidentId String
+  president   User   @relation("CommissionPresident", fields: [presidentId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  membres     MembreCommission[]
+  evaluations Evaluation[]
+
+  @@index([procedureId])
+  @@map("commissions")
+}
+
+model MembreCommission {
+  id           String     @id @default(cuid())
+  commissionId String
+  commission   Commission @relation(fields: [commissionId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  role String
+
+  @@unique([commissionId, userId])
+  @@index([commissionId])
+  @@map("membres_commission")
+}
+
+model Evaluation {
+  id           String     @id @default(cuid())
+  soumissionId String
+  soumission   Soumission @relation(fields: [soumissionId], references: [id], onDelete: Cascade)
+
+  commissionId String
+  commission   Commission @relation(fields: [commissionId], references: [id])
+
+  evaluateurId String
+  evaluateur   User   @relation("Evaluateur", fields: [evaluateurId], references: [id])
+
+  scoreAdmin     Float?
+  scoreTechnique Float?
+  scoreFinancier Float?
+  scoreGlobal    Float?
+
+  criteres     Json
+  commentaires String? @db.Text
+
+  validatedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([soumissionId, evaluateurId])
+  @@index([soumissionId])
+  @@index([commissionId])
+  @@map("evaluations")
+}
+
+// 6. Contrats
+model Contrat {
+  id             String @id @default(cuid())
+  organizationId String
+  reference      String @unique
+
+  procedureId String    @unique
+  procedure   Procedure @relation(fields: [procedureId], references: [id])
+
+  soumissionId String     @unique
+  soumission   Soumission @relation(fields: [soumissionId], references: [id])
+
+  fournisseurId String
+  fournisseur   Fournisseur @relation(fields: [fournisseurId], references: [id])
+
+  montantInitial Decimal  @db.Decimal(14, 2)
+  montantRevise  Decimal? @db.Decimal(14, 2)
+  montantPaye    Decimal  @default(0) @db.Decimal(14, 2)
+  devise         String   @default("XOF")
+
+  dateSignature     DateTime
+  dateDemarrage     DateTime?
+  dateEcheance      DateTime
+  dateReceptionProv DateTime?
+  dateReceptionDef  DateTime?
+
+  modalitesAvance  String? @db.Text
+  modalitesAcompte String? @db.Text
+  modalitesRetenue String? @db.Text
+  garanties        String? @db.Text
+
+  gestionnaire     String
+  gestionnaireUser User   @relation("ContratGestionnaire", fields: [gestionnaire], references: [id])
+
+  status StatusContrat @default(SIGNE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  avenants      Avenant[]
+  livrables     Livrable[]
+  paiements     PaiementContrat[]
+  conversations Conversation[]
+
+  @@index([organizationId])
+  @@index([fournisseurId])
+  @@index([gestionnaire])
+  @@index([status])
+  @@map("contrats")
+}
+
+model Avenant {
+  id        String  @id @default(cuid())
+  contratId String
+  contrat   Contrat @relation(fields: [contratId], references: [id], onDelete: Cascade)
+
+  numero Int
+  motif  String @db.Text
+
+  impactMontant Decimal? @db.Decimal(14, 2)
+  impactDelai   Int?
+  impactObjet   String?  @db.Text
+
+  dateSignature DateTime
+
+  validatedBy String?
+  validatedAt DateTime?
+
+  status String @default("BROUILLON")
+
+  createdAt DateTime @default(now())
+
+  @@index([contratId])
+  @@map("avenants")
+}
+
+model Livrable {
+  id        String  @id @default(cuid())
+  contratId String
+  contrat   Contrat @relation(fields: [contratId], references: [id], onDelete: Cascade)
+
+  titre       String
+  description String? @db.Text
+
+  dateEcheance DateTime
+
+  responsableId String?
+  responsable   User?   @relation("LivrableResponsable", fields: [responsableId], references: [id])
+
+  status String @default("EN_ATTENTE")
+
+  ordre Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  receptions ReceptionLivrable[]
+
+  @@index([contratId])
+  @@map("livrables")
+}
+
+model ReceptionLivrable {
+  id         String   @id @default(cuid())
+  livrableId String
+  livrable   Livrable @relation(fields: [livrableId], references: [id], onDelete: Cascade)
+
+  type String
+
+  quantitePrevue Float?
+  quantiteRecue  Float?
+
+  conforme Boolean @default(true)
+  reserves String? @db.Text
+
+  dateReception DateTime
+
+  receptionneurId String
+  receptionneur   User   @relation("Receptionneur", fields: [receptionneurId], references: [id])
+
+  pvUrl String?
+
+  createdAt DateTime @default(now())
+
+  @@index([livrableId])
+  @@map("receptions_livrable")
+}
+
+model PaiementContrat {
+  id        String  @id @default(cuid())
+  contratId String
+  contrat   Contrat @relation(fields: [contratId], references: [id], onDelete: Cascade)
+
+  type String
+
+  montantBrut Decimal @db.Decimal(14, 2)
+  taxes       Decimal @default(0) @db.Decimal(14, 2)
+  penalites   Decimal @default(0) @db.Decimal(14, 2)
+  montantNet  Decimal @db.Decimal(14, 2)
+
+  dateEcheance DateTime?
+  datePaiement DateTime?
+
+  status String @default("EN_ATTENTE")
+
+  referenceComptable String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([contratId])
+  @@index([status])
+  @@map("paiements_contrat")
+}
+
+model EvaluationFournisseur {
+  id            String      @id @default(cuid())
+  fournisseurId String
+  fournisseur   Fournisseur @relation(fields: [fournisseurId], references: [id], onDelete: Cascade)
+
+  contratId String?
+
+  qualite            Float?
+  delais             Float?
+  conformite         Float?
+  disponibilite      Float?
+  serviceAV          Float?
+  respectContractuel Float?
+  rapportQualitePrix Float?
+
+  noteGlobale  Float
+  commentaires String? @db.Text
+
+  evaluateurId String
+  evaluateur   User   @relation("EvaluateurFournisseur", fields: [evaluateurId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([fournisseurId])
+  @@map("evaluations_fournisseur")
+}
+
+// ==================== MODULE MESSAGERIE ====================
+
+enum ConversationType {
+  DIRECT
+  GROUP
+  CHANNEL_PROJECT
+  CHANNEL_TEAM
+  CONTEXTUAL
+}
+
+enum ConversationRole {
+  ADMIN
+  MEMBER
+  OBSERVER
+}
+
+enum MessageContentType {
+  TEXT
+  HTML
+  MARKDOWN
+}
+
+enum MentionType {
+  USER
+  TEAM
+  EVERYONE
+}
+
+model Conversation {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  type ConversationType
+
+  name        String?
+  description String? @db.Text
+  avatarUrl   String?
+
+  projectId String?
+  project   ActionPlan? @relation(fields: [projectId], references: [id])
+
+  activityId String?
+  activity   Activity? @relation(fields: [activityId], references: [id])
+
+  recommendationId String?
+  recommendation   Recommendation? @relation(fields: [recommendationId], references: [id])
+
+  procedureId String?
+  procedure   Procedure? @relation(fields: [procedureId], references: [id])
+
+  contratId String?
+  contrat   Contrat? @relation(fields: [contratId], references: [id])
+
+  isArchived    Boolean   @default(false)
+  lastMessageAt DateTime?
+
+  createdById String
+  createdBy   User   @relation("ConversationCreator", fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  @@index([organizationId])
+  @@index([type])
+  @@index([projectId])
+  @@index([activityId])
+  @@index([recommendationId])
+  @@index([procedureId])
+  @@index([contratId])
+  @@index([lastMessageAt])
+  @@map("conversations")
+}
+
+model ConversationParticipant {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation("ConversationParticipant", fields: [userId], references: [id], onDelete: Cascade)
+
+  role ConversationRole @default(MEMBER)
+
+  isMuted  Boolean @default(false)
+  isPinned Boolean @default(false)
+
+  lastReadAt  DateTime?
+  unreadCount Int       @default(0)
+
+  joinedAt DateTime  @default(now())
+  leftAt   DateTime?
+
+  @@unique([conversationId, userId])
+  @@index([conversationId])
+  @@index([userId])
+  @@index([isPinned])
+  @@map("conversation_participants")
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  authorId String
+  author   User   @relation("MessageAuthor", fields: [authorId], references: [id])
+
+  content     String             @db.Text
+  contentType MessageContentType @default(TEXT)
+
+  parentId String?
+  parent   Message?  @relation("MessageThread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  Message[] @relation("MessageThread")
+
+  isEdited  Boolean   @default(false)
+  editedAt  DateTime?
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+
+  isSystem Boolean @default(false)
+
+  metadata Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  attachments MessageAttachment[]
+  reactions   MessageReaction[]
+  reads       MessageRead[]
+  mentions    MessageMention[]
+
+  @@index([conversationId])
+  @@index([authorId])
+  @@index([parentId])
+  @@index([createdAt])
+  @@index([isDeleted])
+  @@map("messages")
+}
+
+model MessageAttachment {
+  id        String  @id @default(cuid())
+  messageId String
+  message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  fileName String
+  fileUrl  String
+  fileSize Int
+  mimeType String
+
+  thumbnailUrl String?
+  width        Int?
+  height       Int?
+  duration     Int?
+
+  uploadedAt DateTime @default(now())
+
+  @@index([messageId])
+  @@map("message_attachments")
+}
+
+model MessageReaction {
+  id        String  @id @default(cuid())
+  messageId String
+  message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation("MessageReaction", fields: [userId], references: [id], onDelete: Cascade)
+
+  emoji String
+
+  createdAt DateTime @default(now())
+
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
+  @@index([userId])
+  @@map("message_reactions")
+}
+
+model MessageRead {
+  id        String  @id @default(cuid())
+  messageId String
+  message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation("MessageRead", fields: [userId], references: [id], onDelete: Cascade)
+
+  readAt DateTime @default(now())
+
+  @@unique([messageId, userId])
+  @@index([messageId])
+  @@index([userId])
+  @@map("message_reads")
+}
+
+model MessageMention {
+  id        String  @id @default(cuid())
+  messageId String
+  message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation("MessageMention", fields: [userId], references: [id], onDelete: Cascade)
+
+  type MentionType @default(USER)
+
+  startPos Int?
+  endPos   Int?
+
+  notified Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([messageId])
+  @@index([userId])
+  @@index([notified])
+  @@map("message_mentions")
 }
