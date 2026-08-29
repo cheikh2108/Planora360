@@ -2,7 +2,11 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import type { Message, TypingIndicator, UserPresence } from '@/lib/types-messagerie';
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+// WebSocket doit pointer directement vers le backend (le proxy Next.js ne fonctionne pas pour WS)
+const SOCKET_URL =
+  typeof window !== 'undefined' && process.env.NODE_ENV === 'development'
+    ? 'http://localhost:3000'
+    : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000');
 
 interface UseMessagerieSocketOptions {
   conversationId?: string;
