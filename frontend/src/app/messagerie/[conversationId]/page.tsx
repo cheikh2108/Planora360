@@ -11,6 +11,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { conversationsApi, messagesApi } from '@/lib/api';
 import { useMessagerieSocket } from '@/hooks/useMessagerieSocket';
+import { useAuth } from '@/lib/auth-context';
 import type { Conversation, Message, TypingIndicator } from '@/lib/types-messagerie';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/form-field';
@@ -35,6 +36,7 @@ export default function ConversationPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const conversationId = params.conversationId as string;
+  const { user } = useAuth();
 
   const [messageInput, setMessageInput] = useState('');
   const [typingUsers, setTypingUsers] = useState<TypingIndicator[]>([]);
@@ -217,7 +219,7 @@ export default function ConversationPage() {
         {messages && messages.length > 0 ? (
           <div className="space-y-4">
             {messages.map((message) => {
-              const isOwn = message.sender?.id === 'current-user-id'; // TODO: Get from auth context
+              const isOwn = message.sender?.id === user?.id;
 
               return (
                 <div

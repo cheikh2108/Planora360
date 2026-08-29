@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { conversationsApi } from '@/lib/api';
-import type { Conversation } from '@/lib/types-messagerie';
+import { conversationsApi, usersApi } from '@/lib/api';
+import type { Conversation, ConversationType } from '@/lib/types-messagerie';
+import type { User } from '@/lib/types';
 import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/form-field';
@@ -13,7 +14,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/toast';
 import { formatDate } from '@/lib/utils';
-import { MessageSquare, Plus, Search, Users, Archive, Circle } from 'lucide-react';
+import { MessageSquare, Plus, Search, Users, Archive, Circle, X } from 'lucide-react';
 
 export default function MessagingPage() {
   const router = useRouter();
@@ -23,12 +24,34 @@ export default function MessagingPage() {
   const [showNewConversationModal, setShowNewConversationModal] = useState(false);
   const [showArchivedOnly, setShowArchivedOnly] = useState(false);
 
+  // Form state for new conversation
+  const [formData, setFormData] = useState<{
+    type: ConversationType;
+    titre: string;
+    contextId: string;
+    selectedParticipants: string[];
+  }>({
+    type: 'DIRECTE',
+    titre: '',
+    contextId: '',
+    selectedParticipants: [],
+  });
+
   // Fetch conversations
   const { data: conversations, isLoading } = useQuery({
     queryKey: ['conversations'],
     queryFn: async () => {
       const res = await conversationsApi.getAll();
       return res.data as Conversation[];
+    },
+  });
+
+  // Fetch users for participants selection
+  const { data: users } = useQuery({
+    queryKey: ['users-for-assignment'],
+    queryFn: async () => {
+      const res = await usersApi.listForAssignment();
+      return res.data as User[];
     },
   });
 
@@ -65,6 +88,56 @@ export default function MessagingPage() {
       success('Conversation restaurée');
     },
   });
+
+  // Create conversation mutation
+  const createMutation = useMutation({
+    mutationFn: (data: {
+      titre?: string;
+      type: ConversationType;
+      contextId?: string;
+      participantIds: string[];
+    }) => conversationsApi.create(data),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      success('Conversation créée avec succès');
+      setShowNewConversationModal(false);
+      setFormData({
+        type: 'DIRECTE',
+        titre: '',
+        contextId: '',
+        selectedParticipants: [],
+      });
+      // Redirect to the new conversation
+      const newConvId = (response.data as any).id;
+      if (newConvId) {
+        router.push(`/messagerie/${newConvId}`);
+      }
+    },
+  });
+
+  // Handle form submit
+  const handleCreateConversation = () => {
+    if (formData.selectedParticipants.length === 0) {
+      return;
+    }
+
+    createMutation.mutate({
+      titre: formData.titre || undefined,
+      type: formData.type,
+      contextId: formData.contextId || undefined,
+      participantIds: formData.selectedParticipants,
+    });
+  };
+
+  // Toggle participant selection
+  const toggleParticipant = (userId: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      selectedParticipants: prev.selectedParticipants.includes(userId)
+        ? prev.selectedParticipants.filter((id) => id !== userId)
+        : [...prev.selectedParticipants, userId],
+    }));
+  };
 
   const getConversationTitle = (conv: Conversation) => {
     if (conv.titre) return conv.titre;
@@ -242,16 +315,155 @@ export default function MessagingPage() {
         )}
       </div>
 
-      {/* New conversation modal (placeholder) */}
+      {/* New conversation modal */}
       {showNewConversationModal && (
         <Modal
           open={showNewConversationModal}
-          onClose={() => setShowNewConversationModal(false)}
+          onClose={() => {
+            setShowNewConversationModal(false);
+            setFormData({
+              type: 'DIRECTE',
+              titre: '',
+              contextId: '',
+              selectedParticipants: [],
+            });
+          }}
           title="Nouvelle conversation"
         >
-          <p className="text-sm text-slate-600">
-            Fonctionnalité en cours de développement
-          </p>
+          <div className="space-y-6">
+            {/* Type de conversation */}
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700">
+                Type de conversation <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={formData.type}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, type: e.target.value as ConversationType }))
+                }
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                <option value="DIRECTE">Conversation directe</option>
+                <option value="GROUPE">Groupe</option>
+                <option value="PROJET">Projet</option>
+                <option value="ACTIVITE">Activité</option>
+                <option value="DEMANDE">Demande d'achat</option>
+                <option value="CONTRAT">Contrat</option>
+              </select>
+            </div>
+
+            {/* Titre (optionnel) */}
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700">
+                Titre (optionnel)
+              </label>
+              <Input
+                type="text"
+                placeholder="Ex: Discussion projet Q2"
+                value={formData.titre}
+                onChange={(e) => setFormData((prev) => ({ ...prev, titre: e.target.value }))}
+              />
+              <p className="mt-1 text-xs text-slate-500">
+                Laissez vide pour générer automatiquement
+              </p>
+            </div>
+
+            {/* Context ID (pour types contextuels) */}
+            {['PROJET', 'ACTIVITE', 'DEMANDE', 'CONTRAT'].includes(formData.type) && (
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700">
+                  ID {formData.type.toLowerCase()} (optionnel)
+                </label>
+                <Input
+                  type="text"
+                  placeholder="ID de l'entité liée"
+                  value={formData.contextId}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, contextId: e.target.value }))}
+                />
+              </div>
+            )}
+
+            {/* Participants */}
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700">
+                Participants <span className="text-red-500">*</span>
+              </label>
+              <div className="max-h-64 space-y-2 overflow-y-auto rounded-lg border border-slate-200 p-3">
+                {users && users.length > 0 ? (
+                  users.map((user) => (
+                    <label
+                      key={user.id}
+                      className="flex cursor-pointer items-center gap-3 rounded-lg p-2 hover:bg-slate-50"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={formData.selectedParticipants.includes(user.id)}
+                        onChange={() => toggleParticipant(user.id)}
+                        className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-slate-900">
+                          {user.firstName} {user.lastName}
+                        </p>
+                        <p className="text-xs text-slate-500">{user.email}</p>
+                      </div>
+                    </label>
+                  ))
+                ) : (
+                  <p className="text-center text-sm text-slate-500">Aucun utilisateur disponible</p>
+                )}
+              </div>
+              {formData.selectedParticipants.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {formData.selectedParticipants.map((userId) => {
+                    const user = users?.find((u) => u.id === userId);
+                    if (!user) return null;
+                    return (
+                      <span
+                        key={userId}
+                        className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700"
+                      >
+                        {user.firstName} {user.lastName}
+                        <button
+                          type="button"
+                          onClick={() => toggleParticipant(userId)}
+                          className="hover:text-blue-900"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-end gap-3 border-t border-slate-200 pt-4">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setShowNewConversationModal(false);
+                  setFormData({
+                    type: 'DIRECTE',
+                    titre: '',
+                    contextId: '',
+                    selectedParticipants: [],
+                  });
+                }}
+              >
+                Annuler
+              </Button>
+              <Button
+                onClick={handleCreateConversation}
+                disabled={
+                  formData.selectedParticipants.length === 0 || createMutation.isPending
+                }
+              >
+                {createMutation.isPending ? 'Création...' : 'Créer la conversation'}
+              </Button>
+            </div>
+          </div>
         </Modal>
       )}
     </div>
