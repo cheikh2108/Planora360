@@ -63,6 +63,22 @@ export class StorageService {
     );
   }
 
+  /**
+   * Obtenir l'URL publique d'un fichier Backblaze B2
+   * Format: https://f005.backblazeb2.com/file/{bucket}/{key}
+   */
+  getPublicUrl(storageKey: string): string {
+    if (this.useLocal) {
+      return `/uploads/${storageKey}`;
+    }
+
+    // URL publique Backblaze B2
+    // Format: https://f{region-code}.backblazeb2.com/file/{bucket}/{key}
+    const endpoint = this.config.get('B2_ENDPOINT') ?? 'https://s3.us-east-005.backblazeb2.com';
+    const regionCode = endpoint.match(/us-east-(\d+)/)?.[1] || '005';
+    return `https://f${regionCode}.backblazeb2.com/file/${this.bucket}/${storageKey}`;
+  }
+
   async delete(storageKey: string): Promise<void> {
     if (this.useLocal) {
       const filePath = path.join(process.cwd(), 'uploads', storageKey);

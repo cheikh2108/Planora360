@@ -16,7 +16,9 @@ async function bootstrap() {
   app.use(cookieParser());
 
   // Servir les fichiers statiques uploadés
-  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+  // En dev: __dirname = dist/src, donc remonter de 2 niveaux
+  // En prod: __dirname = dist/src, donc remonter de 2 niveaux aussi
+  app.useStaticAssets(join(__dirname, '..', '..', 'uploads'), {
     prefix: '/uploads/',
   });
 

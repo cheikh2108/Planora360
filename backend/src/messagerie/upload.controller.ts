@@ -12,9 +12,7 @@ import {
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { MessagerieService } from './messagerie.service';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
-import { existsSync, mkdirSync } from 'fs';
+import { StorageService } from '../storage/storage.service';
 
 // Types de fichiers autorisés (WHITELIST stricte)
 const ALLOWED_MIME_TYPES = [
@@ -29,50 +27,34 @@ const ALLOWED_MIME_TYPES = [
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 ];
 
-const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.pdf', '.doc', '.docx', '.xls', '.xlsx'];
-
 // Limite de taille : 10MB par fichier
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
+// Générer un nom de fichier sécurisé
+function generateFilename(originalName: string): string {
+  const timestamp = Date.now();
+  const random = Math.round(Math.random() * 1e9);
+  const ext = originalName.substring(originalName.lastIndexOf('.'));
+  return `${timestamp}-${random}${ext}`;
+}
 
 @Controller('messagerie')
 @UseGuards(JwtAuthGuard)
 export class UploadController {
-  constructor(private readonly messagerieService: MessagerieService) {}
+  constructor(
+    private readonly messagerieService: MessagerieService,
+    private readonly storageService: StorageService,
+  ) {}
 
   @Post('conversations/:conversationId/upload')
   @UseInterceptors(
     FilesInterceptor('files', 3, {
-      // Max 3 fichiers
-      storage: diskStorage({
-        destination: (req, file, cb) => {
-          const uploadPath = './uploads/messagerie';
-          // Créer le dossier s'il n'existe pas
-          if (!existsSync(uploadPath)) {
-            mkdirSync(uploadPath, { recursive: true });
-          }
-          cb(null, uploadPath);
-        },
-        filename: (req, file, cb) => {
-          // Nom sécurisé : timestamp + random + extension
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          const ext = extname(file.originalname);
-          cb(null, `${uniqueSuffix}${ext}`);
-        },
-      }),
+      // Max 3 fichiers, stockage en mémoire (pas sur disque)
       fileFilter: (req, file, cb) => {
         // Validation MIME type
         if (!ALLOWED_MIME_TYPES.includes(file.mimetype)) {
           return cb(
             new BadRequestException(`Type de fichier non autorisé: ${file.mimetype}`),
-            false,
-          );
-        }
-
-        // Validation extension
-        const ext = extname(file.originalname).toLowerCase();
-        if (!ALLOWED_EXTENSIONS.includes(ext)) {
-          return cb(
-            new BadRequestException(`Extension non autorisée: ${ext}`),
             false,
           );
         }
@@ -110,15 +92,29 @@ export class UploadController {
       }
     }
 
-    // Créer le message avec les fichiers attachés
-    const baseUrl = `${req.protocol}://${req.get('host')}`;
-    const attachments = files.map((file) => ({
-      fileName: file.originalname,
-      fileUrl: `/uploads/messagerie/${file.filename}`,
-      fileSize: file.size,
-      mimeType: file.mimetype,
-    }));
+    // Upload vers Backblaze B2 (ou local si non configuré)
+    const attachments = await Promise.all(
+      files.map(async (file) => {
+        // Générer nom sécurisé et clé de stockage
+        const filename = generateFilename(file.originalname);
+        const storageKey = `messagerie/${filename}`;
 
+        // Upload vers B2
+        await this.storageService.upload(storageKey, file);
+
+        // Obtenir URL publique
+        const fileUrl = this.storageService.getPublicUrl(storageKey);
+
+        return {
+          fileName: file.originalname,
+          fileUrl,
+          fileSize: file.size,
+          mimeType: file.mimetype,
+        };
+      }),
+    );
+
+    // Créer le message avec les fichiers attachés
     const message = await this.messagerieService.sendMessageWithAttachments(
       conversationId,
       req.user.id,
