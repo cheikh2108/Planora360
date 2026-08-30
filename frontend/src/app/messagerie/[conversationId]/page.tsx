@@ -550,8 +550,8 @@ export default function ConversationPage() {
               onChange={(e) => handleInputChange(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
               placeholder="Écrivez votre message..."
-              className="w-full resize-none rounded-2xl border-slate-200 bg-slate-50 px-4 py-3 text-[15px] leading-[1.4] placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 transition-all duration-200"
-              style={{ minHeight: '44px', maxHeight: '120px' }}
+              className="w-full resize-none rounded-2xl border-slate-200 bg-slate-50 px-4 py-2 text-[14px] leading-[1.4] placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 transition-all duration-200"
+              style={{ minHeight: '38px', maxHeight: '120px' }}
             />
           </div>
           <button
