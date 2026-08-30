@@ -23,7 +23,6 @@ import { FileUpload } from '@/components/messagerie/FileUpload';
 import {
   ArrowLeft,
   Send,
-  Smile,
   Paperclip,
   MoreVertical,
   Users,
@@ -45,7 +44,6 @@ export default function ConversationPage() {
   const [messageInput, setMessageInput] = useState('');
   const [typingUsers, setTypingUsers] = useState<TypingIndicator[]>([]);
   const [showInfoPanel, setShowInfoPanel] = useState(false);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const [showFileUpload, setShowFileUpload] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -258,9 +256,6 @@ export default function ConversationPage() {
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (!target.closest('.emoji-picker') && !target.closest('[data-emoji-button]')) {
-        setShowEmojiPicker(false);
-      }
       if (!target.closest('.options-menu') && !target.closest('[data-options-button]')) {
         setShowOptionsMenu(false);
       }
@@ -537,13 +532,6 @@ export default function ConversationPage() {
           >
             <Paperclip className="h-5 w-5" />
           </button>
-          <button
-            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-            data-emoji-button
-            className="rounded-full p-2.5 text-slate-600 transition-all duration-200 hover:bg-slate-100 hover:text-slate-900 active:scale-90"
-          >
-            <Smile className="h-5 w-5" />
-          </button>
           <div className="relative flex-1">
             <Textarea
               value={messageInput}
@@ -567,41 +555,6 @@ export default function ConversationPage() {
             <Send className="h-5 w-5" />
           </button>
         </div>
-
-        {/* Emoji Picker */}
-        {showEmojiPicker && (
-          <div className="emoji-picker absolute bottom-20 left-20 z-50 animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-4 duration-200 rounded-2xl border border-slate-200/80 bg-white/95 backdrop-blur-xl p-4 shadow-2xl shadow-slate-900/10">
-            <div className="mb-3 flex items-center justify-between">
-              <p className="text-[13px] font-semibold text-slate-700">Réactions rapides</p>
-              <button
-                onClick={() => setShowEmojiPicker(false)}
-                className="rounded-full p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-              >
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <div className="grid grid-cols-8 gap-1">
-              {['😀', '😂', '😍', '🥰', '😎', '🤔', '👍', '👏', '🔥', '❤️', '🎉', '✅', '💪', '🙏', '👀', '🚀'].map(
-                (emoji) => (
-                  <button
-                    key={emoji}
-                    onClick={() => {
-                      setMessageInput((prev) => prev + emoji);
-                      setShowEmojiPicker(false);
-                    }}
-                    className="group relative rounded-lg p-2.5 text-2xl transition-all duration-200 hover:bg-emerald-50 hover:scale-110 active:scale-95"
-                  >
-                    <span className="block transition-transform duration-200 group-hover:scale-110">
-                      {emoji}
-                    </span>
-                  </button>
-                ),
-              )}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Menu Options (trois points) */}
