@@ -102,8 +102,8 @@ export class UploadController {
         // Upload vers B2
         await this.storageService.upload(storageKey, file);
 
-        // Obtenir URL publique
-        const fileUrl = this.storageService.getPublicUrl(storageKey);
+        // Obtenir URL signée (24h d'expiration) pour sécurité
+        const fileUrl = await this.storageService.getSignedUrl(storageKey, 86400);
 
         return {
           fileName: file.originalname,
