@@ -11,8 +11,8 @@ export declare class ContratsService {
         };
         procedure: {
             id: string;
-            reference: string;
             objet: string;
+            reference: string;
         };
         gestionnaireUser: {
             id: string;
@@ -29,7 +29,7 @@ export declare class ContratsService {
         dateSignature: Date;
         fournisseurId: string;
         procedureId: string;
-        soumissionId: string;
+        soumissionId: string | null;
         montantInitial: import("@prisma/client-runtime-utils").Decimal;
         montantRevise: import("@prisma/client-runtime-utils").Decimal | null;
         montantPaye: import("@prisma/client-runtime-utils").Decimal;
@@ -70,7 +70,7 @@ export declare class ContratsService {
         dateSignature: Date;
         fournisseurId: string;
         procedureId: string;
-        soumissionId: string;
+        soumissionId: string | null;
         montantInitial: import("@prisma/client-runtime-utils").Decimal;
         montantRevise: import("@prisma/client-runtime-utils").Decimal | null;
         montantPaye: import("@prisma/client-runtime-utils").Decimal;
@@ -117,9 +117,9 @@ export declare class ContratsService {
             updatedAt: Date;
             status: import(".prisma/client").$Enums.StatusProcedure;
             description: string;
-            reference: string;
             objet: string;
             montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
+            reference: string;
             dateAttribution: Date | null;
             responsableId: string;
             lignePPMId: string | null;
@@ -206,7 +206,7 @@ export declare class ContratsService {
         dateSignature: Date;
         fournisseurId: string;
         procedureId: string;
-        soumissionId: string;
+        soumissionId: string | null;
         montantInitial: import("@prisma/client-runtime-utils").Decimal;
         montantRevise: import("@prisma/client-runtime-utils").Decimal | null;
         montantPaye: import("@prisma/client-runtime-utils").Decimal;
@@ -231,7 +231,7 @@ export declare class ContratsService {
         dateSignature: Date;
         fournisseurId: string;
         procedureId: string;
-        soumissionId: string;
+        soumissionId: string | null;
         montantInitial: import("@prisma/client-runtime-utils").Decimal;
         montantRevise: import("@prisma/client-runtime-utils").Decimal | null;
         montantPaye: import("@prisma/client-runtime-utils").Decimal;
@@ -256,7 +256,7 @@ export declare class ContratsService {
         dateSignature: Date;
         fournisseurId: string;
         procedureId: string;
-        soumissionId: string;
+        soumissionId: string | null;
         montantInitial: import("@prisma/client-runtime-utils").Decimal;
         montantRevise: import("@prisma/client-runtime-utils").Decimal | null;
         montantPaye: import("@prisma/client-runtime-utils").Decimal;

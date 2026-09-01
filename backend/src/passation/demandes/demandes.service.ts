@@ -38,13 +38,28 @@ export class DemandesService {
     });
     const reference = `DA-${new Date().getFullYear()}-${String(count + 1).padStart(4, '0')}`;
 
+    // Transformer lignePpmId en lignePPMId pour correspondre au schéma Prisma
+    const data: any = {
+      ...dto,
+      description: dto.description || dto.justification || '',
+      reference,
+      organizationId,
+      demandeurId: userId,
+    };
+
+    // Renommer le champ si présent
+    if (dto.lignePpmId) {
+      data.lignePPMId = dto.lignePpmId;
+      delete data.lignePpmId;
+    }
+
+    // Convertir les dates string en DateTime pour Prisma
+    if (data.echeanceSouhaitee && typeof data.echeanceSouhaitee === 'string') {
+      data.echeanceSouhaitee = new Date(data.echeanceSouhaitee);
+    }
+
     return this.prisma.demandeAchat.create({
-      data: {
-        ...dto,
-        reference,
-        organizationId,
-        demandeurId: userId,
-      },
+      data,
       include: {
         demandeur: { select: { id: true, firstName: true, lastName: true } },
         lignePPM: true,
@@ -128,9 +143,21 @@ export class DemandesService {
       throw new ForbiddenException('Impossible de modifier une demande approuvée ou rejetée');
     }
 
+    // Transformer lignePpmId en lignePPMId si présent
+    const data: any = { ...dto };
+    if (dto.lignePpmId) {
+      data.lignePPMId = dto.lignePpmId;
+      delete data.lignePpmId;
+    }
+
+    // Convertir les dates string en DateTime pour Prisma
+    if (data.echeanceSouhaitee && typeof data.echeanceSouhaitee === 'string') {
+      data.echeanceSouhaitee = new Date(data.echeanceSouhaitee);
+    }
+
     return this.prisma.demandeAchat.update({
       where: { id },
-      data: dto,
+      data,
       include: {
         demandeur: { select: { id: true, firstName: true, lastName: true } },
         validations: true,

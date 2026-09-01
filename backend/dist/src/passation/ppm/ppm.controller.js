@@ -15,10 +15,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PpmController = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
+const subscription_guard_1 = require("../../common/guards/subscription.guard");
+const client_1 = require("@prisma/client");
 const ppm_service_1 = require("./ppm.service");
 const create_ppm_dto_1 = require("./dto/create-ppm.dto");
 const update_ppm_dto_1 = require("./dto/update-ppm.dto");
-const client_1 = require("@prisma/client");
+const create_ligne_ppm_dto_1 = require("./dto/create-ligne-ppm.dto");
+const client_2 = require("@prisma/client");
 let PpmController = class PpmController {
     ppmService;
     constructor(ppmService) {
@@ -45,6 +48,12 @@ let PpmController = class PpmController {
     }
     validate(id, req) {
         return this.ppmService.validate(id, req.user.organizationId, req.user.id);
+    }
+    updateStatus(id, req, status) {
+        return this.ppmService.updateStatus(id, req.user.organizationId, status);
+    }
+    addLigne(id, req, ligneDto) {
+        return this.ppmService.addLigne(id, req.user.organizationId, req.user.id, ligneDto);
     }
     export(id, req, format = 'pdf') {
         return this.ppmService.export(id, req.user.organizationId, format);
@@ -103,6 +112,24 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], PpmController.prototype, "validate", null);
 __decorate([
+    (0, common_1.Patch)(':id/status'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Req)()),
+    __param(2, (0, common_1.Body)('status')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object, String]),
+    __metadata("design:returntype", void 0)
+], PpmController.prototype, "updateStatus", null);
+__decorate([
+    (0, common_1.Post)(':id/lignes'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Req)()),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object, create_ligne_ppm_dto_1.CreateLignePpmDto]),
+    __metadata("design:returntype", void 0)
+], PpmController.prototype, "addLigne", null);
+__decorate([
     (0, common_1.Get)(':id/export'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Req)()),
@@ -113,6 +140,8 @@ __decorate([
 ], PpmController.prototype, "export", null);
 exports.PpmController = PpmController = __decorate([
     (0, common_1.Controller)('passation/ppm'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, subscription_guard_1.SubscriptionGuard),
+    (0, subscription_guard_1.RequiresPlan)(client_1.SubscriptionPlan.ORGANISATION, client_1.SubscriptionPlan.ENTERPRISE),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __metadata("design:paramtypes", [ppm_service_1.PpmService])
 ], PpmController);

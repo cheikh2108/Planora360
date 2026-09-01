@@ -27,13 +27,34 @@ export class ProceduresService {
     });
     const reference = `PROC-${new Date().getFullYear()}-${String(count + 1).padStart(4, '0')}`;
 
+    // Transformer lignePpmId en lignePPMId pour correspondre au schéma Prisma
+    const data: any = {
+      ...dto,
+      description: dto.description || dto.objet || '',
+      reference,
+      organizationId,
+      responsableId: userId,
+    };
+
+    // Renommer le champ si présent
+    if (dto.lignePpmId) {
+      data.lignePPMId = dto.lignePpmId;
+      delete data.lignePpmId;
+    }
+
+    // Convertir les dates string en DateTime pour Prisma
+    if (data.datePublication && typeof data.datePublication === 'string') {
+      data.datePublication = new Date(data.datePublication);
+    }
+    if (data.dateLimite && typeof data.dateLimite === 'string') {
+      data.dateLimite = new Date(data.dateLimite);
+    }
+    if (data.dateOuverture && typeof data.dateOuverture === 'string') {
+      data.dateOuverture = new Date(data.dateOuverture);
+    }
+
     return this.prisma.procedure.create({
-      data: {
-        ...dto,
-        reference,
-        organizationId,
-        responsableId: userId,
-      },
+      data,
       include: {
         responsable: {
           select: {
@@ -136,16 +157,37 @@ export class ProceduresService {
   async update(id: string, organizationId: string, dto: any) {
     const procedure = await this.findOne(id, organizationId);
 
-    // Ne pas permettre la modification si déjà publiée
-    if (procedure.status !== StatusProcedure.BROUILLON) {
+    // Si on ne change QUE le statut, on autorise (pour le changement manuel de statut)
+    const isOnlyStatusChange = Object.keys(dto).length === 1 && dto.status !== undefined;
+
+    // Ne pas permettre la modification des autres champs si déjà publiée
+    if (!isOnlyStatusChange && procedure.status !== StatusProcedure.BROUILLON) {
       throw new ForbiddenException(
-        'Seules les procédures en brouillon peuvent être modifiées'
+        'Seules les procédures en brouillon peuvent être modifiées (hormis le statut)'
       );
+    }
+
+    // Transformer lignePpmId en lignePPMId si présent
+    const data: any = { ...dto };
+    if (dto.lignePpmId) {
+      data.lignePPMId = dto.lignePpmId;
+      delete data.lignePpmId;
+    }
+
+    // Convertir les dates string en DateTime pour Prisma
+    if (data.datePublication && typeof data.datePublication === 'string') {
+      data.datePublication = new Date(data.datePublication);
+    }
+    if (data.dateLimite && typeof data.dateLimite === 'string') {
+      data.dateLimite = new Date(data.dateLimite);
+    }
+    if (data.dateOuverture && typeof data.dateOuverture === 'string') {
+      data.dateOuverture = new Date(data.dateOuverture);
     }
 
     return this.prisma.procedure.update({
       where: { id },
-      data: dto,
+      data,
     });
   }
 

@@ -141,7 +141,7 @@ function UploadZone({
         {uploading ? 'Envoi en cours...' : 'Déposez un fichier ici'}
       </p>
       <p className="text-xs text-slate-400 mb-3">ou</p>
-      <Button size="sm" variant="secondary" onClick={() => inputRef.current?.click()} loading={uploading}>
+      <Button size="sm" variant="secondary" onClick={() => inputRef.current?.click()} isLoading={uploading}>
         Parcourir
       </Button>
       {error && (
@@ -256,7 +256,7 @@ export default function DocumentsPage() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Rechercher un document..."
-              className="w-full h-10 pl-9 pr-4 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent bg-white"
+              className="w-full h-10 pl-9 pr-4 rounded-xl border border-slate-300 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent bg-white"
             />
           </div>
 
@@ -363,14 +363,14 @@ export default function DocumentsPage() {
           </div>
         ) : filtered.length === 0 ? (
           <EmptyState
-            icon={FolderOpen}
+            illustration="document"
             title="Aucun document"
             description="Ajoutez des pièces justificatives, contrats, rapports et autres documents liés à vos activités."
-            action={
-              <Button icon={<Upload size={15} />} onClick={() => setShowUpload(true)}>
-                Ajouter un document
-              </Button>
-            }
+            action={{
+              label: 'Ajouter un document',
+              onClick: () => setShowUpload(true),
+              leftIcon: <Upload size={15} />
+            }}
           />
         ) : viewMode === 'grid' ? (
           // Grid view

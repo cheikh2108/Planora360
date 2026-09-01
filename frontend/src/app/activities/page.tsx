@@ -183,7 +183,7 @@ function ActivitiesContent() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Rechercher une activité..."
-              className="w-full h-10 pl-9 pr-4 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent bg-white"
+              className="w-full h-10 pl-9 pr-4 rounded-xl border border-slate-300 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent bg-white"
             />
           </div>
           <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0">
@@ -220,7 +220,7 @@ function ActivitiesContent() {
             </div>
           ) : filtered.length === 0 ? (
             <EmptyState
-              icon={CheckSquare}
+              illustration="inbox"
               title="Aucune activité"
               description={search ? 'Aucun résultat pour cette recherche.' : 'Créez des activités depuis un plan d\'action.'}
             />
@@ -503,7 +503,7 @@ function CreateActivityModal({ open, onClose }: { open: boolean; onClose: () => 
         {/* Actions */}
         <div className="flex justify-end gap-3 pt-2">
           <Button type="button" variant="secondary" onClick={onClose}>Annuler</Button>
-          <Button type="submit" loading={isPending}>Créer l'activité</Button>
+          <Button type="submit" isLoading={isPending}>Créer l'activité</Button>
         </div>
       </form>
     </Modal>

@@ -53,7 +53,7 @@ function AxisSection({ axis, planId, planPeriodStart, planPeriodEnd, readonly }:
           {(axis.activities ?? []).length === 0 ? (
             <div className="px-5 py-6 border-t border-slate-100">
               <EmptyState
-                icon={BarChart3}
+                illustration="data"
                 title="Aucune activité dans cet axe"
                 description="Ajoutez une première activité pour structurer cet axe."
               />
@@ -211,7 +211,7 @@ function AddActivityModal({
         </div>
         <div className="flex justify-end gap-3 pt-2">
           <Button type="button" variant="secondary" onClick={onClose}>Annuler</Button>
-          <Button type="submit" loading={loading}>Créer l'activité</Button>
+          <Button type="submit" isLoading={loading}>Créer l'activité</Button>
         </div>
       </form>
     </Modal>
@@ -234,7 +234,7 @@ function AddAxisModal({ open, onClose, planId }: { open: boolean; onClose: () =>
         </FormField>
         <div className="flex justify-end gap-3">
           <Button type="button" variant="secondary" onClick={onClose}>Annuler</Button>
-          <Button type="submit" loading={isPending}>Créer l'axe</Button>
+          <Button type="submit" isLoading={isPending}>Créer l'axe</Button>
         </div>
       </form>
     </Modal>
@@ -374,10 +374,10 @@ export default function PlanDetailPage() {
         {/* Axes */}
         {(plan.axes ?? []).length === 0 ? (
           <EmptyState
-            icon={BarChart3}
+            illustration="data"
             title="Aucun axe défini"
             description="Structurez votre plan en créant des axes thématiques."
-            action={<Button icon={<Plus size={16} />} onClick={() => setAddAxisOpen(true)} disabled={isLocked}>Ajouter un axe</Button>}
+            action={isLocked ? undefined : { label: 'Ajouter un axe', onClick: () => setAddAxisOpen(true), leftIcon: <Plus size={16} /> }}
           />
         ) : (
           <div className="space-y-4">
@@ -403,7 +403,7 @@ export default function PlanDetailPage() {
           <Button variant="secondary" onClick={() => setConfirmDelete(false)}>Annuler</Button>
           <Button
             variant="danger"
-            loading={deleting}
+            isLoading={deleting}
             onClick={() => deletePlan()}
           >
             Supprimer définitivement

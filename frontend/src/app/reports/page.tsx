@@ -168,7 +168,7 @@ export default function ReportsPage() {
           <div className="flex items-center gap-4">
             <Button
               size="lg"
-              loading={loading}
+              isLoading={loading}
               icon={<Download size={18} />}
               onClick={generate}
               className="min-w-48"

@@ -429,6 +429,266 @@ export const HELP_CONTENT: HelpPage[] = [
       },
     ],
   },
+  {
+    page: 'passation',
+    articles: [
+      {
+        id: 'pass-1',
+        title: 'Vue d\'ensemble du module Passation',
+        content: `
+          <p>Le module Passation centralise la gestion complète de vos marchés publics :</p>
+          <ul>
+            <li><strong>PPM</strong> : Plans de Passation des Marchés annuels</li>
+            <li><strong>Demandes d'achat</strong> : Requêtes émanant des services</li>
+            <li><strong>Fournisseurs</strong> : Base de données des prestataires</li>
+            <li><strong>Procédures</strong> : Appels d'offres et consultations</li>
+            <li><strong>Contrats</strong> : Suivi des contrats signés</li>
+          </ul>
+        `,
+      },
+      {
+        id: 'pass-2',
+        title: 'Workflow type',
+        content: `
+          <p>Un processus standard suit ce flux :</p>
+          <ol>
+            <li>Création d'une <strong>demande d'achat</strong></li>
+            <li>Validation et intégration au <strong>PPM</strong></li>
+            <li>Lancement d'une <strong>procédure</strong> avec publication</li>
+            <li>Évaluation des offres et attribution</li>
+            <li>Signature du <strong>contrat</strong> avec le fournisseur</li>
+          </ol>
+        `,
+      },
+    ],
+  },
+  {
+    page: 'passation-ppm',
+    articles: [
+      {
+        id: 'ppm-1',
+        title: 'Créer un PPM',
+        content: `
+          <p>Le Plan de Passation des Marchés structure vos achats annuels :</p>
+          <ol>
+            <li>Cliquez sur <strong>"Nouveau PPM"</strong></li>
+            <li>Renseignez l'année, le projet associé</li>
+            <li>Ajoutez les lignes PPM : objet, méthode, montant estimé</li>
+            <li>Sauvegardez en brouillon ou validez directement</li>
+          </ol>
+          <p><strong>Astuce :</strong> Importez vos lignes depuis Excel pour gagner du temps.</p>
+        `,
+      },
+      {
+        id: 'ppm-2',
+        title: 'Types de procédures',
+        content: `
+          <p>Choisissez la méthode adaptée au montant :</p>
+          <ul>
+            <li><strong>Gré à gré</strong> : Marchés de faible montant</li>
+            <li><strong>Consultation</strong> : Montants moyens (3 à 5 fournisseurs)</li>
+            <li><strong>Appel d'offres ouvert</strong> : Marchés importants</li>
+            <li><strong>Appel d'offres restreint</strong> : Prestataires présélectionnés</li>
+          </ul>
+        `,
+      },
+      {
+        id: 'ppm-3',
+        title: 'Suivi et reporting',
+        content: `
+          <p>Utilisez les filtres pour analyser :</p>
+          <ul>
+            <li>Statut des lignes (brouillon, en cours, clôturé)</li>
+            <li>Répartition par année</li>
+            <li>Montants totaux engagés par projet</li>
+          </ul>
+          <p>Les KPIs vous donnent une vue d'ensemble instantanée de votre planification.</p>
+        `,
+      },
+    ],
+  },
+  {
+    page: 'passation-demandes',
+    articles: [
+      {
+        id: 'dem-1',
+        title: 'Créer une demande d\'achat',
+        content: `
+          <p>Pour initier une nouvelle demande :</p>
+          <ol>
+            <li>Cliquez sur <strong>"Nouvelle demande"</strong></li>
+            <li>Renseignez : objet, description détaillée</li>
+            <li>Précisez le montant estimé</li>
+            <li>Liez à une ligne PPM si applicable</li>
+            <li>Ajoutez les justifications et documents</li>
+          </ol>
+        `,
+      },
+      {
+        id: 'dem-2',
+        title: 'Circuit de validation',
+        content: `
+          <p>Une demande passe par plusieurs étapes :</p>
+          <ul>
+            <li><strong>Brouillon</strong> : En cours de rédaction</li>
+            <li><strong>Soumise</strong> : Transmise pour validation</li>
+            <li><strong>En validation</strong> : En cours d'examen</li>
+            <li><strong>Approuvée</strong> : Validée, peut passer en procédure</li>
+            <li><strong>Rejetée</strong> : Refusée avec commentaires</li>
+          </ul>
+        `,
+      },
+      {
+        id: 'dem-3',
+        title: 'Recherche et filtres',
+        content: `
+          <p>Retrouvez rapidement vos demandes avec :</p>
+          <ul>
+            <li>Recherche par référence, objet ou demandeur</li>
+            <li>Filtres par statut (en validation, approuvée, etc.)</li>
+            <li>Vue des KPIs : total, en validation, approuvées</li>
+          </ul>
+        `,
+      },
+    ],
+  },
+  {
+    page: 'passation-fournisseurs',
+    articles: [
+      {
+        id: 'four-1',
+        title: 'Enregistrer un fournisseur',
+        content: `
+          <p>Pour ajouter un nouveau fournisseur :</p>
+          <ol>
+            <li>Cliquez sur <strong>"Nouveau fournisseur"</strong></li>
+            <li>Renseignez : raison sociale, identifiant fiscal</li>
+            <li>Ajoutez les coordonnées : adresse, téléphone, email</li>
+            <li>Joignez les documents : RC, NINEA, quitus fiscal</li>
+          </ol>
+          <p><strong>Important :</strong> Un fournisseur doit être validé avant de soumissionner.</p>
+        `,
+      },
+      {
+        id: 'four-2',
+        title: 'Gérer les statuts',
+        content: `
+          <p>Les fournisseurs peuvent avoir différents statuts :</p>
+          <ul>
+            <li><strong>À valider</strong> : Dossier en cours d'examen</li>
+            <li><strong>Actif</strong> : Qualifié, peut soumissionner</li>
+            <li><strong>Suspendu</strong> : Temporairement inéligible</li>
+            <li><strong>Blacklisté</strong> : Exclu définitivement</li>
+            <li><strong>Archivé</strong> : N'est plus actif</li>
+          </ul>
+        `,
+      },
+      {
+        id: 'four-3',
+        title: 'Historique et performance',
+        content: `
+          <p>Sur la fiche fournisseur, consultez :</p>
+          <ul>
+            <li>Nombre de soumissions déposées</li>
+            <li>Contrats en cours et terminés</li>
+            <li>Historique des évaluations</li>
+            <li>Notes et commentaires internes</li>
+          </ul>
+        `,
+      },
+    ],
+  },
+  {
+    page: 'passation-procedures',
+    articles: [
+      {
+        id: 'proc-1',
+        title: 'Lancer une procédure',
+        content: `
+          <p>Pour publier un appel d'offres :</p>
+          <ol>
+            <li>Cliquez sur <strong>"Nouvelle procédure"</strong></li>
+            <li>Sélectionnez le type : AOO, AOR, Consultation, Gré à gré</li>
+            <li>Renseignez l'objet, le montant estimé</li>
+            <li>Fixez les dates : publication, clôture, ouverture</li>
+            <li>Joignez le DAO (Dossier d'Appel d'Offres)</li>
+          </ol>
+        `,
+      },
+      {
+        id: 'proc-2',
+        title: 'Réceptionner les soumissions',
+        content: `
+          <p>Les soumissions sont enregistrées jusqu'à la date de clôture.</p>
+          <p>À l'ouverture des plis :</p>
+          <ul>
+            <li>Vérifiez la conformité administrative</li>
+            <li>Vérifiez la conformité technique</li>
+            <li>Enregistrez les montants proposés</li>
+          </ul>
+        `,
+      },
+      {
+        id: 'proc-3',
+        title: 'Évaluation et attribution',
+        content: `
+          <p>La commission d'évaluation :</p>
+          <ol>
+            <li>Note chaque offre selon les critères du DAO</li>
+            <li>Classe les soumissions par score</li>
+            <li>Propose l'attribution au mieux-disant</li>
+            <li>Rédige le rapport d'évaluation</li>
+          </ol>
+          <p>Le statut passe à <strong>"Attribuée"</strong> après validation.</p>
+        `,
+      },
+    ],
+  },
+  {
+    page: 'passation-contrats',
+    articles: [
+      {
+        id: 'cont-1',
+        title: 'Créer un contrat',
+        content: `
+          <p>Après attribution d'une procédure :</p>
+          <ol>
+            <li>Cliquez sur <strong>"Nouveau contrat"</strong></li>
+            <li>Liez-le à la procédure et au fournisseur attributaire</li>
+            <li>Renseignez : montant initial, dates de signature/échéance</li>
+            <li>Joignez le contrat signé scanné</li>
+          </ol>
+        `,
+      },
+      {
+        id: 'cont-2',
+        title: 'Suivre l\'exécution',
+        content: `
+          <p>Durant la vie du contrat :</p>
+          <ul>
+            <li>Suivez les paiements effectués (acomptes, solde)</li>
+            <li>Enregistrez les avenants si le montant change</li>
+            <li>Suivez les délais d'exécution</li>
+            <li>Ajoutez des rapports de suivi</li>
+          </ul>
+          <p>Le statut passe de <strong>"Signé"</strong> à <strong>"Terminé"</strong> à l'achèvement.</p>
+        `,
+      },
+      {
+        id: 'cont-3',
+        title: 'Gestion des avenants',
+        content: `
+          <p>Un avenant modifie un contrat en cours :</p>
+          <ul>
+            <li>Augmentation/diminution du montant</li>
+            <li>Prolongation des délais</li>
+            <li>Modification du scope</li>
+          </ul>
+          <p>Le <strong>montant révisé</strong> remplace alors le montant initial dans les rapports.</p>
+        `,
+      },
+    ],
+  },
 ];
 
 /**

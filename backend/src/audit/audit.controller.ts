@@ -3,12 +3,15 @@ import { Response } from 'express';
 import { AuditService } from './audit.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
+import { SubscriptionGuard, RequiresPlan } from '../common/guards/subscription.guard';
+import { SubscriptionPlan } from '@prisma/client';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { AuditFiltersDto } from './dto/audit-filters.dto';
 
 @Controller('audit')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, SubscriptionGuard)
+@RequiresPlan(SubscriptionPlan.ORGANISATION, SubscriptionPlan.ENTERPRISE)
 export class AuditController {
   constructor(private auditService: AuditService) {}
 

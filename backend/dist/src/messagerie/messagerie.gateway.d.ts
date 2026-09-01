@@ -25,11 +25,11 @@ export declare class MessagerieGateway implements OnGatewayConnection, OnGateway
                 mimeType: string;
                 width: number | null;
                 uploadedAt: Date;
-                messageId: string;
                 fileUrl: string;
                 thumbnailUrl: string | null;
                 height: number | null;
                 duration: number | null;
+                messageId: string;
             }[];
             author: {
                 id: string;
@@ -89,11 +89,11 @@ export declare class MessagerieGateway implements OnGatewayConnection, OnGateway
                 mimeType: string;
                 width: number | null;
                 uploadedAt: Date;
-                messageId: string;
                 fileUrl: string;
                 thumbnailUrl: string | null;
                 height: number | null;
                 duration: number | null;
+                messageId: string;
             }[];
             author: {
                 id: string;

@@ -8,25 +8,28 @@
 // ============================================================================
 
 export type MethodeProcedure =
+  | 'ACHAT_DIRECT'
+  | 'DEMANDE_COTATION'
+  | 'CONSULTATION_RESTREINTE'
   | 'APPEL_OFFRES_OUVERT'
   | 'APPEL_OFFRES_RESTREINT'
-  | 'CONSULTATION'
-  | 'GRE_A_GRE';
+  | 'DEMANDE_PROPOSITIONS'
+  | 'MANIFESTATION_INTERET'
+  | 'SELECTION_CONSULTANT'
+  | 'PROCEDURE_URGENCE'
+  | 'AUTRE';
 
 export type StatusPPM =
   | 'BROUILLON'
-  | 'EN_REVISION'
   | 'VALIDE'
-  | 'PUBLIE'
-  | 'ARCHIVE';
+  | 'EN_COURS'
+  | 'CLOTURE';
 
 export type StatusDemandeAchat =
   | 'BROUILLON'
   | 'SOUMISE'
-  | 'EN_VALIDATION_HIERARCHIQUE'
-  | 'EN_VALIDATION_TECHNIQUE'
-  | 'EN_VALIDATION_ADMINISTRATIVE'
-  | 'VALIDEE'
+  | 'EN_VALIDATION'
+  | 'APPROUVEE'
   | 'REJETEE'
   | 'ANNULEE';
 
@@ -44,9 +47,9 @@ export type StatusContrat =
   | 'SIGNE'
   | 'EN_COURS'
   | 'SUSPENDU'
-  | 'RESILIE'
   | 'TERMINE'
-  | 'ARCHIVE';
+  | 'CLOTURE'
+  | 'RESILIE';
 
 export type StatusFournisseur =
   | 'A_VALIDER'
@@ -63,9 +66,9 @@ export interface LignePPM {
   id: string;
   ppmId: string;
   reference: string;
-  objetMarche: string;
-  montantEstime: number | string;
-  methode: MethodeProcedure;
+  objet: string;
+  montantEstimatif: number | string;
+  methodeProcedure: MethodeProcedure;
   trimestre: number;
   responsableId: string | null;
   responsable?: { id: string; firstName: string; lastName: string };
@@ -117,15 +120,20 @@ export interface DemandeAchat {
   reference: string;
   demandeurId: string;
   demandeur?: { id: string; firstName: string; lastName: string; email: string };
-  lignePpmId: string | null;
-  lignePpm?: LignePPM;
+  activityId?: string | null;
+  activity?: { id: string; title: string };
+  lignePPMId: string | null;
+  lignePPM?: LignePPM;
   objet: string;
+  description: string;
   justification: string;
-  montantEstime: number | string;
-  dateNecessite: string;
+  quantite?: number | null;
+  specifications?: string | null;
+  montantEstimatif: number | string;
+  ligneBudgetaire?: string | null;
+  sourceFinancement?: string | null;
+  echeanceSouhaitee?: string | null;
   status: StatusDemandeAchat;
-  priorite: 'BASSE' | 'NORMALE' | 'HAUTE' | 'URGENTE';
-  documentsJustificatifs?: any[];
   createdAt: string;
   updatedAt: string;
   validations?: ValidationDemande[];
@@ -162,7 +170,6 @@ export interface EvaluationFournisseur {
 export interface Fournisseur {
   id: string;
   organizationId: string;
-  reference: string;
   raisonSociale: string;
   identifiantFiscal?: string | null;
   registreCommerce?: string | null;
@@ -174,7 +181,6 @@ export interface Fournisseur {
   nomContact?: string | null;
   domainesActivite: string[];
   status: StatusFournisseur;
-  remarques?: string | null;
   createdAt: string;
   updatedAt: string;
   documents?: FournisseurDocument[];
@@ -196,11 +202,11 @@ export interface Procedure {
   id: string;
   organizationId: string;
   reference: string;
-  lignePpmId: string | null;
-  lignePpm?: LignePPM;
+  lignePPMId: string | null;
+  lignePPM?: LignePPM;
   objet: string;
   methode: MethodeProcedure;
-  montantEstime: number | string;
+  montantEstimatif: number | string;
   status: StatusProcedure;
   cahierCharges?: string | null;
   datePublication?: string | null;
@@ -233,14 +239,19 @@ export interface Soumission {
   id: string;
   procedureId: string;
   procedure?: Procedure;
+  numeroDepot: string;
   fournisseurId: string;
   fournisseur?: Fournisseur;
-  montantPropose: number | string;
-  delaiExecution: number;
-  validiteOffre: number;
-  garantieSoumission?: number | string | null;
-  observations?: string | null;
+  montantTechnique?: number | string | null;
+  montantFinancier: number | string;
+  montantTotal: number | string;
+  devise: string;
+  conformeAdmin?: boolean | null;
+  conformeTechnique?: boolean | null;
+  conformeFinancier?: boolean | null;
   dateDepot: string;
+  horsDelai: boolean;
+  status: string;
   documents?: SoumissionDocument[];
   evaluations?: Evaluation[];
   contrat?: any;
@@ -264,9 +275,11 @@ export interface Commission {
   procedureId: string;
   procedure?: Procedure;
   nom: string;
+  type: string;
+  dateSeance: string;
   presidentId: string;
   president?: { id: string; firstName: string; lastName: string; email: string };
-  dateCreation: string;
+  createdAt: string;
   membres?: MembreCommission[];
   evaluations?: Evaluation[];
   _count?: {

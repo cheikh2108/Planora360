@@ -15,7 +15,7 @@ export declare class AuditController {
         } & {
             id: string;
             organizationId: string;
-            createdAt: Date;
+            userId: string;
             action: string;
             entityType: string;
             entityId: string;
@@ -25,7 +25,7 @@ export declare class AuditController {
             requestId: string | null;
             oldValues: import("@prisma/client/runtime/client").JsonValue | null;
             newValues: import("@prisma/client/runtime/client").JsonValue | null;
-            userId: string;
+            createdAt: Date;
         })[];
         total: number;
         page: number;
@@ -34,7 +34,7 @@ export declare class AuditController {
     findByActivity(id: string, user: any): import(".prisma/client").Prisma.PrismaPromise<{
         id: string;
         organizationId: string;
-        createdAt: Date;
+        userId: string;
         action: string;
         entityType: string;
         entityId: string;
@@ -44,7 +44,7 @@ export declare class AuditController {
         requestId: string | null;
         oldValues: import("@prisma/client/runtime/client").JsonValue | null;
         newValues: import("@prisma/client/runtime/client").JsonValue | null;
-        userId: string;
+        createdAt: Date;
     }[]>;
     searchWithFilters(filters: AuditFiltersDto, user: any): Promise<{
         entries: ({
@@ -57,7 +57,7 @@ export declare class AuditController {
         } & {
             id: string;
             organizationId: string;
-            createdAt: Date;
+            userId: string;
             action: string;
             entityType: string;
             entityId: string;
@@ -67,7 +67,7 @@ export declare class AuditController {
             requestId: string | null;
             oldValues: import("@prisma/client/runtime/client").JsonValue | null;
             newValues: import("@prisma/client/runtime/client").JsonValue | null;
-            userId: string;
+            createdAt: Date;
         })[];
         total: number;
         page: number;

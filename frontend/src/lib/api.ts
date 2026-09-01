@@ -27,8 +27,16 @@ api.interceptors.request.use((config) => {
   const method = config.method?.toUpperCase();
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method || '')) {
     const csrfToken = getCsrfToken();
+    console.log('[API Interceptor] CSRF Token:', {
+      method,
+      url: config.url,
+      csrfToken: csrfToken ? `${csrfToken.substring(0, 20)}...` : 'MISSING',
+      allCookies: typeof document !== 'undefined' ? document.cookie : 'SSR'
+    });
     if (csrfToken) {
       config.headers['X-CSRF-Token'] = csrfToken;
+    } else {
+      console.warn('[API Interceptor] No CSRF token found for mutating request!');
     }
   }
 
@@ -346,6 +354,8 @@ export const ppmApi = {
   update: (id: string, data: any) => api.patch(`/passation/ppm/${id}`, data),
   remove: (id: string) => api.delete(`/passation/ppm/${id}`),
   validate: (id: string) => api.post(`/passation/ppm/${id}/validate`),
+  updateStatus: (id: string, status: string) => api.patch(`/passation/ppm/${id}/status`, { status }),
+  addLigne: (id: string, data: any) => api.post(`/passation/ppm/${id}/lignes`, data),
   export: (id: string, format: 'pdf' | 'excel') =>
     api.get(`/passation/ppm/${id}/export`, { params: { format } }),
 };

@@ -6,12 +6,19 @@ export class CommissionsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(organizationId: string, userId: string, dto: any) {
+    const data: any = {
+      ...dto,
+      organizationId,
+      presidentId: userId,
+    };
+
+    // Convertir les dates string en DateTime pour Prisma
+    if (data.dateSeance && typeof data.dateSeance === 'string') {
+      data.dateSeance = new Date(data.dateSeance);
+    }
+
     return this.prisma.commission.create({
-      data: {
-        ...dto,
-        organizationId,
-        presidentId: userId,
-      },
+      data,
       include: {
         president: {
           select: {

@@ -23,11 +23,14 @@ import { CreateCommentDto } from './dto/create-comment.dto';
 import { CreateActionDto } from './dto/create-action.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
+import { SubscriptionGuard, RequiresPlan } from '../common/guards/subscription.guard';
+import { SubscriptionPlan } from '@prisma/client';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 @Controller('recommendations')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, SubscriptionGuard)
+@RequiresPlan(SubscriptionPlan.EQUIPE, SubscriptionPlan.ORGANISATION, SubscriptionPlan.ENTERPRISE)
 export class RecommendationsController {
   constructor(private readonly recommendationsService: RecommendationsService) {}
 

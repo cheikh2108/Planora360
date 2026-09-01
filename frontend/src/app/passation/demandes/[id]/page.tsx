@@ -148,16 +148,6 @@ export default function DemandeDetailPage() {
                     <span className="text-sm font-medium text-slate-600">Statut :</span>
                     <PassationStatusBadge status={demande.status} />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-slate-600">Priorité :</span>
-                    <span
-                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                        PRIORITE_CONFIG[demande.priorite].className
-                      }`}
-                    >
-                      {PRIORITE_CONFIG[demande.priorite].label}
-                    </span>
-                  </div>
                 </div>
                 {canValidate && !showValidationForm && (
                   <Button
@@ -288,12 +278,12 @@ export default function DemandeDetailPage() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-600">Objet</label>
+                  <label className="block text-sm font-medium text-slate-900">Objet</label>
                   <p className="mt-1 text-base text-slate-900">{demande.objet}</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-600">
+                  <label className="block text-sm font-medium text-slate-900">
                     Justification
                   </label>
                   <p className="mt-1 whitespace-pre-wrap text-sm text-slate-700">
@@ -301,17 +291,17 @@ export default function DemandeDetailPage() {
                   </p>
                 </div>
 
-                {demande.lignePpm && (
+                {demande.lignePPM && (
                   <div>
-                    <label className="block text-sm font-medium text-slate-600">
+                    <label className="block text-sm font-medium text-slate-900">
                       Ligne PPM associée
                     </label>
                     <div className="mt-1 rounded-md bg-slate-50 p-3">
                       <p className="font-medium text-slate-900">
-                        {demande.lignePpm.reference}
+                        {demande.lignePPM.reference}
                       </p>
                       <p className="mt-0.5 text-sm text-slate-600">
-                        {demande.lignePpm.objetMarche}
+                        {demande.lignePPM.objet}
                       </p>
                     </div>
                   </div>
@@ -350,7 +340,7 @@ export default function DemandeDetailPage() {
                   <div className="flex-1">
                     <p className="text-xs font-medium text-slate-600">Montant estimé</p>
                     <p className="mt-0.5 text-lg font-bold text-slate-900">
-                      {formatCurrencyAmount(demande.montantEstime)}
+                      {formatCurrencyAmount(demande.montantEstimatif)}
                     </p>
                   </div>
                 </div>
@@ -360,9 +350,9 @@ export default function DemandeDetailPage() {
                     <Calendar className="h-5 w-5 text-blue-600" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs font-medium text-slate-600">Date de nécessité</p>
+                    <p className="text-xs font-medium text-slate-600">Échéance souhaitée</p>
                     <p className="mt-0.5 font-semibold text-slate-900">
-                      {formatDate(demande.dateNecessite)}
+                      {demande.echeanceSouhaitee ? formatDate(demande.echeanceSouhaitee) : 'Non spécifiée'}
                     </p>
                   </div>
                 </div>

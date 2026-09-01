@@ -15,6 +15,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SoumissionsController = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
+const subscription_guard_1 = require("../../common/guards/subscription.guard");
+const client_1 = require("@prisma/client");
 const soumission_confidentiality_guard_1 = require("../common/guards/soumission-confidentiality.guard");
 const soumissions_service_1 = require("./soumissions.service");
 let SoumissionsController = class SoumissionsController {
@@ -63,7 +65,8 @@ __decorate([
 ], SoumissionsController.prototype, "findOne", null);
 exports.SoumissionsController = SoumissionsController = __decorate([
     (0, common_1.Controller)('passation/procedures/:procedureId/soumissions'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, subscription_guard_1.SubscriptionGuard),
+    (0, subscription_guard_1.RequiresPlan)(client_1.SubscriptionPlan.ORGANISATION, client_1.SubscriptionPlan.ENTERPRISE),
     __metadata("design:paramtypes", [soumissions_service_1.SoumissionsService])
 ], SoumissionsController);
 //# sourceMappingURL=soumissions.controller.js.map

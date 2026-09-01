@@ -186,7 +186,7 @@ export default function NewParticipantPage() {
             <div className="flex gap-3 pt-4">
               <Button
                 type="submit"
-                loading={loading}
+                isLoading={loading}
                 disabled={!formData.activityId || activities.length === 0}
               >
                 <Save size={14} className="mr-1.5" />

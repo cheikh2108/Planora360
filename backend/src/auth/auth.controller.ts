@@ -175,6 +175,22 @@ export class AuthController {
     };
   }
 
+  @Get('csrf')
+  getCsrfToken(@Res({ passthrough: true }) response: Response) {
+    const csrfToken = this.csrfService.generateToken();
+
+    // Définir le cookie CSRF
+    response.cookie('csrf-token', csrfToken, {
+      httpOnly: false, // Frontend doit le lire
+      secure: false, // En dev, pas de HTTPS
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/',
+    });
+
+    return { csrfToken };
+  }
+
   @Post('logout')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)

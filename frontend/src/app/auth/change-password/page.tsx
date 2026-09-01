@@ -106,7 +106,7 @@ export default function ChangePasswordPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label htmlFor="new-password" className="block text-[12px] font-semibold text-slate-600 mb-1.5">
+                <label className="block text-[12px] font-semibold text-slate-900 mb-1.5">
                   Nouveau mot de passe
                 </label>
                 <div className="relative">
@@ -132,7 +132,7 @@ export default function ChangePasswordPage() {
               </div>
 
               <div>
-                <label htmlFor="confirm-password" className="block text-[12px] font-semibold text-slate-600 mb-1.5">
+                <label className="block text-[12px] font-semibold text-slate-900 mb-1.5">
                   Confirmer le mot de passe
                 </label>
                 <div className="relative">

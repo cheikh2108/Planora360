@@ -10,7 +10,7 @@ const cookieParser = require("cookie-parser");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     app.use(cookieParser());
-    app.useStaticAssets((0, path_1.join)(__dirname, '..', 'uploads'), {
+    app.useStaticAssets((0, path_1.join)(__dirname, '..', '..', 'uploads'), {
         prefix: '/uploads/',
     });
     app.setGlobalPrefix('api');

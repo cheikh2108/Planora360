@@ -140,7 +140,7 @@ async function main() {
     const superAdminRole = await prisma.role.findFirst({ where: { name: 'Super administrateur', organizationId: null } });
     const existingOrg = await prisma.organization.findFirst({ where: { name: 'ATAABA' } });
     const org = existingOrg ?? await prisma.organization.create({
-        data: { name: 'ATAABA', subscriptionPlan: 'SUR_MESURE' },
+        data: { name: 'ATAABA', subscriptionPlan: 'ENTERPRISE' },
     });
     const existingAdmin = await prisma.user.findUnique({ where: { email: 'admin@ataaba.com' } });
     if (!existingAdmin) {
@@ -162,7 +162,7 @@ async function main() {
     }
     const existingTestOrg = await prisma.organization.findFirst({ where: { name: 'Test Org' } });
     const testOrg = existingTestOrg ?? await prisma.organization.create({
-        data: { name: 'Test Org', subscriptionPlan: 'SUR_MESURE' },
+        data: { name: 'Test Org', subscriptionPlan: 'ENTERPRISE' },
     });
     const coordRole = await prisma.role.findFirst({ where: { name: 'Coordinateur', organizationId: null } });
     const existingTest = await prisma.user.findUnique({ where: { email: 'test@ataaba.com' } });

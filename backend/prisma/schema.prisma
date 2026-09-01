@@ -14,9 +14,11 @@ enum PlanStatus {
 }
 
 enum SubscriptionPlan {
-  DECOUVERTE
-  PROFESSIONNELLE
-  SUR_MESURE
+  INDIVIDUEL
+  PRO
+  EQUIPE
+  ORGANISATION
+  ENTERPRISE
 }
 
 enum OrganizationStatus {
@@ -119,7 +121,7 @@ model Organization {
   name             String
   logoUrl          String?
   brandColor       String?            @default("#2563eb")
-  subscriptionPlan SubscriptionPlan   @default(DECOUVERTE)
+  subscriptionPlan SubscriptionPlan   @default(INDIVIDUEL)
   status           OrganizationStatus @default(ACTIVE)
   rejectionReason  String?
   trialEndsAt      DateTime?
@@ -408,7 +410,7 @@ model ChecklistItem {
 model Validation {
   id          String             @id @default(cuid())
   activityId  String
-  activity    Activity           @relation(fields: [activityId], references: [id])
+  activity    Activity           @relation(fields: [activityId], references: [id], onDelete: Cascade)
   step        ValidationStep
   decision    ValidationDecision @default(EN_ATTENTE)
   validatorId String
@@ -438,9 +440,9 @@ model Budget {
 model Document {
   id              String         @id @default(cuid())
   activityId      String?
-  activity        Activity?      @relation(fields: [activityId], references: [id])
+  activity        Activity?      @relation(fields: [activityId], references: [id], onDelete: Cascade)
   checklistItemId String?
-  checklistItem   ChecklistItem? @relation(fields: [checklistItemId], references: [id])
+  checklistItem   ChecklistItem? @relation(fields: [checklistItemId], references: [id], onDelete: Cascade)
   type            String
   storageKey      String
   fileName        String
@@ -909,6 +911,7 @@ model PlanPassationMarche {
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
+  reference String  @unique
   year      Int
   title     String
   projectId String?
@@ -917,6 +920,9 @@ model PlanPassationMarche {
   status      StatusPPM @default(BROUILLON)
   validatedBy String?
   validatedAt DateTime?
+
+  montantTotal  Decimal @default(0) @db.Decimal(14, 2)
+  nombreLignes  Int     @default(0)
 
   createdBy String
   createdAt DateTime @default(now())
@@ -946,6 +952,8 @@ model LignePPM {
   ligneBudgetaire   String?
 
   methodeProcedure MethodeProcedure
+  trimestre        Int // 1, 2, 3 ou 4 pour T1, T2, T3, T4
+  observations     String?          @db.Text
 
   dateLancement   DateTime?
   dateAttribution DateTime?
@@ -1281,8 +1289,8 @@ model Contrat {
   procedureId String    @unique
   procedure   Procedure @relation(fields: [procedureId], references: [id])
 
-  soumissionId String     @unique
-  soumission   Soumission @relation(fields: [soumissionId], references: [id])
+  soumissionId String?     @unique
+  soumission   Soumission? @relation(fields: [soumissionId], references: [id])
 
   fournisseurId String
   fournisseur   Fournisseur @relation(fields: [fournisseurId], references: [id])

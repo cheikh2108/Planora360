@@ -38,7 +38,7 @@ export default function PassationHomePage() {
     queryKey: ['ppm', 'stats'],
     queryFn: async () => {
       const res = await ppmApi.getAll({ year: new Date().getFullYear() });
-      return res.data;
+      return Array.isArray(res.data) ? res.data : [];
     },
   });
 
@@ -46,7 +46,7 @@ export default function PassationHomePage() {
     queryKey: ['demandes', 'stats'],
     queryFn: async () => {
       const res = await demandesApi.getAll();
-      return res.data;
+      return Array.isArray(res.data) ? res.data : [];
     },
   });
 
@@ -54,7 +54,7 @@ export default function PassationHomePage() {
     queryKey: ['fournisseurs', 'stats'],
     queryFn: async () => {
       const res = await fournisseursApi.getAll({ status: 'ACTIF' });
-      return res.data;
+      return Array.isArray(res.data) ? res.data : [];
     },
   });
 
@@ -62,7 +62,7 @@ export default function PassationHomePage() {
     queryKey: ['procedures', 'stats'],
     queryFn: async () => {
       const res = await proceduresApi.getAll({ status: 'EN_COURS' });
-      return res.data;
+      return Array.isArray(res.data) ? res.data : [];
     },
   });
 
@@ -70,7 +70,7 @@ export default function PassationHomePage() {
     queryKey: ['contrats', 'stats'],
     queryFn: async () => {
       const res = await contratsApi.getAll({ status: 'EN_COURS' });
-      return res.data;
+      return Array.isArray(res.data) ? res.data : [];
     },
   });
 

@@ -73,7 +73,7 @@ let AuthService = class AuthService {
             const user = await this.createAdminUser(dto, organization.id, adminRole.id, tx);
             return { organization, user };
         });
-        this.posthog.trackRegistration(user.id, organization.id, dto.subscriptionPlan ?? 'DECOUVERTE');
+        this.posthog.trackRegistration(user.id, organization.id, dto.subscriptionPlan ?? 'INDIVIDUEL');
         return { message: 'Votre demande a été enregistrée. Vous serez notifié par email après validation.' };
     }
     async validateUniqueOrganization(name) {
@@ -99,13 +99,13 @@ let AuthService = class AuthService {
         return adminRole;
     }
     async createOrganization(dto, tx) {
-        const isTrialPlan = !dto.subscriptionPlan || dto.subscriptionPlan === 'DECOUVERTE';
+        const isTrialPlan = !dto.subscriptionPlan || dto.subscriptionPlan === 'INDIVIDUEL';
         const trialEndsAt = isTrialPlan ? (0, auth_constants_1.calculateTrialEndDate)() : undefined;
         const prismaClient = tx || this.prisma;
         return prismaClient.organization.create({
             data: {
                 name: dto.organizationName,
-                subscriptionPlan: dto.subscriptionPlan ?? 'DECOUVERTE',
+                subscriptionPlan: dto.subscriptionPlan ?? 'INDIVIDUEL',
                 brandColor: dto.brandColor ?? auth_constants_1.DEFAULT_BRAND_COLOR,
                 status: auth_constants_1.ORG_STATUS_PENDING,
                 trialEndsAt,

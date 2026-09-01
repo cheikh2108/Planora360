@@ -202,6 +202,57 @@ let MessagerieService = class MessagerieService {
         });
         return message;
     }
+    async sendMessageWithAttachments(conversationId, authorId, content, attachments) {
+        const participant = await this.prisma.conversationParticipant.findFirst({
+            where: {
+                conversationId,
+                userId: authorId,
+                leftAt: null,
+            },
+        });
+        if (!participant) {
+            throw new common_1.ForbiddenException('Vous n\'êtes pas participant de cette conversation');
+        }
+        const message = await this.prisma.message.create({
+            data: {
+                conversationId,
+                authorId,
+                content,
+                contentType: 'TEXT',
+                attachments: {
+                    create: attachments,
+                },
+            },
+            include: {
+                author: {
+                    select: {
+                        id: true,
+                        firstName: true,
+                        lastName: true,
+                        email: true,
+                    },
+                },
+                attachments: true,
+                reactions: true,
+                mentions: true,
+            },
+        });
+        await this.prisma.conversation.update({
+            where: { id: conversationId },
+            data: { lastMessageAt: new Date() },
+        });
+        await this.prisma.conversationParticipant.updateMany({
+            where: {
+                conversationId,
+                userId: { not: authorId },
+                leftAt: null,
+            },
+            data: {
+                unreadCount: { increment: 1 },
+            },
+        });
+        return message;
+    }
     async editMessage(messageId, authorId, content) {
         const message = await this.prisma.message.findUnique({
             where: { id: messageId },

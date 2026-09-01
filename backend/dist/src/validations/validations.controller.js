@@ -17,6 +17,8 @@ const common_1 = require("@nestjs/common");
 const validations_service_1 = require("./validations.service");
 const transition_dto_1 = require("./dto/transition.dto");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
+const subscription_guard_1 = require("../common/guards/subscription.guard");
+const client_1 = require("@prisma/client");
 const current_user_decorator_1 = require("../common/decorators/current-user.decorator");
 let ValidationsController = class ValidationsController {
     validationsService;
@@ -86,7 +88,8 @@ __decorate([
 ], ValidationsController.prototype, "getPending", null);
 exports.ValidationsController = ValidationsController = __decorate([
     (0, common_1.Controller)(),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, subscription_guard_1.SubscriptionGuard),
+    (0, subscription_guard_1.RequiresPlan)(client_1.SubscriptionPlan.EQUIPE, client_1.SubscriptionPlan.ORGANISATION, client_1.SubscriptionPlan.ENTERPRISE),
     __metadata("design:paramtypes", [validations_service_1.ValidationsService])
 ], ValidationsController);
 //# sourceMappingURL=validations.controller.js.map

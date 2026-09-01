@@ -121,7 +121,7 @@ export default function ResultsMatrixPage() {
             </div>
 
             <div className="flex gap-3">
-              <Button onClick={handleSave} loading={saving}>
+              <Button onClick={handleSave} isLoading={saving}>
                 <Save size={14} className="mr-1.5" />
                 Enregistrer
               </Button>

@@ -100,7 +100,7 @@ export default function ImportParticipantsPage() {
             onClick={handleImport}
             disabled={!file || !activityId || loading}
             className="w-full"
-            loading={loading}
+            isLoading={loading}
           >
             <Upload size={14} className="mr-1.5" />
             {loading ? 'Import en cours...' : 'Importer'}

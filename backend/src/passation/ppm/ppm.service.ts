@@ -7,6 +7,7 @@ import {
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { CreatePpmDto } from './dto/create-ppm.dto';
 import { UpdatePpmDto } from './dto/update-ppm.dto';
+import { CreateLignePpmDto } from './dto/create-ligne-ppm.dto';
 import { StatusPPM } from '@prisma/client';
 import { ERROR_MESSAGES } from '../common/constants/error-messages';
 
@@ -41,9 +42,16 @@ export class PpmService {
       throw new BadRequestException(ERROR_MESSAGES.PPM.DUPLICATE_YEAR(dto.year));
     }
 
+    // Générer référence unique: PPM-YYYY-NNN
+    const count = await this.prisma.planPassationMarche.count({
+      where: { organizationId },
+    });
+    const reference = `PPM-${dto.year}-${String(count + 1).padStart(3, '0')}`;
+
     return this.prisma.planPassationMarche.create({
       data: {
         ...dto,
+        reference,
         organizationId,
         createdBy: userId,
       },
@@ -189,6 +197,99 @@ export class PpmService {
         lignes: true,
       },
     });
+  }
+
+  async updateStatus(id: string, organizationId: string, newStatus: StatusPPM) {
+    const ppm = await this.findOne(id, organizationId);
+
+    return this.prisma.planPassationMarche.update({
+      where: { id },
+      data: {
+        status: newStatus,
+      },
+      include: {
+        lignes: true,
+        project: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
+      },
+    });
+  }
+
+  async addLigne(
+    ppmId: string,
+    organizationId: string,
+    userId: string,
+    ligneDto: CreateLignePpmDto,
+  ) {
+    const ppm = await this.findOne(ppmId, organizationId);
+
+    // Seuls les PPM en brouillon peuvent recevoir de nouvelles lignes
+    if (ppm.status !== StatusPPM.BROUILLON) {
+      throw new ForbiddenException(
+        'Seuls les PPM en brouillon peuvent être modifiés',
+      );
+    }
+
+    // Générer référence unique pour la ligne
+    const count = await this.prisma.lignePPM.count({
+      where: { ppmId },
+    });
+    const reference = `${ppm.reference}-L${String(count + 1).padStart(3, '0')}`;
+
+    // Créer la ligne
+    const ligne = await this.prisma.lignePPM.create({
+      data: {
+        reference,
+        ppmId,
+        responsableId: userId,
+        objet: ligneDto.objet,
+        montantEstimatif: ligneDto.montantEstimatif,
+        methodeProcedure: ligneDto.methodeProcedure,
+        trimestre: ligneDto.trimestre,
+        sourceFinancement: ligneDto.sourceFinancement,
+        ligneBudgetaire: ligneDto.ligneBudgetaire,
+        observations: ligneDto.observations,
+        activityId: ligneDto.activityId,
+      },
+      include: {
+        responsable: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+        activity: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
+      },
+    });
+
+    // Recalculer le montant total du PPM
+    const totalResult = await this.prisma.lignePPM.aggregate({
+      where: { ppmId },
+      _sum: {
+        montantEstimatif: true,
+      },
+    });
+
+    await this.prisma.planPassationMarche.update({
+      where: { id: ppmId },
+      data: {
+        montantTotal: totalResult._sum.montantEstimatif || 0,
+        nombreLignes: count + 1,
+      },
+    });
+
+    return ligne;
   }
 
   /**

@@ -233,16 +233,23 @@ export class FournisseursService {
       type: string;
       nom: string;
       url: string;
-      dateExpiration?: Date;
+      dateExpiration?: Date | string;
     }
   ) {
     await this.findOne(fournisseurId, organizationId);
 
+    const data: any = {
+      ...documentData,
+      fournisseurId,
+    };
+
+    // Convertir les dates string en DateTime pour Prisma
+    if (data.dateExpiration && typeof data.dateExpiration === 'string') {
+      data.dateExpiration = new Date(data.dateExpiration);
+    }
+
     return this.prisma.fournisseurDocument.create({
-      data: {
-        ...documentData,
-        fournisseurId,
-      },
+      data,
     });
   }
 

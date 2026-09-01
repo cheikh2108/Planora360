@@ -15,10 +15,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.FournisseursController = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
+const subscription_guard_1 = require("../../common/guards/subscription.guard");
+const client_1 = require("@prisma/client");
 const fournisseurs_service_1 = require("./fournisseurs.service");
 const create_fournisseur_dto_1 = require("./dto/create-fournisseur.dto");
 const update_fournisseur_dto_1 = require("./dto/update-fournisseur.dto");
-const client_1 = require("@prisma/client");
+const client_2 = require("@prisma/client");
 let FournisseursController = class FournisseursController {
     fournisseursService;
     constructor(fournisseursService) {
@@ -43,13 +45,13 @@ let FournisseursController = class FournisseursController {
         return this.fournisseursService.remove(id, req.user.organizationId);
     }
     suspend(id, req, motif) {
-        return this.fournisseursService.changeStatus(id, req.user.organizationId, client_1.StatusFournisseur.SUSPENDU, motif);
+        return this.fournisseursService.changeStatus(id, req.user.organizationId, client_2.StatusFournisseur.SUSPENDU, motif);
     }
     blacklist(id, req, motif) {
-        return this.fournisseursService.changeStatus(id, req.user.organizationId, client_1.StatusFournisseur.BLACKLISTE, motif);
+        return this.fournisseursService.changeStatus(id, req.user.organizationId, client_2.StatusFournisseur.BLACKLISTE, motif);
     }
     activate(id, req) {
-        return this.fournisseursService.changeStatus(id, req.user.organizationId, client_1.StatusFournisseur.ACTIF);
+        return this.fournisseursService.changeStatus(id, req.user.organizationId, client_2.StatusFournisseur.ACTIF);
     }
     getDocuments(id, req) {
         return this.fournisseursService.findOne(id, req.user.organizationId);
@@ -158,7 +160,8 @@ __decorate([
 ], FournisseursController.prototype, "removeDocument", null);
 exports.FournisseursController = FournisseursController = __decorate([
     (0, common_1.Controller)('passation/fournisseurs'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, subscription_guard_1.SubscriptionGuard),
+    (0, subscription_guard_1.RequiresPlan)(client_1.SubscriptionPlan.ORGANISATION, client_1.SubscriptionPlan.ENTERPRISE),
     __metadata("design:paramtypes", [fournisseurs_service_1.FournisseursService])
 ], FournisseursController);
 //# sourceMappingURL=fournisseurs.controller.js.map

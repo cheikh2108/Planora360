@@ -11,6 +11,7 @@ export declare class EvaluationsService {
         } & {
             id: string;
             status: string;
+            montantTotal: import("@prisma/client-runtime-utils").Decimal;
             fournisseurId: string;
             dateDepot: Date;
             procedureId: string;
@@ -18,7 +19,6 @@ export declare class EvaluationsService {
             numeroDepot: string;
             montantTechnique: import("@prisma/client-runtime-utils").Decimal | null;
             montantFinancier: import("@prisma/client-runtime-utils").Decimal;
-            montantTotal: import("@prisma/client-runtime-utils").Decimal;
             conformeAdmin: boolean | null;
             conformeTechnique: boolean | null;
             conformeFinancier: boolean | null;
@@ -53,6 +53,7 @@ export declare class EvaluationsService {
         } & {
             id: string;
             status: string;
+            montantTotal: import("@prisma/client-runtime-utils").Decimal;
             fournisseurId: string;
             dateDepot: Date;
             procedureId: string;
@@ -60,7 +61,6 @@ export declare class EvaluationsService {
             numeroDepot: string;
             montantTechnique: import("@prisma/client-runtime-utils").Decimal | null;
             montantFinancier: import("@prisma/client-runtime-utils").Decimal;
-            montantTotal: import("@prisma/client-runtime-utils").Decimal;
             conformeAdmin: boolean | null;
             conformeTechnique: boolean | null;
             conformeFinancier: boolean | null;

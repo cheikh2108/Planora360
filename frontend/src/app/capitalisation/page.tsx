@@ -57,14 +57,14 @@ export default function CapitalisationPage() {
 
       <main className="flex-1 px-4 md:px-6 py-6 space-y-5">
         {/* Search bar */}
-        <div className="relative">
+        <div className="relative max-w-md">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             placeholder="Rechercher une fiche..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-10 pl-9 pr-4 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563eb] bg-white"
+            className="w-full h-10 pl-9 pr-4 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2563eb] bg-white"
           />
         </div>
 
@@ -76,15 +76,14 @@ export default function CapitalisationPage() {
           </div>
         ) : filteredRecords.length === 0 ? (
           <EmptyState
-            icon={BookOpen}
+            illustration="document"
             title="Aucune fiche de capitalisation"
             description="Documentez vos bonnes pratiques et enseignements"
-            action={
-              <Button onClick={() => router.push('/capitalisation/new')}>
-                <Plus size={14} className="mr-1.5" />
-                Créer une fiche
-              </Button>
-            }
+            action={{
+              label: 'Créer une fiche',
+              onClick: () => router.push('/capitalisation/new'),
+              leftIcon: <Plus size={14} />
+            }}
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">

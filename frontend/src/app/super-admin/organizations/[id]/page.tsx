@@ -16,11 +16,13 @@ import {
   CheckCircle2, FolderKanban, AlertCircle, Star,
 } from 'lucide-react';
 
-const PLAN_ORDER: SubscriptionPlan[] = ['DECOUVERTE', 'PROFESSIONNELLE', 'SUR_MESURE'];
+const PLAN_ORDER: SubscriptionPlan[] = ['INDIVIDUEL', 'PRO', 'EQUIPE', 'ORGANISATION', 'ENTERPRISE'];
 const PLAN_META: Record<SubscriptionPlan, { label: string; tagline: string; color: string; bg: string; darkFrom: string; darkTo: string }> = {
-  DECOUVERTE:      { label: 'Découverte',      tagline: '30 jours gratuits',           color: 'text-emerald-700', bg: 'bg-emerald-100', darkFrom: 'from-emerald-800', darkTo: 'to-emerald-700' },
-  PROFESSIONNELLE: { label: 'Professionnelle', tagline: 'Pour les équipes actives',    color: 'text-blue-700',   bg: 'bg-blue-100',   darkFrom: 'from-[#0f1e38]',  darkTo: 'to-[#1a3a6e]' },
-  SUR_MESURE:      { label: 'Entreprise',      tagline: 'Configuration personnalisée', color: 'text-amber-700',  bg: 'bg-amber-100',  darkFrom: 'from-amber-900',  darkTo: 'to-amber-700' },
+  INDIVIDUEL:    { label: 'Individuel',     tagline: '30 jours gratuits',           color: 'text-emerald-700', bg: 'bg-emerald-100', darkFrom: 'from-emerald-800', darkTo: 'to-emerald-700' },
+  PRO:           { label: 'Pro',            tagline: 'Pour les équipes actives',    color: 'text-blue-700',    bg: 'bg-blue-100',    darkFrom: 'from-[#0f1e38]',  darkTo: 'to-[#1a3a6e]' },
+  EQUIPE:        { label: 'Équipe',         tagline: 'Collaboration renforcée',     color: 'text-purple-700',  bg: 'bg-purple-100',  darkFrom: 'from-purple-800', darkTo: 'to-purple-700' },
+  ORGANISATION:  { label: 'Organisation',   tagline: 'Gestion multi-équipes',       color: 'text-indigo-700',  bg: 'bg-indigo-100',  darkFrom: 'from-indigo-800', darkTo: 'to-indigo-700' },
+  ENTERPRISE:    { label: 'Enterprise',     tagline: 'Configuration personnalisée', color: 'text-amber-700',   bg: 'bg-amber-100',   darkFrom: 'from-amber-900',  darkTo: 'to-amber-700' },
 };
 
 type Tab = 'overview' | 'subscription';
@@ -143,7 +145,7 @@ function SubscriptionTab({ org }: { org: Organization }) {
             </p>
             <div className="flex justify-end gap-3 pt-1 border-t border-slate-100">
               <Button variant="secondary" onClick={() => setTargetPlan(null)}>Annuler</Button>
-              <Button loading={isPending} onClick={() => changePlan(targetPlan)}>Confirmer</Button>
+              <Button isLoading={isPending} onClick={() => changePlan(targetPlan)}>Confirmer</Button>
             </div>
           </div>
         )}
@@ -178,7 +180,7 @@ function EditOrgModal({ org, onClose }: { org: Organization; onClose: () => void
         </FormField>
         <div className="flex justify-end gap-3 pt-2">
           <Button type="button" variant="secondary" onClick={onClose}>Annuler</Button>
-          <Button type="submit" loading={isPending}>Enregistrer</Button>
+          <Button type="submit" isLoading={isPending}>Enregistrer</Button>
         </div>
       </form>
     </Modal>
@@ -217,7 +219,7 @@ export default function SuperAdminOrgDetailPage() {
   if (!org) {
     return (
       <main className="px-4 md:px-8 py-8 max-w-5xl mx-auto">
-        <EmptyState icon={Building2} title="Organisation introuvable" description="Cette organisation n'existe pas ou a été supprimée." />
+        <EmptyState illustration="search" title="Organisation introuvable" description="Cette organisation n'existe pas ou a été supprimée." />
       </main>
     );
   }
@@ -259,7 +261,7 @@ export default function SuperAdminOrgDetailPage() {
           </div>
           <div className="flex justify-end gap-3 pt-1">
             <Button variant="secondary" onClick={() => setDeleteOpen(false)}>Annuler</Button>
-            <Button variant="danger" loading={deleting} onClick={() => deleteOrg()}>Supprimer définitivement</Button>
+            <Button variant="danger" isLoading={deleting} onClick={() => deleteOrg()}>Supprimer définitivement</Button>
           </div>
         </div>
       </Modal>

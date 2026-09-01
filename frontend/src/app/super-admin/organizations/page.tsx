@@ -17,27 +17,39 @@ import {
   Clock, CheckCheck, XCircle,
 } from 'lucide-react';
 
-const PLAN_ORDER: SubscriptionPlan[] = ['DECOUVERTE', 'PROFESSIONNELLE', 'SUR_MESURE'];
+const PLAN_ORDER: SubscriptionPlan[] = ['INDIVIDUEL', 'PRO', 'EQUIPE', 'ORGANISATION', 'ENTERPRISE'];
 
 const PLAN_META: Record<SubscriptionPlan, {
   label: string; color: string; bg: string; dot: string;
   description: string; limits: string[]; badge?: string;
 }> = {
-  DECOUVERTE:      {
-    label: 'Découverte',
+  INDIVIDUEL: {
+    label: 'Individuel',
     color: 'text-emerald-700', bg: 'bg-emerald-100', dot: 'bg-emerald-500',
     description: 'Essai gratuit 30 jours, sans engagement',
     badge: '30 jours gratuits',
     limits: ['2 plans d\'action', '5 utilisateurs', 'Fonctionnalités de base'],
   },
-  PROFESSIONNELLE: {
-    label: 'Professionnelle',
+  PRO: {
+    label: 'Pro',
     color: 'text-blue-700', bg: 'bg-blue-100', dot: 'bg-blue-500',
-    description: 'Pour les organisations en croissance',
-    limits: ['Plans illimités', '50 utilisateurs', 'Rapports avancés', 'Export PDF/Excel'],
+    description: 'Pour les professionnels actifs',
+    limits: ['10 plans d\'action', '20 utilisateurs', 'Rapports avancés'],
   },
-  SUR_MESURE:      {
-    label: 'Entreprise',
+  EQUIPE: {
+    label: 'Équipe',
+    color: 'text-purple-700', bg: 'bg-purple-100', dot: 'bg-purple-500',
+    description: 'Collaboration renforcée',
+    limits: ['Plans illimités', '50 utilisateurs', 'Export PDF/Excel', 'API'],
+  },
+  ORGANISATION: {
+    label: 'Organisation',
+    color: 'text-indigo-700', bg: 'bg-indigo-100', dot: 'bg-indigo-500',
+    description: 'Gestion multi-équipes',
+    limits: ['Tout illimité', '100 utilisateurs', 'Rapports personnalisés', 'SSO'],
+  },
+  ENTERPRISE: {
+    label: 'Enterprise',
     color: 'text-amber-700', bg: 'bg-amber-100', dot: 'bg-amber-500',
     description: 'Solution sur mesure pour les grandes structures',
     limits: ['Tout illimité', 'SLA dédié', 'Intégrations personnalisées', 'Support prioritaire'],
@@ -205,13 +217,13 @@ export default function SuperAdminOrganizationsPage() {
 
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-48">
+        <div className="relative flex-1 min-w-48 max-w-md">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Rechercher une organisation..."
-            className="w-full h-9 pl-8 pr-4 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+            className="w-full h-9 pl-8 pr-4 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
           />
         </div>
         <div className="flex gap-1.5">
@@ -250,7 +262,7 @@ export default function SuperAdminOrganizationsPage() {
         {isLoading ? (
           <div className="p-5 space-y-3">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-16" />)}</div>
         ) : filtered.length === 0 ? (
-          <EmptyState icon={Building2} title="Aucune organisation" description={search || planFilter !== 'ALL' ? 'Aucun résultat.' : 'Créez la première organisation.'} />
+          <EmptyState illustration="inbox" title="Aucune organisation" description={search || planFilter !== 'ALL' ? 'Aucun résultat.' : 'Créez la première organisation.'} />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -323,7 +335,7 @@ export default function SuperAdminOrganizationsPage() {
             Vous allez refuser la demande de <strong>{rejectTarget?.name}</strong>. Un motif optionnel peut être fourni.
           </p>
           <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1.5">Motif (optionnel)</label>
+            <label className="block text-xs font-semibold text-slate-900 mb-1.5">Motif (optionnel)</label>
             <textarea
               value={rejectReason}
               onChange={e => setRejectReason(e.target.value)}
@@ -336,7 +348,7 @@ export default function SuperAdminOrganizationsPage() {
             <Button variant="secondary" onClick={() => { setRejectTarget(null); setRejectReason(''); }}>Annuler</Button>
             <Button
               variant="danger"
-              loading={rejecting}
+              isLoading={rejecting}
               onClick={() => rejectTarget && rejectOrg({ id: rejectTarget.id, reason: rejectReason || undefined })}
             >
               Confirmer le refus
@@ -355,7 +367,7 @@ export default function SuperAdminOrganizationsPage() {
           </div>
           <div className="flex justify-end gap-3 pt-1">
             <Button variant="secondary" onClick={() => setDeleteTarget(null)}>Annuler</Button>
-            <Button variant="danger" loading={deleting} onClick={() => deleteTarget && deleteOrg(deleteTarget.id)}>
+            <Button variant="danger" isLoading={deleting} onClick={() => deleteTarget && deleteOrg(deleteTarget.id)}>
               Supprimer définitivement
             </Button>
           </div>
@@ -367,7 +379,7 @@ export default function SuperAdminOrganizationsPage() {
 
 const EMPTY_FORM = {
   name: '',
-  subscriptionPlan: 'DECOUVERTE' as SubscriptionPlan,
+  subscriptionPlan: 'INDIVIDUEL' as SubscriptionPlan,
   adminFirstName: '',
   adminLastName: '',
   adminEmail: '',
@@ -492,7 +504,7 @@ function CreateOrgModal({ open, onClose }: { open: boolean; onClose: () => void 
 
         <div className="flex justify-end gap-3 pt-2">
           <Button type="button" variant="secondary" onClick={onClose}>Annuler</Button>
-          <Button type="submit" loading={isPending} icon={<Plus size={14} />}>Créer l&apos;organisation</Button>
+          <Button type="submit" isLoading={isPending} icon={<Plus size={14} />}>Créer l&apos;organisation</Button>
         </div>
       </form>
     </Modal>

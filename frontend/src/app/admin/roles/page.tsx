@@ -128,7 +128,7 @@ function RoleModal({ open, onClose, role }: {
         </div>
         <div className="flex justify-end gap-3 pt-2 border-t border-slate-100">
           <Button variant="secondary" onClick={onClose}>Annuler</Button>
-          <Button onClick={() => save()} loading={isPending} disabled={!name.trim() || permissions.length === 0}>
+          <Button onClick={() => save()} isLoading={isPending} disabled={!name.trim() || permissions.length === 0}>
             {isEdit ? 'Enregistrer' : 'Créer le rôle'}
           </Button>
         </div>
@@ -395,7 +395,7 @@ export default function RolesPage() {
         </p>
         <div className="flex justify-end gap-3">
           <Button variant="secondary" onClick={() => setDeleteRole(null)}>Annuler</Button>
-          <Button variant="danger" loading={deleting} onClick={() => deleteRole && doDelete(deleteRole.id)}>
+          <Button variant="danger" isLoading={deleting} onClick={() => deleteRole && doDelete(deleteRole.id)}>
             Supprimer
           </Button>
         </div>

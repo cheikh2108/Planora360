@@ -2163,29 +2163,31 @@ filter: blur(0px);
                 </p>
 
                 <h2 class="mt-4 text-4xl leading-[1.1] tracking-tight text-white sm:text-[56px] font-jakarta font-medium" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                  Simple plans for teams that want clarity.
+                  Des tarifs adaptés à chaque organisation.
                 </h2>
               </div>
 
               <!-- Right: subtitle + toggle -->
               <div class="lg:ml-auto lg:max-w-md">
                 <p class="text-[17px] leading-relaxed text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                  Commencez gratuitement, évoluez quand votre équipe a besoin de plus de plans, de rapports et de contrôles de collaboration.
+                  Choisissez le plan qui correspond à vos besoins. Évoluez facilement selon la croissance de vos projets.
                 </p>
 
                 <div class="mt-7 inline-flex rounded-full border border-white/[0.12] bg-white/[0.04] p-1 backdrop-blur-xl">
-                  <button class="h-10 rounded-full bg-cyan-100 px-5 text-sm font-medium text-slate-950 shadow-[0_12px_35px_rgba(0,0,0,0.28)] transition font-geist">
+                  <button id="btn-monthly" class="h-10 rounded-full bg-cyan-100 px-5 text-sm font-medium text-slate-950 shadow-[0_12px_35px_rgba(0,0,0,0.28)] transition font-geist">
                     Mensuel
                   </button>
 
-                  <button class="h-10 rounded-full px-5 text-sm font-medium text-slate-300 transition hover:text-white font-geist">
+                  <button id="btn-annual" class="h-10 rounded-full px-5 text-sm font-medium text-slate-300 transition hover:text-white font-geist">
                     Annuel
                   </button>
                 </div>
               </div>
             </div>
 
-            <div class="mt-16 grid gap-6 lg:grid-cols-3">
+            <!-- Première ligne: INDIVIDUEL, PRO, ÉQUIPE -->
+            <div class="mt-16 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <!-- Plan INDIVIDUEL -->
               <article class="group relative flex flex-col rounded-[2rem] bg-gradient-to-b from-white/[0.05] to-transparent p-8 transition duration-300 ease-out hover:-translate-y-1">
                 <div class="pointer-events-none absolute inset-0 rounded-[2rem] border border-white/10 transition-colors group-hover:border-white/20"></div>
                 <div class="absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-blue-300/40 to-transparent"></div>
@@ -2193,33 +2195,33 @@ filter: blur(0px);
                 <div class="flex items-start justify-between gap-6">
                   <div class="">
                     <p class="text-[11px] font-semibold uppercase tracking-widest text-blue-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      Découverte
+                      Individuel
                     </p>
                     <h3 class="mt-3 text-[24px] tracking-tight text-white font-jakarta font-medium" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
                       Pour démarrer
                     </h3>
                   </div>
                   <span class="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium text-slate-400 font-geist">
-                    Free
+                    Starter
                   </span>
                 </div>
 
                 <div class="mt-8">
                   <div class="flex items-end gap-2">
-                    <span class="text-5xl tracking-tight text-white font-jakarta font-medium">
-                      $0
+                    <span class="text-5xl tracking-tight text-white font-jakarta font-medium" data-monthly="10 000" data-annual="100 000">
+                      10 000
                     </span>
                     <span class="pb-2 text-sm text-slate-500 font-geist">
-                      / month
+                      FCFA <span class="pricing-period">/ mois</span>
                     </span>
                   </div>
                   <p class="mt-4 text-[15px] leading-relaxed text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                    Un espace de travail pour les organisations qui démarrent leurs premiers plans d'action.
+                    Idéal pour les petits projets individuels ou les organisations qui démarrent.
                   </p>
                 </div>
 
                 <a href="/auth/register" class="mt-8 inline-flex items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-medium text-slate-200 transition duration-300 ease-out hover:border-white/20 hover:bg-white/[0.07] font-geist">
-                  Commencer gratuitement
+                  Commencer
                 </a>
 
                 <div class="mt-8 h-px w-full bg-white/[0.08]"></div>
@@ -2231,7 +2233,7 @@ filter: blur(0px);
                         <path d="M20 6 9 17l-5-5"></path>
                       </svg>
                     </span>
-                    Jusqu'à 3 plans d'action
+                    Jusqu'à 3 projets
                   </li>
                   <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
                     <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-300">
@@ -2239,7 +2241,7 @@ filter: blur(0px);
                         <path d="M20 6 9 17l-5-5"></path>
                       </svg>
                     </span>
-                    Suivi des activités simplifié
+                    1 utilisateur
                   </li>
                   <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
                     <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-300">
@@ -2247,7 +2249,7 @@ filter: blur(0px);
                         <path d="M20 6 9 17l-5-5"></path>
                       </svg>
                     </span>
-                    Échéances et responsables
+                    Tableau de bord personnel
                   </li>
                   <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
                     <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-300">
@@ -2255,11 +2257,108 @@ filter: blur(0px);
                         <path d="M20 6 9 17l-5-5"></path>
                       </svg>
                     </span>
-                    Résumé hebdomadaire d'avancement
+                    Planification de base
+                  </li>
+                  <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
+                    <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-300">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6 9 17l-5-5"></path>
+                      </svg>
+                    </span>
+                    Rapports PDF/Excel
                   </li>
                 </ul>
               </article>
 
+              <!-- Plan PRO -->
+              <article class="group relative flex flex-col rounded-[2rem] bg-gradient-to-b from-white/[0.05] to-transparent p-8 transition duration-300 ease-out hover:-translate-y-1">
+                <div class="pointer-events-none absolute inset-0 rounded-[2rem] border border-white/10 transition-colors group-hover:border-white/20"></div>
+                <div class="absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-blue-300/40 to-transparent"></div>
+
+                <div class="flex items-start justify-between gap-6">
+                  <div>
+                    <p class="text-[11px] font-semibold uppercase tracking-widest text-blue-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
+                      Pro
+                    </p>
+                    <h3 class="mt-3 text-[24px] tracking-tight text-white font-jakarta font-medium" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
+                      Pour les petites équipes
+                    </h3>
+                  </div>
+                </div>
+
+                <div class="mt-8">
+                  <div class="flex items-end gap-2">
+                    <span class="text-5xl tracking-tight text-white font-jakarta font-medium" data-monthly="25 000" data-annual="250 000">
+                      25 000
+                    </span>
+                    <span class="pb-2 text-sm text-slate-500 font-geist">
+                      FCFA <span class="pricing-period">/ mois</span>
+                    </span>
+                  </div>
+                  <p class="mt-4 text-[15px] leading-relaxed text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
+                    Gestion multi-projets avec rapports avancés et workflows de validation.
+                  </p>
+                </div>
+
+                <a href="/auth/register" class="mt-8 inline-flex items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-medium text-slate-200 transition duration-300 ease-out hover:border-white/20 hover:bg-white/[0.07] font-geist">
+                  Essayer gratuitement
+                </a>
+
+                <div class="mt-8 h-px w-full bg-white/[0.08]"></div>
+
+                <ul class="mt-8 space-y-4 text-[15px] leading-6 text-slate-400">
+                  <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
+                    <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-300">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6 9 17l-5-5"></path>
+                      </svg>
+                    </span>
+                    Jusqu'à 10 projets
+                  </li>
+                  <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
+                    <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-300">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6 9 17l-5-5"></path>
+                      </svg>
+                    </span>
+                    3 utilisateurs
+                  </li>
+                  <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
+                    <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-300">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6 9 17l-5-5"></path>
+                      </svg>
+                    </span>
+                    Gestion multi-projets
+                  </li>
+                  <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
+                    <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-300">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6 9 17l-5-5"></path>
+                      </svg>
+                    </span>
+                    Rapports avancés
+                  </li>
+                  <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
+                    <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-300">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6 9 17l-5-5"></path>
+                      </svg>
+                    </span>
+                    Workflow de validation
+                  </li>
+                  <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
+                    <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-300">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6 9 17l-5-5"></path>
+                      </svg>
+                    </span>
+                    Analyse géographique
+                  </li>
+                </ul>
+              </article>
+
+              <!-- Plan ÉQUIPE (populaire) -->
               <article class="group relative flex flex-col rounded-[2rem] bg-gradient-to-b from-blue-500/[0.16] via-white/[0.06] to-transparent p-8 shadow-2xl shadow-blue-950/20 transition duration-300 ease-out hover:-translate-y-1">
                 <div class="pointer-events-none absolute inset-0 rounded-[2rem] border border-blue-300/30 transition-colors group-hover:border-blue-200/40"></div>
                 <div class="absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-blue-200/70 to-transparent"></div>
@@ -2267,28 +2366,28 @@ filter: blur(0px);
                 <div class="flex items-start justify-between gap-6">
                   <div class="">
                     <p class="text-[11px] font-semibold uppercase tracking-widest text-blue-300 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      Pro
+                      Équipe
                     </p>
                     <h3 class="mt-3 text-[24px] tracking-tight text-white font-jakarta font-medium" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
                       Pour les équipes actives
                     </h3>
                   </div>
                   <span class="rounded-full border border-blue-300/20 bg-blue-400/10 px-3 py-1 text-xs font-medium text-blue-200 font-geist">
-                    Popular
+                    Populaire
                   </span>
                 </div>
 
                 <div class="mt-8">
                   <div class="flex items-end gap-2">
-                    <span class="text-5xl tracking-tight text-white font-jakarta font-medium">
-                      $12
+                    <span class="text-5xl tracking-tight text-white font-jakarta font-medium" data-monthly="50 000" data-annual="500 000">
+                      50 000
                     </span>
                     <span class="pb-2 text-sm text-slate-400 font-geist">
-                      / user / month
+                      FCFA <span class="pricing-period">/ mois</span>
                     </span>
                   </div>
                   <p class="mt-4 text-[15px] leading-relaxed text-slate-300 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                    Tout ce dont les équipes ont besoin pour planifier, rester alignées et avancer avec régularité.
+                    Solution complète avec messagerie, gestion documentaire et passation de marchés.
                   </p>
                 </div>
 
@@ -2305,7 +2404,7 @@ filter: blur(0px);
                         <path d="M20 6 9 17l-5-5"></path>
                       </svg>
                     </span>
-                    Plans d'action illimités
+                    Jusqu'à 25 projets
                   </li>
                   <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
                     <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-300/15 text-blue-200">
@@ -2313,7 +2412,7 @@ filter: blur(0px);
                         <path d="M20 6 9 17l-5-5"></path>
                       </svg>
                     </span>
-                    Vues chronologie et calendrier
+                    10 utilisateurs
                   </li>
                   <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
                     <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-300/15 text-blue-200">
@@ -2321,7 +2420,7 @@ filter: blur(0px);
                         <path d="M20 6 9 17l-5-5"></path>
                       </svg>
                     </span>
-                    Priorités et filtres avancés
+                    Gestion avancée des rôles
                   </li>
                   <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
                     <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-300/15 text-blue-200">
@@ -2329,7 +2428,7 @@ filter: blur(0px);
                         <path d="M20 6 9 17l-5-5"></path>
                       </svg>
                     </span>
-                    Commentaires et mentions d'équipe
+                    Cartographie géographique
                   </li>
                   <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
                     <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-300/15 text-blue-200">
@@ -2337,11 +2436,31 @@ filter: blur(0px);
                         <path d="M20 6 9 17l-5-5"></path>
                       </svg>
                     </span>
-                    Rapports d'avancement
+                    Messagerie intégrée
+                  </li>
+                  <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
+                    <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-300/15 text-blue-200">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6 9 17l-5-5"></path>
+                      </svg>
+                    </span>
+                    Gestion documentaire avancée
+                  </li>
+                  <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
+                    <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-300/15 text-blue-200">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6 9 17l-5-5"></path>
+                      </svg>
+                    </span>
+                    Passation de marchés de base
                   </li>
                 </ul>
               </article>
+            </div>
 
+            <!-- Deuxième ligne: ORGANISATION et ENTERPRISE (centrés) -->
+            <div class="mt-6 grid gap-6 md:grid-cols-2 lg:max-w-4xl lg:mx-auto">
+              <!-- Plan ORGANISATION -->
               <article class="group relative flex flex-col rounded-[2rem] bg-gradient-to-b from-white/[0.05] to-transparent p-8 transition duration-300 ease-out hover:-translate-y-1">
                 <div class="pointer-events-none absolute inset-0 rounded-[2rem] border border-white/10 transition-colors group-hover:border-white/20"></div>
                 <div class="absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-blue-300/40 to-transparent"></div>
@@ -2349,10 +2468,10 @@ filter: blur(0px);
                 <div class="flex items-start justify-between gap-6">
                   <div>
                     <p class="text-[11px] font-semibold uppercase tracking-widest text-blue-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      Business
+                      Organisation
                     </p>
                     <h3 class="mt-3 text-[24px] tracking-tight text-white font-jakarta font-medium" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                      Pour les organisations en croissance
+                      Pour les organisations
                     </h3>
                   </div>
                   <span class="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium text-slate-400 font-geist">
@@ -2362,15 +2481,15 @@ filter: blur(0px);
 
                 <div class="mt-8">
                   <div class="flex items-end gap-2">
-                    <span class="text-5xl tracking-tight text-white font-jakarta font-medium">
-                      $29
+                    <span class="text-5xl tracking-tight text-white font-jakarta font-medium" data-monthly="100 000" data-annual="1 000 000">
+                      100 000
                     </span>
                     <span class="pb-2 text-sm text-slate-500 font-geist">
-                      / user / month
+                      FCFA <span class="pricing-period">/ mois</span>
                     </span>
                   </div>
                   <p class="mt-4 text-[15px] leading-relaxed text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                    Contrôles avancés et visibilité accrue pour coordonner plusieurs plans d'action simultanément.
+                    Passation complète, géolocalisation avancée et consolidation multi-projets.
                   </p>
                 </div>
 
@@ -2387,7 +2506,7 @@ filter: blur(0px);
                         <path d="M20 6 9 17l-5-5"></path>
                       </svg>
                     </span>
-                    Tout ce qui est dans Pro
+                    Jusqu'à 50 projets
                   </li>
                   <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
                     <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-300">
@@ -2395,7 +2514,7 @@ filter: blur(0px);
                         <path d="M20 6 9 17l-5-5"></path>
                       </svg>
                     </span>
-                    Permissions administrateur
+                    25 utilisateurs
                   </li>
                   <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
                     <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-300">
@@ -2403,7 +2522,7 @@ filter: blur(0px);
                         <path d="M20 6 9 17l-5-5"></path>
                       </svg>
                     </span>
-                    Reporting portefeuille
+                    Passation de marchés complète
                   </li>
                   <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
                     <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-300">
@@ -2411,7 +2530,7 @@ filter: blur(0px);
                         <path d="M20 6 9 17l-5-5"></path>
                       </svg>
                     </span>
-                    Support prioritaire
+                    Géolocalisation avancée
                   </li>
                   <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
                     <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-300">
@@ -2419,7 +2538,127 @@ filter: blur(0px);
                         <path d="M20 6 9 17l-5-5"></path>
                       </svg>
                     </span>
-                    Onboarding personnalisé
+                    Consolidation multi-projets
+                  </li>
+                  <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
+                    <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-300">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6 9 17l-5-5"></path>
+                      </svg>
+                    </span>
+                    Rapports bailleurs personnalisés
+                  </li>
+                  <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
+                    <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-300">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6 9 17l-5-5"></path>
+                      </svg>
+                    </span>
+                    Journal d'audit & workflows
+                  </li>
+                </ul>
+              </article>
+
+              <!-- Plan ENTERPRISE -->
+              <article class="group relative flex flex-col rounded-[2rem] bg-gradient-to-b from-white/[0.05] to-transparent p-8 transition duration-300 ease-out hover:-translate-y-1">
+                <div class="pointer-events-none absolute inset-0 rounded-[2rem] border border-white/10 transition-colors group-hover:border-white/20"></div>
+                <div class="absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent via-blue-300/40 to-transparent"></div>
+
+                <div class="flex items-start justify-between gap-6">
+                  <div>
+                    <p class="text-[11px] font-semibold uppercase tracking-widest text-blue-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
+                      Enterprise
+                    </p>
+                    <h3 class="mt-3 text-[24px] tracking-tight text-white font-jakarta font-medium" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
+                      Sur mesure
+                    </h3>
+                  </div>
+                  <span class="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium text-slate-400 font-geist">
+                    Custom
+                  </span>
+                </div>
+
+                <div class="mt-8">
+                  <div class="flex items-end gap-2">
+                    <span class="text-4xl tracking-tight text-white font-jakarta font-medium">
+                      À partir de
+                    </span>
+                  </div>
+                  <div class="flex items-end gap-2 mt-2">
+                    <span class="text-5xl tracking-tight text-white font-jakarta font-medium">
+                      250 000
+                    </span>
+                    <span class="pb-2 text-sm text-slate-500 font-geist">
+                      FCFA / mois
+                    </span>
+                  </div>
+                  <p class="mt-4 text-[15px] leading-relaxed text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
+                    Solution complète personnalisée avec accompagnement dédié et support premium.
+                  </p>
+                </div>
+
+                <a href="/auth/register" class="mt-8 inline-flex items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-medium text-slate-200 transition duration-300 ease-out hover:border-white/20 hover:bg-white/[0.07] font-geist">
+                  Demander un devis
+                </a>
+
+                <div class="mt-8 h-px w-full bg-white/[0.08]"></div>
+
+                <ul class="mt-8 space-y-4 text-[15px] leading-6 text-slate-400">
+                  <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
+                    <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-300">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6 9 17l-5-5"></path>
+                      </svg>
+                    </span>
+                    Projets illimités
+                  </li>
+                  <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
+                    <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-300">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6 9 17l-5-5"></path>
+                      </svg>
+                    </span>
+                    Utilisateurs illimités
+                  </li>
+                  <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
+                    <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-300">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6 9 17l-5-5"></path>
+                      </svg>
+                    </span>
+                    Environnement dédié
+                  </li>
+                  <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
+                    <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-300">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6 9 17l-5-5"></path>
+                      </svg>
+                    </span>
+                    Personnalisation interface
+                  </li>
+                  <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
+                    <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-300">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6 9 17l-5-5"></path>
+                      </svg>
+                    </span>
+                    Intégrations API personnalisées
+                  </li>
+                  <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
+                    <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-300">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6 9 17l-5-5"></path>
+                      </svg>
+                    </span>
+                    Migration données assistée
+                  </li>
+                  <li class="flex gap-3 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
+                    <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10 text-blue-300">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6 9 17l-5-5"></path>
+                      </svg>
+                    </span>
+                    SLA & support premium 24/7
                   </li>
                 </ul>
               </article>
@@ -2427,10 +2666,81 @@ filter: blur(0px);
 
             <div class="text-center border-white/10 border rounded-[2rem] mt-10 pt-6 pr-6 pb-6 pl-6">
               <p class="text-[15px] leading-relaxed text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                Tous les plans incluent des espaces de travail sécurisés, des activités illimitées et une interface que votre équipe maîtrise en quelques minutes.
+                Tous les plans incluent une sécurité renforcée, des sauvegardes automatiques et une assistance technique réactive.
               </p>
             </div>
           </div>
+
+          <!-- Script pour le toggle Mensuel/Annuel -->
+          <script>
+            (function() {
+              const btnMonthly = document.getElementById('btn-monthly');
+              const btnAnnual = document.getElementById('btn-annual');
+              const prices = document.querySelectorAll('[data-monthly]');
+              const periods = document.querySelectorAll('.pricing-period');
+
+              let isAnnual = false;
+
+              function updateUI() {
+                if (isAnnual) {
+                  // Style bouton annuel
+                  btnAnnual.classList.add('bg-cyan-100', 'text-slate-950', 'shadow-[0_12px_35px_rgba(0,0,0,0.28)]');
+                  btnAnnual.classList.remove('text-slate-300');
+                  btnMonthly.classList.remove('bg-cyan-100', 'text-slate-950', 'shadow-[0_12px_35px_rgba(0,0,0,0.28)]');
+                  btnMonthly.classList.add('text-slate-300');
+
+                  // Mettre à jour les prix
+                  prices.forEach(price => {
+                    const annual = price.getAttribute('data-annual');
+                    if (annual) {
+                      price.textContent = annual.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+                    }
+                  });
+
+                  // Mettre à jour les périodes
+                  periods.forEach(period => {
+                    period.textContent = '/ an';
+                  });
+                } else {
+                  // Style bouton mensuel
+                  btnMonthly.classList.add('bg-cyan-100', 'text-slate-950', 'shadow-[0_12px_35px_rgba(0,0,0,0.28)]');
+                  btnMonthly.classList.remove('text-slate-300');
+                  btnAnnual.classList.remove('bg-cyan-100', 'text-slate-950', 'shadow-[0_12px_35px_rgba(0,0,0,0.28)]');
+                  btnAnnual.classList.add('text-slate-300');
+
+                  // Mettre à jour les prix
+                  prices.forEach(price => {
+                    const monthly = price.getAttribute('data-monthly');
+                    if (monthly) {
+                      price.textContent = monthly.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+                    }
+                  });
+
+                  // Mettre à jour les périodes
+                  periods.forEach(period => {
+                    period.textContent = '/ mois';
+                  });
+                }
+              }
+
+              btnMonthly.addEventListener('click', function() {
+                if (isAnnual) {
+                  isAnnual = false;
+                  updateUI();
+                }
+              });
+
+              btnAnnual.addEventListener('click', function() {
+                if (!isAnnual) {
+                  isAnnual = true;
+                  updateUI();
+                }
+              });
+
+              // Initialiser avec le formatage des prix mensuels
+              updateUI();
+            })();
+          </script>
         </section>
         <section class="border-white/[0.06] overflow-hidden sm:px-8 lg:px-10 font-sans border-t pt-24 pr-5 pb-24 pl-5 relative" id="faq">
           <div class="pointer-events-none absolute left-1/2 top-0 h-[34rem] w-[34rem] -translate-x-1/2 rounded-full bg-blue-500/10 blur-3xl"></div>

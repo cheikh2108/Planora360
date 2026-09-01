@@ -174,7 +174,7 @@ function CreatePlanModal({ open, onClose, onCreated }: { open: boolean; onClose:
         </FormField>
         <div className="flex justify-end gap-3 pt-2">
           <Button type="button" variant="secondary" onClick={onClose}>Annuler</Button>
-          <Button type="submit" loading={isPending} icon={<Plus size={16} />}>Créer le plan</Button>
+          <Button type="submit" isLoading={isPending} icon={<Plus size={16} />}>Créer le plan</Button>
         </div>
       </form>
     </Modal>
@@ -253,10 +253,10 @@ export default function PlansPage() {
           </div>
         ) : plans.length === 0 ? (
           <EmptyState
-            icon={FolderKanban}
+            illustration="inbox"
             title="Aucun plan d'action"
             description="Créez votre premier plan d'action pour commencer le suivi."
-            action={<Button icon={<Plus size={16} />} onClick={() => setCreateOpen(true)}>Créer un plan</Button>}
+            action={{ label: 'Créer un plan', onClick: () => setCreateOpen(true), leftIcon: <Plus size={16} /> }}
           />
         ) : (
           <>

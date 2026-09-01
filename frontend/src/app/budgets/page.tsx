@@ -133,7 +133,7 @@ export default function BudgetsPage() {
             <Skeleton className="h-64" />
           </div>
         ) : !summary ? (
-          <EmptyState icon={Wallet} title="Aucune donnée budgétaire" description="Aucune ligne budgétaire enregistrée." />
+          <EmptyState illustration="data" title="Aucune donnée budgétaire" description="Aucune ligne budgétaire enregistrée." />
         ) : (
           <>
             {/* KPI Cards */}

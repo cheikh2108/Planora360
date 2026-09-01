@@ -15,6 +15,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.EvaluationsController = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
+const subscription_guard_1 = require("../../common/guards/subscription.guard");
+const client_1 = require("@prisma/client");
 const evaluations_service_1 = require("./evaluations.service");
 let EvaluationsController = class EvaluationsController {
     evaluationsService;
@@ -59,7 +61,8 @@ __decorate([
 ], EvaluationsController.prototype, "getSynthese", null);
 exports.EvaluationsController = EvaluationsController = __decorate([
     (0, common_1.Controller)('passation/procedures/:procedureId/evaluations'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, subscription_guard_1.SubscriptionGuard),
+    (0, subscription_guard_1.RequiresPlan)(client_1.SubscriptionPlan.ORGANISATION, client_1.SubscriptionPlan.ENTERPRISE),
     __metadata("design:paramtypes", [evaluations_service_1.EvaluationsService])
 ], EvaluationsController);
 //# sourceMappingURL=evaluations.controller.js.map

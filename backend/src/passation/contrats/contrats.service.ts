@@ -12,13 +12,32 @@ export class ContratsService {
     });
     const reference = `CONT-${new Date().getFullYear()}-${String(count + 1).padStart(4, '0')}`;
 
+    const data: any = {
+      ...dto,
+      reference,
+      organizationId,
+      gestionnaire: userId,
+    };
+
+    // Convertir les dates string en DateTime pour Prisma
+    if (data.dateSignature && typeof data.dateSignature === 'string') {
+      data.dateSignature = new Date(data.dateSignature);
+    }
+    if (data.dateDemarrage && typeof data.dateDemarrage === 'string') {
+      data.dateDemarrage = new Date(data.dateDemarrage);
+    }
+    if (data.dateEcheance && typeof data.dateEcheance === 'string') {
+      data.dateEcheance = new Date(data.dateEcheance);
+    }
+    if (data.dateReceptionProv && typeof data.dateReceptionProv === 'string') {
+      data.dateReceptionProv = new Date(data.dateReceptionProv);
+    }
+    if (data.dateReceptionDef && typeof data.dateReceptionDef === 'string') {
+      data.dateReceptionDef = new Date(data.dateReceptionDef);
+    }
+
     return this.prisma.contrat.create({
-      data: {
-        ...dto,
-        reference,
-        organizationId,
-        gestionnaire: userId,
-      },
+      data,
       include: {
         fournisseur: {
           select: {
@@ -128,9 +147,28 @@ export class ContratsService {
   async update(id: string, organizationId: string, dto: any) {
     await this.findOne(id, organizationId);
 
+    const data: any = { ...dto };
+
+    // Convertir les dates string en DateTime pour Prisma
+    if (data.dateSignature && typeof data.dateSignature === 'string') {
+      data.dateSignature = new Date(data.dateSignature);
+    }
+    if (data.dateDemarrage && typeof data.dateDemarrage === 'string') {
+      data.dateDemarrage = new Date(data.dateDemarrage);
+    }
+    if (data.dateEcheance && typeof data.dateEcheance === 'string') {
+      data.dateEcheance = new Date(data.dateEcheance);
+    }
+    if (data.dateReceptionProv && typeof data.dateReceptionProv === 'string') {
+      data.dateReceptionProv = new Date(data.dateReceptionProv);
+    }
+    if (data.dateReceptionDef && typeof data.dateReceptionDef === 'string') {
+      data.dateReceptionDef = new Date(data.dateReceptionDef);
+    }
+
     return this.prisma.contrat.update({
       where: { id },
-      data: dto,
+      data,
     });
   }
 

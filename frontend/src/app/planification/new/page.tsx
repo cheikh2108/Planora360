@@ -293,7 +293,7 @@ export default function NewPlanificationPage() {
 
           {/* Actions */}
           <div className="flex gap-3">
-            <Button type="submit" loading={loading} disabled={objectifs.length === 0 || !title}>
+            <Button type="submit" isLoading={loading} disabled={objectifs.length === 0 || !title}>
               <Save size={14} className="mr-1.5" />
               Enregistrer le PTA
             </Button>

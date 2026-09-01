@@ -112,7 +112,7 @@ function IndicatorModal({
         </FormField>
         <div className="flex justify-end gap-3">
           <Button type="button" variant="secondary" onClick={onClose}>Annuler</Button>
-          <Button type="submit" loading={isPending}>{isEdit ? 'Enregistrer' : 'Créer'}</Button>
+          <Button type="submit" isLoading={isPending}>{isEdit ? 'Enregistrer' : 'Créer'}</Button>
         </div>
       </form>
     </Modal>
@@ -227,14 +227,14 @@ export default function IndicatorsPage() {
             <div className="p-6 space-y-3">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-14" />)}</div>
           ) : indicators.length === 0 ? (
             <EmptyState
-              icon={Target}
+              illustration="data"
               title="Aucun indicateur"
               description="Créez des indicateurs pour mesurer l'atteinte de vos objectifs."
-              action={
-                <Button icon={<Plus size={16} />} onClick={() => { setEditTarget(undefined); setModalOpen(true); }}>
-                  Créer un indicateur
-                </Button>
-              }
+              action={{
+                label: 'Créer un indicateur',
+                onClick: () => { setEditTarget(undefined); setModalOpen(true); },
+                leftIcon: <Plus size={16} />
+              }}
             />
           ) : (
             <div className="overflow-x-auto">

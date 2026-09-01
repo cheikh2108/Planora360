@@ -221,7 +221,7 @@ export default function ActivityDetailPage() {
               {canSubmit && (
                 <Button
                   icon={<Send size={14} />}
-                  loading={submitting}
+                  isLoading={submitting}
                   onClick={() => submit()}
                   size="sm"
                 >
@@ -355,10 +355,10 @@ function ChecklistTab({
     <div className="space-y-5">
       {items.length === 0 ? (
         <EmptyState
-          icon={CheckSquare}
+          illustration="inbox"
           title="Aucune tâche dans la checklist"
           description="Ajoutez des tâches obligatoires et facultatives pour structurer l'activité."
-          action={!isLocked ? <Button icon={<Plus size={16} />} onClick={onAdd}>Ajouter une tâche</Button> : undefined}
+          action={!isLocked ? { label: 'Ajouter une tâche', onClick: onAdd, leftIcon: <Plus size={16} /> } : undefined}
         />
       ) : (
         <>
@@ -466,7 +466,7 @@ function ValidationTab({
 
       {validations.length === 0 && (
         <EmptyState
-          icon={GitBranch}
+          illustration="inbox"
           title="Aucune validation"
           description="Le circuit de validation n'a pas encore été initié pour cette activité."
         />
@@ -553,10 +553,10 @@ function BudgetTab({
       {/* Budget lines */}
       {budgets.length === 0 ? (
         <EmptyState
-          icon={Wallet}
+          illustration="data"
           title="Aucune ligne budgétaire"
           description="Ajoutez des lignes budgétaires pour suivre les dépenses de cette activité."
-          action={!isLocked ? <Button icon={<Plus size={16} />} onClick={onAdd}>Ajouter une ligne</Button> : undefined}
+          action={!isLocked ? { label: 'Ajouter une ligne', onClick: onAdd, leftIcon: <Plus size={16} /> } : undefined}
         />
       ) : (
         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
@@ -652,7 +652,7 @@ function DocumentsTab({ activityId, isLocked }: { activityId: string; isLocked: 
             <Button
               size="sm"
               variant="secondary"
-              loading={uploading}
+              isLoading={uploading}
               icon={<Upload size={13} />}
               onClick={() => inputRef.current?.click()}
             >
@@ -666,7 +666,7 @@ function DocumentsTab({ activityId, isLocked }: { activityId: string; isLocked: 
       {isLoading ? (
         <div className="space-y-2">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
       ) : docs.length === 0 ? (
-        <EmptyState icon={FileTextIcon} title="Aucun document" description="Ajoutez des pièces justificatives, rapports, PV..." />
+        <EmptyState illustration="document" title="Aucun document" description="Ajoutez des pièces justificatives, rapports, PV..." />
       ) : (
         <div className="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
           {docs.map(doc => (
@@ -726,7 +726,7 @@ function AddChecklistItemModal({ open, onClose, activityId }: { open: boolean; o
         </FormField>
         <div className="flex justify-end gap-3">
           <Button type="button" variant="secondary" onClick={onClose}>Annuler</Button>
-          <Button type="submit" loading={isPending}>Créer la tâche</Button>
+          <Button type="submit" isLoading={isPending}>Créer la tâche</Button>
         </div>
       </form>
     </Modal>
@@ -777,7 +777,7 @@ function AddBudgetModal({ open, onClose, activityId }: { open: boolean; onClose:
         </div>
         <div className="flex justify-end gap-3">
           <Button type="button" variant="secondary" onClick={onClose}>Annuler</Button>
-          <Button type="submit" loading={isPending}>Enregistrer</Button>
+          <Button type="submit" isLoading={isPending}>Enregistrer</Button>
         </div>
       </form>
     </Modal>
@@ -838,7 +838,7 @@ function ValidateModal({ open, onClose, activityId, lastStep }: {
           <Button
             type="submit"
             variant={form.decision === 'REJETE' ? 'danger' : 'primary'}
-            loading={isPending}
+            isLoading={isPending}
             icon={form.decision === 'APPROUVE' ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
           >
             {form.decision === 'APPROUVE' ? 'Approuver' : 'Rejeter'}
@@ -1004,7 +1004,7 @@ function RecordCommittedBudgetModal({
           </Button>
           <Button
             type="submit"
-            loading={isPending || uploadingDocs}
+            isLoading={isPending || uploadingDocs}
             disabled={!selectedBudgetId || !amount}
           >
             Enregistrer
@@ -1171,7 +1171,7 @@ function RecordExecutedBudgetModal({
           </Button>
           <Button
             type="submit"
-            loading={isPending || uploadingDocs}
+            isLoading={isPending || uploadingDocs}
             disabled={!selectedBudgetId || !amount}
           >
             Enregistrer

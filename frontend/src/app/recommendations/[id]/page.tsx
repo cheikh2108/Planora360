@@ -163,7 +163,7 @@ function ChangeStatusModal({ open, onClose, currentStatus, recommendationId }: a
           <Button type="button" variant="ghost" onClick={onClose}>
             Annuler
           </Button>
-          <Button type="submit" loading={mutation.isPending}>
+          <Button type="submit" isLoading={mutation.isPending}>
             Confirmer
           </Button>
         </div>
@@ -213,7 +213,7 @@ function SuspendModal({ open, onClose, recommendationId }: any) {
           <Button type="button" variant="ghost" onClick={onClose}>
             Annuler
           </Button>
-          <Button type="submit" loading={mutation.isPending}>
+          <Button type="submit" isLoading={mutation.isPending}>
             Suspendre
           </Button>
         </div>
@@ -263,7 +263,7 @@ function ReopenModal({ open, onClose, recommendationId }: any) {
           <Button type="button" variant="ghost" onClick={onClose}>
             Annuler
           </Button>
-          <Button type="submit" loading={mutation.isPending}>
+          <Button type="submit" isLoading={mutation.isPending}>
             Rouvrir
           </Button>
         </div>
@@ -329,7 +329,7 @@ function AddActionModal({ open, onClose, recommendationId }: any) {
           <Button type="button" variant="ghost" onClick={onClose}>
             Annuler
           </Button>
-          <Button type="submit" loading={mutation.isPending}>
+          <Button type="submit" isLoading={mutation.isPending}>
             Ajouter
           </Button>
         </div>
@@ -391,7 +391,7 @@ function AddCommentModal({ open, onClose, recommendationId }: any) {
           <Button type="button" variant="ghost" onClick={onClose}>
             Annuler
           </Button>
-          <Button type="submit" loading={mutation.isPending}>
+          <Button type="submit" isLoading={mutation.isPending}>
             Publier
           </Button>
         </div>
@@ -444,7 +444,7 @@ function UpdateProgressModal({ open, onClose, recommendationId, currentProgress 
           <Button type="button" variant="ghost" onClick={onClose}>
             Annuler
           </Button>
-          <Button type="submit" loading={mutation.isPending}>
+          <Button type="submit" isLoading={mutation.isPending}>
             Mettre à jour
           </Button>
         </div>

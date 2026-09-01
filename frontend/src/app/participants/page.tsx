@@ -169,7 +169,7 @@ export default function ParticipantsPage() {
         ) : participants.length === 0 ? (
           <>
             <EmptyState
-              icon={UserPlus}
+              illustration="users"
               title="Aucun participant"
               description={
                 selectedActivityId
@@ -177,18 +177,13 @@ export default function ParticipantsPage() {
                   : "Sélectionnez une activité pour voir ses participants"
               }
               action={
-                selectedActivityId ? (
-                  <div className="flex gap-2">
-                    <Button onClick={() => router.push('/participants/new')}>
-                      <UserPlus size={14} className="mr-1.5" />
-                      Ajouter un participant
-                    </Button>
-                    <Button variant="secondary" onClick={() => router.push('/participants/import')}>
-                      <Upload size={14} className="mr-1.5" />
-                      Importer Excel
-                    </Button>
-                  </div>
-                ) : undefined
+                selectedActivityId
+                  ? {
+                      label: 'Ajouter un participant',
+                      onClick: () => router.push('/participants/new'),
+                      leftIcon: <UserPlus size={14} />
+                    }
+                  : undefined
               }
             />
 

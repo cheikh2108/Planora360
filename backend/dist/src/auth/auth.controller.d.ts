@@ -70,6 +70,9 @@ export declare class AuthController {
         };
         csrfToken: string;
     }>;
+    getCsrfToken(response: Response): {
+        csrfToken: string;
+    };
     logout(user: any, response: Response): Promise<{
         message: string;
     }>;

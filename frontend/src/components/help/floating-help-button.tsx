@@ -31,6 +31,12 @@ export function FloatingHelpButton() {
     if (pathname.startsWith('/documents')) return 'documents';
     if (pathname.startsWith('/reports')) return 'reports';
     if (pathname.startsWith('/settings')) return 'settings';
+    if (pathname.startsWith('/passation/ppm')) return 'passation-ppm';
+    if (pathname.startsWith('/passation/demandes')) return 'passation-demandes';
+    if (pathname.startsWith('/passation/fournisseurs')) return 'passation-fournisseurs';
+    if (pathname.startsWith('/passation/procedures')) return 'passation-procedures';
+    if (pathname.startsWith('/passation/contrats')) return 'passation-contrats';
+    if (pathname.startsWith('/passation')) return 'passation';
     return 'dashboard';
   };
 
@@ -64,7 +70,7 @@ export function FloatingHelpButton() {
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.95 }}
         transition={{ duration: 0.16, ease: easeOut }}
-        className="relative w-14 h-14 rounded-full flex items-center justify-center group"
+        className="relative w-12 h-12 rounded-full flex items-center justify-center group"
         style={{
           background: `linear-gradient(135deg, var(--color-brand, #2563eb) 0%, var(--color-brand-dark, #1e40af) 100%)`,
           boxShadow: `0 8px 24px -4px var(--color-brand, #2563eb)`,
@@ -78,7 +84,7 @@ export function FloatingHelpButton() {
           transition={{ duration: 0.3, ease: easeOut }}
         >
           <HelpCircle
-            size={24}
+            size={20}
             className="text-white drop-shadow-lg"
             strokeWidth={2.5}
           />

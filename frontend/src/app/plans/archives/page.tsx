@@ -75,7 +75,7 @@ export default function ArchivesPage() {
           </div>
         ) : plans.length === 0 ? (
           <EmptyState
-            icon={Archive}
+            illustration="inbox"
             title="Aucun plan archivé"
             description="Les plans que vous archivez apparaîtront ici."
           />

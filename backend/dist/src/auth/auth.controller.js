@@ -128,6 +128,17 @@ let AuthController = class AuthController {
             csrfToken,
         };
     }
+    getCsrfToken(response) {
+        const csrfToken = this.csrfService.generateToken();
+        response.cookie('csrf-token', csrfToken, {
+            httpOnly: false,
+            secure: false,
+            sameSite: 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            path: '/',
+        });
+        return { csrfToken };
+    }
     async logout(user, response) {
         await this.authService.logout(user.id);
         response.clearCookie('accessToken', { path: '/' });
@@ -207,6 +218,13 @@ __decorate([
     __metadata("design:paramtypes", [refresh_token_dto_1.RefreshTokenDto, Object, Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "refresh", null);
+__decorate([
+    (0, common_1.Get)('csrf'),
+    __param(0, (0, common_1.Res)({ passthrough: true })),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "getCsrfToken", null);
 __decorate([
     (0, common_1.Post)('logout'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

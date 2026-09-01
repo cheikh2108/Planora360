@@ -16,14 +16,18 @@ exports.PLAN_KEY = 'requiredPlan';
 const RequiresPlan = (...plans) => (0, common_1.SetMetadata)(exports.PLAN_KEY, plans);
 exports.RequiresPlan = RequiresPlan;
 const PLAN_RANK = {
-    DECOUVERTE: 0,
-    PROFESSIONNELLE: 1,
-    SUR_MESURE: 2,
+    INDIVIDUEL: 0,
+    PRO: 1,
+    EQUIPE: 2,
+    ORGANISATION: 3,
+    ENTERPRISE: 4,
 };
 const PLAN_LIMITS = {
-    DECOUVERTE: { maxUsers: 5, maxPlans: 2 },
-    PROFESSIONNELLE: { maxUsers: 50, maxPlans: 999 },
-    SUR_MESURE: { maxUsers: 9999, maxPlans: 999 },
+    INDIVIDUEL: { maxUsers: 1, maxPlans: 3 },
+    PRO: { maxUsers: 3, maxPlans: 10 },
+    EQUIPE: { maxUsers: 10, maxPlans: 25 },
+    ORGANISATION: { maxUsers: 25, maxPlans: 50 },
+    ENTERPRISE: { maxUsers: 9999, maxPlans: 9999 },
 };
 exports.PLAN_LIMITS = PLAN_LIMITS;
 let SubscriptionGuard = class SubscriptionGuard {
@@ -41,14 +45,16 @@ let SubscriptionGuard = class SubscriptionGuard {
         const { user } = context.switchToHttp().getRequest();
         if (!user)
             throw new common_1.ForbiddenException('Accès refusé. Veuillez vous reconnecter.');
-        const orgPlan = user.organization?.subscriptionPlan ?? 'DECOUVERTE';
+        const orgPlan = user.organization?.subscriptionPlan ?? 'INDIVIDUEL';
         const orgRank = PLAN_RANK[orgPlan];
         const hasAccess = requiredPlans.some((p) => orgRank >= PLAN_RANK[p]);
         if (!hasAccess) {
             const planNames = {
-                DECOUVERTE: 'Découverte',
-                PROFESSIONNELLE: 'Professionnelle',
-                SUR_MESURE: 'Sur mesure',
+                INDIVIDUEL: 'Individuel',
+                PRO: 'Pro',
+                EQUIPE: 'Équipe',
+                ORGANISATION: 'Organisation',
+                ENTERPRISE: 'Enterprise',
             };
             throw new common_1.ForbiddenException(`Cette fonctionnalité nécessite la formule ${requiredPlans.map(p => planNames[p]).join(' ou ')}. ` +
                 `Votre formule actuelle : ${planNames[orgPlan]}. ` +

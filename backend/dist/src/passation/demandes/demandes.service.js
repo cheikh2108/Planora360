@@ -27,13 +27,22 @@ let DemandesService = class DemandesService {
             where: { organizationId },
         });
         const reference = `DA-${new Date().getFullYear()}-${String(count + 1).padStart(4, '0')}`;
+        const data = {
+            ...dto,
+            description: dto.description || dto.justification || '',
+            reference,
+            organizationId,
+            demandeurId: userId,
+        };
+        if (dto.lignePpmId) {
+            data.lignePPMId = dto.lignePpmId;
+            delete data.lignePpmId;
+        }
+        if (data.echeanceSouhaitee && typeof data.echeanceSouhaitee === 'string') {
+            data.echeanceSouhaitee = new Date(data.echeanceSouhaitee);
+        }
         return this.prisma.demandeAchat.create({
-            data: {
-                ...dto,
-                reference,
-                organizationId,
-                demandeurId: userId,
-            },
+            data,
             include: {
                 demandeur: { select: { id: true, firstName: true, lastName: true } },
                 lignePPM: true,
@@ -107,9 +116,17 @@ let DemandesService = class DemandesService {
             demande.status === client_1.StatusDemandeAchat.REJETEE) {
             throw new common_1.ForbiddenException('Impossible de modifier une demande approuvée ou rejetée');
         }
+        const data = { ...dto };
+        if (dto.lignePpmId) {
+            data.lignePPMId = dto.lignePpmId;
+            delete data.lignePpmId;
+        }
+        if (data.echeanceSouhaitee && typeof data.echeanceSouhaitee === 'string') {
+            data.echeanceSouhaitee = new Date(data.echeanceSouhaitee);
+        }
         return this.prisma.demandeAchat.update({
             where: { id },
-            data: dto,
+            data,
             include: {
                 demandeur: { select: { id: true, firstName: true, lastName: true } },
                 validations: true,

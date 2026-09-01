@@ -11,13 +11,16 @@ import {
   Req,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { SubscriptionGuard, RequiresPlan } from '../../common/guards/subscription.guard';
+import { SubscriptionPlan } from '@prisma/client';
 import { FournisseursService } from './fournisseurs.service';
 import { CreateFournisseurDto } from './dto/create-fournisseur.dto';
 import { UpdateFournisseurDto } from './dto/update-fournisseur.dto';
 import { StatusFournisseur } from '@prisma/client';
 
 @Controller('passation/fournisseurs')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, SubscriptionGuard)
+@RequiresPlan(SubscriptionPlan.ORGANISATION, SubscriptionPlan.ENTERPRISE)
 export class FournisseursController {
   constructor(private readonly fournisseursService: FournisseursService) {}
 

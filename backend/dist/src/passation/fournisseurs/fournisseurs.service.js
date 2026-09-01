@@ -163,11 +163,15 @@ let FournisseursService = class FournisseursService {
     }
     async addDocument(fournisseurId, organizationId, documentData) {
         await this.findOne(fournisseurId, organizationId);
+        const data = {
+            ...documentData,
+            fournisseurId,
+        };
+        if (data.dateExpiration && typeof data.dateExpiration === 'string') {
+            data.dateExpiration = new Date(data.dateExpiration);
+        }
         return this.prisma.fournisseurDocument.create({
-            data: {
-                ...documentData,
-                fournisseurId,
-            },
+            data,
         });
     }
     async removeDocument(fournisseurId, documentId, organizationId) {

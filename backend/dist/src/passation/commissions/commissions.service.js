@@ -18,12 +18,16 @@ let CommissionsService = class CommissionsService {
         this.prisma = prisma;
     }
     async create(organizationId, userId, dto) {
+        const data = {
+            ...dto,
+            organizationId,
+            presidentId: userId,
+        };
+        if (data.dateSeance && typeof data.dateSeance === 'string') {
+            data.dateSeance = new Date(data.dateSeance);
+        }
         return this.prisma.commission.create({
-            data: {
-                ...dto,
-                organizationId,
-                presidentId: userId,
-            },
+            data,
             include: {
                 president: {
                     select: {

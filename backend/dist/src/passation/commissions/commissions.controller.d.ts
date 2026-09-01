@@ -15,17 +15,14 @@ export declare class CommissionsController {
         };
     } & {
         id: string;
-        createdAt: Date;
-        type: string;
         nom: string;
-        procedureId: string;
+        type: string;
         dateSeance: Date;
+        createdAt: Date;
+        procedureId: string;
         presidentId: string;
     }>;
     findAll(req: any): Promise<({
-        _count: {
-            evaluations: number;
-        };
         procedure: {
             id: string;
             reference: string;
@@ -45,80 +42,41 @@ export declare class CommissionsController {
         } & {
             id: string;
             role: string;
-            userId: string;
             commissionId: string;
+            userId: string;
         })[];
+        _count: {
+            evaluations: number;
+        };
     } & {
         id: string;
-        createdAt: Date;
-        type: string;
         nom: string;
-        procedureId: string;
+        type: string;
         dateSeance: Date;
+        createdAt: Date;
+        procedureId: string;
         presidentId: string;
     })[]>;
     findOne(id: string, req: any): Promise<{
-        evaluations: ({
-            soumission: {
-                fournisseur: {
-                    id: string;
-                    raisonSociale: string;
-                };
-            } & {
-                id: string;
-                status: string;
-                fournisseurId: string;
-                dateDepot: Date;
-                procedureId: string;
-                devise: string;
-                numeroDepot: string;
-                montantTechnique: import("@prisma/client-runtime-utils").Decimal | null;
-                montantFinancier: import("@prisma/client-runtime-utils").Decimal;
-                montantTotal: import("@prisma/client-runtime-utils").Decimal;
-                conformeAdmin: boolean | null;
-                conformeTechnique: boolean | null;
-                conformeFinancier: boolean | null;
-                horsDelai: boolean;
-            };
-            evaluateur: {
-                id: string;
-                firstName: string;
-                lastName: string;
-            };
-        } & {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            validatedAt: Date | null;
-            soumissionId: string;
-            commissionId: string;
-            scoreAdmin: number | null;
-            scoreTechnique: number | null;
-            scoreFinancier: number | null;
-            scoreGlobal: number | null;
-            criteres: import("@prisma/client/runtime/client").JsonValue;
-            commentaires: string | null;
-            evaluateurId: string;
-        })[];
         procedure: {
             id: string;
-            organizationId: string;
             createdAt: Date;
+            organizationId: string;
             updatedAt: Date;
-            status: import(".prisma/client").$Enums.StatusProcedure;
-            description: string;
             reference: string;
-            objet: string;
-            montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
-            dateAttribution: Date | null;
-            responsableId: string;
-            lignePPMId: string | null;
             demandeAchatId: string | null;
+            lignePPMId: string | null;
             methode: import(".prisma/client").$Enums.MethodeProcedure;
+            objet: string;
+            description: string;
+            montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
             datePublication: Date | null;
             dateLimite: Date | null;
             dateOuverture: Date | null;
             dateClarification: Date | null;
+            dateAttribution: Date | null;
+            responsableId: string;
+            status: import(".prisma/client").$Enums.StatusProcedure;
         };
         president: {
             id: string;
@@ -136,16 +94,58 @@ export declare class CommissionsController {
         } & {
             id: string;
             role: string;
-            userId: string;
             commissionId: string;
+            userId: string;
+        })[];
+        evaluations: ({
+            soumission: {
+                fournisseur: {
+                    id: string;
+                    raisonSociale: string;
+                };
+            } & {
+                id: string;
+                procedureId: string;
+                status: string;
+                numeroDepot: string;
+                fournisseurId: string;
+                montantTechnique: import("@prisma/client-runtime-utils").Decimal | null;
+                montantFinancier: import("@prisma/client-runtime-utils").Decimal;
+                montantTotal: import("@prisma/client-runtime-utils").Decimal;
+                devise: string;
+                conformeAdmin: boolean | null;
+                conformeTechnique: boolean | null;
+                conformeFinancier: boolean | null;
+                dateDepot: Date;
+                horsDelai: boolean;
+            };
+            evaluateur: {
+                id: string;
+                firstName: string;
+                lastName: string;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            commissionId: string;
+            soumissionId: string;
+            evaluateurId: string;
+            scoreAdmin: number | null;
+            scoreTechnique: number | null;
+            scoreFinancier: number | null;
+            scoreGlobal: number | null;
+            criteres: import("@prisma/client/runtime/client").JsonValue;
+            commentaires: string | null;
+            validatedAt: Date | null;
         })[];
     } & {
         id: string;
-        createdAt: Date;
-        type: string;
         nom: string;
-        procedureId: string;
+        type: string;
         dateSeance: Date;
+        createdAt: Date;
+        procedureId: string;
         presidentId: string;
     }>;
     addMembre(id: string, req: any, userId: string, role: string): Promise<{
@@ -158,13 +158,13 @@ export declare class CommissionsController {
     } & {
         id: string;
         role: string;
-        userId: string;
         commissionId: string;
+        userId: string;
     }>;
     removeMembre(id: string, membreId: string, req: any): Promise<{
         id: string;
         role: string;
-        userId: string;
         commissionId: string;
+        userId: string;
     }>;
 }

@@ -402,7 +402,7 @@ export default function MessagingPage() {
           </div>
         ) : (
           <EmptyState
-            icon={MessageSquare}
+            illustration="inbox"
             title="Aucune conversation"
             description={
               searchTerm
@@ -410,12 +410,13 @@ export default function MessagingPage() {
                 : 'Créez votre première conversation pour commencer'
             }
             action={
-              !searchTerm && (
-                <Button onClick={() => setShowNewConversationModal(true)}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Nouvelle conversation
-                </Button>
-              )
+              !searchTerm
+                ? {
+                    label: 'Nouvelle conversation',
+                    onClick: () => setShowNewConversationModal(true),
+                    leftIcon: <Plus className="h-4 w-4" />
+                  }
+                : undefined
             }
           />
         )}

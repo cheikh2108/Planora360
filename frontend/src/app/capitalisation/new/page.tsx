@@ -195,7 +195,7 @@ export default function NewCapitalisationPage() {
             </div>
 
             <div className="flex gap-3 pt-4">
-              <Button type="submit" loading={loading}>
+              <Button type="submit" isLoading={loading}>
                 <Save size={14} className="mr-1.5" />
                 Enregistrer
               </Button>

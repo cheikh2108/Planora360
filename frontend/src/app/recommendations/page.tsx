@@ -302,7 +302,7 @@ function CreateRecommendationModal({ open, onClose }: { open: boolean; onClose: 
           <Button type="button" variant="ghost" onClick={onClose}>
             Annuler
           </Button>
-          <Button type="submit" loading={createMutation.isPending}>
+          <Button type="submit" isLoading={createMutation.isPending}>
             Créer la recommandation
           </Button>
         </div>
@@ -482,15 +482,14 @@ export default function RecommendationsPage() {
           </div>
         ) : recommendations.length === 0 ? (
           <EmptyState
-            icon={ShieldAlert}
+            illustration="inbox"
             title="Aucune recommandation"
             description="Commencez par créer votre première recommandation"
-            action={
-              <Button onClick={() => setCreateModalOpen(true)}>
-                <Plus size={16} />
-                Nouvelle recommandation
-              </Button>
-            }
+            action={{
+              label: 'Nouvelle recommandation',
+              onClick: () => setCreateModalOpen(true),
+              leftIcon: <Plus size={16} />
+            }}
           />
         ) : (
           <>

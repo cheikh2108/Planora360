@@ -96,6 +96,14 @@ let StorageService = StorageService_1 = class StorageService {
         }
         return (0, s3_request_presigner_1.getSignedUrl)(this.s3, new client_s3_1.GetObjectCommand({ Bucket: this.bucket, Key: storageKey }), { expiresIn: expiresInSeconds });
     }
+    getPublicUrl(storageKey) {
+        if (this.useLocal) {
+            return `/uploads/${storageKey}`;
+        }
+        const endpoint = this.config.get('B2_ENDPOINT') ?? 'https://s3.us-east-005.backblazeb2.com';
+        const regionCode = endpoint.match(/us-east-(\d+)/)?.[1] || '005';
+        return `https://f${regionCode}.backblazeb2.com/file/${this.bucket}/${storageKey}`;
+    }
     async delete(storageKey) {
         if (this.useLocal) {
             const filePath = path.join(process.cwd(), 'uploads', storageKey);

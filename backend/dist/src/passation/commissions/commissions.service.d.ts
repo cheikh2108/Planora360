@@ -5,8 +5,8 @@ export declare class CommissionsService {
     create(organizationId: string, userId: string, dto: any): Promise<{
         procedure: {
             id: string;
-            reference: string;
             objet: string;
+            reference: string;
         };
         president: {
             id: string;
@@ -28,8 +28,8 @@ export declare class CommissionsService {
         };
         procedure: {
             id: string;
-            reference: string;
             objet: string;
+            reference: string;
         };
         president: {
             id: string;
@@ -67,6 +67,7 @@ export declare class CommissionsService {
             } & {
                 id: string;
                 status: string;
+                montantTotal: import("@prisma/client-runtime-utils").Decimal;
                 fournisseurId: string;
                 dateDepot: Date;
                 procedureId: string;
@@ -74,7 +75,6 @@ export declare class CommissionsService {
                 numeroDepot: string;
                 montantTechnique: import("@prisma/client-runtime-utils").Decimal | null;
                 montantFinancier: import("@prisma/client-runtime-utils").Decimal;
-                montantTotal: import("@prisma/client-runtime-utils").Decimal;
                 conformeAdmin: boolean | null;
                 conformeTechnique: boolean | null;
                 conformeFinancier: boolean | null;
@@ -107,9 +107,9 @@ export declare class CommissionsService {
             updatedAt: Date;
             status: import(".prisma/client").$Enums.StatusProcedure;
             description: string;
-            reference: string;
             objet: string;
             montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
+            reference: string;
             dateAttribution: Date | null;
             responsableId: string;
             lignePPMId: string | null;

@@ -1,4 +1,4 @@
-export type SubscriptionPlan = 'DECOUVERTE' | 'PROFESSIONNELLE' | 'SUR_MESURE';
+export type SubscriptionPlan = 'INDIVIDUEL' | 'PRO' | 'EQUIPE' | 'ORGANISATION' | 'ENTERPRISE';
 export type OrganizationStatus = 'PENDING' | 'ACTIVE' | 'REJECTED';
 
 export type ActivityStatus =

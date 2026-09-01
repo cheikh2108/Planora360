@@ -168,14 +168,14 @@ export default function UsersPage() {
         {/* Table */}
         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
           <div className="flex items-center justify-between gap-4 px-5 py-4 border-b border-slate-100 flex-wrap">
-            <div className="relative">
+            <div className="relative max-w-xs">
               <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Rechercher..."
-                className="h-9 pl-8 pr-4 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563eb] w-56"
+                className="h-9 pl-8 pr-4 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2563eb] w-56"
               />
             </div>
             <Button size="sm" icon={<Plus size={14} />} onClick={() => setCreateOpen(true)}>
@@ -188,7 +188,7 @@ export default function UsersPage() {
               {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-14" />)}
             </div>
           ) : filtered.length === 0 ? (
-            <EmptyState icon={Users} title="Aucun utilisateur" description="Ajoutez des utilisateurs à votre organisation." />
+            <EmptyState illustration="users" title="Aucun utilisateur" description="Ajoutez des utilisateurs à votre organisation." />
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -285,13 +285,13 @@ export default function UsersPage() {
 
             {/* Barre de recherche */}
             <div className="flex items-center gap-3">
-              <div className="relative flex-1">
+              <div className="relative max-w-md">
                 <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   placeholder="Rechercher un utilisateur supprimé..."
-                  className="w-full h-9 pl-8 pr-4 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+                  className="w-full h-9 pl-8 pr-4 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
                 />
               </div>
             </div>
@@ -306,7 +306,7 @@ export default function UsersPage() {
                 </div>
               ) : filteredDeleted.length === 0 ? (
                 <EmptyState
-                  icon={Trash2}
+                  illustration="inbox"
                   title="Aucun utilisateur supprimé"
                   description={search ? 'Aucun résultat.' : 'Les utilisateurs supprimés apparaîtront ici.'}
                 />
@@ -414,7 +414,7 @@ export default function UsersPage() {
             <div className="flex justify-end gap-3 pt-1">
               <Button variant="secondary" onClick={() => setRestoreId(null)}>Annuler</Button>
               <Button
-                loading={restoring}
+                isLoading={restoring}
                 onClick={() => restore(restoreId!)}
                 icon={<RotateCcw size={13} />}
               >
@@ -446,7 +446,7 @@ export default function UsersPage() {
               <Button variant="secondary" onClick={() => setHardDeleteId(null)}>Annuler</Button>
               <Button
                 variant="danger"
-                loading={hardDeleting}
+                isLoading={hardDeleting}
                 onClick={() => hardDelete(hardDeleteId!)}
                 icon={<Trash2 size={13} />}
               >
@@ -524,7 +524,7 @@ function CreateUserModal({ open, onClose, roles }: { open: boolean; onClose: () 
         )}
         <div className="flex justify-end gap-3 pt-2">
           <Button type="button" variant="secondary" onClick={onClose}>Annuler</Button>
-          <Button type="submit" loading={isPending} icon={<Plus size={16} />}>Créer l'utilisateur</Button>
+          <Button type="submit" isLoading={isPending} icon={<Plus size={16} />}>Créer l'utilisateur</Button>
         </div>
       </form>
     </Modal>

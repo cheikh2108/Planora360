@@ -8,18 +8,39 @@ import type { Procedure, StatusProcedure, Soumission } from '@/lib/types-passati
 import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { EditProcedureModal } from '@/components/passation/EditProcedureModal';
+import { CreateSoumissionModal } from '@/components/passation/CreateSoumissionModal';
+import { ChangeStatusModal } from '@/components/passation/ChangeStatusModal';
 import { formatDate, formatCurrency, formatDateRelative, cn } from '@/lib/utils';
 import {
   ArrowLeft, Calendar, Clock, FileText, TrendingUp,
   CheckCircle2, Users, Building2, DollarSign, Send,
   XCircle, AlertCircle, ExternalLink, ChevronRight,
-  Package, BadgeCheck
+  Package, BadgeCheck, Gavel, Edit
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
 // Configuration des méthodes
 const METHODE_CONFIG = {
+  ACHAT_DIRECT: {
+    label: 'Achat Direct',
+    color: 'from-blue-500 to-blue-600',
+    gradient: 'bg-gradient-to-br from-blue-50 to-blue-100',
+    icon: '⚡'
+  },
+  DEMANDE_COTATION: {
+    label: 'Demande de Cotation',
+    color: 'from-cyan-500 to-cyan-600',
+    gradient: 'bg-gradient-to-br from-cyan-50 to-cyan-100',
+    icon: '💰'
+  },
+  CONSULTATION_RESTREINTE: {
+    label: 'Consultation Restreinte',
+    color: 'from-amber-500 to-orange-600',
+    gradient: 'bg-gradient-to-br from-amber-50 to-orange-50',
+    icon: '💬'
+  },
   APPEL_OFFRES_OUVERT: {
     label: 'Appel d\'Offres Ouvert',
     color: 'from-emerald-500 to-teal-600',
@@ -32,17 +53,35 @@ const METHODE_CONFIG = {
     gradient: 'bg-gradient-to-br from-violet-50 to-purple-50',
     icon: '🎯'
   },
-  CONSULTATION: {
-    label: 'Consultation',
-    color: 'from-amber-500 to-orange-600',
-    gradient: 'bg-gradient-to-br from-amber-50 to-orange-50',
-    icon: '💬'
+  DEMANDE_PROPOSITIONS: {
+    label: 'Demande de Propositions',
+    color: 'from-indigo-500 to-indigo-600',
+    gradient: 'bg-gradient-to-br from-indigo-50 to-indigo-100',
+    icon: '📝'
   },
-  GRE_A_GRE: {
-    label: 'Gré à gré',
-    color: 'from-slate-500 to-slate-700',
-    gradient: 'bg-gradient-to-br from-slate-50 to-slate-100',
-    icon: '🤝'
+  MANIFESTATION_INTERET: {
+    label: 'Manifestation d\'Intérêt',
+    color: 'from-pink-500 to-pink-600',
+    gradient: 'bg-gradient-to-br from-pink-50 to-pink-100',
+    icon: '✋'
+  },
+  SELECTION_CONSULTANT: {
+    label: 'Sélection de Consultant',
+    color: 'from-purple-500 to-purple-600',
+    gradient: 'bg-gradient-to-br from-purple-50 to-purple-100',
+    icon: '👔'
+  },
+  PROCEDURE_URGENCE: {
+    label: 'Procédure d\'Urgence',
+    color: 'from-red-500 to-red-600',
+    gradient: 'bg-gradient-to-br from-red-50 to-red-100',
+    icon: '🚨'
+  },
+  AUTRE: {
+    label: 'Autre',
+    color: 'from-gray-500 to-gray-600',
+    gradient: 'bg-gradient-to-br from-gray-50 to-gray-100',
+    icon: '📋'
   },
 };
 
@@ -117,6 +156,9 @@ export default function ProcedureDetailPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const id = params?.id as string;
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [soumissionModalOpen, setSoumissionModalOpen] = useState(false);
+  const [changeStatusModalOpen, setChangeStatusModalOpen] = useState(false);
 
   const { data: procedure, isLoading } = useQuery({
     queryKey: ['procedures', id],
@@ -187,10 +229,10 @@ export default function ProcedureDetailPage() {
 
   // Calculer les stats
   const montantMoyen = soumissions.length > 0
-    ? soumissions.reduce((sum, s) => sum + Number(s.montantPropose || 0), 0) / soumissions.length
+    ? soumissions.reduce((sum, s) => sum + Number(s.montantTotal || 0), 0) / soumissions.length
     : 0;
   const montantMin = soumissions.length > 0
-    ? Math.min(...soumissions.map(s => Number(s.montantPropose || 0)))
+    ? Math.min(...soumissions.map(s => Number(s.montantTotal || 0)))
     : 0;
 
   return (
@@ -208,21 +250,37 @@ export default function ProcedureDetailPage() {
             >
               Retour
             </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setChangeStatusModalOpen(true)}
+            >
+              Changer le statut
+            </Button>
             {procedure.status === 'BROUILLON' && (
-              <Button
-                icon={<Send size={16} />}
-                onClick={() => publishMutation.mutate()}
-                loading={publishMutation.isPending}
-              >
-                Publier
-              </Button>
+              <>
+                <Button
+                  variant="secondary"
+                  icon={<Edit size={16} />}
+                  onClick={() => setEditModalOpen(true)}
+                >
+                  Modifier
+                </Button>
+                <Button
+                  icon={<Send size={16} />}
+                  onClick={() => publishMutation.mutate()}
+                  isLoading={publishMutation.isPending}
+                >
+                  Publier
+                </Button>
+              </>
             )}
             {(procedure.status === 'PUBLIEE' || procedure.status === 'EN_COURS') && (
               <Button
                 variant="secondary"
                 icon={<Package size={16} />}
                 onClick={() => closeMutation.mutate()}
-                loading={closeMutation.isPending}
+                isLoading={closeMutation.isPending}
               >
                 Clôturer
               </Button>
@@ -231,277 +289,249 @@ export default function ProcedureDetailPage() {
         }
       />
 
-      <main className="flex-1 px-4 md:px-6 py-6 space-y-6">
-        {/* Hero Card - Info principale */}
-        <div className={cn(
-          'rounded-3xl overflow-hidden shadow-xl shadow-slate-900/10 border border-slate-200',
-          'bg-gradient-to-r',
-          methodeConfig.color
-        )}>
-          <div className="p-8 text-white">
-            <div className="flex items-start justify-between mb-6">
+      <main className="flex-1 px-4 md:px-6 py-6">
+        <div className="max-w-7xl mx-auto space-y-6">
+          {/* Status & Info Card */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-6">
+            {/* Header row */}
+            <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-3xl">
-                  {methodeConfig.icon}
+                <div className="w-14 h-14 rounded-xl bg-slate-100 flex items-center justify-center text-2xl">
+                  <Gavel className="w-6 h-6 text-slate-600" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-extrabold tracking-tight mb-2">
-                    {procedure.reference}
-                  </h1>
-                  <p className="text-lg text-white/90 font-medium">
-                    {methodeConfig.label}
-                  </p>
+                  <h1 className="text-2xl font-bold text-slate-900">{procedure.reference}</h1>
+                  <p className="text-sm text-slate-500 mt-0.5">{methodeConfig.label}</p>
                 </div>
               </div>
               <div className={cn(
-                'px-4 py-2 rounded-xl flex items-center gap-2 border backdrop-blur-sm',
-                'bg-white/20 border-white/30 text-white'
+                'px-3 py-1.5 rounded-lg flex items-center gap-2',
+                statusConfig.bg,
+                statusConfig.border,
+                'border'
               )}>
-                <StatusIcon size={16} />
-                <span className="text-sm font-bold">{statusConfig.label}</span>
+                <StatusIcon size={14} className={statusConfig.color} />
+                <span className={cn('text-xs font-semibold uppercase tracking-wide', statusConfig.color)}>
+                  {statusConfig.label}
+                </span>
               </div>
             </div>
 
-            <p className="text-lg text-white/95 mb-8 leading-relaxed">
-              {procedure.objet}
-            </p>
+            {/* Objet */}
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-2">
+                Objet de la procédure
+              </p>
+              <p className="text-base text-slate-900">{procedure.objet}</p>
+            </div>
 
+            {/* KPIs */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
-                <p className="text-xs font-bold text-white/70 mb-2 uppercase tracking-wider">
+              <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-2">
                   Montant estimé
                 </p>
-                <p className="text-2xl font-extrabold">
-                  {formatCurrency(Number(procedure.montantEstime || 0))}
+                <p className="text-2xl font-bold text-slate-900 tabular-nums">
+                  {formatCurrency(Number(procedure.montantEstimatif || 0))}
                 </p>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
-                <p className="text-xs font-bold text-white/70 mb-2 uppercase tracking-wider">
+              <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-2">
                   Soumissions reçues
                 </p>
-                <p className="text-2xl font-extrabold">
+                <p className="text-2xl font-bold text-slate-900 tabular-nums">
                   {soumissions.length}
                 </p>
               </div>
               {soumissions.length > 0 && (
-                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
-                  <p className="text-xs font-bold text-white/70 mb-2 uppercase tracking-wider">
+                <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-2">
                     Offre la plus basse
                   </p>
-                  <p className="text-2xl font-extrabold">
+                  <p className="text-2xl font-bold text-slate-900 tabular-nums">
                     {formatCurrency(montantMin)}
                   </p>
                 </div>
               )}
             </div>
           </div>
-        </div>
 
-        {/* Timeline des dates */}
-        {(procedure.datePublication || procedure.dateLimite || procedure.dateOuverture) && (
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-8">
-            <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-              <Calendar size={20} className="text-slate-600" />
-              Calendrier de la procédure
-            </h2>
-            <div className="relative">
-              {/* Timeline line */}
-              <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-slate-200 via-indigo-300 to-emerald-300" />
+          {/* Timeline des dates */}
+          {(procedure.datePublication || procedure.dateLimite || procedure.dateOuverture) && (
+            <div className="bg-white rounded-2xl border border-slate-200 p-6">
+              <div className="flex items-center gap-2 mb-5">
+                <Calendar size={16} className="text-slate-400" />
+                <h2 className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+                  Calendrier
+                </h2>
+              </div>
 
-              <div className="space-y-8">
+              <div className="space-y-4">
                 {procedure.datePublication && (
-                  <div className="relative flex items-start gap-6">
-                    <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center border-2 border-white shadow-sm z-10">
-                      <Send size={18} className="text-slate-700" />
+                  <div className="flex items-center gap-4 p-3 bg-slate-50 rounded-lg">
+                    <div className="w-10 h-10 rounded-lg bg-slate-200 flex items-center justify-center flex-shrink-0">
+                      <Send size={16} className="text-slate-600" />
                     </div>
-                    <div className="flex-1 pt-2">
-                      <p className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">
-                        Date de publication
-                      </p>
-                      <p className="text-lg font-bold text-slate-900">
-                        {formatDate(procedure.datePublication)}
-                      </p>
-                      <p className="text-sm text-slate-600 mt-1">
-                        {formatDateRelative(procedure.datePublication)}
-                      </p>
+                    <div className="flex-1">
+                      <p className="text-xs font-medium text-slate-500">Date de publication</p>
+                      <p className="text-sm font-semibold text-slate-900">{formatDate(procedure.datePublication)}</p>
                     </div>
                   </div>
                 )}
 
                 {procedure.dateLimite && (
-                  <div className="relative flex items-start gap-6">
-                    <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-amber-100 to-orange-200 flex items-center justify-center border-2 border-white shadow-sm z-10">
-                      <Clock size={18} className="text-amber-700" />
+                  <div className="flex items-center gap-4 p-3 bg-amber-50 rounded-lg">
+                    <div className="w-10 h-10 rounded-lg bg-amber-200 flex items-center justify-center flex-shrink-0">
+                      <Clock size={16} className="text-amber-700" />
                     </div>
-                    <div className="flex-1 pt-2">
-                      <p className="text-sm font-bold text-amber-600 uppercase tracking-wider mb-1">
-                        Date limite de dépôt
-                      </p>
-                      <p className="text-lg font-bold text-slate-900">
-                        {formatDate(procedure.dateLimite)}
-                      </p>
-                      <p className="text-sm text-slate-600 mt-1">
-                        {formatDateRelative(procedure.dateLimite)}
-                      </p>
+                    <div className="flex-1">
+                      <p className="text-xs font-medium text-amber-600">Date limite</p>
+                      <p className="text-sm font-semibold text-slate-900">{formatDate(procedure.dateLimite)}</p>
                     </div>
                   </div>
                 )}
 
                 {procedure.dateOuverture && (
-                  <div className="relative flex items-start gap-6">
-                    <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-100 to-teal-200 flex items-center justify-center border-2 border-white shadow-sm z-10">
-                      <Package size={18} className="text-emerald-700" />
+                  <div className="flex items-center gap-4 p-3 bg-emerald-50 rounded-lg">
+                    <div className="w-10 h-10 rounded-lg bg-emerald-200 flex items-center justify-center flex-shrink-0">
+                      <Package size={16} className="text-emerald-700" />
                     </div>
-                    <div className="flex-1 pt-2">
-                      <p className="text-sm font-bold text-emerald-600 uppercase tracking-wider mb-1">
-                        Date d'ouverture des plis
-                      </p>
-                      <p className="text-lg font-bold text-slate-900">
-                        {formatDate(procedure.dateOuverture)}
-                      </p>
-                      <p className="text-sm text-slate-600 mt-1">
-                        {formatDateRelative(procedure.dateOuverture)}
-                      </p>
+                    <div className="flex-1">
+                      <p className="text-xs font-medium text-emerald-600">Ouverture des plis</p>
+                      <p className="text-sm font-semibold text-slate-900">{formatDate(procedure.dateOuverture)}</p>
                     </div>
                   </div>
                 )}
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Soumissions */}
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-              <FileText size={20} className="text-slate-600" />
-              Soumissions reçues
-              <span className="ml-2 px-3 py-1 bg-indigo-100 text-indigo-700 text-sm font-bold rounded-full">
-                {soumissions.length}
-              </span>
-            </h2>
-            {procedure.status === 'EVALUATION' && (
-              <Link href={`/passation/procedures/${id}/evaluations`}>
+          {/* Soumissions */}
+          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FileText size={16} className="text-slate-400" />
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+                  Soumissions reçues
+                </p>
+                <span className="text-xs tabular-nums text-slate-400">({soumissions.length})</span>
+              </div>
+              {(procedure.status === 'PUBLIEE' || procedure.status === 'EN_COURS') && (
                 <Button
+                  size="sm"
                   variant="secondary"
-                  size="md"
-                  icon={<Users size={16} />}
+                  onClick={() => setSoumissionModalOpen(true)}
                 >
-                  Voir les évaluations
-                  <ExternalLink size={14} />
+                  Nouvelle soumission
                 </Button>
-              </Link>
-            )}
-          </div>
-
-          {soumissions.length === 0 ? (
-            <div className="text-center py-12">
-              <FileText size={48} className="mx-auto mb-4 text-slate-300" />
-              <p className="text-slate-600 font-medium">
-                Aucune soumission reçue pour le moment
-              </p>
+              )}
             </div>
-          ) : (
-            <div className="space-y-4">
-              {soumissions.map((soumission, idx) => (
-                <div
-                  key={soumission.id}
-                  className="group relative bg-slate-50 rounded-2xl border border-slate-200 p-6 hover:shadow-lg hover:shadow-slate-200/50 hover:border-slate-300 transition-all duration-300"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
-                          #{idx + 1}
+
+            {soumissions.length === 0 ? (
+              <div className="text-center py-12">
+                <FileText size={32} className="mx-auto mb-4 text-slate-300" />
+                <p className="text-sm text-slate-500">Aucune soumission reçue</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {soumissions.map((soumission, idx) => (
+                  <div key={soumission.id} className="p-5 space-y-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className="w-10 h-10 rounded-lg bg-slate-200 flex items-center justify-center flex-shrink-0">
+                          <span className="text-sm font-bold text-slate-600">#{idx + 1}</span>
                         </div>
                         <div>
-                          <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                            <Building2 size={16} className="text-slate-500" />
+                          <p className="text-sm font-semibold text-slate-900">
                             {soumission.fournisseur?.raisonSociale || 'Fournisseur inconnu'}
-                          </h3>
-                          {soumission.fournisseur?.reference && (
-                            <p className="text-xs text-slate-500 font-medium">
-                              Réf: {soumission.fournisseur.reference}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                        <div className="bg-white rounded-xl p-3 border border-slate-200">
-                          <p className="text-xs text-slate-500 mb-1 font-semibold uppercase tracking-wider">
-                            Montant proposé
                           </p>
-                          <p className="text-lg font-extrabold text-slate-900 tabular-nums">
-                            {formatCurrency(Number(soumission.montantPropose || 0))}
-                          </p>
-                        </div>
-                        <div className="bg-white rounded-xl p-3 border border-slate-200">
-                          <p className="text-xs text-slate-500 mb-1 font-semibold uppercase tracking-wider">
-                            Délai d'exécution
-                          </p>
-                          <p className="text-lg font-extrabold text-slate-900 tabular-nums">
-                            {soumission.delaiExecution} jours
-                          </p>
-                        </div>
-                        <div className="bg-white rounded-xl p-3 border border-slate-200">
-                          <p className="text-xs text-slate-500 mb-1 font-semibold uppercase tracking-wider">
-                            Date de dépôt
-                          </p>
-                          <p className="text-lg font-extrabold text-slate-900">
+                          <p className="text-xs text-slate-500 mt-0.5">
                             {formatDate(soumission.dateDepot)}
                           </p>
                         </div>
                       </div>
-
-                      {soumission.observations && (
-                        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
-                          <p className="text-xs text-amber-700 font-bold mb-1 uppercase tracking-wider">
-                            Observations
-                          </p>
-                          <p className="text-sm text-slate-700 leading-relaxed">
-                            {soumission.observations}
-                          </p>
-                        </div>
+                      {Number(soumission.montantTotal) === montantMin && soumissions.length > 1 && (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-100 text-emerald-700 rounded text-xs font-medium">
+                          <BadgeCheck size={12} />
+                          Meilleure offre
+                        </span>
                       )}
                     </div>
 
-                    <ChevronRight
-                      size={20}
-                      className="text-slate-400 group-hover:text-slate-900 group-hover:translate-x-1 transition-all duration-300"
-                    />
-                  </div>
-
-                  {/* Badge si meilleure offre */}
-                  {Number(soumission.montantPropose) === montantMin && soumissions.length > 1 && (
-                    <div className="absolute top-4 right-4">
-                      <div className="flex items-center gap-1.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-3 py-1.5 rounded-full shadow-lg">
-                        <BadgeCheck size={14} />
-                        <span className="text-xs font-bold">Meilleure offre</span>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">
+                          Montant Total
+                        </p>
+                        <p className="text-sm font-bold text-slate-900 tabular-nums">
+                          {formatCurrency(Number(soumission.montantTotal || 0))}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">
+                          Devise
+                        </p>
+                        <p className="text-sm font-bold text-slate-900">
+                          {soumission.devise || 'XOF'}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">
+                          Statut
+                        </p>
+                        <p className="text-xs font-semibold text-slate-600 uppercase">
+                          {soumission.status || 'DEPOSEE'}
+                        </p>
                       </div>
                     </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
+                  </div>
+                ))}
+              </div>
+            )}
         </div>
 
-        {/* Informations complémentaires */}
-        {procedure.cahierCharges && (
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-8">
-            <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
-              <FileText size={20} className="text-slate-600" />
-              Cahier des charges
-            </h2>
-            <div className="prose max-w-none">
-              <p className="text-slate-700 leading-relaxed whitespace-pre-wrap">
+          {/* Informations complémentaires */}
+          {procedure.cahierCharges && (
+            <div className="bg-white rounded-2xl border border-slate-200 p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <FileText size={16} className="text-slate-400" />
+                <h2 className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+                  Cahier des charges
+                </h2>
+              </div>
+              <p className="text-sm text-slate-600 whitespace-pre-wrap">
                 {procedure.cahierCharges}
               </p>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </main>
+
+      {/* Modal de modification */}
+      {procedure && (
+        <EditProcedureModal
+          open={editModalOpen}
+          onClose={() => setEditModalOpen(false)}
+          procedure={procedure}
+        />
+      )}
+
+      {/* Modal de création de soumission */}
+      <CreateSoumissionModal
+        open={soumissionModalOpen}
+        onClose={() => setSoumissionModalOpen(false)}
+        procedureId={id}
+      />
+
+      {/* Modal de changement de statut */}
+      {procedure && (
+        <ChangeStatusModal
+          open={changeStatusModalOpen}
+          onClose={() => setChangeStatusModalOpen(false)}
+          procedureId={id}
+          currentStatus={procedure.status}
+        />
+      )}
     </div>
   );
 }

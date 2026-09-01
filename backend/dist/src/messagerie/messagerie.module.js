@@ -15,6 +15,8 @@ const messagerie_controller_1 = require("./messagerie.controller");
 const messagerie_gateway_1 = require("./messagerie.gateway");
 const upload_controller_1 = require("./upload.controller");
 const prisma_module_1 = require("../common/prisma/prisma.module");
+const storage_module_1 = require("../storage/storage.module");
+const multer_1 = require("multer");
 let MessagerieModule = class MessagerieModule {
 };
 exports.MessagerieModule = MessagerieModule;
@@ -22,12 +24,13 @@ exports.MessagerieModule = MessagerieModule = __decorate([
     (0, common_1.Module)({
         imports: [
             prisma_module_1.PrismaModule,
+            storage_module_1.StorageModule,
             jwt_1.JwtModule.register({
                 secret: process.env.JWT_SECRET,
                 signOptions: { expiresIn: '7d' },
             }),
             platform_express_1.MulterModule.register({
-                dest: './uploads/messagerie',
+                storage: (0, multer_1.memoryStorage)(),
             }),
         ],
         controllers: [messagerie_controller_1.MessagerieController, upload_controller_1.UploadController],

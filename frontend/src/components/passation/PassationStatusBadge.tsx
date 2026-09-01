@@ -28,26 +28,13 @@ const STATUS_CONFIG: Record<
 > = {
   // PPM
   BROUILLON: { label: 'Brouillon', className: 'bg-slate-100 text-slate-700' },
-  EN_REVISION: { label: 'En révision', className: 'bg-amber-100 text-amber-700' },
   VALIDE: { label: 'Validé', className: 'bg-green-100 text-green-700' },
-  PUBLIE: { label: 'Publié', className: 'bg-blue-100 text-blue-700' },
-  ARCHIVE: { label: 'Archivé', className: 'bg-gray-100 text-gray-600' },
+  CLOTURE: { label: 'Clôturé', className: 'bg-gray-100 text-gray-600' },
 
   // Demandes
   SOUMISE: { label: 'Soumise', className: 'bg-blue-100 text-blue-700' },
-  EN_VALIDATION_HIERARCHIQUE: {
-    label: 'Validation hiérarchique',
-    className: 'bg-purple-100 text-purple-700',
-  },
-  EN_VALIDATION_TECHNIQUE: {
-    label: 'Validation technique',
-    className: 'bg-indigo-100 text-indigo-700',
-  },
-  EN_VALIDATION_ADMINISTRATIVE: {
-    label: 'Validation administrative',
-    className: 'bg-violet-100 text-violet-700',
-  },
-  VALIDEE: { label: 'Validée', className: 'bg-green-100 text-green-700' },
+  EN_VALIDATION: { label: 'En validation', className: 'bg-purple-100 text-purple-700' },
+  APPROUVEE: { label: 'Approuvée', className: 'bg-green-100 text-green-700' },
   REJETEE: { label: 'Rejetée', className: 'bg-red-100 text-red-700' },
   ANNULEE: { label: 'Annulée', className: 'bg-gray-100 text-gray-600' },
 
@@ -62,8 +49,8 @@ const STATUS_CONFIG: Record<
   // Contrats
   SIGNE: { label: 'Signé', className: 'bg-blue-100 text-blue-700' },
   SUSPENDU: { label: 'Suspendu', className: 'bg-orange-100 text-orange-700' },
-  RESILIE: { label: 'Résilié', className: 'bg-red-100 text-red-700' },
   TERMINE: { label: 'Terminé', className: 'bg-green-100 text-green-700' },
+  RESILIE: { label: 'Résilié', className: 'bg-red-100 text-red-700' },
 
   // Fournisseurs
   A_VALIDER: { label: 'À valider', className: 'bg-amber-100 text-amber-700' },

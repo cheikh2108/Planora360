@@ -19,6 +19,8 @@ const create_budget_dto_1 = require("./dto/create-budget.dto");
 const update_budget_dto_1 = require("./dto/update-budget.dto");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../common/guards/roles.guard");
+const subscription_guard_1 = require("../common/guards/subscription.guard");
+const client_1 = require("@prisma/client");
 const roles_decorator_1 = require("../common/decorators/roles.decorator");
 const current_user_decorator_1 = require("../common/decorators/current-user.decorator");
 let BudgetsController = class BudgetsController {
@@ -101,7 +103,8 @@ __decorate([
 ], BudgetsController.prototype, "getSummaryByPlan", null);
 exports.BudgetsController = BudgetsController = __decorate([
     (0, common_1.Controller)(),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard, subscription_guard_1.SubscriptionGuard),
+    (0, subscription_guard_1.RequiresPlan)(client_1.SubscriptionPlan.PRO, client_1.SubscriptionPlan.EQUIPE, client_1.SubscriptionPlan.ORGANISATION, client_1.SubscriptionPlan.ENTERPRISE),
     __metadata("design:paramtypes", [budgets_service_1.BudgetsService])
 ], BudgetsController);
 //# sourceMappingURL=budgets.controller.js.map

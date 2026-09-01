@@ -20,16 +20,24 @@ import {
 const PLAN_META: Record<SubscriptionPlan, {
   label: string; color: string; bg: string; dot: string;
 }> = {
-  DECOUVERTE:      {
-    label: 'Découverte',
+  INDIVIDUEL: {
+    label: 'Individuel',
     color: 'text-emerald-700', bg: 'bg-emerald-100', dot: 'bg-emerald-500',
   },
-  PROFESSIONNELLE: {
-    label: 'Professionnelle',
+  PRO: {
+    label: 'Pro',
     color: 'text-blue-700', bg: 'bg-blue-100', dot: 'bg-blue-500',
   },
-  SUR_MESURE:      {
-    label: 'Entreprise',
+  EQUIPE: {
+    label: 'Équipe',
+    color: 'text-purple-700', bg: 'bg-purple-100', dot: 'bg-purple-500',
+  },
+  ORGANISATION: {
+    label: 'Organisation',
+    color: 'text-indigo-700', bg: 'bg-indigo-100', dot: 'bg-indigo-500',
+  },
+  ENTERPRISE: {
+    label: 'Enterprise',
     color: 'text-amber-700', bg: 'bg-amber-100', dot: 'bg-amber-500',
   },
 };
@@ -114,13 +122,13 @@ export default function DeletedOrganizationsPage() {
 
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-48">
+        <div className="relative flex-1 min-w-48 max-w-md">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Rechercher une organisation..."
-            className="w-full h-9 pl-8 pr-4 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+            className="w-full h-9 pl-8 pr-4 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
           />
         </div>
       </div>
@@ -135,7 +143,7 @@ export default function DeletedOrganizationsPage() {
           </div>
         ) : filtered.length === 0 ? (
           <EmptyState
-            icon={Trash2}
+            illustration="inbox"
             title="Aucune organisation supprimée"
             description={search ? 'Aucun résultat.' : 'Les organisations supprimées apparaîtront ici.'}
           />
@@ -242,7 +250,7 @@ export default function DeletedOrganizationsPage() {
             <div className="flex justify-end gap-3 pt-1">
               <Button variant="secondary" onClick={() => setRestoreId(null)}>Annuler</Button>
               <Button
-                loading={restoring}
+                isLoading={restoring}
                 onClick={() => restore(restoreId!)}
                 icon={<RotateCcw size={13} />}
               >
@@ -274,7 +282,7 @@ export default function DeletedOrganizationsPage() {
               <Button variant="secondary" onClick={() => setHardDeleteId(null)}>Annuler</Button>
               <Button
                 variant="danger"
-                loading={hardDeleting}
+                isLoading={hardDeleting}
                 onClick={() => hardDelete(hardDeleteId!)}
                 icon={<Trash2 size={13} />}
               >

@@ -1,10 +1,13 @@
 import { Controller, Get, Post, Body, Patch, Param, Query, UseGuards, Req } from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { SubscriptionGuard, RequiresPlan } from '../../common/guards/subscription.guard';
+import { SubscriptionPlan } from '@prisma/client';
 import { ContratsService } from './contrats.service';
 import { StatusContrat } from '@prisma/client';
 
 @Controller('passation/contrats')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, SubscriptionGuard)
+@RequiresPlan(SubscriptionPlan.ORGANISATION, SubscriptionPlan.ENTERPRISE)
 export class ContratsController {
   constructor(private readonly contratsService: ContratsService) {}
 

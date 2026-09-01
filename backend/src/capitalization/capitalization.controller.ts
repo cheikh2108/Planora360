@@ -19,6 +19,8 @@ import { CreateCapitalizationDto } from './dto/create-capitalization.dto';
 import { UpdateCapitalizationDto } from './dto/update-capitalization.dto';
 import { FilterCapitalizationDto } from './dto/filter-capitalization.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { SubscriptionGuard, RequiresPlan } from '../common/guards/subscription.guard';
+import { SubscriptionPlan } from '@prisma/client';
 
 const upload = {
   storage: memoryStorage(),
@@ -26,7 +28,8 @@ const upload = {
 };
 
 @Controller('capitalization')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, SubscriptionGuard)
+@RequiresPlan(SubscriptionPlan.PRO, SubscriptionPlan.EQUIPE, SubscriptionPlan.ORGANISATION, SubscriptionPlan.ENTERPRISE)
 export class CapitalizationController {
   constructor(private readonly capitalizationService: CapitalizationService) {}
 

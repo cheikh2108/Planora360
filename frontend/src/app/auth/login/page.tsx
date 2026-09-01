@@ -177,7 +177,7 @@ export default function LoginPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label htmlFor="email" className="block text-[12px] font-semibold text-slate-600 mb-1.5">
+                <label className="block text-[12px] font-semibold text-slate-900 mb-1.5">
                   Adresse e-mail
                 </label>
                 <input
@@ -193,7 +193,7 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-[12px] font-semibold text-slate-600 mb-1.5">
+                <label className="block text-[12px] font-semibold text-slate-900 mb-1.5">
                   Mot de passe
                 </label>
                 <div className="relative">
@@ -220,7 +220,7 @@ export default function LoginPage() {
 
               {show2fa && (
                 <div>
-                  <label htmlFor="totp" className="block text-[12px] font-semibold text-slate-600 mb-1.5">
+                  <label htmlFor="totp" className="block text-[12px] font-semibold text-slate-900 mb-1.5">
                     Code 2FA
                   </label>
                   <input

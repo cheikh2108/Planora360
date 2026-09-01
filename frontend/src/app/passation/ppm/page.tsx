@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PassationStatusBadge } from '@/components/passation/PassationStatusBadge';
+import { CreatePPMModal } from '@/components/passation/CreatePPMModal';
 import { formatDate, formatCurrency, cn } from '@/lib/utils';
 import { FileText, Plus, Filter, Calendar, DollarSign, ChevronRight, FileSpreadsheet } from 'lucide-react';
 import Link from 'next/link';
@@ -18,10 +19,9 @@ import Link from 'next/link';
 const STATUS_FILTERS: { value: StatusPPM | 'ALL'; label: string }[] = [
   { value: 'ALL', label: 'Tous' },
   { value: 'BROUILLON', label: 'Brouillon' },
-  { value: 'EN_REVISION', label: 'En révision' },
+  { value: 'EN_COURS', label: 'En cours' },
   { value: 'VALIDE', label: 'Validé' },
-  { value: 'PUBLIE', label: 'Publié' },
-  { value: 'ARCHIVE', label: 'Archivé' },
+  { value: 'CLOTURE', label: 'Clôturé' },
 ];
 
 // Années disponibles (dernières 5 années + 2 prochaines)
@@ -33,6 +33,7 @@ export default function PPMListPage() {
   const [statusFilter, setStatusFilter] = useState<StatusPPM | 'ALL'>('ALL');
   const [yearFilter, setYearFilter] = useState<number | 'ALL'>('ALL');
   const [projectFilter, setProjectFilter] = useState<string>('ALL');
+  const [createModalOpen, setCreateModalOpen] = useState(false);
 
   // Fetch PPM list
   const { data: ppmData, isLoading } = useQuery({
@@ -64,11 +65,11 @@ export default function PPMListPage() {
   // Stats for KPI cards
   const stats = useMemo(() => {
     const total = ppmList.length;
-    const publies = ppmList.filter(p => p.status === 'PUBLIE').length;
-    const enRevision = ppmList.filter(p => p.status === 'EN_REVISION').length;
+    const valides = ppmList.filter(p => p.status === 'VALIDE').length;
+    const enCours = ppmList.filter(p => p.status === 'EN_COURS').length;
     const montantTotal = ppmList.reduce((sum, p) => sum + Number(p.montantTotal || 0), 0);
 
-    return { total, publies, enRevision, montantTotal };
+    return { total, valides, enCours, montantTotal };
   }, [ppmList]);
 
   return (
@@ -79,7 +80,7 @@ export default function PPMListPage() {
         actions={
           <Button
             icon={<Plus size={16} />}
-            onClick={() => router.push('/passation/ppm/nouveau')}
+            onClick={() => setCreateModalOpen(true)}
           >
             Nouveau PPM
           </Button>
@@ -93,8 +94,8 @@ export default function PPMListPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
               { label: 'Total PPM', value: stats.total, color: 'text-slate-900', bg: 'bg-white', icon: FileSpreadsheet },
-              { label: 'Publiés', value: stats.publies, color: 'text-blue-600', bg: 'bg-blue-50', icon: FileText },
-              { label: 'En révision', value: stats.enRevision, color: 'text-amber-600', bg: 'bg-amber-50', icon: Calendar },
+              { label: 'Validés', value: stats.valides, color: 'text-green-600', bg: 'bg-green-50', icon: FileText },
+              { label: 'En cours', value: stats.enCours, color: 'text-blue-600', bg: 'bg-blue-50', icon: Calendar },
               { label: 'Montant total', value: formatCurrency(stats.montantTotal), color: 'text-teal-600', bg: 'bg-teal-50', icon: DollarSign },
             ].map((stat, idx) => {
               const Icon = stat.icon;
@@ -123,7 +124,7 @@ export default function PPMListPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {/* Status Filter */}
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1.5">Statut</label>
+              <label className="block text-xs font-medium text-slate-900 mb-1.5">Statut</label>
               <div className="flex flex-wrap gap-1.5">
                 {STATUS_FILTERS.map(f => (
                   <button
@@ -144,7 +145,7 @@ export default function PPMListPage() {
 
             {/* Year Filter */}
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1.5">Année</label>
+              <label className="block text-xs font-medium text-slate-900 mb-1.5">Année</label>
               <select
                 value={yearFilter}
                 onChange={e => setYearFilter(e.target.value === 'ALL' ? 'ALL' : Number(e.target.value))}
@@ -159,7 +160,7 @@ export default function PPMListPage() {
 
             {/* Project Filter */}
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1.5">Projet</label>
+              <label className="block text-xs font-medium text-slate-900 mb-1.5">Projet</label>
               <select
                 value={projectFilter}
                 onChange={e => setProjectFilter(e.target.value)}
@@ -191,7 +192,7 @@ export default function PPMListPage() {
             </div>
           ) : ppmList.length === 0 ? (
             <EmptyState
-              icon={FileSpreadsheet}
+              illustration="data"
               title="Aucun PPM"
               description="Créez votre premier Plan de Passation des Marchés pour planifier vos achats."
             />
@@ -286,6 +287,12 @@ export default function PPMListPage() {
           )}
         </div>
       </main>
+
+      <CreatePPMModal
+        open={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+        onSuccess={(id) => router.push(`/passation/ppm/${id}`)}
+      />
     </div>
   );
 }

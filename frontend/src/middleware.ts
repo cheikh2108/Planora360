@@ -41,8 +41,12 @@ export async function middleware(request: NextRequest) {
 
   try {
     // 3. Check maintenance status via API
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
-    const response = await fetch(`${apiUrl}/maintenance/status`, {
+    // En Edge Runtime, on doit utiliser une URL absolue
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL?.startsWith('http')
+      ? process.env.NEXT_PUBLIC_API_URL
+      : 'http://localhost:3000/api';
+
+    const response = await fetch(`${baseUrl}/maintenance/status`, {
       headers: {
         'Cache-Control': 'no-cache',
       },

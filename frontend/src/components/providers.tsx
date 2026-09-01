@@ -9,6 +9,12 @@ import { HelpSidebar } from '@/components/help/help-sidebar';
 import { FloatingHelpButton } from '@/components/help/floating-help-button';
 import { PostHogProvider } from '@/lib/posthog-provider';
 import { Toaster } from 'sonner';
+import { useCsrfToken } from '@/hooks/useCsrfToken';
+
+function CSRFProvider({ children }: { children: React.ReactNode }) {
+  useCsrfToken();
+  return <>{children}</>;
+}
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [client] = useState(() => new QueryClient({
@@ -18,15 +24,18 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <PostHogProvider>
       <QueryClientProvider client={client}>
-        <AuthProvider>
-          <ToastProvider>
-            <HelpProvider>
-              {children}
-              <HelpSidebar />
-              <Toaster position="top-right" />
-            </HelpProvider>
-          </ToastProvider>
-        </AuthProvider>
+        <CSRFProvider>
+          <AuthProvider>
+            <ToastProvider>
+              <HelpProvider>
+                {children}
+                <HelpSidebar />
+                <FloatingHelpButton />
+                <Toaster position="top-right" />
+              </HelpProvider>
+            </ToastProvider>
+          </AuthProvider>
+        </CSRFProvider>
       </QueryClientProvider>
     </PostHogProvider>
   );

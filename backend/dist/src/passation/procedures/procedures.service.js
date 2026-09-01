@@ -23,13 +23,28 @@ let ProceduresService = class ProceduresService {
             where: { organizationId },
         });
         const reference = `PROC-${new Date().getFullYear()}-${String(count + 1).padStart(4, '0')}`;
+        const data = {
+            ...dto,
+            description: dto.description || dto.objet || '',
+            reference,
+            organizationId,
+            responsableId: userId,
+        };
+        if (dto.lignePpmId) {
+            data.lignePPMId = dto.lignePpmId;
+            delete data.lignePpmId;
+        }
+        if (data.datePublication && typeof data.datePublication === 'string') {
+            data.datePublication = new Date(data.datePublication);
+        }
+        if (data.dateLimite && typeof data.dateLimite === 'string') {
+            data.dateLimite = new Date(data.dateLimite);
+        }
+        if (data.dateOuverture && typeof data.dateOuverture === 'string') {
+            data.dateOuverture = new Date(data.dateOuverture);
+        }
         return this.prisma.procedure.create({
-            data: {
-                ...dto,
-                reference,
-                organizationId,
-                responsableId: userId,
-            },
+            data,
             include: {
                 responsable: {
                     select: {
@@ -126,12 +141,27 @@ let ProceduresService = class ProceduresService {
     }
     async update(id, organizationId, dto) {
         const procedure = await this.findOne(id, organizationId);
-        if (procedure.status !== client_1.StatusProcedure.BROUILLON) {
-            throw new common_1.ForbiddenException('Seules les procédures en brouillon peuvent être modifiées');
+        const isOnlyStatusChange = Object.keys(dto).length === 1 && dto.status !== undefined;
+        if (!isOnlyStatusChange && procedure.status !== client_1.StatusProcedure.BROUILLON) {
+            throw new common_1.ForbiddenException('Seules les procédures en brouillon peuvent être modifiées (hormis le statut)');
+        }
+        const data = { ...dto };
+        if (dto.lignePpmId) {
+            data.lignePPMId = dto.lignePpmId;
+            delete data.lignePpmId;
+        }
+        if (data.datePublication && typeof data.datePublication === 'string') {
+            data.datePublication = new Date(data.datePublication);
+        }
+        if (data.dateLimite && typeof data.dateLimite === 'string') {
+            data.dateLimite = new Date(data.dateLimite);
+        }
+        if (data.dateOuverture && typeof data.dateOuverture === 'string') {
+            data.dateOuverture = new Date(data.dateOuverture);
         }
         return this.prisma.procedure.update({
             where: { id },
-            data: dto,
+            data,
         });
     }
     async remove(id, organizationId) {

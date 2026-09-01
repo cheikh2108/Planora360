@@ -20,6 +20,7 @@ export declare class SoumissionsService {
     } & {
         id: string;
         status: string;
+        montantTotal: import("@prisma/client-runtime-utils").Decimal;
         fournisseurId: string;
         dateDepot: Date;
         procedureId: string;
@@ -27,7 +28,6 @@ export declare class SoumissionsService {
         numeroDepot: string;
         montantTechnique: import("@prisma/client-runtime-utils").Decimal | null;
         montantFinancier: import("@prisma/client-runtime-utils").Decimal;
-        montantTotal: import("@prisma/client-runtime-utils").Decimal;
         conformeAdmin: boolean | null;
         conformeTechnique: boolean | null;
         conformeFinancier: boolean | null;
@@ -48,6 +48,7 @@ export declare class SoumissionsService {
     } & {
         id: string;
         status: string;
+        montantTotal: import("@prisma/client-runtime-utils").Decimal;
         fournisseurId: string;
         dateDepot: Date;
         procedureId: string;
@@ -55,7 +56,6 @@ export declare class SoumissionsService {
         numeroDepot: string;
         montantTechnique: import("@prisma/client-runtime-utils").Decimal | null;
         montantFinancier: import("@prisma/client-runtime-utils").Decimal;
-        montantTotal: import("@prisma/client-runtime-utils").Decimal;
         conformeAdmin: boolean | null;
         conformeTechnique: boolean | null;
         conformeFinancier: boolean | null;
@@ -88,8 +88,8 @@ export declare class SoumissionsService {
         };
         procedure: {
             id: string;
-            reference: string;
             objet: string;
+            reference: string;
             dateOuverture: Date | null;
         };
         documents: {
@@ -104,6 +104,7 @@ export declare class SoumissionsService {
     } & {
         id: string;
         status: string;
+        montantTotal: import("@prisma/client-runtime-utils").Decimal;
         fournisseurId: string;
         dateDepot: Date;
         procedureId: string;
@@ -111,7 +112,6 @@ export declare class SoumissionsService {
         numeroDepot: string;
         montantTechnique: import("@prisma/client-runtime-utils").Decimal | null;
         montantFinancier: import("@prisma/client-runtime-utils").Decimal;
-        montantTotal: import("@prisma/client-runtime-utils").Decimal;
         conformeAdmin: boolean | null;
         conformeTechnique: boolean | null;
         conformeFinancier: boolean | null;

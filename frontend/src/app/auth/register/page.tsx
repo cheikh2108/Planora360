@@ -6,35 +6,49 @@ import { authApi } from '@/lib/api';
 import { Eye, EyeOff, Loader2, CheckCircle2, ChevronLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-type Plan = 'DECOUVERTE' | 'PROFESSIONNELLE' | 'SUR_MESURE';
+type Plan = 'INDIVIDUEL' | 'PRO' | 'EQUIPE' | 'ORGANISATION' | 'ENTERPRISE';
 
 const PLANS: { id: Plan; label: string; description: string; price: string; features: string[] }[] = [
   {
-    id: 'DECOUVERTE',
-    label: 'Découverte',
-    description: 'Idéal pour démarrer',
-    price: 'Gratuit 30 jours',
-    features: ["Jusqu'à 3 plans d'action", '5 utilisateurs', 'Support e-mail'],
+    id: 'INDIVIDUEL',
+    label: 'Individuel',
+    description: 'Pour démarrer',
+    price: '10 000 FCFA/mois',
+    features: ['3 projets', '1 utilisateur', 'Tableau de bord personnel', 'Support e-mail'],
   },
   {
-    id: 'PROFESSIONNELLE',
-    label: 'Professionnelle',
-    description: 'Pour les équipes actives',
-    price: 'Sur devis',
-    features: ['Plans illimités', '25 utilisateurs', 'Rapports avancés', 'Support prioritaire'],
+    id: 'PRO',
+    label: 'Pro',
+    description: 'Petites structures',
+    price: '25 000 FCFA/mois',
+    features: ['10 projets', '3 utilisateurs', 'Rapports avancés', 'Workflow validation'],
   },
   {
-    id: 'SUR_MESURE',
-    label: 'Entreprise',
-    description: 'Pour les grandes organisations',
-    price: 'Sur devis',
-    features: ['Tout illimité', 'SSO / LDAP', 'SLA garanti', 'Accompagnement dédié'],
+    id: 'EQUIPE',
+    label: 'Équipe',
+    description: 'PME & associations',
+    price: '50 000 FCFA/mois',
+    features: ['25 projets', '10 utilisateurs', 'Cartographie', 'Gestion documentaire', 'Passation marchés'],
+  },
+  {
+    id: 'ORGANISATION',
+    label: 'Organisation',
+    description: 'ONG & programmes',
+    price: '100 000 FCFA/mois',
+    features: ['50 projets', '25 utilisateurs', 'Passation complète', 'Rapports bailleurs', 'Audit'],
+  },
+  {
+    id: 'ENTERPRISE',
+    label: 'Enterprise',
+    description: 'Grandes organisations',
+    price: 'À partir de 250 000 FCFA',
+    features: ['Illimité', 'Environnement dédié', 'Intégrations API', 'SLA garanti', 'Support premium'],
   },
 ];
 
 export default function RegisterPage() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [plan, setPlan] = useState<Plan>('DECOUVERTE');
+  const [plan, setPlan] = useState<Plan>('INDIVIDUEL');
   const [orgName, setOrgName] = useState('');
   const [brandColor, setBrandColor] = useState('#2563eb');
   const [firstName, setFirstName] = useState('');
@@ -128,7 +142,7 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                  <label className="block text-xs font-semibold text-slate-900 mb-1.5">
                     Nom de l&apos;organisation <span className="text-red-400">*</span>
                   </label>
                   <input
@@ -141,43 +155,60 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                  <label className="block text-xs font-semibold text-slate-900 mb-1.5">
                     Couleur de marque
                   </label>
-                  <div className="flex items-center gap-3">
-                    <div className="flex flex-wrap gap-2">
-                      {['#2563eb','#7c3aed','#db2777','#dc2626','#ea580c','#16a34a','#0891b2','#0f172a'].map(c => (
-                        <button
-                          key={c}
-                          type="button"
-                          onClick={() => setBrandColor(c)}
-                          className={cn(
-                            'w-7 h-7 rounded-full transition-all border-2',
-                            brandColor === c ? 'border-slate-700 scale-110' : 'border-transparent hover:scale-105'
-                          )}
-                          style={{ background: c }}
-                          aria-label={c}
-                        />
-                      ))}
-                    </div>
-                    <div className="flex items-center gap-2 ml-auto">
-                      <div className="w-7 h-7 rounded-full border-2 border-slate-200 overflow-hidden shrink-0">
-                        <input
-                          type="color"
-                          value={brandColor}
-                          onChange={e => setBrandColor(e.target.value)}
-                          className="w-10 h-10 -translate-x-1 -translate-y-1 cursor-pointer"
-                        />
-                      </div>
-                      <span className="text-xs font-mono text-slate-500">{brandColor}</span>
-                    </div>
+
+                  {/* Couleurs prédéfinies */}
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {['#2563eb','#7c3aed','#db2777','#dc2626','#ea580c','#16a34a','#0891b2','#0f172a'].map(c => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => setBrandColor(c)}
+                        className={cn(
+                          'w-8 h-8 rounded-full transition-all border-2',
+                          brandColor === c ? 'border-slate-700 scale-110 shadow-md' : 'border-transparent hover:scale-105'
+                        )}
+                        style={{ background: c }}
+                        aria-label={c}
+                      />
+                    ))}
                   </div>
-                  <div className="mt-2 h-1.5 rounded-full" style={{ background: brandColor }} />
+
+                  {/* Couleur personnalisée */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl border-2 border-slate-200 overflow-hidden shrink-0">
+                      <input
+                        type="color"
+                        value={brandColor}
+                        onChange={e => setBrandColor(e.target.value)}
+                        className="w-14 h-14 -translate-x-2 -translate-y-2 cursor-pointer"
+                      />
+                    </div>
+                    <input
+                      type="text"
+                      value={brandColor}
+                      onChange={e => {
+                        const value = e.target.value;
+                        // Accepter seulement les codes hex valides
+                        if (/^#[0-9a-fA-F]{0,6}$/.test(value)) {
+                          setBrandColor(value);
+                        }
+                      }}
+                      className="flex-1 h-10 px-3 rounded-xl border border-slate-200 text-sm font-mono text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20 focus:border-[#2563eb] transition-all"
+                      maxLength={7}
+                      placeholder="#2563eb"
+                    />
+                  </div>
+
+                  {/* Aperçu */}
+                  <div className="mt-3 h-2 rounded-full transition-all" style={{ background: brandColor }} />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-3">Formule souhaitée</label>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <label className="block text-xs font-semibold text-slate-900 mb-3">Formule souhaitée</label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {PLANS.map(p => (
                       <button
                         key={p.id}
@@ -233,7 +264,7 @@ export default function RegisterPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1.5">Prénom <span className="text-red-400">*</span></label>
+                    <label className="block text-xs font-semibold text-slate-900 mb-1.5">Prénom <span className="text-red-400">*</span></label>
                     <input
                       type="text"
                       value={firstName}
@@ -243,7 +274,7 @@ export default function RegisterPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1.5">Nom <span className="text-red-400">*</span></label>
+                    <label className="block text-xs font-semibold text-slate-900 mb-1.5">Nom <span className="text-red-400">*</span></label>
                     <input
                       type="text"
                       value={lastName}
@@ -255,7 +286,7 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">Adresse e-mail <span className="text-red-400">*</span></label>
+                  <label className="block text-xs font-semibold text-slate-900 mb-1.5">Adresse e-mail <span className="text-red-400">*</span></label>
                   <input
                     type="email"
                     value={email}
@@ -288,7 +319,7 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">Mot de passe <span className="text-red-400">*</span></label>
+                  <label className="block text-xs font-semibold text-slate-900 mb-1.5">Mot de passe <span className="text-red-400">*</span></label>
                   <div className="relative">
                     <input
                       type={showPwd ? 'text' : 'password'}

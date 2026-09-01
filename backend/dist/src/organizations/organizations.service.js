@@ -64,7 +64,7 @@ let OrganizationsService = class OrganizationsService {
         });
         if (emailTaken)
             throw new common_1.ConflictException('Cet email est déjà utilisé');
-        const isTrialPlan = !dto.subscriptionPlan || dto.subscriptionPlan === 'DECOUVERTE';
+        const isTrialPlan = !dto.subscriptionPlan || dto.subscriptionPlan === 'INDIVIDUEL';
         const trialEndsAt = isTrialPlan
             ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
             : undefined;
@@ -72,7 +72,7 @@ let OrganizationsService = class OrganizationsService {
             data: {
                 name: dto.name,
                 logoUrl: dto.logoUrl,
-                subscriptionPlan: dto.subscriptionPlan ?? 'DECOUVERTE',
+                subscriptionPlan: dto.subscriptionPlan ?? 'INDIVIDUEL',
                 status: 'ACTIVE',
                 trialEndsAt,
             },

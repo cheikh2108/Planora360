@@ -67,14 +67,14 @@ const STATUS_CONFIG: Record<StatusContrat, {
     icon: CheckCircle2,
     gradient: 'from-green-500 to-emerald-600'
   },
-  ARCHIVE: {
-    label: 'Archivé',
-    color: 'text-slate-500',
+  CLOTURE: {
+    label: 'Clôturé',
+    color: 'text-slate-700',
     bg: 'bg-slate-50',
     border: 'border-slate-200',
-    icon: FileText,
-    gradient: 'from-slate-400 to-slate-600'
-  },
+    icon: CheckCircle2,
+    gradient: 'from-slate-500 to-gray-600'
+  }
 };
 
 // Status Livrable

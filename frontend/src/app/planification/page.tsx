@@ -58,15 +58,14 @@ export default function PlanificationPage() {
           </div>
         ) : plans.length === 0 ? (
           <EmptyState
-            icon={Calendar}
+            illustration="data"
             title="Aucun Plan de Travail Annuel"
             description="Créez votre premier PTA avec vos objectifs stratégiques"
-            action={
-              <Button onClick={() => router.push('/planification/new')}>
-                <Plus size={14} className="mr-1.5" />
-                Créer un PTA
-              </Button>
-            }
+            action={{
+              label: 'Créer un PTA',
+              onClick: () => router.push('/planification/new'),
+              leftIcon: <Plus size={14} />
+            }}
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">

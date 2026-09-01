@@ -9,7 +9,9 @@ import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PassationStatusBadge } from '@/components/passation/PassationStatusBadge';
+import { AddLignePPMModal } from '@/components/passation/AddLignePPMModal';
 import { formatDate, formatCurrency, cn } from '@/lib/utils';
+import { useToast } from '@/components/ui/toast';
 import {
   ArrowLeft,
   CheckCircle2,
@@ -22,6 +24,9 @@ import {
   ShoppingCart,
   ClipboardList,
   Download,
+  Plus,
+  MoreVertical,
+  Trash2,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -43,8 +48,11 @@ export default function PPMDetailPage() {
   const params = useParams();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { success: successToast, error: errorToast } = useToast();
   const ppmId = params?.id as string;
   const [exportingFormat, setExportingFormat] = useState<'pdf' | 'excel' | null>(null);
+  const [addLigneModalOpen, setAddLigneModalOpen] = useState(false);
+  const [statusMenuOpen, setStatusMenuOpen] = useState(false);
 
   // Fetch PPM details
   const { data: ppmData, isLoading, error } = useQuery({
@@ -56,12 +64,42 @@ export default function PPMDetailPage() {
     enabled: !!ppmId,
   });
 
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: () => ppmApi.remove(ppmId),
+    onSuccess: () => {
+      successToast('PPM supprimé avec succès');
+      router.push('/passation/ppm');
+    },
+    onError: (err: any) => {
+      errorToast(err.response?.data?.message || 'Erreur lors de la suppression');
+    },
+  });
+
+  // Change status mutation
+  const changeStatusMutation = useMutation({
+    mutationFn: (newStatus: string) => ppmApi.updateStatus(ppmId, newStatus),
+    onSuccess: () => {
+      successToast('Statut modifié avec succès');
+      queryClient.invalidateQueries({ queryKey: ['ppm', ppmId] });
+      queryClient.invalidateQueries({ queryKey: ['ppm'] });
+      setStatusMenuOpen(false);
+    },
+    onError: (err: any) => {
+      errorToast(err.response?.data?.message || 'Erreur lors du changement de statut');
+    },
+  });
+
   // Validate PPM mutation
   const validateMutation = useMutation({
     mutationFn: () => ppmApi.validate(ppmId),
     onSuccess: () => {
+      successToast('PPM validé avec succès');
       queryClient.invalidateQueries({ queryKey: ['ppm', ppmId] });
       queryClient.invalidateQueries({ queryKey: ['ppm'] });
+    },
+    onError: (err: any) => {
+      errorToast(err.response?.data?.message || 'Erreur lors de la validation');
     },
   });
 
@@ -90,6 +128,12 @@ export default function PPMDetailPage() {
     }
   };
 
+  const handleDelete = () => {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce PPM ? Cette action est irréversible.')) {
+      deleteMutation.mutate();
+    }
+  };
+
   const ppm = ppmData;
   const lignes = Array.isArray(ppm?.lignes) ? ppm.lignes : [];
 
@@ -103,6 +147,7 @@ export default function PPMDetailPage() {
           <h2 className="text-xl font-semibold text-slate-900">Erreur de chargement</h2>
           <p className="text-sm text-slate-500">Impossible de charger ce PPM.</p>
           <Button onClick={() => router.push('/passation/ppm')}>
+            <ArrowLeft size={16} className="mr-2" />
             Retour à la liste
           </Button>
         </div>
@@ -116,22 +161,102 @@ export default function PPMDetailPage() {
         title={isLoading ? 'Chargement...' : ppm?.reference || 'PPM'}
         subtitle={isLoading ? '' : `Plan de Passation des Marchés ${ppm?.year}`}
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Link href="/passation/ppm">
-              <Button variant="secondary" size="sm" icon={<ArrowLeft size={14} />}>
+              <Button variant="secondary" size="sm" icon={<ArrowLeft size={14} />} className="hidden md:flex">
                 Retour
               </Button>
+              <Button variant="secondary" size="sm" icon={<ArrowLeft size={14} />} className="md:hidden" />
             </Link>
+
             {ppm?.status === 'BROUILLON' && (
-              <Button
-                size="sm"
-                icon={<CheckCircle2 size={14} />}
-                onClick={() => validateMutation.mutate()}
-                disabled={validateMutation.isPending}
-              >
-                {validateMutation.isPending ? 'Validation...' : 'Valider'}
-              </Button>
+              <>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  icon={<Plus size={14} />}
+                  onClick={() => setAddLigneModalOpen(true)}
+                  className="hidden md:flex"
+                >
+                  Ajouter ligne
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  icon={<Plus size={14} />}
+                  onClick={() => setAddLigneModalOpen(true)}
+                  className="md:hidden"
+                />
+                <Button
+                  size="sm"
+                  icon={<CheckCircle2 size={14} />}
+                  onClick={() => validateMutation.mutate()}
+                  disabled={validateMutation.isPending}
+                  className="hidden md:flex"
+                >
+                  {validateMutation.isPending ? 'Validation...' : 'Valider'}
+                </Button>
+                <Button
+                  size="sm"
+                  icon={<CheckCircle2 size={14} />}
+                  onClick={() => validateMutation.mutate()}
+                  disabled={validateMutation.isPending}
+                  className="md:hidden"
+                />
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  icon={<Trash2 size={14} />}
+                  onClick={handleDelete}
+                  disabled={deleteMutation.isPending}
+                  className="text-red-600 hover:bg-red-50 md:hidden"
+                />
+              </>
             )}
+
+            {/* Menu statut */}
+            <div className="relative">
+              <Button
+                variant="secondary"
+                size="sm"
+                icon={<MoreVertical size={14} />}
+                onClick={() => setStatusMenuOpen(!statusMenuOpen)}
+                className="hidden md:flex"
+              >
+                Statut
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                icon={<MoreVertical size={14} />}
+                onClick={() => setStatusMenuOpen(!statusMenuOpen)}
+                className="md:hidden"
+              />
+
+              {statusMenuOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setStatusMenuOpen(false)}
+                  />
+                  <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50">
+                    {['BROUILLON', 'EN_COURS', 'VALIDE', 'CLOTURE'].map((status) => (
+                      <button
+                        key={status}
+                        onClick={() => changeStatusMutation.mutate(status)}
+                        disabled={ppm?.status === status}
+                        className={cn(
+                          'w-full px-4 py-2 text-left text-sm hover:bg-slate-50 transition-colors',
+                          ppm?.status === status ? 'bg-slate-100 font-semibold cursor-default' : ''
+                        )}
+                      >
+                        <PassationStatusBadge status={status as any} />
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         }
       />
@@ -172,15 +297,15 @@ export default function PPMDetailPage() {
                 </div>
               </div>
 
-              <div className="p-6">
+              <div className="p-4 md:p-6">
                 {/* Status & Main Info */}
-                <div className="flex items-start justify-between mb-6">
-                  <div className="space-y-3">
+                <div className="flex flex-col md:flex-row items-start justify-between mb-6 gap-4">
+                  <div className="space-y-3 w-full md:w-auto">
                     <div>
                       <p className="text-xs uppercase tracking-widest font-semibold text-slate-400 mb-1">
                         Référence
                       </p>
-                      <h3 className="text-2xl font-bold text-slate-900">{ppm?.reference}</h3>
+                      <h3 className="text-xl md:text-2xl font-bold text-slate-900">{ppm?.reference}</h3>
                     </div>
                     <div className="flex items-center gap-2">
                       <PassationStatusBadge status={ppm?.status || 'BROUILLON'} />
@@ -198,7 +323,7 @@ export default function PPMDetailPage() {
                 </div>
 
                 {/* Grid Info */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
                   {/* Year */}
                   <div className="flex items-start gap-3 p-4 rounded-xl bg-slate-50">
                     <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
@@ -279,27 +404,47 @@ export default function PPMDetailPage() {
                     {lignes.length} marché{lignes.length > 1 ? 's' : ''} planifié{lignes.length > 1 ? 's' : ''}
                   </p>
                 </div>
-                {lignes.length > 0 && (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 rounded-lg text-xs font-medium text-slate-600">
-                    <ShoppingCart size={12} />
-                    {lignes.length}
-                  </span>
-                )}
+                <div className="flex items-center gap-2">
+                  {lignes.length > 0 && (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 rounded-lg text-xs font-medium text-slate-600">
+                      <ShoppingCart size={12} />
+                      {lignes.length}
+                    </span>
+                  )}
+                  {ppm?.status === 'BROUILLON' && (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      icon={<Plus size={14} />}
+                      onClick={() => setAddLigneModalOpen(true)}
+                    >
+                      Ajouter
+                    </Button>
+                  )}
+                </div>
               </div>
 
               {lignes.length === 0 ? (
-                <div className="p-12 text-center">
+                <div className="p-6 md:p-12 text-center">
                   <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
                     <ClipboardList className="text-slate-400" size={28} />
                   </div>
                   <h3 className="text-lg font-semibold text-slate-900 mb-2">Aucune ligne</h3>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-slate-500 mb-4">
                     Ce PPM ne contient pas encore de lignes de marché.
                   </p>
+                  {ppm?.status === 'BROUILLON' && (
+                    <Button
+                      icon={<Plus size={16} />}
+                      onClick={() => setAddLigneModalOpen(true)}
+                    >
+                      Ajouter la première ligne
+                    </Button>
+                  )}
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full">
+                <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+                  <table className="w-full min-w-[800px]">
                     <thead>
                       <tr className="bg-slate-50 border-b border-slate-200">
                         <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400 whitespace-nowrap">
@@ -326,7 +471,7 @@ export default function PPMDetailPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {lignes.map((ligne, idx) => (
+                      {lignes.map((ligne: any, idx: number) => (
                         <tr
                           key={ligne.id}
                           className={cn(
@@ -348,8 +493,8 @@ export default function PPMDetailPage() {
 
                           {/* Objet */}
                           <td className="px-4 py-4">
-                            <p className="text-sm text-slate-700 line-clamp-2" title={ligne.objetMarche}>
-                              {ligne.objetMarche}
+                            <p className="text-sm text-slate-700 line-clamp-2" title={ligne.objet}>
+                              {ligne.objet}
                             </p>
                             {ligne.observations && (
                               <p className="text-xs text-slate-400 mt-1 line-clamp-1">
@@ -361,14 +506,14 @@ export default function PPMDetailPage() {
                           {/* Montant */}
                           <td className="px-4 py-4 text-right">
                             <span className="text-sm font-semibold text-teal-600 tabular-nums whitespace-nowrap">
-                              {formatCurrency(Number(ligne.montantEstime || 0))}
+                              {formatCurrency(Number(ligne.montantEstimatif || 0))}
                             </span>
                           </td>
 
                           {/* Méthode */}
                           <td className="px-4 py-4">
                             <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-medium whitespace-nowrap">
-                              {METHODE_LABELS[ligne.methode] || ligne.methode}
+                              {METHODE_LABELS[ligne.methodeProcedure] || ligne.methodeProcedure}
                             </span>
                           </td>
 
@@ -417,29 +562,29 @@ export default function PPMDetailPage() {
 
             {/* Summary Stats */}
             {lignes.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {[
                   {
                     label: 'T1',
-                    value: lignes.filter(l => l.trimestre === 1).length,
+                    value: lignes.filter((l: any) => l.trimestre === 1).length,
                     color: 'text-blue-600',
                     bg: 'bg-blue-50',
                   },
                   {
                     label: 'T2',
-                    value: lignes.filter(l => l.trimestre === 2).length,
+                    value: lignes.filter((l: any) => l.trimestre === 2).length,
                     color: 'text-green-600',
                     bg: 'bg-green-50',
                   },
                   {
                     label: 'T3',
-                    value: lignes.filter(l => l.trimestre === 3).length,
+                    value: lignes.filter((l: any) => l.trimestre === 3).length,
                     color: 'text-amber-600',
                     bg: 'bg-amber-50',
                   },
                   {
                     label: 'T4',
-                    value: lignes.filter(l => l.trimestre === 4).length,
+                    value: lignes.filter((l: any) => l.trimestre === 4).length,
                     color: 'text-purple-600',
                     bg: 'bg-purple-50',
                   },
@@ -464,6 +609,12 @@ export default function PPMDetailPage() {
           </>
         )}
       </main>
+
+      <AddLignePPMModal
+        open={addLigneModalOpen}
+        onClose={() => setAddLigneModalOpen(false)}
+        ppmId={ppmId}
+      />
     </div>
   );
 }

@@ -8,5 +8,6 @@ export declare class StorageService {
     constructor(config: ConfigService);
     upload(storageKey: string, file: Express.Multer.File): Promise<string>;
     getSignedUrl(storageKey: string, expiresInSeconds?: number): Promise<string>;
+    getPublicUrl(storageKey: string): string;
     delete(storageKey: string): Promise<void>;
 }

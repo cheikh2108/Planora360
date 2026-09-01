@@ -1,10 +1,13 @@
 import { Controller, Get, Post, Body, Param, UseGuards, Req } from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { SubscriptionGuard, RequiresPlan } from '../../common/guards/subscription.guard';
+import { SubscriptionPlan } from '@prisma/client';
 import { SoumissionConfidentialityGuard } from '../common/guards/soumission-confidentiality.guard';
 import { SoumissionsService } from './soumissions.service';
 
 @Controller('passation/procedures/:procedureId/soumissions')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, SubscriptionGuard)
+@RequiresPlan(SubscriptionPlan.ORGANISATION, SubscriptionPlan.ENTERPRISE)
 export class SoumissionsController {
   constructor(private readonly soumissionsService: SoumissionsService) {}
 

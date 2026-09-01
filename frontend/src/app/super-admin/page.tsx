@@ -11,11 +11,13 @@ import {
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const PLAN_ORDER: SubscriptionPlan[] = ['DECOUVERTE', 'PROFESSIONNELLE', 'SUR_MESURE'];
+const PLAN_ORDER: SubscriptionPlan[] = ['INDIVIDUEL', 'PRO', 'EQUIPE', 'ORGANISATION', 'ENTERPRISE'];
 const PLAN_META: Record<SubscriptionPlan, { label: string; color: string; bg: string; bar: string }> = {
-  DECOUVERTE:      { label: 'Découverte',      color: 'text-emerald-700', bg: 'bg-emerald-100', bar: 'bg-emerald-400' },
-  PROFESSIONNELLE: { label: 'Professionnelle', color: 'text-blue-700',   bg: 'bg-blue-100',   bar: 'bg-blue-500' },
-  SUR_MESURE:      { label: 'Entreprise',      color: 'text-amber-700',  bg: 'bg-amber-100',  bar: 'bg-amber-500' },
+  INDIVIDUEL:    { label: 'Individuel',     color: 'text-emerald-700', bg: 'bg-emerald-100', bar: 'bg-emerald-400' },
+  PRO:           { label: 'Pro',            color: 'text-blue-700',    bg: 'bg-blue-100',    bar: 'bg-blue-500' },
+  EQUIPE:        { label: 'Équipe',         color: 'text-purple-700',  bg: 'bg-purple-100',  bar: 'bg-purple-400' },
+  ORGANISATION:  { label: 'Organisation',   color: 'text-indigo-700',  bg: 'bg-indigo-100',  bar: 'bg-indigo-400' },
+  ENTERPRISE:    { label: 'Enterprise',     color: 'text-amber-700',   bg: 'bg-amber-100',   bar: 'bg-amber-500' },
 };
 
 export default function SuperAdminDashboard() {

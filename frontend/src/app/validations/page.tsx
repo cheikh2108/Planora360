@@ -167,7 +167,7 @@ export default function ValidationsPage() {
             </div>
           ) : pending.length === 0 ? (
             <EmptyState
-              icon={GitBranch}
+              illustration="inbox"
               title="Aucune validation en attente"
               description="Toutes les activités soumises ont été traitées."
             />
@@ -301,7 +301,7 @@ export default function ValidationsPage() {
               <Button
                 type="submit"
                 variant={form.decision === 'REJETE' ? 'danger' : 'primary'}
-                loading={processing}
+                isLoading={processing}
                 icon={form.decision === 'APPROUVE' ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
               >
                 {form.decision === 'APPROUVE' ? 'Approuver' : 'Rejeter'}

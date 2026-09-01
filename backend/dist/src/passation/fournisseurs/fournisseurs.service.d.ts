@@ -121,6 +121,7 @@ export declare class FournisseursService {
         } & {
             id: string;
             status: string;
+            montantTotal: import("@prisma/client-runtime-utils").Decimal;
             fournisseurId: string;
             dateDepot: Date;
             procedureId: string;
@@ -128,7 +129,6 @@ export declare class FournisseursService {
             numeroDepot: string;
             montantTechnique: import("@prisma/client-runtime-utils").Decimal | null;
             montantFinancier: import("@prisma/client-runtime-utils").Decimal;
-            montantTotal: import("@prisma/client-runtime-utils").Decimal;
             conformeAdmin: boolean | null;
             conformeTechnique: boolean | null;
             conformeFinancier: boolean | null;
@@ -253,7 +253,7 @@ export declare class FournisseursService {
         type: string;
         nom: string;
         url: string;
-        dateExpiration?: Date;
+        dateExpiration?: Date | string;
     }): Promise<{
         url: string;
         id: string;

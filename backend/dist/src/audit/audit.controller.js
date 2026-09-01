@@ -17,6 +17,8 @@ const common_1 = require("@nestjs/common");
 const audit_service_1 = require("./audit.service");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../common/guards/roles.guard");
+const subscription_guard_1 = require("../common/guards/subscription.guard");
+const client_1 = require("@prisma/client");
 const roles_decorator_1 = require("../common/decorators/roles.decorator");
 const current_user_decorator_1 = require("../common/decorators/current-user.decorator");
 const audit_filters_dto_1 = require("./dto/audit-filters.dto");
@@ -126,7 +128,8 @@ __decorate([
 ], AuditController.prototype, "export", null);
 exports.AuditController = AuditController = __decorate([
     (0, common_1.Controller)('audit'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard, subscription_guard_1.SubscriptionGuard),
+    (0, subscription_guard_1.RequiresPlan)(client_1.SubscriptionPlan.ORGANISATION, client_1.SubscriptionPlan.ENTERPRISE),
     __metadata("design:paramtypes", [audit_service_1.AuditService])
 ], AuditController);
 //# sourceMappingURL=audit.controller.js.map

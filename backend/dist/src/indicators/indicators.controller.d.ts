@@ -12,15 +12,15 @@ export declare class IndicatorsController {
     } & {
         id: string;
         organizationId: string;
-        createdAt: Date;
-        updatedAt: Date;
-        activityId: string | null;
         title: string;
-        dueDate: Date | null;
         unit: string | null;
         baseline: number;
         target: number;
         achieved: number;
+        dueDate: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        activityId: string | null;
     }>;
     findAll(user: any, activityId?: string, page?: string, limit?: string): Promise<{
         data: ({
@@ -31,15 +31,15 @@ export declare class IndicatorsController {
         } & {
             id: string;
             organizationId: string;
-            createdAt: Date;
-            updatedAt: Date;
-            activityId: string | null;
             title: string;
-            dueDate: Date | null;
             unit: string | null;
             baseline: number;
             target: number;
             achieved: number;
+            dueDate: Date | null;
+            createdAt: Date;
+            updatedAt: Date;
+            activityId: string | null;
         })[];
         total: number;
         page: number;
@@ -53,15 +53,15 @@ export declare class IndicatorsController {
     } & {
         id: string;
         organizationId: string;
-        createdAt: Date;
-        updatedAt: Date;
-        activityId: string | null;
         title: string;
-        dueDate: Date | null;
         unit: string | null;
         baseline: number;
         target: number;
         achieved: number;
+        dueDate: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        activityId: string | null;
     }>;
     update(id: string, dto: UpdateIndicatorDto, user: any): Promise<{
         activity: {
@@ -71,27 +71,27 @@ export declare class IndicatorsController {
     } & {
         id: string;
         organizationId: string;
-        createdAt: Date;
-        updatedAt: Date;
-        activityId: string | null;
         title: string;
-        dueDate: Date | null;
         unit: string | null;
         baseline: number;
         target: number;
         achieved: number;
+        dueDate: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        activityId: string | null;
     }>;
     remove(id: string, user: any): Promise<{
         id: string;
         organizationId: string;
-        createdAt: Date;
-        updatedAt: Date;
-        activityId: string | null;
         title: string;
-        dueDate: Date | null;
         unit: string | null;
         baseline: number;
         target: number;
         achieved: number;
+        dueDate: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
+        activityId: string | null;
     }>;
 }

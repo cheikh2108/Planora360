@@ -142,7 +142,7 @@ export default function NotificationsPage() {
           </div>
         ) : entries.length === 0 ? (
           <EmptyState
-            icon={Bell}
+            illustration="inbox"
             title="Aucun événement"
             description="Les événements de votre organisation apparaîtront ici."
           />

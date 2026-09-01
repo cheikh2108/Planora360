@@ -61,7 +61,7 @@ export class AuthService {
     });
 
     // Track registration in PostHog
-    this.posthog.trackRegistration(user.id, organization.id, dto.subscriptionPlan ?? 'DECOUVERTE');
+    this.posthog.trackRegistration(user.id, organization.id, dto.subscriptionPlan ?? 'INDIVIDUEL');
 
     return { message: 'Votre demande a été enregistrée. Vous serez notifié par email après validation.' };
   }
@@ -89,14 +89,14 @@ export class AuthService {
   }
 
   private async createOrganization(dto: RegisterOrganizationDto, tx?: any) {
-    const isTrialPlan = !dto.subscriptionPlan || dto.subscriptionPlan === 'DECOUVERTE';
+    const isTrialPlan = !dto.subscriptionPlan || dto.subscriptionPlan === 'INDIVIDUEL';
     const trialEndsAt = isTrialPlan ? calculateTrialEndDate() : undefined;
 
     const prismaClient = tx || this.prisma;
     return prismaClient.organization.create({
       data: {
         name: dto.organizationName,
-        subscriptionPlan: dto.subscriptionPlan ?? 'DECOUVERTE',
+        subscriptionPlan: dto.subscriptionPlan ?? 'INDIVIDUEL',
         brandColor: dto.brandColor ?? DEFAULT_BRAND_COLOR,
         status: ORG_STATUS_PENDING,
         trialEndsAt,

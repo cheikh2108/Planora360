@@ -243,7 +243,7 @@ export default function FournisseurDetailPage() {
     <div className="min-h-screen bg-slate-50">
       <Header
         title={fournisseur.raisonSociale}
-        subtitle={`Référence: ${fournisseur.reference}`}
+        subtitle={fournisseur.identifiantFiscal ? `ID Fiscal: ${fournisseur.identifiantFiscal}` : undefined}
         actions={
           <div className="flex items-center gap-3">
             {getStatusActions()}
@@ -273,9 +273,11 @@ export default function FournisseurDetailPage() {
                     <h2 className="text-2xl font-bold text-slate-900">
                       {fournisseur.raisonSociale}
                     </h2>
-                    <p className="mt-1 font-mono text-sm text-slate-500">
-                      Réf: {fournisseur.reference}
-                    </p>
+                    {fournisseur.identifiantFiscal && (
+                      <p className="mt-1 font-mono text-sm text-slate-500">
+                        ID Fiscal: {fournisseur.identifiantFiscal}
+                      </p>
+                    )}
                     <div className="mt-2">
                       <PassationStatusBadge status={fournisseur.status} />
                     </div>
@@ -550,19 +552,6 @@ export default function FournisseurDetailPage() {
                 </div>
               )}
             </div>
-
-            {/* Remarques */}
-            {fournisseur.remarques && (
-              <div className="rounded-lg border-l-4 border-amber-500 bg-amber-50 p-6 shadow-sm">
-                <h3 className="mb-2 flex items-center gap-2 font-semibold text-amber-900">
-                  <AlertCircle className="h-5 w-5" />
-                  Remarques
-                </h3>
-                <p className="text-sm text-amber-800 whitespace-pre-wrap">
-                  {fournisseur.remarques}
-                </p>
-              </div>
-            )}
           </div>
 
           {/* Sidebar - 1 column */}

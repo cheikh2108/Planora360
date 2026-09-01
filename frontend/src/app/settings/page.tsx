@@ -35,7 +35,7 @@ interface PlanInfo {
 
 const PLANS: PlanInfo[] = [
   {
-    key: 'DECOUVERTE',
+    key: 'INDIVIDUEL',
     label: 'Découverte',
     tagline: 'Essai gratuit 30 jours',
     color: 'bg-emerald-50 border-emerald-200',
@@ -52,12 +52,28 @@ const PLANS: PlanInfo[] = [
     ],
   },
   {
-    key: 'PROFESSIONNELLE',
-    label: 'Professionnelle',
-    tagline: 'Pour les équipes actives',
+    key: 'PRO',
+    label: 'Pro',
+    tagline: 'Pour les professionnels actifs',
     color: 'bg-blue-50 border-blue-200',
     ring: 'ring-[#2563eb]',
     badge: 'Populaire',
+    limits: { plans: '10 plans actifs', users: "Jusqu'à 20 utilisateurs" },
+    features: [
+      { label: 'Activités & check-lists', included: true },
+      { label: 'Tableaux de bord avancés', included: true },
+      { label: 'Alertes e-mail', included: true },
+      { label: 'Exports PDF / Excel', included: true },
+      { label: 'Suivi budgétaire', included: false },
+      { label: 'Circuit de validation', included: false },
+    ],
+  },
+  {
+    key: 'EQUIPE',
+    label: 'Équipe',
+    tagline: 'Collaboration renforcée',
+    color: 'bg-purple-50 border-purple-200',
+    ring: 'ring-purple-400',
     limits: { plans: 'Plans illimités', users: "Jusqu'à 50 utilisateurs" },
     features: [
       { label: 'Activités & check-lists', included: true },
@@ -67,11 +83,26 @@ const PLANS: PlanInfo[] = [
       { label: 'Suivi budgétaire', included: true },
       { label: 'Circuit de validation', included: true },
       { label: 'Gestion documentaire', included: true },
-      { label: 'Rapports automatisés', included: true },
+      { label: 'API REST', included: true },
     ],
   },
   {
-    key: 'SUR_MESURE',
+    key: 'ORGANISATION',
+    label: 'Organisation',
+    tagline: 'Gestion multi-équipes',
+    color: 'bg-indigo-50 border-indigo-200',
+    ring: 'ring-indigo-400',
+    limits: { plans: 'Illimité', users: "Jusqu'à 100 utilisateurs" },
+    features: [
+      { label: 'Tout de Équipe', included: true },
+      { label: 'Rapports personnalisés', included: true },
+      { label: 'SSO / SAML', included: true },
+      { label: 'Gestion multi-équipes', included: true },
+      { label: 'Support prioritaire', included: true },
+    ],
+  },
+  {
+    key: 'ENTERPRISE',
     label: 'Entreprise',
     tagline: 'Hébergement dédié & intégrations',
     color: 'bg-amber-50 border-amber-200',
@@ -89,7 +120,7 @@ const PLANS: PlanInfo[] = [
   },
 ];
 
-const PLAN_ORDER: SubscriptionPlan[] = ['DECOUVERTE', 'PROFESSIONNELLE', 'SUR_MESURE'];
+const PLAN_ORDER: SubscriptionPlan[] = ['INDIVIDUEL', 'PRO', 'EQUIPE', 'ORGANISATION', 'ENTERPRISE'];
 
 /* ─── SubscriptionSection ────────────────────────────────────── */
 
@@ -102,9 +133,11 @@ function SubscriptionSection({ currentPlan }: { currentPlan: SubscriptionPlan })
   const openUpgrade = (plan: PlanInfo) => { setTargetPlan(plan); setUpgradeModal(true); };
 
   const ACCENT: Record<SubscriptionPlan, { from: string; to: string; text: string; dot: string }> = {
-    DECOUVERTE:      { from: 'from-emerald-800', to: 'to-emerald-700', text: 'text-emerald-300', dot: 'bg-emerald-400' },
-    PROFESSIONNELLE: { from: 'from-[#0f1e38]',  to: 'to-[#1a3a6e]',  text: 'text-blue-300',    dot: 'bg-blue-400' },
-    SUR_MESURE:      { from: 'from-amber-900',  to: 'to-amber-700',   text: 'text-amber-300',   dot: 'bg-amber-400' },
+    INDIVIDUEL:    { from: 'from-emerald-800', to: 'to-emerald-700', text: 'text-emerald-300', dot: 'bg-emerald-400' },
+    PRO:           { from: 'from-[#0f1e38]',   to: 'to-[#1a3a6e]',   text: 'text-blue-300',    dot: 'bg-blue-400' },
+    EQUIPE:        { from: 'from-purple-800',  to: 'to-purple-700',  text: 'text-purple-300',  dot: 'bg-purple-400' },
+    ORGANISATION:  { from: 'from-indigo-800',  to: 'to-indigo-700',  text: 'text-indigo-300',  dot: 'bg-indigo-400' },
+    ENTERPRISE:    { from: 'from-amber-900',   to: 'to-amber-700',   text: 'text-amber-300',   dot: 'bg-amber-400' },
   };
   const acc = ACCENT[currentPlan];
 
@@ -155,7 +188,7 @@ function SubscriptionSection({ currentPlan }: { currentPlan: SubscriptionPlan })
       </div>
 
       {/* Formules supérieures */}
-      {currentPlan !== 'SUR_MESURE' && (
+      {currentPlan !== 'ENTERPRISE' && (
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <Zap size={13} className="text-[#2563eb]" />
@@ -167,9 +200,11 @@ function SubscriptionSection({ currentPlan }: { currentPlan: SubscriptionPlan })
                 f => f.included && !current.features.find(cf => cf.label === f.label && cf.included)
               );
               const CARD_STYLES: Record<SubscriptionPlan, { border: string; icon: string }> = {
-                DECOUVERTE:      { border: 'border-emerald-200 bg-emerald-50/40', icon: 'text-emerald-600' },
-                PROFESSIONNELLE: { border: 'border-[#2563eb]/40 bg-blue-50/50',  icon: 'text-[#2563eb]' },
-                SUR_MESURE:      { border: 'border-amber-200 bg-amber-50/40',     icon: 'text-amber-600' },
+                INDIVIDUEL:    { border: 'border-emerald-200 bg-emerald-50/40', icon: 'text-emerald-600' },
+                PRO:           { border: 'border-[#2563eb]/40 bg-blue-50/50',   icon: 'text-[#2563eb]' },
+                EQUIPE:        { border: 'border-purple-200 bg-purple-50/40',   icon: 'text-purple-600' },
+                ORGANISATION:  { border: 'border-indigo-200 bg-indigo-50/40',   icon: 'text-indigo-600' },
+                ENTERPRISE:    { border: 'border-amber-200 bg-amber-50/40',     icon: 'text-amber-600' },
               };
               const style = CARD_STYLES[plan.key];
               return (
@@ -208,7 +243,7 @@ function SubscriptionSection({ currentPlan }: { currentPlan: SubscriptionPlan })
                     </div>
                   </div>
                   <div className="shrink-0">
-                    {plan.key === 'SUR_MESURE' ? (
+                    {plan.key === 'ENTERPRISE' ? (
                       <Button size="sm" variant="secondary" icon={<MessageSquare size={13} />} onClick={() => openUpgrade(plan)}>
                         Nous contacter
                       </Button>
@@ -225,7 +260,7 @@ function SubscriptionSection({ currentPlan }: { currentPlan: SubscriptionPlan })
         </div>
       )}
 
-      {currentPlan === 'SUR_MESURE' && (
+      {currentPlan === 'ENTERPRISE' && (
         <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3.5">
           <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
             <Star size={15} className="text-amber-600" />
@@ -248,17 +283,17 @@ function SubscriptionSection({ currentPlan }: { currentPlan: SubscriptionPlan })
       <Modal open={upgradeModal} onClose={() => setUpgradeModal(false)} title="" size="sm">
         <div className="space-y-4">
           <div className={cn('rounded-xl p-4 flex items-center gap-3',
-            targetPlan?.key === 'SUR_MESURE' ? 'bg-amber-50 border border-amber-100' : 'bg-blue-50 border border-blue-100'
+            targetPlan?.key === 'ENTERPRISE' ? 'bg-amber-50 border border-amber-100' : 'bg-blue-50 border border-blue-100'
           )}>
             <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0">
-              <Star size={18} className={targetPlan?.key === 'SUR_MESURE' ? 'text-amber-500' : 'text-[#2563eb]'} />
+              <Star size={18} className={targetPlan?.key === 'ENTERPRISE' ? 'text-amber-500' : 'text-[#2563eb]'} />
             </div>
             <div>
               <p className="text-sm font-bold text-slate-900">{targetPlan?.label}</p>
               <p className="text-xs text-slate-500">{targetPlan?.tagline}</p>
             </div>
           </div>
-          {targetPlan?.key === 'SUR_MESURE' ? (
+          {targetPlan?.key === 'ENTERPRISE' ? (
             <p className="text-sm text-slate-600">
               La formule <strong>Sur mesure</strong> requiert une configuration personnalisée.
               Notre équipe vous contactera sous 24h.
@@ -552,7 +587,7 @@ export default function SettingsPage() {
                   {/* Actions */}
                   <div className="flex items-center gap-3 pt-1">
                     <Button
-                      loading={savingColor}
+                      isLoading={savingColor}
                       onClick={() => saveBrandColor(brandColorLocal)}
                       disabled={brandColorLocal.length !== 7 || !!isColorInvalid(brandColorLocal)}
                     >
@@ -602,7 +637,7 @@ export default function SettingsPage() {
                         <p className="text-xs text-slate-500 mb-3">
                           Renforcez la sécurité de votre compte. Un code temporaire vous sera demandé à chaque connexion.
                         </p>
-                        <Button size="sm" variant="secondary" loading={setting2fa} icon={<QrCode size={14} />} onClick={() => setup2fa()}>
+                        <Button size="sm" variant="secondary" isLoading={setting2fa} icon={<QrCode size={14} />} onClick={() => setup2fa()}>
                           Configurer la 2FA
                         </Button>
                       </>
@@ -659,7 +694,7 @@ export default function SettingsPage() {
 
             {/* Abonnement */}
             {section === 'Abonnement' && isAdmin && (
-              <SubscriptionSection currentPlan={(user?.organization?.subscriptionPlan ?? 'DECOUVERTE') as SubscriptionPlan} />
+              <SubscriptionSection currentPlan={(user?.organization?.subscriptionPlan ?? 'INDIVIDUEL') as SubscriptionPlan} />
             )}
           </div>
         </div>
@@ -750,7 +785,7 @@ export default function SettingsPage() {
             </FormField>
             <div className="flex justify-end gap-3">
               <Button type="button" variant="secondary" onClick={() => setQrModal(false)}>Annuler</Button>
-              <Button onClick={() => enable2fa()} loading={enabling} disabled={totpToken.length !== 6} icon={<CheckCircle2 size={14} />}>
+              <Button onClick={() => enable2fa()} isLoading={enabling} disabled={totpToken.length !== 6} icon={<CheckCircle2 size={14} />}>
                 Activer la 2FA
               </Button>
             </div>
