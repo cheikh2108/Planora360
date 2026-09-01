@@ -54,7 +54,7 @@ export function EmptyState({ icon, title, description, action, illustration }: E
 
       {/* Description */}
       {description && (
-        <p className="text-sm text-slate-600 dark:text-gray-400 max-w-sm mb-6">
+        <p className="text-sm text-slate-700 dark:text-gray-300 max-w-sm mb-6">
           {description}
         </p>
       )}

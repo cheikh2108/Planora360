@@ -43,8 +43,8 @@ export declare class CommissionsService {
                 lastName: string;
             };
         } & {
-            id: string;
             role: string;
+            id: string;
             userId: string;
             commissionId: string;
         })[];
@@ -91,21 +91,21 @@ export declare class CommissionsService {
             updatedAt: Date;
             validatedAt: Date | null;
             soumissionId: string;
+            commentaires: string | null;
+            evaluateurId: string;
             commissionId: string;
             scoreAdmin: number | null;
             scoreTechnique: number | null;
             scoreFinancier: number | null;
             scoreGlobal: number | null;
             criteres: import("@prisma/client/runtime/client").JsonValue;
-            commentaires: string | null;
-            evaluateurId: string;
         })[];
         procedure: {
             id: string;
             organizationId: string;
+            status: import(".prisma/client").$Enums.StatusProcedure;
             createdAt: Date;
             updatedAt: Date;
-            status: import(".prisma/client").$Enums.StatusProcedure;
             description: string;
             objet: string;
             montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
@@ -134,8 +134,8 @@ export declare class CommissionsService {
                 lastName: string;
             };
         } & {
-            id: string;
             role: string;
+            id: string;
             userId: string;
             commissionId: string;
         })[];
@@ -156,14 +156,14 @@ export declare class CommissionsService {
             lastName: string;
         };
     } & {
-        id: string;
         role: string;
+        id: string;
         userId: string;
         commissionId: string;
     }>;
     removeMembre(commissionId: string, membreId: string, organizationId: string): Promise<{
-        id: string;
         role: string;
+        id: string;
         userId: string;
         commissionId: string;
     }>;

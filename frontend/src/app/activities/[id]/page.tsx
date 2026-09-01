@@ -201,7 +201,7 @@ export default function ActivityDetailPage() {
                 {activity.collaborators && activity.collaborators.length > 0 && (
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <User size={13} />
-                    <span className="text-slate-400">Collaborateurs :</span>
+                    <span className="text-slate-600">Collaborateurs :</span>
                     {activity.collaborators.map(c => (
                       <span key={c.id} className="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-full text-xs">
                         {c.user.firstName} {c.user.lastName}
@@ -318,16 +318,16 @@ function ChecklistTab({
     )}>
       <div className={cn(
         'w-6 h-6 rounded-full flex items-center justify-center shrink-0',
-        item.progress === 100 ? 'bg-green-500 text-white' : 'bg-slate-200 text-slate-400'
+        item.progress === 100 ? 'bg-green-500 text-white' : 'bg-slate-200 text-slate-600'
       )}>
         {item.progress === 100 ? <CheckCircle2 size={14} /> : <span className="text-xs font-bold">{item.progress}</span>}
       </div>
       <div className="flex-1 min-w-0">
-        <p className={cn('text-sm font-medium', item.progress === 100 && 'line-through text-slate-400')}>
+        <p className={cn('text-sm font-medium', item.progress === 100 && 'line-through text-slate-600')}>
           {item.label}
         </p>
         {item.dueDate && (
-          <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
+          <p className="text-xs text-slate-600 flex items-center gap-1 mt-0.5">
             <Calendar size={10} /> {formatDate(item.dueDate)}
           </p>
         )}
@@ -343,7 +343,7 @@ function ChecklistTab({
               <option key={v} value={v}>{v}%</option>
             ))}
           </select>
-          <button onClick={() => onDelete(item.id)} className="p-1 text-slate-400 hover:text-red-500 transition-colors">
+          <button onClick={() => onDelete(item.id)} className="p-1 text-slate-600 hover:text-red-500 transition-colors">
             <Trash2 size={14} />
           </button>
         </div>
@@ -374,7 +374,7 @@ function ChecklistTab({
           )}
           {optional.length > 0 && (
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-600 mb-3">
                 Tâches facultatives — {optional.filter(i => i.progress === 100).length}/{optional.length}
               </p>
               <div className="space-y-2">
@@ -452,7 +452,7 @@ function ValidationTab({
                     </span>
                   </div>
                   {v.validator && (
-                    <p className="text-xs text-slate-400 mt-0.5">
+                    <p className="text-xs text-slate-600 mt-0.5">
                       Par {v.validator.firstName} {v.validator.lastName} · {formatDate(v.createdAt)}
                     </p>
                   )}
@@ -521,28 +521,28 @@ function BudgetTab({
           <p className="text-xl font-bold tabular-nums">{formatCurrency(totalPlanned)}</p>
         </div>
         <div className="bg-white rounded-2xl border border-slate-200 p-4">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">Engagé</p>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600 mb-1">Engagé</p>
           <p className="text-xl font-bold tabular-nums text-blue-600">{formatCurrency(totalCommitted)}</p>
         </div>
         <div className="bg-white rounded-2xl border border-slate-200 p-4">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">Disponible</p>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600 mb-1">Disponible</p>
           <p className="text-xl font-bold tabular-nums text-indigo-600">{formatCurrency(availableBalance)}</p>
-          <p className="text-[10px] text-slate-400 mt-0.5">Prévu - Engagé</p>
+          <p className="text-[10px] text-slate-600 mt-0.5">Prévu - Engagé</p>
         </div>
         <div className="bg-white rounded-2xl border border-slate-200 p-4">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">Exécuté</p>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600 mb-1">Exécuté</p>
           <p className="text-xl font-bold tabular-nums text-green-600">{formatCurrency(totalExecuted)}</p>
         </div>
         <div className="bg-white rounded-2xl border border-slate-200 p-4">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">Reste à payer</p>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600 mb-1">Reste à payer</p>
           <p className="text-xl font-bold tabular-nums text-orange-600">{formatCurrency(remainingToPay)}</p>
-          <p className="text-[10px] text-slate-400 mt-0.5">Engagé - Exécuté</p>
+          <p className="text-[10px] text-slate-600 mt-0.5">Engagé - Exécuté</p>
         </div>
         <div className={cn(
           'rounded-2xl border p-4',
           rate >= 80 ? 'bg-green-50 border-green-200' : rate >= 50 ? 'bg-amber-50 border-amber-200' : 'bg-red-50 border-red-200'
         )}>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">Taux exéc.</p>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600 mb-1">Taux exéc.</p>
           <p className={cn(
             'text-xl font-bold tabular-nums',
             rate >= 80 ? 'text-green-700' : rate >= 50 ? 'text-amber-700' : 'text-red-700'
@@ -671,15 +671,15 @@ function DocumentsTab({ activityId, isLocked }: { activityId: string; isLocked: 
         <div className="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
           {docs.map(doc => (
             <div key={doc.id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-slate-50 group transition-colors">
-              <FileTextIcon size={18} className="text-slate-400 shrink-0" />
+              <FileTextIcon size={18} className="text-slate-600 shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-slate-900 truncate">{doc.fileName}</p>
-                <p className="text-xs text-slate-400">{formatDate(doc.createdAt)}{doc.uploadedBy && ` · ${doc.uploadedBy.firstName} ${doc.uploadedBy.lastName}`}</p>
+                <p className="text-xs text-slate-600">{formatDate(doc.createdAt)}{doc.uploadedBy && ` · ${doc.uploadedBy.firstName} ${doc.uploadedBy.lastName}`}</p>
               </div>
               <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full hidden sm:inline-flex">{doc.type}</span>
               <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 {!isLocked && (
-                  <button onClick={() => deleteDoc(doc.id)} className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors">
+                  <button onClick={() => deleteDoc(doc.id)} className="p-1.5 rounded-lg text-slate-600 hover:text-red-500 hover:bg-red-50 transition-colors">
                     <Trash2 size={14} />
                   </button>
                 )}

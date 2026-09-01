@@ -17,14 +17,14 @@ export declare class UsersController {
         with2FA: number;
     }>;
     listForAssignment(user: any): Promise<{
-        id: string;
-        email: string;
-        firstName: string;
-        lastName: string;
         role: {
             id: string;
             name: string;
         };
+        id: string;
+        email: string;
+        firstName: string;
+        lastName: string;
     }[]>;
     create(dto: CreateUserDto, user: any): Promise<any>;
     findAll(user: any, page?: string, limit?: string): Promise<{
@@ -42,8 +42,10 @@ export declare class UsersController {
         };
     } & {
         id: string;
-        email: string;
         organizationId: string;
+        createdAt: Date;
+        deletedAt: Date | null;
+        email: string;
         roleId: string;
         firstName: string;
         lastName: string;
@@ -53,9 +55,7 @@ export declare class UsersController {
         isActive: boolean;
         mustChangePassword: boolean;
         lastLoginAt: Date | null;
-        createdAt: Date;
         updatedAt: Date;
-        deletedAt: Date | null;
     })[]>;
     findOne(id: string, user: any): Promise<any>;
     restore(id: string, user: any): Promise<{
@@ -67,8 +67,10 @@ export declare class UsersController {
         };
     } & {
         id: string;
-        email: string;
         organizationId: string;
+        createdAt: Date;
+        deletedAt: Date | null;
+        email: string;
         roleId: string;
         firstName: string;
         lastName: string;
@@ -78,9 +80,7 @@ export declare class UsersController {
         isActive: boolean;
         mustChangePassword: boolean;
         lastLoginAt: Date | null;
-        createdAt: Date;
         updatedAt: Date;
-        deletedAt: Date | null;
     }>;
     update(id: string, dto: UpdateUserDto, user: any): Promise<any>;
     remove(id: string, user: any): Promise<void>;

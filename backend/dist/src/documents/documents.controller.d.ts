@@ -6,49 +6,49 @@ export declare class DocumentsController {
         id: string;
         createdAt: Date;
         activityId: string | null;
-        fileSize: number | null;
         type: string;
-        checklistItemId: string | null;
-        storageKey: string;
         fileName: string;
+        fileSize: number | null;
         mimeType: string | null;
         uploadedById: string;
+        storageKey: string;
+        checklistItemId: string | null;
     }>;
     findByActivity(activityId: string, user: any): Promise<{
         id: string;
         createdAt: Date;
         activityId: string | null;
-        fileSize: number | null;
         type: string;
-        checklistItemId: string | null;
-        storageKey: string;
         fileName: string;
+        fileSize: number | null;
         mimeType: string | null;
         uploadedById: string;
+        storageKey: string;
+        checklistItemId: string | null;
     }[]>;
     uploadToChecklist(itemId: string, file: Express.Multer.File, type: string, user: any): Promise<{
         id: string;
         createdAt: Date;
         activityId: string | null;
-        fileSize: number | null;
         type: string;
-        checklistItemId: string | null;
-        storageKey: string;
         fileName: string;
+        fileSize: number | null;
         mimeType: string | null;
         uploadedById: string;
+        storageKey: string;
+        checklistItemId: string | null;
     }>;
     findByChecklistItem(itemId: string, user: any): Promise<{
         id: string;
         createdAt: Date;
         activityId: string | null;
-        fileSize: number | null;
         type: string;
-        checklistItemId: string | null;
-        storageKey: string;
         fileName: string;
+        fileSize: number | null;
         mimeType: string | null;
         uploadedById: string;
+        storageKey: string;
+        checklistItemId: string | null;
     }[]>;
     getDownloadUrl(id: string, user: any): Promise<{
         url: string;
@@ -59,12 +59,12 @@ export declare class DocumentsController {
         id: string;
         createdAt: Date;
         activityId: string | null;
-        fileSize: number | null;
         type: string;
-        checklistItemId: string | null;
-        storageKey: string;
         fileName: string;
+        fileSize: number | null;
         mimeType: string | null;
         uploadedById: string;
+        storageKey: string;
+        checklistItemId: string | null;
     }>;
 }

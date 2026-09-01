@@ -6,47 +6,47 @@ export declare class BudgetsController {
     constructor(budgetsService: BudgetsService);
     create(activityId: string, dto: CreateBudgetDto, user: any): Promise<{
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        activityId: string;
         planned: import("@prisma/client-runtime-utils").Decimal;
         committed: import("@prisma/client-runtime-utils").Decimal;
         disbursed: import("@prisma/client-runtime-utils").Decimal;
         executed: import("@prisma/client-runtime-utils").Decimal;
         fundingSource: string | null;
-        createdAt: Date;
-        updatedAt: Date;
-        activityId: string;
     }>;
     findByActivity(activityId: string, user: any): Promise<{
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        activityId: string;
         planned: import("@prisma/client-runtime-utils").Decimal;
         committed: import("@prisma/client-runtime-utils").Decimal;
         disbursed: import("@prisma/client-runtime-utils").Decimal;
         executed: import("@prisma/client-runtime-utils").Decimal;
         fundingSource: string | null;
-        createdAt: Date;
-        updatedAt: Date;
-        activityId: string;
     }[]>;
     update(id: string, dto: UpdateBudgetDto, user: any): Promise<{
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        activityId: string;
         planned: import("@prisma/client-runtime-utils").Decimal;
         committed: import("@prisma/client-runtime-utils").Decimal;
         disbursed: import("@prisma/client-runtime-utils").Decimal;
         executed: import("@prisma/client-runtime-utils").Decimal;
         fundingSource: string | null;
-        createdAt: Date;
-        updatedAt: Date;
-        activityId: string;
     }>;
     remove(id: string, user: any): Promise<{
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        activityId: string;
         planned: import("@prisma/client-runtime-utils").Decimal;
         committed: import("@prisma/client-runtime-utils").Decimal;
         disbursed: import("@prisma/client-runtime-utils").Decimal;
         executed: import("@prisma/client-runtime-utils").Decimal;
         fundingSource: string | null;
-        createdAt: Date;
-        updatedAt: Date;
-        activityId: string;
     }>;
     getSummary(user: any): Promise<{
         totalPlanned: number;

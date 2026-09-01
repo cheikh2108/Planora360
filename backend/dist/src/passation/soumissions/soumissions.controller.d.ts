@@ -10,68 +10,65 @@ export declare class SoumissionsController {
         };
         documents: {
             id: string;
-            soumissionId: string;
-            type: string;
-            nom: string;
             url: string;
-            fileSize: number | null;
+            type: string;
             uploadedAt: Date;
+            fileSize: number | null;
+            nom: string;
+            soumissionId: string;
         }[];
     } & {
         id: string;
+        status: string;
+        montantTotal: import("@prisma/client-runtime-utils").Decimal;
+        fournisseurId: string;
+        dateDepot: Date;
+        procedureId: string;
+        devise: string;
         numeroDepot: string;
         montantTechnique: import("@prisma/client-runtime-utils").Decimal | null;
         montantFinancier: import("@prisma/client-runtime-utils").Decimal;
-        montantTotal: import("@prisma/client-runtime-utils").Decimal;
-        devise: string;
         conformeAdmin: boolean | null;
         conformeTechnique: boolean | null;
         conformeFinancier: boolean | null;
-        dateDepot: Date;
         horsDelai: boolean;
-        status: string;
-        procedureId: string;
-        fournisseurId: string;
     }>;
     findAll(procedureId: string, req: any): Promise<({
         fournisseur: {
             id: string;
+            email: string | null;
             raisonSociale: string;
             identifiantFiscal: string | null;
-            email: string | null;
         };
         documents: {
             id: string;
-            nom: string;
             url: string;
+            nom: string;
         }[];
     } & {
         id: string;
+        status: string;
+        montantTotal: import("@prisma/client-runtime-utils").Decimal;
+        fournisseurId: string;
+        dateDepot: Date;
+        procedureId: string;
+        devise: string;
         numeroDepot: string;
         montantTechnique: import("@prisma/client-runtime-utils").Decimal | null;
         montantFinancier: import("@prisma/client-runtime-utils").Decimal;
-        montantTotal: import("@prisma/client-runtime-utils").Decimal;
-        devise: string;
         conformeAdmin: boolean | null;
         conformeTechnique: boolean | null;
         conformeFinancier: boolean | null;
-        dateDepot: Date;
         horsDelai: boolean;
-        status: string;
-        procedureId: string;
-        fournisseurId: string;
     })[]>;
     findOne(procedureId: string, id: string, req: any): Promise<{
-        procedure: {
-            id: string;
-            reference: string;
-            objet: string;
-            dateOuverture: Date | null;
-        };
         fournisseur: {
             id: string;
-            status: import(".prisma/client").$Enums.StatusFournisseur;
             organizationId: string;
+            status: import(".prisma/client").$Enums.StatusFournisseur;
+            createdAt: Date;
+            email: string | null;
+            updatedAt: Date;
             raisonSociale: string;
             identifiantFiscal: string | null;
             registreCommerce: string | null;
@@ -79,42 +76,45 @@ export declare class SoumissionsController {
             ville: string | null;
             pays: string;
             telephone: string | null;
-            email: string | null;
-            siteWeb: string | null;
             nomContact: string | null;
+            domainesActivite: string[];
+            siteWeb: string | null;
             prenomContact: string | null;
             fonctionContact: string | null;
             telephoneContact: string | null;
             emailContact: string | null;
-            domainesActivite: string[];
             categoriesBiens: string[];
             zonesIntervention: string[];
-            createdAt: Date;
-            updatedAt: Date;
+        };
+        procedure: {
+            id: string;
+            objet: string;
+            reference: string;
+            dateOuverture: Date | null;
         };
         documents: {
             id: string;
-            soumissionId: string;
-            type: string;
-            nom: string;
             url: string;
-            fileSize: number | null;
+            type: string;
             uploadedAt: Date;
+            fileSize: number | null;
+            nom: string;
+            soumissionId: string;
         }[];
     } & {
         id: string;
+        status: string;
+        montantTotal: import("@prisma/client-runtime-utils").Decimal;
+        fournisseurId: string;
+        dateDepot: Date;
+        procedureId: string;
+        devise: string;
         numeroDepot: string;
         montantTechnique: import("@prisma/client-runtime-utils").Decimal | null;
         montantFinancier: import("@prisma/client-runtime-utils").Decimal;
-        montantTotal: import("@prisma/client-runtime-utils").Decimal;
-        devise: string;
         conformeAdmin: boolean | null;
         conformeTechnique: boolean | null;
         conformeFinancier: boolean | null;
-        dateDepot: Date;
         horsDelai: boolean;
-        status: string;
-        procedureId: string;
-        fournisseurId: string;
     }>;
 }

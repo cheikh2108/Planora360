@@ -7,25 +7,25 @@ export declare class UploadController {
     uploadFiles(conversationId: string, files: Express.Multer.File[], content: string, req: any): Promise<{
         success: boolean;
         message: {
-            attachments: {
-                id: string;
-                fileSize: number;
-                fileName: string;
-                mimeType: string;
-                width: number | null;
-                uploadedAt: Date;
-                fileUrl: string;
-                thumbnailUrl: string | null;
-                height: number | null;
-                duration: number | null;
-                messageId: string;
-            }[];
             author: {
                 id: string;
                 email: string;
                 firstName: string;
                 lastName: string;
             };
+            attachments: {
+                id: string;
+                uploadedAt: Date;
+                fileName: string;
+                fileUrl: string;
+                fileSize: number;
+                mimeType: string;
+                messageId: string;
+                thumbnailUrl: string | null;
+                width: number | null;
+                height: number | null;
+                duration: number | null;
+            }[];
             reactions: {
                 id: string;
                 createdAt: Date;
@@ -46,18 +46,18 @@ export declare class UploadController {
         } & {
             id: string;
             createdAt: Date;
-            updatedAt: Date;
             deletedAt: Date | null;
+            updatedAt: Date;
             metadata: import("@prisma/client/runtime/client").JsonValue | null;
             authorId: string;
             content: string;
             conversationId: string;
             contentType: import(".prisma/client").$Enums.MessageContentType;
+            parentId: string | null;
             isEdited: boolean;
             editedAt: Date | null;
             isDeleted: boolean;
             isSystem: boolean;
-            parentId: string | null;
         };
     }>;
 }

@@ -12,17 +12,17 @@ export declare class DemandesService {
         } | null;
         lignePPM: {
             id: string;
+            status: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
             activityId: string | null;
-            observations: string | null;
             objet: string;
             montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
             methodeProcedure: import(".prisma/client").$Enums.MethodeProcedure;
             trimestre: number;
             sourceFinancement: string | null;
             ligneBudgetaire: string | null;
+            observations: string | null;
             reference: string;
             ppmId: string;
             dateLancement: Date | null;
@@ -39,9 +39,9 @@ export declare class DemandesService {
     } & {
         id: string;
         organizationId: string;
+        status: import(".prisma/client").$Enums.StatusDemandeAchat;
         createdAt: Date;
         updatedAt: Date;
-        status: import(".prisma/client").$Enums.StatusDemandeAchat;
         activityId: string | null;
         description: string;
         objet: string;
@@ -91,9 +91,9 @@ export declare class DemandesService {
     } & {
         id: string;
         organizationId: string;
+        status: import(".prisma/client").$Enums.StatusDemandeAchat;
         createdAt: Date;
         updatedAt: Date;
-        status: import(".prisma/client").$Enums.StatusDemandeAchat;
         activityId: string | null;
         description: string;
         objet: string;
@@ -115,17 +115,17 @@ export declare class DemandesService {
         } | null;
         lignePPM: {
             id: string;
+            status: string;
             createdAt: Date;
             updatedAt: Date;
-            status: string;
             activityId: string | null;
-            observations: string | null;
             objet: string;
             montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
             methodeProcedure: import(".prisma/client").$Enums.MethodeProcedure;
             trimestre: number;
             sourceFinancement: string | null;
             ligneBudgetaire: string | null;
+            observations: string | null;
             reference: string;
             ppmId: string;
             dateLancement: Date | null;
@@ -161,9 +161,9 @@ export declare class DemandesService {
     } & {
         id: string;
         organizationId: string;
+        status: import(".prisma/client").$Enums.StatusDemandeAchat;
         createdAt: Date;
         updatedAt: Date;
-        status: import(".prisma/client").$Enums.StatusDemandeAchat;
         activityId: string | null;
         description: string;
         objet: string;
@@ -198,9 +198,9 @@ export declare class DemandesService {
     } & {
         id: string;
         organizationId: string;
+        status: import(".prisma/client").$Enums.StatusDemandeAchat;
         createdAt: Date;
         updatedAt: Date;
-        status: import(".prisma/client").$Enums.StatusDemandeAchat;
         activityId: string | null;
         description: string;
         objet: string;
@@ -218,9 +218,9 @@ export declare class DemandesService {
     remove(id: string, organizationId: string): Promise<{
         id: string;
         organizationId: string;
+        status: import(".prisma/client").$Enums.StatusDemandeAchat;
         createdAt: Date;
         updatedAt: Date;
-        status: import(".prisma/client").$Enums.StatusDemandeAchat;
         activityId: string | null;
         description: string;
         objet: string;
@@ -256,9 +256,9 @@ export declare class DemandesService {
     } & {
         id: string;
         organizationId: string;
+        status: import(".prisma/client").$Enums.StatusDemandeAchat;
         createdAt: Date;
         updatedAt: Date;
-        status: import(".prisma/client").$Enums.StatusDemandeAchat;
         activityId: string | null;
         description: string;
         objet: string;
@@ -294,9 +294,9 @@ export declare class DemandesService {
     } & {
         id: string;
         organizationId: string;
+        status: import(".prisma/client").$Enums.StatusDemandeAchat;
         createdAt: Date;
         updatedAt: Date;
-        status: import(".prisma/client").$Enums.StatusDemandeAchat;
         activityId: string | null;
         description: string;
         objet: string;

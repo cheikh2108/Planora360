@@ -8,18 +8,22 @@ export declare class FournisseursController {
     create(req: any, createFournisseurDto: CreateFournisseurDto): Promise<{
         documents: {
             id: string;
-            fournisseurId: string;
-            type: string;
-            nom: string;
             url: string;
+            type: string;
+            uploadedAt: Date;
             fileSize: number | null;
             mimeType: string | null;
+            fournisseurId: string;
+            nom: string;
             dateExpiration: Date | null;
-            uploadedAt: Date;
         }[];
     } & {
         id: string;
         organizationId: string;
+        status: import(".prisma/client").$Enums.StatusFournisseur;
+        createdAt: Date;
+        email: string | null;
+        updatedAt: Date;
         raisonSociale: string;
         identifiantFiscal: string | null;
         registreCommerce: string | null;
@@ -27,34 +31,34 @@ export declare class FournisseursController {
         ville: string | null;
         pays: string;
         telephone: string | null;
-        email: string | null;
-        siteWeb: string | null;
         nomContact: string | null;
+        domainesActivite: string[];
+        siteWeb: string | null;
         prenomContact: string | null;
         fonctionContact: string | null;
         telephoneContact: string | null;
         emailContact: string | null;
-        domainesActivite: string[];
         categoriesBiens: string[];
         zonesIntervention: string[];
-        status: import(".prisma/client").$Enums.StatusFournisseur;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     findAll(req: any, status?: StatusFournisseur, search?: string): Promise<({
+        _count: {
+            evaluations: number;
+            soumissions: number;
+        };
         documents: {
             id: string;
             type: string;
             nom: string;
             dateExpiration: Date | null;
         }[];
-        _count: {
-            soumissions: number;
-            evaluations: number;
-        };
     } & {
         id: string;
         organizationId: string;
+        status: import(".prisma/client").$Enums.StatusFournisseur;
+        createdAt: Date;
+        email: string | null;
+        updatedAt: Date;
         raisonSociale: string;
         identifiantFiscal: string | null;
         registreCommerce: string | null;
@@ -62,60 +66,17 @@ export declare class FournisseursController {
         ville: string | null;
         pays: string;
         telephone: string | null;
-        email: string | null;
-        siteWeb: string | null;
         nomContact: string | null;
+        domainesActivite: string[];
+        siteWeb: string | null;
         prenomContact: string | null;
         fonctionContact: string | null;
         telephoneContact: string | null;
         emailContact: string | null;
-        domainesActivite: string[];
         categoriesBiens: string[];
         zonesIntervention: string[];
-        status: import(".prisma/client").$Enums.StatusFournisseur;
-        createdAt: Date;
-        updatedAt: Date;
     })[]>;
     findOne(id: string, req: any): Promise<{
-        documents: {
-            id: string;
-            fournisseurId: string;
-            type: string;
-            nom: string;
-            url: string;
-            fileSize: number | null;
-            mimeType: string | null;
-            dateExpiration: Date | null;
-            uploadedAt: Date;
-        }[];
-        soumissions: ({
-            procedure: {
-                id: string;
-                reference: string;
-            };
-        } & {
-            id: string;
-            status: string;
-            fournisseurId: string;
-            dateDepot: Date;
-            procedureId: string;
-            devise: string;
-            numeroDepot: string;
-            montantTechnique: import("@prisma/client-runtime-utils").Decimal | null;
-            montantFinancier: import("@prisma/client-runtime-utils").Decimal;
-            montantTotal: import("@prisma/client-runtime-utils").Decimal;
-            conformeAdmin: boolean | null;
-            conformeTechnique: boolean | null;
-            conformeFinancier: boolean | null;
-            horsDelai: boolean;
-        })[];
-        contrats: {
-            id: string;
-            status: import(".prisma/client").$Enums.StatusContrat;
-            reference: string;
-            montantInitial: import("@prisma/client-runtime-utils").Decimal;
-            montantRevise: import("@prisma/client-runtime-utils").Decimal | null;
-        }[];
         evaluations: ({
             evaluateur: {
                 id: string;
@@ -138,9 +99,52 @@ export declare class FournisseursController {
             commentaires: string | null;
             evaluateurId: string;
         })[];
+        documents: {
+            id: string;
+            url: string;
+            type: string;
+            uploadedAt: Date;
+            fileSize: number | null;
+            mimeType: string | null;
+            fournisseurId: string;
+            nom: string;
+            dateExpiration: Date | null;
+        }[];
+        soumissions: ({
+            procedure: {
+                id: string;
+                reference: string;
+            };
+        } & {
+            id: string;
+            status: string;
+            montantTotal: import("@prisma/client-runtime-utils").Decimal;
+            fournisseurId: string;
+            dateDepot: Date;
+            procedureId: string;
+            devise: string;
+            numeroDepot: string;
+            montantTechnique: import("@prisma/client-runtime-utils").Decimal | null;
+            montantFinancier: import("@prisma/client-runtime-utils").Decimal;
+            conformeAdmin: boolean | null;
+            conformeTechnique: boolean | null;
+            conformeFinancier: boolean | null;
+            horsDelai: boolean;
+        })[];
+        contrats: {
+            id: string;
+            status: import(".prisma/client").$Enums.StatusContrat;
+            reference: string;
+            montantInitial: import("@prisma/client-runtime-utils").Decimal;
+            montantRevise: import("@prisma/client-runtime-utils").Decimal | null;
+        }[];
     } & {
         id: string;
         organizationId: string;
+        status: import(".prisma/client").$Enums.StatusFournisseur;
+        createdAt: Date;
+        email: string | null;
+        updatedAt: Date;
         raisonSociale: string;
         identifiantFiscal: string | null;
         registreCommerce: string | null;
@@ -148,35 +152,35 @@ export declare class FournisseursController {
         ville: string | null;
         pays: string;
         telephone: string | null;
-        email: string | null;
-        siteWeb: string | null;
         nomContact: string | null;
+        domainesActivite: string[];
+        siteWeb: string | null;
         prenomContact: string | null;
         fonctionContact: string | null;
         telephoneContact: string | null;
         emailContact: string | null;
-        domainesActivite: string[];
         categoriesBiens: string[];
         zonesIntervention: string[];
-        status: import(".prisma/client").$Enums.StatusFournisseur;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     update(id: string, req: any, updateFournisseurDto: UpdateFournisseurDto): Promise<{
         documents: {
             id: string;
-            fournisseurId: string;
-            type: string;
-            nom: string;
             url: string;
+            type: string;
+            uploadedAt: Date;
             fileSize: number | null;
             mimeType: string | null;
+            fournisseurId: string;
+            nom: string;
             dateExpiration: Date | null;
-            uploadedAt: Date;
         }[];
     } & {
         id: string;
         organizationId: string;
+        status: import(".prisma/client").$Enums.StatusFournisseur;
+        createdAt: Date;
+        email: string | null;
+        updatedAt: Date;
         raisonSociale: string;
         identifiantFiscal: string | null;
         registreCommerce: string | null;
@@ -184,23 +188,23 @@ export declare class FournisseursController {
         ville: string | null;
         pays: string;
         telephone: string | null;
-        email: string | null;
-        siteWeb: string | null;
         nomContact: string | null;
+        domainesActivite: string[];
+        siteWeb: string | null;
         prenomContact: string | null;
         fonctionContact: string | null;
         telephoneContact: string | null;
         emailContact: string | null;
-        domainesActivite: string[];
         categoriesBiens: string[];
         zonesIntervention: string[];
-        status: import(".prisma/client").$Enums.StatusFournisseur;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     remove(id: string, req: any): Promise<{
         id: string;
         organizationId: string;
+        status: import(".prisma/client").$Enums.StatusFournisseur;
+        createdAt: Date;
+        email: string | null;
+        updatedAt: Date;
         raisonSociale: string;
         identifiantFiscal: string | null;
         registreCommerce: string | null;
@@ -208,23 +212,23 @@ export declare class FournisseursController {
         ville: string | null;
         pays: string;
         telephone: string | null;
-        email: string | null;
-        siteWeb: string | null;
         nomContact: string | null;
+        domainesActivite: string[];
+        siteWeb: string | null;
         prenomContact: string | null;
         fonctionContact: string | null;
         telephoneContact: string | null;
         emailContact: string | null;
-        domainesActivite: string[];
         categoriesBiens: string[];
         zonesIntervention: string[];
-        status: import(".prisma/client").$Enums.StatusFournisseur;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     suspend(id: string, req: any, motif?: string): Promise<{
         id: string;
         organizationId: string;
+        status: import(".prisma/client").$Enums.StatusFournisseur;
+        createdAt: Date;
+        email: string | null;
+        updatedAt: Date;
         raisonSociale: string;
         identifiantFiscal: string | null;
         registreCommerce: string | null;
@@ -232,23 +236,23 @@ export declare class FournisseursController {
         ville: string | null;
         pays: string;
         telephone: string | null;
-        email: string | null;
-        siteWeb: string | null;
         nomContact: string | null;
+        domainesActivite: string[];
+        siteWeb: string | null;
         prenomContact: string | null;
         fonctionContact: string | null;
         telephoneContact: string | null;
         emailContact: string | null;
-        domainesActivite: string[];
         categoriesBiens: string[];
         zonesIntervention: string[];
-        status: import(".prisma/client").$Enums.StatusFournisseur;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     blacklist(id: string, req: any, motif: string): Promise<{
         id: string;
         organizationId: string;
+        status: import(".prisma/client").$Enums.StatusFournisseur;
+        createdAt: Date;
+        email: string | null;
+        updatedAt: Date;
         raisonSociale: string;
         identifiantFiscal: string | null;
         registreCommerce: string | null;
@@ -256,23 +260,23 @@ export declare class FournisseursController {
         ville: string | null;
         pays: string;
         telephone: string | null;
-        email: string | null;
-        siteWeb: string | null;
         nomContact: string | null;
+        domainesActivite: string[];
+        siteWeb: string | null;
         prenomContact: string | null;
         fonctionContact: string | null;
         telephoneContact: string | null;
         emailContact: string | null;
-        domainesActivite: string[];
         categoriesBiens: string[];
         zonesIntervention: string[];
-        status: import(".prisma/client").$Enums.StatusFournisseur;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     activate(id: string, req: any): Promise<{
         id: string;
         organizationId: string;
+        status: import(".prisma/client").$Enums.StatusFournisseur;
+        createdAt: Date;
+        email: string | null;
+        updatedAt: Date;
         raisonSociale: string;
         identifiantFiscal: string | null;
         registreCommerce: string | null;
@@ -280,60 +284,17 @@ export declare class FournisseursController {
         ville: string | null;
         pays: string;
         telephone: string | null;
-        email: string | null;
-        siteWeb: string | null;
         nomContact: string | null;
+        domainesActivite: string[];
+        siteWeb: string | null;
         prenomContact: string | null;
         fonctionContact: string | null;
         telephoneContact: string | null;
         emailContact: string | null;
-        domainesActivite: string[];
         categoriesBiens: string[];
         zonesIntervention: string[];
-        status: import(".prisma/client").$Enums.StatusFournisseur;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     getDocuments(id: string, req: any): Promise<{
-        documents: {
-            id: string;
-            fournisseurId: string;
-            type: string;
-            nom: string;
-            url: string;
-            fileSize: number | null;
-            mimeType: string | null;
-            dateExpiration: Date | null;
-            uploadedAt: Date;
-        }[];
-        soumissions: ({
-            procedure: {
-                id: string;
-                reference: string;
-            };
-        } & {
-            id: string;
-            status: string;
-            fournisseurId: string;
-            dateDepot: Date;
-            procedureId: string;
-            devise: string;
-            numeroDepot: string;
-            montantTechnique: import("@prisma/client-runtime-utils").Decimal | null;
-            montantFinancier: import("@prisma/client-runtime-utils").Decimal;
-            montantTotal: import("@prisma/client-runtime-utils").Decimal;
-            conformeAdmin: boolean | null;
-            conformeTechnique: boolean | null;
-            conformeFinancier: boolean | null;
-            horsDelai: boolean;
-        })[];
-        contrats: {
-            id: string;
-            status: import(".prisma/client").$Enums.StatusContrat;
-            reference: string;
-            montantInitial: import("@prisma/client-runtime-utils").Decimal;
-            montantRevise: import("@prisma/client-runtime-utils").Decimal | null;
-        }[];
         evaluations: ({
             evaluateur: {
                 id: string;
@@ -356,9 +317,52 @@ export declare class FournisseursController {
             commentaires: string | null;
             evaluateurId: string;
         })[];
+        documents: {
+            id: string;
+            url: string;
+            type: string;
+            uploadedAt: Date;
+            fileSize: number | null;
+            mimeType: string | null;
+            fournisseurId: string;
+            nom: string;
+            dateExpiration: Date | null;
+        }[];
+        soumissions: ({
+            procedure: {
+                id: string;
+                reference: string;
+            };
+        } & {
+            id: string;
+            status: string;
+            montantTotal: import("@prisma/client-runtime-utils").Decimal;
+            fournisseurId: string;
+            dateDepot: Date;
+            procedureId: string;
+            devise: string;
+            numeroDepot: string;
+            montantTechnique: import("@prisma/client-runtime-utils").Decimal | null;
+            montantFinancier: import("@prisma/client-runtime-utils").Decimal;
+            conformeAdmin: boolean | null;
+            conformeTechnique: boolean | null;
+            conformeFinancier: boolean | null;
+            horsDelai: boolean;
+        })[];
+        contrats: {
+            id: string;
+            status: import(".prisma/client").$Enums.StatusContrat;
+            reference: string;
+            montantInitial: import("@prisma/client-runtime-utils").Decimal;
+            montantRevise: import("@prisma/client-runtime-utils").Decimal | null;
+        }[];
     } & {
         id: string;
         organizationId: string;
+        status: import(".prisma/client").$Enums.StatusFournisseur;
+        createdAt: Date;
+        email: string | null;
+        updatedAt: Date;
         raisonSociale: string;
         identifiantFiscal: string | null;
         registreCommerce: string | null;
@@ -366,40 +370,36 @@ export declare class FournisseursController {
         ville: string | null;
         pays: string;
         telephone: string | null;
-        email: string | null;
-        siteWeb: string | null;
         nomContact: string | null;
+        domainesActivite: string[];
+        siteWeb: string | null;
         prenomContact: string | null;
         fonctionContact: string | null;
         telephoneContact: string | null;
         emailContact: string | null;
-        domainesActivite: string[];
         categoriesBiens: string[];
         zonesIntervention: string[];
-        status: import(".prisma/client").$Enums.StatusFournisseur;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     addDocument(id: string, req: any, documentData: any): Promise<{
         id: string;
-        fournisseurId: string;
-        type: string;
-        nom: string;
         url: string;
+        type: string;
+        uploadedAt: Date;
         fileSize: number | null;
         mimeType: string | null;
+        fournisseurId: string;
+        nom: string;
         dateExpiration: Date | null;
-        uploadedAt: Date;
     }>;
     removeDocument(id: string, docId: string, req: any): Promise<{
         id: string;
-        fournisseurId: string;
-        type: string;
-        nom: string;
         url: string;
+        type: string;
+        uploadedAt: Date;
         fileSize: number | null;
         mimeType: string | null;
+        fournisseurId: string;
+        nom: string;
         dateExpiration: Date | null;
-        uploadedAt: Date;
     }>;
 }

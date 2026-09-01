@@ -9,11 +9,11 @@ export declare class SoumissionsService {
             identifiantFiscal: string | null;
         };
         documents: {
-            url: string;
             id: string;
-            fileSize: number | null;
+            url: string;
             type: string;
             uploadedAt: Date;
+            fileSize: number | null;
             nom: string;
             soumissionId: string;
         }[];
@@ -41,8 +41,8 @@ export declare class SoumissionsService {
             identifiantFiscal: string | null;
         };
         documents: {
-            url: string;
             id: string;
+            url: string;
             nom: string;
         }[];
     } & {
@@ -64,11 +64,11 @@ export declare class SoumissionsService {
     findOne(id: string, procedureId: string, organizationId: string): Promise<{
         fournisseur: {
             id: string;
-            email: string | null;
             organizationId: string;
-            createdAt: Date;
-            updatedAt: Date;
             status: import(".prisma/client").$Enums.StatusFournisseur;
+            createdAt: Date;
+            email: string | null;
+            updatedAt: Date;
             raisonSociale: string;
             identifiantFiscal: string | null;
             registreCommerce: string | null;
@@ -93,11 +93,11 @@ export declare class SoumissionsService {
             dateOuverture: Date | null;
         };
         documents: {
-            url: string;
             id: string;
-            fileSize: number | null;
+            url: string;
             type: string;
             uploadedAt: Date;
+            fileSize: number | null;
             nom: string;
             soumissionId: string;
         }[];

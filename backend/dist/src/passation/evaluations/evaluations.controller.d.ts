@@ -10,18 +10,18 @@ export declare class EvaluationsController {
             };
         } & {
             id: string;
-            procedureId: string;
             status: string;
-            numeroDepot: string;
+            montantTotal: import("@prisma/client-runtime-utils").Decimal;
             fournisseurId: string;
+            dateDepot: Date;
+            procedureId: string;
+            devise: string;
+            numeroDepot: string;
             montantTechnique: import("@prisma/client-runtime-utils").Decimal | null;
             montantFinancier: import("@prisma/client-runtime-utils").Decimal;
-            montantTotal: import("@prisma/client-runtime-utils").Decimal;
-            devise: string;
             conformeAdmin: boolean | null;
             conformeTechnique: boolean | null;
             conformeFinancier: boolean | null;
-            dateDepot: Date;
             horsDelai: boolean;
         };
         evaluateur: {
@@ -31,18 +31,18 @@ export declare class EvaluationsController {
         };
     } & {
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        validatedAt: Date | null;
+        soumissionId: string;
+        commentaires: string | null;
+        evaluateurId: string;
+        commissionId: string;
         scoreAdmin: number | null;
         scoreTechnique: number | null;
         scoreFinancier: number | null;
         scoreGlobal: number | null;
         criteres: import("@prisma/client/runtime/client").JsonValue;
-        commentaires: string | null;
-        validatedAt: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
-        soumissionId: string;
-        commissionId: string;
-        evaluateurId: string;
     }>;
     findAll(procedureId: string, req: any): Promise<({
         soumission: {
@@ -52,18 +52,18 @@ export declare class EvaluationsController {
             };
         } & {
             id: string;
-            procedureId: string;
             status: string;
-            numeroDepot: string;
+            montantTotal: import("@prisma/client-runtime-utils").Decimal;
             fournisseurId: string;
+            dateDepot: Date;
+            procedureId: string;
+            devise: string;
+            numeroDepot: string;
             montantTechnique: import("@prisma/client-runtime-utils").Decimal | null;
             montantFinancier: import("@prisma/client-runtime-utils").Decimal;
-            montantTotal: import("@prisma/client-runtime-utils").Decimal;
-            devise: string;
             conformeAdmin: boolean | null;
             conformeTechnique: boolean | null;
             conformeFinancier: boolean | null;
-            dateDepot: Date;
             horsDelai: boolean;
         };
         evaluateur: {
@@ -73,18 +73,18 @@ export declare class EvaluationsController {
         };
     } & {
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        validatedAt: Date | null;
+        soumissionId: string;
+        commentaires: string | null;
+        evaluateurId: string;
+        commissionId: string;
         scoreAdmin: number | null;
         scoreTechnique: number | null;
         scoreFinancier: number | null;
         scoreGlobal: number | null;
         criteres: import("@prisma/client/runtime/client").JsonValue;
-        commentaires: string | null;
-        validatedAt: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
-        soumissionId: string;
-        commissionId: string;
-        evaluateurId: string;
     })[]>;
     getSynthese(procedureId: string, req: any): Promise<{
         soumission: any;

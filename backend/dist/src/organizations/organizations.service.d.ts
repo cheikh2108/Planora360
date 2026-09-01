@@ -8,8 +8,6 @@ export declare class OrganizationsService {
     constructor(prisma: PrismaService, notifications: NotificationsService);
     create(dto: CreateOrganizationDto): Promise<{
         id: string;
-        createdAt: Date;
-        deletedAt: Date | null;
         name: string;
         logoUrl: string | null;
         brandColor: string | null;
@@ -17,6 +15,8 @@ export declare class OrganizationsService {
         status: import(".prisma/client").$Enums.OrganizationStatus;
         rejectionReason: string | null;
         trialEndsAt: Date | null;
+        createdAt: Date;
+        deletedAt: Date | null;
     }>;
     findPending(): import(".prisma/client").Prisma.PrismaPromise<({
         users: {
@@ -29,8 +29,6 @@ export declare class OrganizationsService {
         };
     } & {
         id: string;
-        createdAt: Date;
-        deletedAt: Date | null;
         name: string;
         logoUrl: string | null;
         brandColor: string | null;
@@ -38,6 +36,8 @@ export declare class OrganizationsService {
         status: import(".prisma/client").$Enums.OrganizationStatus;
         rejectionReason: string | null;
         trialEndsAt: Date | null;
+        createdAt: Date;
+        deletedAt: Date | null;
     })[]>;
     findAll(): import(".prisma/client").Prisma.PrismaPromise<({
         _count: {
@@ -46,8 +46,6 @@ export declare class OrganizationsService {
         };
     } & {
         id: string;
-        createdAt: Date;
-        deletedAt: Date | null;
         name: string;
         logoUrl: string | null;
         brandColor: string | null;
@@ -55,6 +53,8 @@ export declare class OrganizationsService {
         status: import(".prisma/client").$Enums.OrganizationStatus;
         rejectionReason: string | null;
         trialEndsAt: Date | null;
+        createdAt: Date;
+        deletedAt: Date | null;
     })[]>;
     findDeleted(): import(".prisma/client").Prisma.PrismaPromise<({
         _count: {
@@ -63,8 +63,6 @@ export declare class OrganizationsService {
         };
     } & {
         id: string;
-        createdAt: Date;
-        deletedAt: Date | null;
         name: string;
         logoUrl: string | null;
         brandColor: string | null;
@@ -72,6 +70,8 @@ export declare class OrganizationsService {
         status: import(".prisma/client").$Enums.OrganizationStatus;
         rejectionReason: string | null;
         trialEndsAt: Date | null;
+        createdAt: Date;
+        deletedAt: Date | null;
     })[]>;
     approve(id: string): Promise<{
         message: string;
@@ -86,8 +86,6 @@ export declare class OrganizationsService {
         };
     } & {
         id: string;
-        createdAt: Date;
-        deletedAt: Date | null;
         name: string;
         logoUrl: string | null;
         brandColor: string | null;
@@ -95,11 +93,11 @@ export declare class OrganizationsService {
         status: import(".prisma/client").$Enums.OrganizationStatus;
         rejectionReason: string | null;
         trialEndsAt: Date | null;
+        createdAt: Date;
+        deletedAt: Date | null;
     }>;
     update(id: string, dto: UpdateOrganizationDto): Promise<{
         id: string;
-        createdAt: Date;
-        deletedAt: Date | null;
         name: string;
         logoUrl: string | null;
         brandColor: string | null;
@@ -107,6 +105,8 @@ export declare class OrganizationsService {
         status: import(".prisma/client").$Enums.OrganizationStatus;
         rejectionReason: string | null;
         trialEndsAt: Date | null;
+        createdAt: Date;
+        deletedAt: Date | null;
     }>;
     updateBrandColor(organizationId: string, brandColor: string): Promise<{
         id: string;

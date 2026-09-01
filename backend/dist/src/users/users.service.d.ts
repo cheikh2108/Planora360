@@ -13,14 +13,14 @@ export declare class UsersService {
     private hashPassword;
     private sanitizeUserResponse;
     findUsersForAssignment(organizationId: string): Promise<{
-        id: string;
-        email: string;
-        firstName: string;
-        lastName: string;
         role: {
             id: string;
             name: string;
         };
+        id: string;
+        email: string;
+        firstName: string;
+        lastName: string;
     }[]>;
     findAll(organizationId: string, page?: number, limit?: number): Promise<{
         data: any[];
@@ -46,8 +46,10 @@ export declare class UsersService {
         };
     } & {
         id: string;
-        email: string;
         organizationId: string;
+        createdAt: Date;
+        deletedAt: Date | null;
+        email: string;
         roleId: string;
         firstName: string;
         lastName: string;
@@ -57,9 +59,7 @@ export declare class UsersService {
         isActive: boolean;
         mustChangePassword: boolean;
         lastLoginAt: Date | null;
-        createdAt: Date;
         updatedAt: Date;
-        deletedAt: Date | null;
     })[]>;
     restore(id: string, organizationId: string): Promise<{
         role: {
@@ -70,8 +70,10 @@ export declare class UsersService {
         };
     } & {
         id: string;
-        email: string;
         organizationId: string;
+        createdAt: Date;
+        deletedAt: Date | null;
+        email: string;
         roleId: string;
         firstName: string;
         lastName: string;
@@ -81,9 +83,7 @@ export declare class UsersService {
         isActive: boolean;
         mustChangePassword: boolean;
         lastLoginAt: Date | null;
-        createdAt: Date;
         updatedAt: Date;
-        deletedAt: Date | null;
     }>;
     hardDelete(id: string, organizationId: string): Promise<void>;
     cleanupOldDeletedUsers(): Promise<{

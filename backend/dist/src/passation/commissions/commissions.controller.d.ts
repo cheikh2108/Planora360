@@ -5,8 +5,8 @@ export declare class CommissionsController {
     create(req: any, dto: any): Promise<{
         procedure: {
             id: string;
-            reference: string;
             objet: string;
+            reference: string;
         };
         president: {
             id: string;
@@ -15,18 +15,21 @@ export declare class CommissionsController {
         };
     } & {
         id: string;
-        nom: string;
-        type: string;
-        dateSeance: Date;
         createdAt: Date;
+        type: string;
+        nom: string;
         procedureId: string;
+        dateSeance: Date;
         presidentId: string;
     }>;
     findAll(req: any): Promise<({
+        _count: {
+            evaluations: number;
+        };
         procedure: {
             id: string;
-            reference: string;
             objet: string;
+            reference: string;
         };
         president: {
             id: string;
@@ -40,43 +43,82 @@ export declare class CommissionsController {
                 lastName: string;
             };
         } & {
-            id: string;
             role: string;
-            commissionId: string;
+            id: string;
             userId: string;
+            commissionId: string;
         })[];
-        _count: {
-            evaluations: number;
-        };
     } & {
         id: string;
-        nom: string;
-        type: string;
-        dateSeance: Date;
         createdAt: Date;
+        type: string;
+        nom: string;
         procedureId: string;
+        dateSeance: Date;
         presidentId: string;
     })[]>;
     findOne(id: string, req: any): Promise<{
-        procedure: {
+        evaluations: ({
+            soumission: {
+                fournisseur: {
+                    id: string;
+                    raisonSociale: string;
+                };
+            } & {
+                id: string;
+                status: string;
+                montantTotal: import("@prisma/client-runtime-utils").Decimal;
+                fournisseurId: string;
+                dateDepot: Date;
+                procedureId: string;
+                devise: string;
+                numeroDepot: string;
+                montantTechnique: import("@prisma/client-runtime-utils").Decimal | null;
+                montantFinancier: import("@prisma/client-runtime-utils").Decimal;
+                conformeAdmin: boolean | null;
+                conformeTechnique: boolean | null;
+                conformeFinancier: boolean | null;
+                horsDelai: boolean;
+            };
+            evaluateur: {
+                id: string;
+                firstName: string;
+                lastName: string;
+            };
+        } & {
             id: string;
             createdAt: Date;
-            organizationId: string;
             updatedAt: Date;
-            reference: string;
-            demandeAchatId: string | null;
-            lignePPMId: string | null;
-            methode: import(".prisma/client").$Enums.MethodeProcedure;
-            objet: string;
+            validatedAt: Date | null;
+            soumissionId: string;
+            commentaires: string | null;
+            evaluateurId: string;
+            commissionId: string;
+            scoreAdmin: number | null;
+            scoreTechnique: number | null;
+            scoreFinancier: number | null;
+            scoreGlobal: number | null;
+            criteres: import("@prisma/client/runtime/client").JsonValue;
+        })[];
+        procedure: {
+            id: string;
+            organizationId: string;
+            status: import(".prisma/client").$Enums.StatusProcedure;
+            createdAt: Date;
+            updatedAt: Date;
             description: string;
+            objet: string;
             montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
+            reference: string;
+            dateAttribution: Date | null;
+            responsableId: string;
+            lignePPMId: string | null;
+            demandeAchatId: string | null;
+            methode: import(".prisma/client").$Enums.MethodeProcedure;
             datePublication: Date | null;
             dateLimite: Date | null;
             dateOuverture: Date | null;
             dateClarification: Date | null;
-            dateAttribution: Date | null;
-            responsableId: string;
-            status: import(".prisma/client").$Enums.StatusProcedure;
         };
         president: {
             id: string;
@@ -92,60 +134,18 @@ export declare class CommissionsController {
                 lastName: string;
             };
         } & {
-            id: string;
             role: string;
-            commissionId: string;
-            userId: string;
-        })[];
-        evaluations: ({
-            soumission: {
-                fournisseur: {
-                    id: string;
-                    raisonSociale: string;
-                };
-            } & {
-                id: string;
-                procedureId: string;
-                status: string;
-                numeroDepot: string;
-                fournisseurId: string;
-                montantTechnique: import("@prisma/client-runtime-utils").Decimal | null;
-                montantFinancier: import("@prisma/client-runtime-utils").Decimal;
-                montantTotal: import("@prisma/client-runtime-utils").Decimal;
-                devise: string;
-                conformeAdmin: boolean | null;
-                conformeTechnique: boolean | null;
-                conformeFinancier: boolean | null;
-                dateDepot: Date;
-                horsDelai: boolean;
-            };
-            evaluateur: {
-                id: string;
-                firstName: string;
-                lastName: string;
-            };
-        } & {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
+            userId: string;
             commissionId: string;
-            soumissionId: string;
-            evaluateurId: string;
-            scoreAdmin: number | null;
-            scoreTechnique: number | null;
-            scoreFinancier: number | null;
-            scoreGlobal: number | null;
-            criteres: import("@prisma/client/runtime/client").JsonValue;
-            commentaires: string | null;
-            validatedAt: Date | null;
         })[];
     } & {
         id: string;
-        nom: string;
-        type: string;
-        dateSeance: Date;
         createdAt: Date;
+        type: string;
+        nom: string;
         procedureId: string;
+        dateSeance: Date;
         presidentId: string;
     }>;
     addMembre(id: string, req: any, userId: string, role: string): Promise<{
@@ -156,15 +156,15 @@ export declare class CommissionsController {
             lastName: string;
         };
     } & {
-        id: string;
         role: string;
-        commissionId: string;
+        id: string;
         userId: string;
+        commissionId: string;
     }>;
     removeMembre(id: string, membreId: string, req: any): Promise<{
-        id: string;
         role: string;
-        commissionId: string;
+        id: string;
         userId: string;
+        commissionId: string;
     }>;
 }

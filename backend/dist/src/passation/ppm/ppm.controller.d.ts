@@ -13,19 +13,19 @@ export declare class PpmController {
         } | null;
         lignes: {
             id: string;
-            reference: string;
             status: string;
             createdAt: Date;
             updatedAt: Date;
-            ppmId: string;
-            objet: string;
             activityId: string | null;
+            objet: string;
             montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
-            sourceFinancement: string | null;
-            ligneBudgetaire: string | null;
             methodeProcedure: import(".prisma/client").$Enums.MethodeProcedure;
             trimestre: number;
+            sourceFinancement: string | null;
+            ligneBudgetaire: string | null;
             observations: string | null;
+            reference: string;
+            ppmId: string;
             dateLancement: Date | null;
             dateAttribution: Date | null;
             dateSignature: Date | null;
@@ -34,19 +34,19 @@ export declare class PpmController {
         }[];
     } & {
         id: string;
-        reference: string;
-        year: number;
-        title: string;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusPPM;
-        validatedBy: string | null;
-        validatedAt: Date | null;
-        montantTotal: import("@prisma/client-runtime-utils").Decimal;
-        nombreLignes: number;
-        createdBy: string;
         createdAt: Date;
         updatedAt: Date;
-        organizationId: string;
+        year: number;
+        title: string;
+        validatedAt: Date | null;
+        createdBy: string;
         projectId: string | null;
+        reference: string;
+        validatedBy: string | null;
+        montantTotal: import("@prisma/client-runtime-utils").Decimal;
+        nombreLignes: number;
     }>;
     findAll(req: any, year?: number, status?: StatusPPM, projectId?: string): Promise<({
         project: {
@@ -55,19 +55,19 @@ export declare class PpmController {
         } | null;
         lignes: {
             id: string;
-            reference: string;
             status: string;
             createdAt: Date;
             updatedAt: Date;
-            ppmId: string;
-            objet: string;
             activityId: string | null;
+            objet: string;
             montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
-            sourceFinancement: string | null;
-            ligneBudgetaire: string | null;
             methodeProcedure: import(".prisma/client").$Enums.MethodeProcedure;
             trimestre: number;
+            sourceFinancement: string | null;
+            ligneBudgetaire: string | null;
             observations: string | null;
+            reference: string;
+            ppmId: string;
             dateLancement: Date | null;
             dateAttribution: Date | null;
             dateSignature: Date | null;
@@ -76,19 +76,19 @@ export declare class PpmController {
         }[];
     } & {
         id: string;
-        reference: string;
-        year: number;
-        title: string;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusPPM;
-        validatedBy: string | null;
-        validatedAt: Date | null;
-        montantTotal: import("@prisma/client-runtime-utils").Decimal;
-        nombreLignes: number;
-        createdBy: string;
         createdAt: Date;
         updatedAt: Date;
-        organizationId: string;
+        year: number;
+        title: string;
+        validatedAt: Date | null;
+        createdBy: string;
         projectId: string | null;
+        reference: string;
+        validatedBy: string | null;
+        montantTotal: import("@prisma/client-runtime-utils").Decimal;
+        nombreLignes: number;
     })[]>;
     findOne(id: string, req: any): Promise<{
         project: {
@@ -108,19 +108,19 @@ export declare class PpmController {
             };
         } & {
             id: string;
-            reference: string;
             status: string;
             createdAt: Date;
             updatedAt: Date;
-            ppmId: string;
-            objet: string;
             activityId: string | null;
+            objet: string;
             montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
-            sourceFinancement: string | null;
-            ligneBudgetaire: string | null;
             methodeProcedure: import(".prisma/client").$Enums.MethodeProcedure;
             trimestre: number;
+            sourceFinancement: string | null;
+            ligneBudgetaire: string | null;
             observations: string | null;
+            reference: string;
+            ppmId: string;
             dateLancement: Date | null;
             dateAttribution: Date | null;
             dateSignature: Date | null;
@@ -129,19 +129,19 @@ export declare class PpmController {
         })[];
     } & {
         id: string;
-        reference: string;
-        year: number;
-        title: string;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusPPM;
-        validatedBy: string | null;
-        validatedAt: Date | null;
-        montantTotal: import("@prisma/client-runtime-utils").Decimal;
-        nombreLignes: number;
-        createdBy: string;
         createdAt: Date;
         updatedAt: Date;
-        organizationId: string;
+        year: number;
+        title: string;
+        validatedAt: Date | null;
+        createdBy: string;
         projectId: string | null;
+        reference: string;
+        validatedBy: string | null;
+        montantTotal: import("@prisma/client-runtime-utils").Decimal;
+        nombreLignes: number;
     }>;
     update(id: string, req: any, updatePpmDto: UpdatePpmDto): Promise<{
         project: {
@@ -150,19 +150,19 @@ export declare class PpmController {
         } | null;
         lignes: {
             id: string;
-            reference: string;
             status: string;
             createdAt: Date;
             updatedAt: Date;
-            ppmId: string;
-            objet: string;
             activityId: string | null;
+            objet: string;
             montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
-            sourceFinancement: string | null;
-            ligneBudgetaire: string | null;
             methodeProcedure: import(".prisma/client").$Enums.MethodeProcedure;
             trimestre: number;
+            sourceFinancement: string | null;
+            ligneBudgetaire: string | null;
             observations: string | null;
+            reference: string;
+            ppmId: string;
             dateLancement: Date | null;
             dateAttribution: Date | null;
             dateSignature: Date | null;
@@ -171,52 +171,52 @@ export declare class PpmController {
         }[];
     } & {
         id: string;
-        reference: string;
-        year: number;
-        title: string;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusPPM;
-        validatedBy: string | null;
-        validatedAt: Date | null;
-        montantTotal: import("@prisma/client-runtime-utils").Decimal;
-        nombreLignes: number;
-        createdBy: string;
         createdAt: Date;
         updatedAt: Date;
-        organizationId: string;
+        year: number;
+        title: string;
+        validatedAt: Date | null;
+        createdBy: string;
         projectId: string | null;
+        reference: string;
+        validatedBy: string | null;
+        montantTotal: import("@prisma/client-runtime-utils").Decimal;
+        nombreLignes: number;
     }>;
     remove(id: string, req: any): Promise<{
         id: string;
-        reference: string;
-        year: number;
-        title: string;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusPPM;
-        validatedBy: string | null;
-        validatedAt: Date | null;
-        montantTotal: import("@prisma/client-runtime-utils").Decimal;
-        nombreLignes: number;
-        createdBy: string;
         createdAt: Date;
         updatedAt: Date;
-        organizationId: string;
+        year: number;
+        title: string;
+        validatedAt: Date | null;
+        createdBy: string;
         projectId: string | null;
+        reference: string;
+        validatedBy: string | null;
+        montantTotal: import("@prisma/client-runtime-utils").Decimal;
+        nombreLignes: number;
     }>;
     validate(id: string, req: any): Promise<{
         lignes: {
             id: string;
-            reference: string;
             status: string;
             createdAt: Date;
             updatedAt: Date;
-            ppmId: string;
-            objet: string;
             activityId: string | null;
+            objet: string;
             montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
-            sourceFinancement: string | null;
-            ligneBudgetaire: string | null;
             methodeProcedure: import(".prisma/client").$Enums.MethodeProcedure;
             trimestre: number;
+            sourceFinancement: string | null;
+            ligneBudgetaire: string | null;
             observations: string | null;
+            reference: string;
+            ppmId: string;
             dateLancement: Date | null;
             dateAttribution: Date | null;
             dateSignature: Date | null;
@@ -225,19 +225,19 @@ export declare class PpmController {
         }[];
     } & {
         id: string;
-        reference: string;
-        year: number;
-        title: string;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusPPM;
-        validatedBy: string | null;
-        validatedAt: Date | null;
-        montantTotal: import("@prisma/client-runtime-utils").Decimal;
-        nombreLignes: number;
-        createdBy: string;
         createdAt: Date;
         updatedAt: Date;
-        organizationId: string;
+        year: number;
+        title: string;
+        validatedAt: Date | null;
+        createdBy: string;
         projectId: string | null;
+        reference: string;
+        validatedBy: string | null;
+        montantTotal: import("@prisma/client-runtime-utils").Decimal;
+        nombreLignes: number;
     }>;
     updateStatus(id: string, req: any, status: StatusPPM): Promise<{
         project: {
@@ -246,19 +246,19 @@ export declare class PpmController {
         } | null;
         lignes: {
             id: string;
-            reference: string;
             status: string;
             createdAt: Date;
             updatedAt: Date;
-            ppmId: string;
-            objet: string;
             activityId: string | null;
+            objet: string;
             montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
-            sourceFinancement: string | null;
-            ligneBudgetaire: string | null;
             methodeProcedure: import(".prisma/client").$Enums.MethodeProcedure;
             trimestre: number;
+            sourceFinancement: string | null;
+            ligneBudgetaire: string | null;
             observations: string | null;
+            reference: string;
+            ppmId: string;
             dateLancement: Date | null;
             dateAttribution: Date | null;
             dateSignature: Date | null;
@@ -267,19 +267,19 @@ export declare class PpmController {
         }[];
     } & {
         id: string;
-        reference: string;
-        year: number;
-        title: string;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusPPM;
-        validatedBy: string | null;
-        validatedAt: Date | null;
-        montantTotal: import("@prisma/client-runtime-utils").Decimal;
-        nombreLignes: number;
-        createdBy: string;
         createdAt: Date;
         updatedAt: Date;
-        organizationId: string;
+        year: number;
+        title: string;
+        validatedAt: Date | null;
+        createdBy: string;
         projectId: string | null;
+        reference: string;
+        validatedBy: string | null;
+        montantTotal: import("@prisma/client-runtime-utils").Decimal;
+        nombreLignes: number;
     }>;
     addLigne(id: string, req: any, ligneDto: CreateLignePpmDto): Promise<{
         activity: {
@@ -294,19 +294,19 @@ export declare class PpmController {
         };
     } & {
         id: string;
-        reference: string;
         status: string;
         createdAt: Date;
         updatedAt: Date;
-        ppmId: string;
-        objet: string;
         activityId: string | null;
+        objet: string;
         montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
-        sourceFinancement: string | null;
-        ligneBudgetaire: string | null;
         methodeProcedure: import(".prisma/client").$Enums.MethodeProcedure;
         trimestre: number;
+        sourceFinancement: string | null;
+        ligneBudgetaire: string | null;
         observations: string | null;
+        reference: string;
+        ppmId: string;
         dateLancement: Date | null;
         dateAttribution: Date | null;
         dateSignature: Date | null;
@@ -333,19 +333,19 @@ export declare class PpmController {
                 };
             } & {
                 id: string;
-                reference: string;
                 status: string;
                 createdAt: Date;
                 updatedAt: Date;
-                ppmId: string;
-                objet: string;
                 activityId: string | null;
+                objet: string;
                 montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
-                sourceFinancement: string | null;
-                ligneBudgetaire: string | null;
                 methodeProcedure: import(".prisma/client").$Enums.MethodeProcedure;
                 trimestre: number;
+                sourceFinancement: string | null;
+                ligneBudgetaire: string | null;
                 observations: string | null;
+                reference: string;
+                ppmId: string;
                 dateLancement: Date | null;
                 dateAttribution: Date | null;
                 dateSignature: Date | null;
@@ -354,19 +354,19 @@ export declare class PpmController {
             })[];
         } & {
             id: string;
-            reference: string;
-            year: number;
-            title: string;
+            organizationId: string;
             status: import(".prisma/client").$Enums.StatusPPM;
-            validatedBy: string | null;
-            validatedAt: Date | null;
-            montantTotal: import("@prisma/client-runtime-utils").Decimal;
-            nombreLignes: number;
-            createdBy: string;
             createdAt: Date;
             updatedAt: Date;
-            organizationId: string;
+            year: number;
+            title: string;
+            validatedAt: Date | null;
+            createdBy: string;
             projectId: string | null;
+            reference: string;
+            validatedBy: string | null;
+            montantTotal: import("@prisma/client-runtime-utils").Decimal;
+            nombreLignes: number;
         };
     }>;
 }

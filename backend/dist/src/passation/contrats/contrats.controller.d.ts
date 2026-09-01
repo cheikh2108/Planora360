@@ -3,15 +3,15 @@ export declare class ContratsController {
     private readonly contratsService;
     constructor(contratsService: ContratsService);
     create(req: any, dto: any): Promise<{
-        procedure: {
-            id: string;
-            reference: string;
-            objet: string;
-        };
         fournisseur: {
             id: string;
             raisonSociale: string;
             identifiantFiscal: string | null;
+        };
+        procedure: {
+            id: string;
+            objet: string;
+            reference: string;
         };
         gestionnaireUser: {
             id: string;
@@ -21,12 +21,18 @@ export declare class ContratsController {
     } & {
         id: string;
         organizationId: string;
+        status: import(".prisma/client").$Enums.StatusContrat;
+        createdAt: Date;
+        updatedAt: Date;
         reference: string;
+        dateSignature: Date;
+        fournisseurId: string;
+        procedureId: string;
+        soumissionId: string | null;
         montantInitial: import("@prisma/client-runtime-utils").Decimal;
         montantRevise: import("@prisma/client-runtime-utils").Decimal | null;
         montantPaye: import("@prisma/client-runtime-utils").Decimal;
         devise: string;
-        dateSignature: Date;
         dateDemarrage: Date | null;
         dateEcheance: Date;
         dateReceptionProv: Date | null;
@@ -35,39 +41,39 @@ export declare class ContratsController {
         modalitesAcompte: string | null;
         modalitesRetenue: string | null;
         garanties: string | null;
-        status: import(".prisma/client").$Enums.StatusContrat;
-        createdAt: Date;
-        updatedAt: Date;
-        procedureId: string;
-        soumissionId: string | null;
-        fournisseurId: string;
         gestionnaire: string;
     }>;
     findAll(req: any, filters: any): Promise<({
-        fournisseur: {
-            id: string;
-            raisonSociale: string;
-            identifiantFiscal: string | null;
-        };
-        gestionnaireUser: {
-            id: string;
-            firstName: string;
-            lastName: string;
-        };
         _count: {
             avenants: number;
             livrables: number;
             paiements: number;
         };
+        fournisseur: {
+            id: string;
+            raisonSociale: string;
+            identifiantFiscal: string | null;
+        };
+        gestionnaireUser: {
+            id: string;
+            firstName: string;
+            lastName: string;
+        };
     } & {
         id: string;
         organizationId: string;
+        status: import(".prisma/client").$Enums.StatusContrat;
+        createdAt: Date;
+        updatedAt: Date;
         reference: string;
+        dateSignature: Date;
+        fournisseurId: string;
+        procedureId: string;
+        soumissionId: string | null;
         montantInitial: import("@prisma/client-runtime-utils").Decimal;
         montantRevise: import("@prisma/client-runtime-utils").Decimal | null;
         montantPaye: import("@prisma/client-runtime-utils").Decimal;
         devise: string;
-        dateSignature: Date;
         dateDemarrage: Date | null;
         dateEcheance: Date;
         dateReceptionProv: Date | null;
@@ -76,40 +82,15 @@ export declare class ContratsController {
         modalitesAcompte: string | null;
         modalitesRetenue: string | null;
         garanties: string | null;
-        status: import(".prisma/client").$Enums.StatusContrat;
-        createdAt: Date;
-        updatedAt: Date;
-        procedureId: string;
-        soumissionId: string | null;
-        fournisseurId: string;
         gestionnaire: string;
     })[]>;
     findOne(id: string, req: any): Promise<{
-        procedure: {
-            id: string;
-            organizationId: string;
-            reference: string;
-            status: import(".prisma/client").$Enums.StatusProcedure;
-            createdAt: Date;
-            updatedAt: Date;
-            demandeAchatId: string | null;
-            lignePPMId: string | null;
-            methode: import(".prisma/client").$Enums.MethodeProcedure;
-            objet: string;
-            description: string;
-            montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
-            datePublication: Date | null;
-            dateLimite: Date | null;
-            dateOuverture: Date | null;
-            dateClarification: Date | null;
-            dateAttribution: Date | null;
-            responsableId: string;
-        };
         fournisseur: {
             id: string;
             organizationId: string;
             status: import(".prisma/client").$Enums.StatusFournisseur;
             createdAt: Date;
+            email: string | null;
             updatedAt: Date;
             raisonSociale: string;
             identifiantFiscal: string | null;
@@ -118,16 +99,35 @@ export declare class ContratsController {
             ville: string | null;
             pays: string;
             telephone: string | null;
-            email: string | null;
-            siteWeb: string | null;
             nomContact: string | null;
+            domainesActivite: string[];
+            siteWeb: string | null;
             prenomContact: string | null;
             fonctionContact: string | null;
             telephoneContact: string | null;
             emailContact: string | null;
-            domainesActivite: string[];
             categoriesBiens: string[];
             zonesIntervention: string[];
+        };
+        procedure: {
+            id: string;
+            organizationId: string;
+            status: import(".prisma/client").$Enums.StatusProcedure;
+            createdAt: Date;
+            updatedAt: Date;
+            description: string;
+            objet: string;
+            montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
+            reference: string;
+            dateAttribution: Date | null;
+            responsableId: string;
+            lignePPMId: string | null;
+            demandeAchatId: string | null;
+            methode: import(".prisma/client").$Enums.MethodeProcedure;
+            datePublication: Date | null;
+            dateLimite: Date | null;
+            dateOuverture: Date | null;
+            dateClarification: Date | null;
         };
         gestionnaireUser: {
             id: string;
@@ -137,29 +137,24 @@ export declare class ContratsController {
         };
         avenants: {
             id: string;
-            dateSignature: Date;
             status: string;
             createdAt: Date;
+            validatedAt: Date | null;
+            validatedBy: string | null;
+            dateSignature: Date;
             contratId: string;
-            numero: number;
             motif: string;
+            numero: number;
             impactMontant: import("@prisma/client-runtime-utils").Decimal | null;
             impactDelai: number | null;
             impactObjet: string | null;
-            validatedBy: string | null;
-            validatedAt: Date | null;
         }[];
         livrables: ({
-            responsable: {
-                id: string;
-                firstName: string;
-                lastName: string;
-            } | null;
             receptions: {
                 id: string;
                 createdAt: Date;
-                livrableId: string;
                 type: string;
+                livrableId: string;
                 quantitePrevue: number | null;
                 quantiteRecue: number | null;
                 conforme: boolean;
@@ -168,26 +163,31 @@ export declare class ContratsController {
                 receptionneurId: string;
                 pvUrl: string | null;
             }[];
+            responsable: {
+                id: string;
+                firstName: string;
+                lastName: string;
+            } | null;
         } & {
             id: string;
-            dateEcheance: Date;
             status: string;
             createdAt: Date;
             updatedAt: Date;
             description: string | null;
             responsableId: string | null;
+            ordre: number;
+            dateEcheance: Date;
             contratId: string;
             titre: string;
-            ordre: number;
         })[];
         paiements: {
             id: string;
-            dateEcheance: Date | null;
             status: string;
             createdAt: Date;
             updatedAt: Date;
-            contratId: string;
             type: string;
+            dateEcheance: Date | null;
+            contratId: string;
             montantBrut: import("@prisma/client-runtime-utils").Decimal;
             taxes: import("@prisma/client-runtime-utils").Decimal;
             penalites: import("@prisma/client-runtime-utils").Decimal;
@@ -198,12 +198,18 @@ export declare class ContratsController {
     } & {
         id: string;
         organizationId: string;
+        status: import(".prisma/client").$Enums.StatusContrat;
+        createdAt: Date;
+        updatedAt: Date;
         reference: string;
+        dateSignature: Date;
+        fournisseurId: string;
+        procedureId: string;
+        soumissionId: string | null;
         montantInitial: import("@prisma/client-runtime-utils").Decimal;
         montantRevise: import("@prisma/client-runtime-utils").Decimal | null;
         montantPaye: import("@prisma/client-runtime-utils").Decimal;
         devise: string;
-        dateSignature: Date;
         dateDemarrage: Date | null;
         dateEcheance: Date;
         dateReceptionProv: Date | null;
@@ -212,23 +218,23 @@ export declare class ContratsController {
         modalitesAcompte: string | null;
         modalitesRetenue: string | null;
         garanties: string | null;
-        status: import(".prisma/client").$Enums.StatusContrat;
-        createdAt: Date;
-        updatedAt: Date;
-        procedureId: string;
-        soumissionId: string | null;
-        fournisseurId: string;
         gestionnaire: string;
     }>;
     update(id: string, req: any, dto: any): Promise<{
         id: string;
         organizationId: string;
+        status: import(".prisma/client").$Enums.StatusContrat;
+        createdAt: Date;
+        updatedAt: Date;
         reference: string;
+        dateSignature: Date;
+        fournisseurId: string;
+        procedureId: string;
+        soumissionId: string | null;
         montantInitial: import("@prisma/client-runtime-utils").Decimal;
         montantRevise: import("@prisma/client-runtime-utils").Decimal | null;
         montantPaye: import("@prisma/client-runtime-utils").Decimal;
         devise: string;
-        dateSignature: Date;
         dateDemarrage: Date | null;
         dateEcheance: Date;
         dateReceptionProv: Date | null;
@@ -237,23 +243,23 @@ export declare class ContratsController {
         modalitesAcompte: string | null;
         modalitesRetenue: string | null;
         garanties: string | null;
-        status: import(".prisma/client").$Enums.StatusContrat;
-        createdAt: Date;
-        updatedAt: Date;
-        procedureId: string;
-        soumissionId: string | null;
-        fournisseurId: string;
         gestionnaire: string;
     }>;
     suspend(id: string, req: any, motif?: string): Promise<{
         id: string;
         organizationId: string;
+        status: import(".prisma/client").$Enums.StatusContrat;
+        createdAt: Date;
+        updatedAt: Date;
         reference: string;
+        dateSignature: Date;
+        fournisseurId: string;
+        procedureId: string;
+        soumissionId: string | null;
         montantInitial: import("@prisma/client-runtime-utils").Decimal;
         montantRevise: import("@prisma/client-runtime-utils").Decimal | null;
         montantPaye: import("@prisma/client-runtime-utils").Decimal;
         devise: string;
-        dateSignature: Date;
         dateDemarrage: Date | null;
         dateEcheance: Date;
         dateReceptionProv: Date | null;
@@ -262,23 +268,23 @@ export declare class ContratsController {
         modalitesAcompte: string | null;
         modalitesRetenue: string | null;
         garanties: string | null;
-        status: import(".prisma/client").$Enums.StatusContrat;
-        createdAt: Date;
-        updatedAt: Date;
-        procedureId: string;
-        soumissionId: string | null;
-        fournisseurId: string;
         gestionnaire: string;
     }>;
     terminate(id: string, req: any, motif?: string): Promise<{
         id: string;
         organizationId: string;
+        status: import(".prisma/client").$Enums.StatusContrat;
+        createdAt: Date;
+        updatedAt: Date;
         reference: string;
+        dateSignature: Date;
+        fournisseurId: string;
+        procedureId: string;
+        soumissionId: string | null;
         montantInitial: import("@prisma/client-runtime-utils").Decimal;
         montantRevise: import("@prisma/client-runtime-utils").Decimal | null;
         montantPaye: import("@prisma/client-runtime-utils").Decimal;
         devise: string;
-        dateSignature: Date;
         dateDemarrage: Date | null;
         dateEcheance: Date;
         dateReceptionProv: Date | null;
@@ -287,23 +293,23 @@ export declare class ContratsController {
         modalitesAcompte: string | null;
         modalitesRetenue: string | null;
         garanties: string | null;
-        status: import(".prisma/client").$Enums.StatusContrat;
-        createdAt: Date;
-        updatedAt: Date;
-        procedureId: string;
-        soumissionId: string | null;
-        fournisseurId: string;
         gestionnaire: string;
     }>;
     close(id: string, req: any): Promise<{
         id: string;
         organizationId: string;
+        status: import(".prisma/client").$Enums.StatusContrat;
+        createdAt: Date;
+        updatedAt: Date;
         reference: string;
+        dateSignature: Date;
+        fournisseurId: string;
+        procedureId: string;
+        soumissionId: string | null;
         montantInitial: import("@prisma/client-runtime-utils").Decimal;
         montantRevise: import("@prisma/client-runtime-utils").Decimal | null;
         montantPaye: import("@prisma/client-runtime-utils").Decimal;
         devise: string;
-        dateSignature: Date;
         dateDemarrage: Date | null;
         dateEcheance: Date;
         dateReceptionProv: Date | null;
@@ -312,12 +318,6 @@ export declare class ContratsController {
         modalitesAcompte: string | null;
         modalitesRetenue: string | null;
         garanties: string | null;
-        status: import(".prisma/client").$Enums.StatusContrat;
-        createdAt: Date;
-        updatedAt: Date;
-        procedureId: string;
-        soumissionId: string | null;
-        fournisseurId: string;
         gestionnaire: string;
     }>;
     getDashboard(id: string, req: any): Promise<{
@@ -336,6 +336,7 @@ export declare class ContratsController {
             organizationId: string;
             status: import(".prisma/client").$Enums.StatusFournisseur;
             createdAt: Date;
+            email: string | null;
             updatedAt: Date;
             raisonSociale: string;
             identifiantFiscal: string | null;
@@ -344,14 +345,13 @@ export declare class ContratsController {
             ville: string | null;
             pays: string;
             telephone: string | null;
-            email: string | null;
-            siteWeb: string | null;
             nomContact: string | null;
+            domainesActivite: string[];
+            siteWeb: string | null;
             prenomContact: string | null;
             fonctionContact: string | null;
             telephoneContact: string | null;
             emailContact: string | null;
-            domainesActivite: string[];
             categoriesBiens: string[];
             zonesIntervention: string[];
         };

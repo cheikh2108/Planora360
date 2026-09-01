@@ -10,49 +10,49 @@ export declare class DocumentsService {
         id: string;
         createdAt: Date;
         activityId: string | null;
-        fileSize: number | null;
         type: string;
-        checklistItemId: string | null;
-        storageKey: string;
         fileName: string;
+        fileSize: number | null;
         mimeType: string | null;
         uploadedById: string;
+        storageKey: string;
+        checklistItemId: string | null;
     }>;
     uploadToChecklistItem(checklistItemId: string, file: Express.Multer.File, type: string, organizationId: string, uploadedById: string): Promise<{
         id: string;
         createdAt: Date;
         activityId: string | null;
-        fileSize: number | null;
         type: string;
-        checklistItemId: string | null;
-        storageKey: string;
         fileName: string;
+        fileSize: number | null;
         mimeType: string | null;
         uploadedById: string;
+        storageKey: string;
+        checklistItemId: string | null;
     }>;
     findByActivity(activityId: string, organizationId: string): Promise<{
         id: string;
         createdAt: Date;
         activityId: string | null;
-        fileSize: number | null;
         type: string;
-        checklistItemId: string | null;
-        storageKey: string;
         fileName: string;
+        fileSize: number | null;
         mimeType: string | null;
         uploadedById: string;
+        storageKey: string;
+        checklistItemId: string | null;
     }[]>;
     findByChecklistItem(checklistItemId: string, organizationId: string): Promise<{
         id: string;
         createdAt: Date;
         activityId: string | null;
-        fileSize: number | null;
         type: string;
-        checklistItemId: string | null;
-        storageKey: string;
         fileName: string;
+        fileSize: number | null;
         mimeType: string | null;
         uploadedById: string;
+        storageKey: string;
+        checklistItemId: string | null;
     }[]>;
     getDownloadUrl(id: string, organizationId: string): Promise<{
         url: string;
@@ -63,12 +63,12 @@ export declare class DocumentsService {
         id: string;
         createdAt: Date;
         activityId: string | null;
-        fileSize: number | null;
         type: string;
-        checklistItemId: string | null;
-        storageKey: string;
         fileName: string;
+        fileSize: number | null;
         mimeType: string | null;
         uploadedById: string;
+        storageKey: string;
+        checklistItemId: string | null;
     }>;
 }

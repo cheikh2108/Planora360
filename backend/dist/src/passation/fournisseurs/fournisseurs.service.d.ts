@@ -7,23 +7,23 @@ export declare class FournisseursService {
     constructor(prisma: PrismaService);
     create(organizationId: string, dto: CreateFournisseurDto): Promise<{
         documents: {
-            url: string;
             id: string;
-            fileSize: number | null;
+            url: string;
             type: string;
-            mimeType: string | null;
             uploadedAt: Date;
+            fileSize: number | null;
+            mimeType: string | null;
             fournisseurId: string;
             nom: string;
             dateExpiration: Date | null;
         }[];
     } & {
         id: string;
-        email: string | null;
         organizationId: string;
-        createdAt: Date;
-        updatedAt: Date;
         status: import(".prisma/client").$Enums.StatusFournisseur;
+        createdAt: Date;
+        email: string | null;
+        updatedAt: Date;
         raisonSociale: string;
         identifiantFiscal: string | null;
         registreCommerce: string | null;
@@ -57,11 +57,11 @@ export declare class FournisseursService {
         }[];
     } & {
         id: string;
-        email: string | null;
         organizationId: string;
-        createdAt: Date;
-        updatedAt: Date;
         status: import(".prisma/client").$Enums.StatusFournisseur;
+        createdAt: Date;
+        email: string | null;
+        updatedAt: Date;
         raisonSociale: string;
         identifiantFiscal: string | null;
         registreCommerce: string | null;
@@ -90,8 +90,6 @@ export declare class FournisseursService {
             id: string;
             createdAt: Date;
             fournisseurId: string;
-            commentaires: string | null;
-            evaluateurId: string;
             contratId: string | null;
             qualite: number | null;
             delais: number | null;
@@ -101,14 +99,16 @@ export declare class FournisseursService {
             respectContractuel: number | null;
             rapportQualitePrix: number | null;
             noteGlobale: number;
+            commentaires: string | null;
+            evaluateurId: string;
         })[];
         documents: {
-            url: string;
             id: string;
-            fileSize: number | null;
+            url: string;
             type: string;
-            mimeType: string | null;
             uploadedAt: Date;
+            fileSize: number | null;
+            mimeType: string | null;
             fournisseurId: string;
             nom: string;
             dateExpiration: Date | null;
@@ -143,11 +143,11 @@ export declare class FournisseursService {
         }[];
     } & {
         id: string;
-        email: string | null;
         organizationId: string;
-        createdAt: Date;
-        updatedAt: Date;
         status: import(".prisma/client").$Enums.StatusFournisseur;
+        createdAt: Date;
+        email: string | null;
+        updatedAt: Date;
         raisonSociale: string;
         identifiantFiscal: string | null;
         registreCommerce: string | null;
@@ -167,23 +167,23 @@ export declare class FournisseursService {
     }>;
     update(id: string, organizationId: string, dto: UpdateFournisseurDto): Promise<{
         documents: {
-            url: string;
             id: string;
-            fileSize: number | null;
+            url: string;
             type: string;
-            mimeType: string | null;
             uploadedAt: Date;
+            fileSize: number | null;
+            mimeType: string | null;
             fournisseurId: string;
             nom: string;
             dateExpiration: Date | null;
         }[];
     } & {
         id: string;
-        email: string | null;
         organizationId: string;
-        createdAt: Date;
-        updatedAt: Date;
         status: import(".prisma/client").$Enums.StatusFournisseur;
+        createdAt: Date;
+        email: string | null;
+        updatedAt: Date;
         raisonSociale: string;
         identifiantFiscal: string | null;
         registreCommerce: string | null;
@@ -203,11 +203,11 @@ export declare class FournisseursService {
     }>;
     remove(id: string, organizationId: string): Promise<{
         id: string;
-        email: string | null;
         organizationId: string;
-        createdAt: Date;
-        updatedAt: Date;
         status: import(".prisma/client").$Enums.StatusFournisseur;
+        createdAt: Date;
+        email: string | null;
+        updatedAt: Date;
         raisonSociale: string;
         identifiantFiscal: string | null;
         registreCommerce: string | null;
@@ -227,11 +227,11 @@ export declare class FournisseursService {
     }>;
     changeStatus(id: string, organizationId: string, newStatus: StatusFournisseur, motif?: string): Promise<{
         id: string;
-        email: string | null;
         organizationId: string;
-        createdAt: Date;
-        updatedAt: Date;
         status: import(".prisma/client").$Enums.StatusFournisseur;
+        createdAt: Date;
+        email: string | null;
+        updatedAt: Date;
         raisonSociale: string;
         identifiantFiscal: string | null;
         registreCommerce: string | null;
@@ -255,23 +255,23 @@ export declare class FournisseursService {
         url: string;
         dateExpiration?: Date | string;
     }): Promise<{
-        url: string;
         id: string;
-        fileSize: number | null;
+        url: string;
         type: string;
-        mimeType: string | null;
         uploadedAt: Date;
+        fileSize: number | null;
+        mimeType: string | null;
         fournisseurId: string;
         nom: string;
         dateExpiration: Date | null;
     }>;
     removeDocument(fournisseurId: string, documentId: string, organizationId: string): Promise<{
-        url: string;
         id: string;
-        fileSize: number | null;
+        url: string;
         type: string;
-        mimeType: string | null;
         uploadedAt: Date;
+        fileSize: number | null;
+        mimeType: string | null;
         fournisseurId: string;
         nom: string;
         dateExpiration: Date | null;
