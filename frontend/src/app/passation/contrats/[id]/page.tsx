@@ -291,7 +291,7 @@ export default function ContratDetailPage() {
                             ? 'bg-gradient-to-br from-red-500 to-rose-600'
                             : 'bg-slate-200'
                       )}>
-                        <TimelineIcon size={20} className={isActive || (isLast && isOverdue) ? 'text-white' : 'text-slate-400'} />
+                        <TimelineIcon size={20} className={isActive || (isLast && isOverdue) ? 'text-white' : 'text-slate-600'} />
                       </div>
                       <div className="text-center">
                         <p className={cn(
@@ -309,7 +309,7 @@ export default function ContratDetailPage() {
                           </p>
                         )}
                         {!item.date && (
-                          <p className="text-xs text-slate-400 italic">Non défini</p>
+                          <p className="text-xs text-slate-600 italic">Non défini</p>
                         )}
                       </div>
                     </div>
@@ -553,7 +553,7 @@ export default function ContratDetailPage() {
                   <div className="text-center py-12">
                     <Package size={48} className="mx-auto text-slate-300 mb-3" />
                     <p className="text-slate-500 font-medium">Aucun livrable défini</p>
-                    <p className="text-sm text-slate-400 mt-1">Les livrables du contrat apparaîtront ici</p>
+                    <p className="text-sm text-slate-600 mt-1">Les livrables du contrat apparaîtront ici</p>
                   </div>
                 )}
               </div>
@@ -638,7 +638,7 @@ export default function ContratDetailPage() {
                   <div className="text-center py-12">
                     <CreditCard size={48} className="mx-auto text-slate-300 mb-3" />
                     <p className="text-slate-500 font-medium">Aucun paiement enregistré</p>
-                    <p className="text-sm text-slate-400 mt-1">Les paiements du contrat apparaîtront ici</p>
+                    <p className="text-sm text-slate-600 mt-1">Les paiements du contrat apparaîtront ici</p>
                   </div>
                 )}
               </div>
@@ -695,7 +695,7 @@ export default function ContratDetailPage() {
                   <div className="text-center py-12">
                     <FileEdit size={48} className="mx-auto text-slate-300 mb-3" />
                     <p className="text-slate-500 font-medium">Aucun avenant</p>
-                    <p className="text-sm text-slate-400 mt-1">Les avenants au contrat apparaîtront ici</p>
+                    <p className="text-sm text-slate-600 mt-1">Les avenants au contrat apparaîtront ici</p>
                   </div>
                 )}
               </div>

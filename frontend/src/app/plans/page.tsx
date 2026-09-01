@@ -23,7 +23,7 @@ const PLAN_STATUS_META: Record<PlanStatus, { label: string; cls: string }> = {
   BROUILLON: { label: 'Brouillon', cls: 'bg-slate-100 text-slate-500' },
   EN_COURS:  { label: 'En cours',  cls: 'bg-blue-50 text-blue-600' },
   TERMINE:   { label: 'Terminé',   cls: 'bg-teal-50 text-teal-600' },
-  ARCHIVE:   { label: 'Archivé',   cls: 'bg-slate-100 text-slate-400' },
+  ARCHIVE:   { label: 'Archivé',   cls: 'bg-slate-100 text-slate-600' },
 };
 
 function duration(plan: ActionPlan) {
@@ -69,13 +69,13 @@ function PlanCard({ plan }: { plan: ActionPlan }) {
 
         {/* Strategic goals */}
         {plan.strategicGoals && (
-          <p className="text-xs text-slate-400 line-clamp-2 -mt-1">{plan.strategicGoals}</p>
+          <p className="text-xs text-slate-600 line-clamp-2 -mt-1">{plan.strategicGoals}</p>
         )}
 
         {/* Meta chips */}
         <div className="flex flex-wrap gap-x-4 gap-y-1.5">
           <div className="flex items-center gap-1.5 text-xs text-slate-500">
-            <Calendar size={11} className="shrink-0 text-slate-400" />
+            <Calendar size={11} className="shrink-0 text-slate-600" />
             <span>{formatDate(plan.periodStart)} – {formatDate(plan.periodEnd)}</span>
             <span className="text-slate-300">·</span>
             <span className="font-medium text-slate-600">{dur}</span>
@@ -85,16 +85,16 @@ function PlanCard({ plan }: { plan: ActionPlan }) {
         {/* Stats row */}
         <div className="flex items-center gap-3 pt-1 border-t border-slate-100">
           <div className="flex items-center gap-1.5 text-xs text-slate-500">
-            <Target size={11} className="text-slate-400" />
+            <Target size={11} className="text-slate-600" />
             <span><span className="font-semibold text-slate-700">{plan.axes?.length ?? 0}</span> axes</span>
           </div>
           <div className="flex items-center gap-1.5 text-xs text-slate-500">
-            <Activity size={11} className="text-slate-400" />
+            <Activity size={11} className="text-slate-600" />
             <span><span className="font-semibold text-slate-700">{total}</span> activités</span>
           </div>
           {plan.budgetPrevisional ? (
             <div className="flex items-center gap-1.5 text-xs text-slate-500 ml-auto">
-              <Wallet size={11} className="text-slate-400" />
+              <Wallet size={11} className="text-slate-600" />
               <span className="font-semibold text-slate-700">
                 {formatBudget(Number(plan.budgetPrevisional))} FCFA
               </span>
@@ -229,7 +229,7 @@ export default function PlansPage() {
               { label: 'Activités', value: totalActivities, display: String(totalActivities), color: 'text-indigo-600' },
             ].map(k => (
               <div key={k.label} className="bg-white rounded-2xl border border-slate-200 p-3 md:p-4 flex flex-col gap-1">
-                <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-wider text-slate-400 truncate">{k.label}</p>
+                <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-wider text-slate-600 truncate">{k.label}</p>
                 <p className={`text-2xl md:text-4xl font-bold tabular-nums ${k.color}`}>{k.display}</p>
               </div>
             ))}
@@ -238,7 +238,7 @@ export default function PlansPage() {
 
         {/* Actions bar */}
         <div className="flex items-center justify-between">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">
             {isLoading ? '' : `${plans.length} plan${plans.length > 1 ? 's' : ''}`}
           </p>
           <Button icon={<Plus size={16} />} onClick={() => setCreateOpen(true)}>

@@ -26,7 +26,7 @@ export function ActivityRow({ activity, onClick }: Props) {
           <div className="min-w-0">
             <p className="text-sm font-medium text-slate-900 truncate max-w-xs">{activity.title}</p>
             {activity.axis && (
-              <p className="text-xs text-slate-400 truncate">
+              <p className="text-xs text-slate-600 truncate">
                 {activity.axis.actionPlan?.title} › {activity.axis.title}
               </p>
             )}

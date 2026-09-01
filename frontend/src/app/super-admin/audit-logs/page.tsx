@@ -281,21 +281,21 @@ function AuditLogRow({ log }: { log: AuditLog }) {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 text-sm">
           <div>
-            <p className="text-[9px] md:text-[10px] uppercase tracking-wider font-semibold text-slate-400 mb-1">Utilisateur</p>
+            <p className="text-[9px] md:text-[10px] uppercase tracking-wider font-semibold text-slate-600 mb-1">Utilisateur</p>
             <p className="text-[11px] md:text-xs font-medium text-slate-900 truncate">
               {log.user.firstName} {log.user.lastName}
             </p>
           </div>
           <div>
-            <p className="text-[9px] md:text-[10px] uppercase tracking-wider font-semibold text-slate-400 mb-1">IP</p>
+            <p className="text-[9px] md:text-[10px] uppercase tracking-wider font-semibold text-slate-600 mb-1">IP</p>
             <p className="text-[11px] md:text-xs font-mono text-slate-700 truncate">{log.ipAddress || '-'}</p>
           </div>
           <div>
-            <p className="text-[9px] md:text-[10px] uppercase tracking-wider font-semibold text-slate-400 mb-1">Request ID</p>
+            <p className="text-[9px] md:text-[10px] uppercase tracking-wider font-semibold text-slate-600 mb-1">Request ID</p>
             <p className="text-[11px] md:text-xs font-mono text-slate-700 truncate">{log.requestId?.slice(0, 8) || '-'}</p>
           </div>
           <div>
-            <p className="text-[9px] md:text-[10px] uppercase tracking-wider font-semibold text-slate-400 mb-1">Date</p>
+            <p className="text-[9px] md:text-[10px] uppercase tracking-wider font-semibold text-slate-600 mb-1">Date</p>
             <p className="text-[11px] md:text-xs text-slate-700">
               {new Date(log.createdAt).toLocaleDateString('fr-FR', {
                 day: '2-digit',
@@ -313,7 +313,7 @@ function AuditLogRow({ log }: { log: AuditLog }) {
         <div className="mt-3 pt-3 border-t border-slate-200 space-y-3">
           {log.userAgent && (
             <div>
-              <p className="text-[9px] md:text-[10px] uppercase tracking-wider font-semibold text-slate-400 mb-2">
+              <p className="text-[9px] md:text-[10px] uppercase tracking-wider font-semibold text-slate-600 mb-2">
                 User-Agent
               </p>
               <p className="text-[10px] md:text-xs font-mono bg-slate-100 text-slate-700 p-2 md:p-3 rounded-lg break-all">
@@ -324,7 +324,7 @@ function AuditLogRow({ log }: { log: AuditLog }) {
 
           {log.oldValues && (
             <div>
-              <p className="text-[9px] md:text-[10px] uppercase tracking-wider font-semibold text-slate-400 mb-2">
+              <p className="text-[9px] md:text-[10px] uppercase tracking-wider font-semibold text-slate-600 mb-2">
                 Anciennes valeurs
               </p>
               <pre className="text-[10px] md:text-xs bg-slate-100 text-slate-700 p-2 md:p-3 rounded-lg overflow-x-auto">
@@ -335,7 +335,7 @@ function AuditLogRow({ log }: { log: AuditLog }) {
 
           {log.newValues && (
             <div>
-              <p className="text-[9px] md:text-[10px] uppercase tracking-wider font-semibold text-slate-400 mb-2">
+              <p className="text-[9px] md:text-[10px] uppercase tracking-wider font-semibold text-slate-600 mb-2">
                 Nouvelles valeurs
               </p>
               <pre className="text-[10px] md:text-xs bg-slate-100 text-slate-700 p-2 md:p-3 rounded-lg overflow-x-auto">
@@ -346,7 +346,7 @@ function AuditLogRow({ log }: { log: AuditLog }) {
 
           {log.metadata && Object.keys(log.metadata).length > 0 && (
             <div>
-              <p className="text-[9px] md:text-[10px] uppercase tracking-wider font-semibold text-slate-400 mb-2">
+              <p className="text-[9px] md:text-[10px] uppercase tracking-wider font-semibold text-slate-600 mb-2">
                 Metadata
               </p>
               <pre className="text-[10px] md:text-xs bg-slate-100 text-slate-700 p-2 md:p-3 rounded-lg overflow-x-auto">

@@ -69,7 +69,7 @@ export default function HelpCenterPage() {
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               placeholder="Rechercher dans l'aide..."
-              className="w-full pl-12 pr-5 py-3.5 rounded-xl bg-white border-2 text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all font-medium shadow-sm"
+              className="w-full pl-12 pr-5 py-3.5 rounded-xl bg-white border-2 text-slate-900 placeholder:text-slate-600 focus:outline-none transition-all font-medium shadow-sm"
               style={{
                 borderColor: searchTerm ? 'var(--color-brand, #2563eb)' : 'rgb(226, 232, 240)',
                 boxShadow: searchTerm ? `0 0 0 3px color-mix(in srgb, var(--color-brand, #2563eb) 10%, transparent)` : undefined,
@@ -90,7 +90,7 @@ export default function HelpCenterPage() {
               className="text-center py-16 bg-white rounded-2xl border border-slate-200"
             >
               <div className="w-20 h-20 rounded-2xl bg-slate-50 border-2 border-slate-200 flex items-center justify-center mx-auto mb-4">
-                <Search size={32} className="text-slate-400" />
+                <Search size={32} className="text-slate-600" />
               </div>
               <p className="text-slate-600 font-medium">
                 Aucun résultat pour "{searchTerm}"

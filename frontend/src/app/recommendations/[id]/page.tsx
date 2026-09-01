@@ -679,7 +679,7 @@ export default function RecommendationDetailPage() {
                           <p className="text-xs text-slate-500 line-clamp-2 mb-2">{action.description}</p>
                         )}
                         {action.dueDate && (
-                          <p className="text-xs text-slate-400 flex items-center gap-1">
+                          <p className="text-xs text-slate-600 flex items-center gap-1">
                             <Calendar size={10} />
                             Échéance : {formatDate(action.dueDate)}
                           </p>
@@ -687,7 +687,7 @@ export default function RecommendationDetailPage() {
                       </div>
                       <button
                         onClick={() => handleDeleteAction(action.id)}
-                        className="text-slate-400 hover:text-red-600 transition-colors shrink-0"
+                        className="text-slate-600 hover:text-red-600 transition-colors shrink-0"
                       >
                         <X size={16} />
                       </button>
@@ -727,7 +727,7 @@ export default function RecommendationDetailPage() {
                       <div className="font-medium text-slate-900 text-sm">
                         {comment.author?.firstName} {comment.author?.lastName}
                       </div>
-                      <div className="text-xs text-slate-400">
+                      <div className="text-xs text-slate-600">
                         {formatDate(comment.createdAt)}
                       </div>
                     </div>

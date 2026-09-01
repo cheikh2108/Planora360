@@ -390,7 +390,7 @@ export default function FournisseurDetailPage() {
 
               {!fournisseur.email && !fournisseur.telephone && !fournisseur.nomContact && !fournisseur.adresse && (
                 <div className="rounded-lg bg-slate-50 p-8 text-center">
-                  <User className="mx-auto h-10 w-10 text-slate-400" />
+                  <User className="mx-auto h-10 w-10 text-slate-600" />
                   <p className="mt-2 text-sm text-slate-600">
                     Aucune information de contact disponible
                   </p>
@@ -467,7 +467,7 @@ export default function FournisseurDetailPage() {
                 </div>
               ) : (
                 <div className="rounded-lg bg-slate-50 p-8 text-center">
-                  <FileText className="mx-auto h-10 w-10 text-slate-400" />
+                  <FileText className="mx-auto h-10 w-10 text-slate-600" />
                   <p className="mt-2 text-sm text-slate-600">Aucun document associé</p>
                 </div>
               )}
@@ -547,7 +547,7 @@ export default function FournisseurDetailPage() {
                 </div>
               ) : (
                 <div className="rounded-lg bg-slate-50 p-8 text-center">
-                  <Star className="mx-auto h-10 w-10 text-slate-400" />
+                  <Star className="mx-auto h-10 w-10 text-slate-600" />
                   <p className="mt-2 text-sm text-slate-600">Aucune évaluation disponible</p>
                 </div>
               )}

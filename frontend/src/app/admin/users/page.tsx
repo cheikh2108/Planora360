@@ -169,13 +169,13 @@ export default function UsersPage() {
         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
           <div className="flex items-center justify-between gap-4 px-5 py-4 border-b border-slate-100 flex-wrap">
             <div className="relative max-w-xs">
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600" />
               <input
                 type="text"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Rechercher..."
-                className="h-9 pl-8 pr-4 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2563eb] w-56"
+                className="h-9 pl-8 pr-4 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-[#2563eb] w-56"
               />
             </div>
             <Button size="sm" icon={<Plus size={14} />} onClick={() => setCreateOpen(true)}>
@@ -212,7 +212,7 @@ export default function UsersPage() {
                           </div>
                           <div className="min-w-0">
                             <p className="text-sm font-medium text-slate-900">{user.firstName} {user.lastName}</p>
-                            <p className="text-xs text-slate-400 flex items-center gap-1 truncate">
+                            <p className="text-xs text-slate-600 flex items-center gap-1 truncate">
                               <Mail size={10} /> {user.email}
                             </p>
                           </div>
@@ -220,7 +220,7 @@ export default function UsersPage() {
                       </td>
                       <td className="px-4 py-3.5 hidden md:table-cell">
                         <div className="flex items-center gap-1.5">
-                          <Shield size={12} className="text-slate-400" />
+                          <Shield size={12} className="text-slate-600" />
                           <span className="text-xs text-slate-600">{user.role?.name}</span>
                         </div>
                       </td>
@@ -231,7 +231,7 @@ export default function UsersPage() {
                         {user.twoFactorEnabled ? (
                           <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Actif</span>
                         ) : (
-                          <span className="text-xs bg-slate-100 text-slate-400 px-2 py-0.5 rounded-full">—</span>
+                          <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">—</span>
                         )}
                       </td>
                       <td className="px-4 py-3.5 text-center">
@@ -248,8 +248,8 @@ export default function UsersPage() {
                           className={cn(
                             'p-1.5 rounded-lg transition-colors',
                             user.isActive
-                              ? 'text-slate-400 hover:text-red-500 hover:bg-red-50'
-                              : 'text-slate-400 hover:text-green-500 hover:bg-green-50'
+                              ? 'text-slate-600 hover:text-red-500 hover:bg-red-50'
+                              : 'text-slate-600 hover:text-green-500 hover:bg-green-50'
                           )}
                           title={user.isActive ? 'Désactiver' : 'Activer'}
                         >
@@ -286,12 +286,12 @@ export default function UsersPage() {
             {/* Barre de recherche */}
             <div className="flex items-center gap-3">
               <div className="relative max-w-md">
-                <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600" />
                 <input
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   placeholder="Rechercher un utilisateur supprimé..."
-                  className="w-full h-9 pl-8 pr-4 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+                  className="w-full h-9 pl-8 pr-4 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
                 />
               </div>
             </div>
@@ -332,14 +332,14 @@ export default function UsersPage() {
                           <tr key={user.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/60 transition-colors">
                             <td className="px-5 py-3.5">
                               <div className="flex items-center gap-3">
-                                <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-400 shrink-0">
+                                <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600 shrink-0">
                                   {user.firstName[0]}{user.lastName[0]}
                                 </div>
                                 <div className="min-w-0">
                                   <p className="text-sm font-semibold text-slate-700 truncate">
                                     {user.firstName} {user.lastName}
                                   </p>
-                                  <p className="text-xs text-slate-400 flex items-center gap-1">
+                                  <p className="text-xs text-slate-600 flex items-center gap-1">
                                     <Mail size={11} />
                                     {user.email}
                                   </p>
@@ -348,7 +348,7 @@ export default function UsersPage() {
                             </td>
                             <td className="px-4 py-3.5 hidden md:table-cell">
                               <div className="flex items-center gap-1.5 text-xs text-slate-600">
-                                <Shield size={12} className="text-slate-400" />
+                                <Shield size={12} className="text-slate-600" />
                                 {user.role?.name || 'Sans rôle'}
                               </div>
                             </td>
@@ -372,14 +372,14 @@ export default function UsersPage() {
                               <div className="flex items-center gap-1">
                                 <button
                                   onClick={() => setRestoreId(user.id)}
-                                  className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                                  className="p-1.5 rounded-lg text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
                                   title="Restaurer"
                                 >
                                   <RotateCcw size={14} />
                                 </button>
                                 <button
                                   onClick={() => setHardDeleteId(user.id)}
-                                  className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                                  className="p-1.5 rounded-lg text-slate-600 hover:text-red-600 hover:bg-red-50 transition-colors"
                                   title="Supprimer définitivement"
                                 >
                                   <Trash2 size={14} />

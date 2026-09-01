@@ -187,7 +187,7 @@ export function FileUpload({
             <p className="mt-1 text-[12px] text-slate-500">
               Max {maxFiles} fichiers • {maxSizeMB}MB par fichier
             </p>
-            <p className="mt-0.5 text-[11px] text-slate-400">
+            <p className="mt-0.5 text-[11px] text-slate-600">
               Images, PDF, Word, Excel
             </p>
           </div>
@@ -239,7 +239,7 @@ export function FileUpload({
               {/* Remove Button */}
               <button
                 onClick={() => removeFile(index)}
-                className="flex-shrink-0 rounded-lg p-1.5 text-slate-400 transition-all duration-200 hover:bg-red-50 hover:text-red-600 active:scale-95"
+                className="flex-shrink-0 rounded-lg p-1.5 text-slate-600 transition-all duration-200 hover:bg-red-50 hover:text-red-600 active:scale-95"
               >
                 <X className="h-4 w-4" />
               </button>

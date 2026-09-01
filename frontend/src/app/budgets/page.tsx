@@ -147,32 +147,32 @@ export default function BudgetsPage() {
 
               {/* Budget engagé */}
               <div className="bg-white rounded-2xl border border-slate-200 p-3 md:p-5 flex flex-col gap-1">
-                <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-widest text-slate-400">Engagé</p>
+                <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-widest text-slate-600">Engagé</p>
                 <p className="text-2xl md:text-3xl font-bold tabular-nums text-blue-600 leading-none mt-1">{fmt(summary.totalCommitted)}</p>
-                <p className="text-[11px] md:text-xs text-slate-400 mt-1">
+                <p className="text-[11px] md:text-xs text-slate-600 mt-1">
                   {summary.commitmentRate}% du prévu
                 </p>
               </div>
 
               {/* Solde disponible */}
               <div className="bg-white rounded-2xl border border-slate-200 p-3 md:p-5 flex flex-col gap-1">
-                <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-widest text-slate-400">Disponible</p>
+                <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-widest text-slate-600">Disponible</p>
                 <p className="text-2xl md:text-3xl font-bold tabular-nums text-indigo-600 leading-none mt-1">{fmt(summary.availableBalance)}</p>
-                <p className="text-[11px] md:text-xs text-slate-400 mt-1">Peut encore engager</p>
+                <p className="text-[11px] md:text-xs text-slate-600 mt-1">Peut encore engager</p>
               </div>
 
               {/* Budget exécuté */}
               <div className="bg-white rounded-2xl border border-slate-200 p-3 md:p-5 flex flex-col gap-1">
-                <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-widest text-slate-400">Exécuté</p>
+                <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-widest text-slate-600">Exécuté</p>
                 <p className="text-2xl md:text-3xl font-bold tabular-nums text-green-600 leading-none mt-1">{fmt(summary.totalExecuted)}</p>
-                <p className="text-[11px] md:text-xs text-slate-400 mt-1">{rate}% du prévu</p>
+                <p className="text-[11px] md:text-xs text-slate-600 mt-1">{rate}% du prévu</p>
               </div>
 
               {/* Reste à payer */}
               <div className="bg-white rounded-2xl border border-slate-200 p-3 md:p-5 flex flex-col gap-1">
-                <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-widest text-slate-400">Reste à payer</p>
+                <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-widest text-slate-600">Reste à payer</p>
                 <p className="text-2xl md:text-3xl font-bold tabular-nums text-orange-600 leading-none mt-1">{fmt(summary.remainingToPay)}</p>
-                <p className="text-[11px] md:text-xs text-slate-400 mt-1">Engagé non payé</p>
+                <p className="text-[11px] md:text-xs text-slate-600 mt-1">Engagé non payé</p>
               </div>
 
               {/* Taux d'exécution */}
@@ -183,7 +183,7 @@ export default function BudgetsPage() {
                                       'bg-amber-50 border-amber-200'
               )}>
                 <div className="flex items-center justify-between">
-                  <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-widest text-slate-400">Taux</p>
+                  <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-widest text-slate-600">Taux</p>
                   {trend === 'up'
                     ? <TrendingUp size={14} className="text-green-500" />
                     : trend === 'down'
@@ -196,7 +196,7 @@ export default function BudgetsPage() {
                 )}>
                   {rate}%
                 </p>
-                <p className="text-[11px] md:text-xs text-slate-400 mt-1">Exécution</p>
+                <p className="text-[11px] md:text-xs text-slate-600 mt-1">Exécution</p>
               </div>
             </div>
 
@@ -204,7 +204,7 @@ export default function BudgetsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
               {/* Donut / gauge — existing BudgetChart */}
               <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-5">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-4">Répartition globale</p>
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600 mb-4">Répartition globale</p>
                 <BudgetChart
                   planned={summary.totalPlanned}
                   committed={summary.totalCommitted}
@@ -215,7 +215,7 @@ export default function BudgetsPage() {
               {/* Horizontal bar chart — top activités */}
               {barData.length > 0 && (
                 <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-200 p-5">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-4">
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600 mb-4">
                     Exécution par activité (top {barData.length})
                   </p>
                   <ResponsiveContainer width="100%" height={barData.length * 36 + 24}>
@@ -258,17 +258,17 @@ export default function BudgetsPage() {
             {summary.byActivity?.length > 0 && (
               <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
                 <div className="px-5 py-4 border-b border-slate-100">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Détail par activité</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">Détail par activité</p>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
                       <tr className="bg-slate-50 border-b border-slate-100">
-                        <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400">Activité</th>
-                        <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400 hidden sm:table-cell">Source</th>
-                        <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400">Prévu</th>
-                        <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400">Exécuté</th>
-                        <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400">Taux</th>
+                        <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600">Activité</th>
+                        <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600 hidden sm:table-cell">Source</th>
+                        <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600">Prévu</th>
+                        <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600">Exécuté</th>
+                        <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600">Taux</th>
                         <th className="px-4 py-3 hidden md:table-cell w-28" />
                       </tr>
                     </thead>

@@ -221,19 +221,19 @@ function SubscriptionSection({ currentPlan }: { currentPlan: SubscriptionPlan })
                     <p className="text-xs text-slate-500 ml-[22px]">{plan.tagline}</p>
                     <div className="flex gap-3 mt-1.5 ml-[22px]">
                       <span className="text-[11px] text-slate-500 flex items-center gap-1">
-                        <FolderKanban size={9} className="text-slate-400" />{plan.limits.plans}
+                        <FolderKanban size={9} className="text-slate-600" />{plan.limits.plans}
                       </span>
                       <span className="text-[11px] text-slate-500 flex items-center gap-1">
-                        <Users size={9} className="text-slate-400" />{plan.limits.users}
+                        <Users size={9} className="text-slate-600" />{plan.limits.users}
                       </span>
                     </div>
                   </div>
                   <div className="hidden sm:block w-px self-stretch bg-slate-200" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">Ce que vous gagnez</p>
+                    <p className="text-[10px] font-semibold text-slate-600 uppercase tracking-wide mb-1.5">Ce que vous gagnez</p>
                     <div className="flex flex-wrap gap-x-4 gap-y-1">
                       {extras.length === 0 ? (
-                        <span className="text-xs text-slate-400 italic">Tout ce qui précède, en mieux</span>
+                        <span className="text-xs text-slate-600 italic">Tout ce qui précède, en mieux</span>
                       ) : extras.map(f => (
                         <span key={f.label} className="flex items-center gap-1 text-xs text-slate-700">
                           <Check size={10} className="text-green-500 shrink-0" />{f.label}
@@ -272,7 +272,7 @@ function SubscriptionSection({ currentPlan }: { currentPlan: SubscriptionPlan })
       )}
 
       <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
-        <MessageSquare size={13} className="text-slate-400 shrink-0" />
+        <MessageSquare size={13} className="text-slate-600 shrink-0" />
         <p className="text-xs text-slate-500">
           Pour réduire votre formule ou toute autre demande :{' '}
           <span className="font-medium text-slate-700">support@ataaba.com</span>
@@ -434,7 +434,7 @@ export default function SettingsPage() {
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm font-semibold leading-none mb-0.5">{s}</p>
-                      <p className={cn('text-[11px] truncate', active ? 'text-white/50' : 'text-slate-400')}>{desc}</p>
+                      <p className={cn('text-[11px] truncate', active ? 'text-white/50' : 'text-slate-600')}>{desc}</p>
                     </div>
                   </button>
                 );
@@ -466,7 +466,7 @@ export default function SettingsPage() {
 
                 {/* Champs */}
                 <div className="p-5 md:p-6 space-y-4">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Informations personnelles</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">Informations personnelles</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <FormField label="Prénom">
                       <Input defaultValue={user?.firstName} disabled />
@@ -478,7 +478,7 @@ export default function SettingsPage() {
                       <Input type="email" defaultValue={user?.email} disabled />
                     </FormField>
                   </div>
-                  <p className="text-xs text-slate-400 pt-1">Pour modifier ces informations, contactez votre administrateur.</p>
+                  <p className="text-xs text-slate-600 pt-1">Pour modifier ces informations, contactez votre administrateur.</p>
                 </div>
               </div>
             )}
@@ -598,7 +598,7 @@ export default function SettingsPage() {
                         setBrandColorLocal(user?.organization?.brandColor ?? '#2563eb');
                         setColorError(null);
                       }}
-                      className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
+                      className="text-xs text-slate-600 hover:text-slate-600 transition-colors"
                     >
                       Réinitialiser
                     </button>
@@ -666,7 +666,7 @@ export default function SettingsPage() {
             {section === 'Notifications' && (
               <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
                 <div className="px-5 py-4 border-b border-slate-100">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Préférences de notification</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">Préférences de notification</p>
                 </div>
                 <div className="divide-y divide-slate-100">
                   {[
@@ -679,7 +679,7 @@ export default function SettingsPage() {
                     <div key={item.label} className="flex items-center justify-between gap-4 px-5 py-3.5">
                       <div className="min-w-0">
                         <p className="text-sm font-medium text-slate-900">{item.label}</p>
-                        <p className="text-xs text-slate-400 mt-0.5 leading-snug">{item.desc}</p>
+                        <p className="text-xs text-slate-600 mt-0.5 leading-snug">{item.desc}</p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer shrink-0">
                         <input type="checkbox" defaultChecked={item.enabled} className="sr-only peer" />

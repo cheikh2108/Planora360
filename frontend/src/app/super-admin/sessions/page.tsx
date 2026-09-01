@@ -250,7 +250,7 @@ export default function SessionsPage() {
         {/* Filters */}
         <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
           <div className="flex items-center gap-2 mb-4">
-            <Search className="w-5 h-5 text-slate-400" />
+            <Search className="w-5 h-5 text-slate-600" />
             <h2 className="text-sm font-semibold text-slate-900">Filtres</h2>
           </div>
 
@@ -368,14 +368,14 @@ export default function SessionsPage() {
                               {session.user.firstName} {session.user.lastName}
                             </p>
                             <p className="text-xs text-slate-500">{session.user.email}</p>
-                            <p className="text-xs text-slate-400 mt-0.5">
+                            <p className="text-xs text-slate-600 mt-0.5">
                               {session.user.organization.name}
                             </p>
                           </div>
                         </td>
                         <td className="py-4 px-6">
                           <div className="flex items-center gap-2">
-                            <DeviceIcon className="w-4 h-4 text-slate-400 shrink-0" />
+                            <DeviceIcon className="w-4 h-4 text-slate-600 shrink-0" />
                             <div>
                               <p className="text-sm text-slate-900">
                                 {session.browser || 'Navigateur inconnu'}
@@ -388,7 +388,7 @@ export default function SessionsPage() {
                         </td>
                         <td className="py-4 px-6">
                           <div className="flex items-center gap-2">
-                            <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
+                            <MapPin className="w-4 h-4 text-slate-600 shrink-0" />
                             <div>
                               <p className="text-sm text-slate-900">{session.ipAddress}</p>
                               {(session.city || session.country) && (

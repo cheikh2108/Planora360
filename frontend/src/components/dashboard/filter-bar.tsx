@@ -37,7 +37,7 @@ const STATUS_OPTIONS = [
 export function FilterBar({ filters, onChange, plans }: FilterBarProps) {
   return (
     <div className="flex items-center gap-2 flex-wrap">
-      <Filter size={14} className="text-slate-400 shrink-0" />
+      <Filter size={14} className="text-slate-600 shrink-0" />
 
       <select
         value={filters.planId}

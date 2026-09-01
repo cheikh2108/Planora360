@@ -190,7 +190,7 @@ export default function CapitalisationDetailPage() {
                     <img src={media.url} alt={media.filename} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <FileText size={32} className="text-slate-400" />
+                      <FileText size={32} className="text-slate-600" />
                     </div>
                   )}
                 </div>

@@ -50,7 +50,7 @@ export default function PassationLayout({ children }: { children: React.ReactNod
                         : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                     )}
                   >
-                    <Icon size={16} className={active ? 'text-emerald-600' : 'text-slate-400'} />
+                    <Icon size={16} className={active ? 'text-emerald-600' : 'text-slate-600'} />
                     {item.label}
                   </button>
                 );

@@ -50,7 +50,7 @@ export function LoadingState({
           />
         </svg>
         {text && (
-          <p className="text-sm text-gray-600 dark:text-gray-400">{text}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-600">{text}</p>
         )}
       </div>
     );

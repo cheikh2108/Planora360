@@ -55,14 +55,14 @@ export function Pagination({ page, total, limit, onChange, className }: Paginati
 
   return (
     <div className={cn('flex items-center justify-between gap-4 px-1', className)}>
-      <p className="text-xs text-slate-400 tabular-nums shrink-0">
+      <p className="text-xs text-slate-600 tabular-nums shrink-0">
         {from}–{to} sur {total}
       </p>
       <div className="flex items-center gap-0.5">
         {btn(<ChevronLeft size={14} />, page - 1, page === 1)}
         {pages.map((p, i) =>
           p === '…'
-            ? <span key={`ellipsis-${i}`} className="min-w-[2rem] h-8 flex items-center justify-center text-xs text-slate-400">…</span>
+            ? <span key={`ellipsis-${i}`} className="min-w-[2rem] h-8 flex items-center justify-center text-xs text-slate-600">…</span>
             : btn(p, p as number, false, p === page)
         )}
         {btn(<ChevronRight size={14} />, page + 1, page === totalPages)}

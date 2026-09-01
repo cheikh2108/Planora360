@@ -106,7 +106,7 @@ export default function PlanificationPage() {
                   {/* Meta */}
                   <div className="flex flex-col gap-1 pt-2 border-t border-slate-100 text-xs text-slate-500">
                     <div className="flex items-center gap-1.5">
-                      <Calendar size={10} className="text-slate-400" />
+                      <Calendar size={10} className="text-slate-600" />
                       Créé le {new Date(plan.createdAt).toLocaleDateString('fr-FR')}
                     </div>
                     {plan.validatedAt && (

@@ -85,7 +85,7 @@ export class ErrorBoundary extends Component<Props, State> {
             </h1>
 
             {/* Description */}
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+            <p className="text-sm text-gray-600 dark:text-gray-600 mb-6">
               Désolé, quelque chose s'est mal passé. Nos équipes ont été notifiées et travaillent sur une solution.
             </p>
 

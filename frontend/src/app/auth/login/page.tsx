@@ -171,7 +171,7 @@ export default function LoginPage() {
             <h1 className="text-[2.75rem] font-extrabold text-[#020617] tracking-tight leading-[1] mb-2">
               Bon retour.
             </h1>
-            <p className="text-slate-400 text-[13px] mb-8 leading-relaxed">
+            <p className="text-slate-600 text-[13px] mb-8 leading-relaxed">
               Identifiez-vous pour accéder à vos tableaux de bord.
             </p>
 

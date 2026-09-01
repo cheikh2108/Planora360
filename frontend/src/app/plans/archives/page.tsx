@@ -25,26 +25,26 @@ function ArchivedPlanCard({ plan }: { plan: ActionPlan }) {
               <h3 className="font-semibold text-slate-700 text-sm line-clamp-2 leading-snug">{plan.title}</h3>
             </div>
           </div>
-          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 bg-slate-100 text-slate-400">
+          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 bg-slate-100 text-slate-600">
             Archivé
           </span>
         </div>
 
         {plan.strategicGoals && (
-          <p className="text-xs text-slate-400 line-clamp-2 -mt-1">{plan.strategicGoals}</p>
+          <p className="text-xs text-slate-600 line-clamp-2 -mt-1">{plan.strategicGoals}</p>
         )}
 
-        <div className="flex items-center gap-1.5 text-xs text-slate-400">
+        <div className="flex items-center gap-1.5 text-xs text-slate-600">
           <Calendar size={11} className="shrink-0" />
           <span>{formatDate(plan.periodStart)} – {formatDate(plan.periodEnd)}</span>
         </div>
 
         <div className="flex items-center gap-3 pt-1 border-t border-slate-100">
-          <div className="flex items-center gap-1.5 text-xs text-slate-400">
+          <div className="flex items-center gap-1.5 text-xs text-slate-600">
             <Target size={11} />
             <span><span className="font-semibold">{plan.axes?.length ?? 0}</span> axes</span>
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-slate-400">
+          <div className="flex items-center gap-1.5 text-xs text-slate-600">
             <Activity size={11} />
             <span><span className="font-semibold">{total}</span> activités</span>
           </div>

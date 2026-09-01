@@ -195,7 +195,7 @@ export default function ParticipantsPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-slate-900 text-sm">Format du fichier Excel</h3>
-                  <p className="text-xs text-slate-400 mt-0.5">Votre fichier doit contenir les colonnes suivantes</p>
+                  <p className="text-xs text-slate-600 mt-0.5">Votre fichier doit contenir les colonnes suivantes</p>
                 </div>
               </div>
 
@@ -210,21 +210,21 @@ export default function ParticipantsPage() {
                 </div>
                 <div className="flex items-start gap-3 text-sm">
                   <div className="w-32 shrink-0 font-medium text-slate-700 flex items-center gap-1.5">
-                    <Phone size={12} className="text-slate-400" />
+                    <Phone size={12} className="text-slate-600" />
                     Téléphone
                   </div>
                   <div className="text-slate-500">Numéro de téléphone</div>
                 </div>
                 <div className="flex items-start gap-3 text-sm">
                   <div className="w-32 shrink-0 font-medium text-slate-700 flex items-center gap-1.5">
-                    <CreditCard size={12} className="text-slate-400" />
+                    <CreditCard size={12} className="text-slate-600" />
                     Mode de paiement
                   </div>
                   <div className="text-slate-500">WAVE ou ORANGE_MONEY</div>
                 </div>
                 <div className="flex items-start gap-3 text-sm">
                   <div className="w-32 shrink-0 font-medium text-slate-700 flex items-center gap-1.5">
-                    <DollarSign size={12} className="text-slate-400" />
+                    <DollarSign size={12} className="text-slate-600" />
                     Montant
                   </div>
                   <div className="text-slate-500">Montant en FCFA</div>

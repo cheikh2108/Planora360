@@ -44,8 +44,8 @@ function AxisSection({ axis, planId, planPeriodStart, planPeriodEnd, readonly }:
       >
         <div className="w-2 h-2 rounded-full bg-[#2563eb] shrink-0" />
         <h3 className="font-semibold text-slate-800 text-sm flex-1">{axis.title}</h3>
-        <span className="text-xs text-slate-400">{axis.activities?.length ?? 0} activités</span>
-        {open ? <ChevronDown size={16} className="text-slate-400" /> : <ChevronRight size={16} className="text-slate-400" />}
+        <span className="text-xs text-slate-600">{axis.activities?.length ?? 0} activités</span>
+        {open ? <ChevronDown size={16} className="text-slate-600" /> : <ChevronRight size={16} className="text-slate-600" />}
       </div>
 
       {open && (
@@ -66,8 +66,8 @@ function AxisSection({ axis, planId, planPeriodStart, planPeriodEnd, readonly }:
                     <p className="text-sm font-medium text-slate-900 truncate group-hover:text-[#2563eb]">{act.title}</p>
                     {act.responsible && (
                       <div className="flex items-center gap-1 mt-0.5">
-                        <User size={11} className="text-slate-400" />
-                        <span className="text-xs text-slate-400">{act.responsible.firstName} {act.responsible.lastName}</span>
+                        <User size={11} className="text-slate-600" />
+                        <span className="text-xs text-slate-600">{act.responsible.firstName} {act.responsible.lastName}</span>
                       </div>
                     )}
                   </div>
@@ -79,7 +79,7 @@ function AxisSection({ axis, planId, planPeriodStart, planPeriodEnd, readonly }:
                     <ProgressBar value={act.completionRate} showLabel size="sm" />
                   </div>
                   {act.dueDate && (
-                    <div className="flex items-center gap-1 text-xs text-slate-400 hidden md:flex">
+                    <div className="flex items-center gap-1 text-xs text-slate-600 hidden md:flex">
                       <Calendar size={11} />
                       <span>{formatDate(act.dueDate)}</span>
                     </div>
@@ -245,7 +245,7 @@ const PLAN_STATUS_META: Record<PlanStatus, { label: string; cls: string }> = {
   BROUILLON: { label: 'Brouillon', cls: 'bg-slate-100 text-slate-500' },
   EN_COURS:  { label: 'En cours',  cls: 'bg-blue-50 text-blue-600' },
   TERMINE:   { label: 'Terminé',   cls: 'bg-teal-50 text-teal-600' },
-  ARCHIVE:   { label: 'Archivé',   cls: 'bg-slate-100 text-slate-400' },
+  ARCHIVE:   { label: 'Archivé',   cls: 'bg-slate-100 text-slate-600' },
 };
 
 const STATUS_LABELS: Record<PlanStatus, string> = {
@@ -340,7 +340,7 @@ export default function PlanDetailPage() {
             <Button icon={<Plus size={16} />} onClick={() => setAddAxisOpen(true)} disabled={isLocked}>Ajouter un axe</Button>
             <button
               onClick={() => setConfirmDelete(true)}
-              className="p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+              className="p-2 rounded-xl text-slate-600 hover:text-red-500 hover:bg-red-50 transition-colors"
               title="Supprimer le plan"
             >
               <Trash2 size={16} />

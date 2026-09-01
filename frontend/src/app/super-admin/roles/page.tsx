@@ -96,7 +96,7 @@ function RoleModal({ open, onClose, role }: { open: boolean; onClose: () => void
         <div>
           <p className="text-sm font-medium text-slate-700 mb-3">
             Permissions
-            <span className="ml-2 text-xs text-slate-400 font-normal">({permissions.length} sélectionnée{permissions.length > 1 ? 's' : ''})</span>
+            <span className="ml-2 text-xs text-slate-600 font-normal">({permissions.length} sélectionnée{permissions.length > 1 ? 's' : ''})</span>
           </p>
           <PermissionMatrix selected={permissions} onChange={setPermissions} />
         </div>
@@ -129,13 +129,13 @@ function RoleRow({ role, onEdit, onDelete }: { role: Role; onEdit: (r: Role) => 
       <div className="flex items-center gap-4 px-5 py-4">
         <div className="flex items-center gap-3 w-52 shrink-0">
           <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shrink-0', isSystem ? 'bg-slate-100' : 'bg-amber-50')}>
-            {isSystem ? <Lock size={14} className="text-slate-400" /> : <Shield size={14} className="text-amber-600" />}
+            {isSystem ? <Lock size={14} className="text-slate-600" /> : <Shield size={14} className="text-amber-600" />}
           </div>
           <div className="min-w-0">
             <p className="text-sm font-semibold text-slate-900 truncate">{role.name}</p>
             <div className="flex items-center gap-1.5 mt-0.5">
-              {isSystem && <span className="text-xs text-slate-400 font-medium">Système</span>}
-              <span className="text-xs text-slate-400 flex items-center gap-1"><Users size={10} />{role._count?.users ?? 0}</span>
+              {isSystem && <span className="text-xs text-slate-600 font-medium">Système</span>}
+              <span className="text-xs text-slate-600 flex items-center gap-1"><Users size={10} />{role._count?.users ?? 0}</span>
             </div>
           </div>
         </div>
@@ -144,7 +144,7 @@ function RoleRow({ role, onEdit, onDelete }: { role: Role; onEdit: (r: Role) => 
           {hasStar ? (
             <span className="text-xs font-medium bg-amber-50 text-amber-700 border border-amber-100 px-2.5 py-1 rounded-full">Accès complet</span>
           ) : allGranted.length === 0 ? (
-            <span className="text-xs text-slate-400 italic">Aucune permission</span>
+            <span className="text-xs text-slate-600 italic">Aucune permission</span>
           ) : (
             <div className="flex items-center gap-1.5 flex-wrap">
               {visible.map(p => (
@@ -163,11 +163,11 @@ function RoleRow({ role, onEdit, onDelete }: { role: Role; onEdit: (r: Role) => 
         </div>
 
         <div className="flex items-center gap-1 shrink-0">
-          <button onClick={() => onEdit(role)} className="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors" title="Modifier">
+          <button onClick={() => onEdit(role)} className="p-1.5 rounded-lg text-slate-600 hover:text-amber-600 hover:bg-amber-50 transition-colors" title="Modifier">
             <Pencil size={14} />
           </button>
           {!isSystem && (
-            <button onClick={() => onDelete(role)} className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors" title="Supprimer">
+            <button onClick={() => onDelete(role)} className="p-1.5 rounded-lg text-slate-600 hover:text-red-500 hover:bg-red-50 transition-colors" title="Supprimer">
               <Trash2 size={14} />
             </button>
           )}
@@ -179,7 +179,7 @@ function RoleRow({ role, onEdit, onDelete }: { role: Role; onEdit: (r: Role) => 
           <div className="bg-white rounded-xl border border-slate-200 p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {grantedByGroup.map(({ group, granted }) => (
               <div key={group}>
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">{group}</p>
+                <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2">{group}</p>
                 <div className="flex flex-col gap-1">
                   {granted.map(p => (
                     <span key={p.key} className={cn('text-xs px-2 py-1 rounded-lg font-medium border w-fit', GROUP_COLORS[group] ?? 'bg-slate-50 text-slate-600 border-slate-100')}>

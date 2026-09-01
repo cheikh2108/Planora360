@@ -61,7 +61,7 @@ function OverviewTab({ org, onEdit }: { org: Organization; onEdit: () => void })
           </div>
           <div>
             <h2 className="text-xl font-bold text-slate-900">{org.name}</h2>
-            <p className="text-xs text-slate-400 mt-0.5 font-mono">{org.id}</p>
+            <p className="text-xs text-slate-600 mt-0.5 font-mono">{org.id}</p>
           </div>
         </div>
         <Button size="sm" variant="secondary" icon={<Edit3 size={13} />} onClick={onEdit}>Modifier</Button>
@@ -230,7 +230,7 @@ export default function SuperAdminOrgDetailPage() {
         <div>
           <button
             onClick={() => router.push('/super-admin/organizations')}
-            className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-700 transition-colors mb-2"
+            className="flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-700 transition-colors mb-2"
           >
             <ArrowLeft size={14} /> Retour aux organisations
           </button>

@@ -237,7 +237,7 @@ export default function DashboardPage() {
               <div key={idx} className={cn('rounded-2xl border border-slate-200 p-5 bg-white')}>
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">
                       {kpi.label}
                     </p>
                     <p className={cn('text-3xl font-bold tabular-nums mt-2', kpi.color)}>
@@ -258,7 +258,7 @@ export default function DashboardPage() {
                   <span className={cn('text-xs font-medium', kpi.trendUp ? 'text-green-600' : 'text-red-600')}>
                     {kpi.trend}
                   </span>
-                  <span className="text-xs text-slate-400">vs mois dernier</span>
+                  <span className="text-xs text-slate-600">vs mois dernier</span>
                 </div>
               </div>
             );
@@ -278,7 +278,7 @@ export default function DashboardPage() {
                   <p className="text-xs font-semibold text-slate-600">{card.title}</p>
                 </div>
                 <p className={cn('text-2xl font-bold tabular-nums', card.color)}>{card.value}</p>
-                <p className="text-xs text-slate-400 mt-1">{card.description}</p>
+                <p className="text-xs text-slate-600 mt-1">{card.description}</p>
               </div>
             );
           })}
@@ -290,8 +290,8 @@ export default function DashboardPage() {
           <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
             <div className="px-5 py-4 border-b border-slate-100">
               <div className="flex items-center gap-2">
-                <Gavel size={16} className="text-slate-400" />
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+                <Gavel size={16} className="text-slate-600" />
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">
                   Procédures Récentes
                 </p>
               </div>
@@ -316,7 +316,7 @@ export default function DashboardPage() {
                 </div>
               ))}
               {(!procedures || procedures.length === 0) && (
-                <p className="text-sm text-slate-400 text-center py-4">Aucune procédure récente</p>
+                <p className="text-sm text-slate-600 text-center py-4">Aucune procédure récente</p>
               )}
             </div>
           </div>
@@ -325,8 +325,8 @@ export default function DashboardPage() {
           <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
             <div className="px-5 py-4 border-b border-slate-100">
               <div className="flex items-center gap-2">
-                <FileSignature size={16} className="text-slate-400" />
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+                <FileSignature size={16} className="text-slate-600" />
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">
                   Contrats Récents
                 </p>
               </div>
@@ -344,14 +344,14 @@ export default function DashboardPage() {
                     <p className="text-sm font-semibold text-slate-900 tabular-nums">
                       {formatCurrency(Number(contrat.montantRevise || contrat.montantInitial))}
                     </p>
-                    <p className="text-[10px] text-slate-400 mt-0.5">
+                    <p className="text-[10px] text-slate-600 mt-0.5">
                       {formatDate(contrat.dateSignature)}
                     </p>
                   </div>
                 </div>
               ))}
               {(!contrats || contrats.length === 0) && (
-                <p className="text-sm text-slate-400 text-center py-4">Aucun contrat récent</p>
+                <p className="text-sm text-slate-600 text-center py-4">Aucun contrat récent</p>
               )}
             </div>
           </div>

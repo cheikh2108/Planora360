@@ -52,7 +52,7 @@ function RecommendationCard({ rec }: { rec: Recommendation }) {
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-[10px] font-mono text-slate-400">{rec.code}</span>
+                  <span className="text-[10px] font-mono text-slate-600">{rec.code}</span>
                   {isOverdue && (
                     <AlertTriangle size={12} className="text-red-500" />
                   )}
@@ -78,17 +78,17 @@ function RecommendationCard({ rec }: { rec: Recommendation }) {
           {/* Meta chips */}
           <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs">
             <div className="flex items-center gap-1.5 text-slate-500">
-              <Calendar size={11} className="shrink-0 text-slate-400" />
+              <Calendar size={11} className="shrink-0 text-slate-600" />
               <span>Émise {formatDate(rec.issuedAt)}</span>
             </div>
             <div className="flex items-center gap-1.5 text-slate-500">
-              <Clock size={11} className="shrink-0 text-slate-400" />
+              <Clock size={11} className="shrink-0 text-slate-600" />
               <span className={isOverdue ? 'text-red-600 font-medium' : ''}>
                 Échéance {formatDate(rec.dueDate)}
               </span>
             </div>
             <div className="flex items-center gap-1.5 text-slate-500">
-              <User size={11} className="shrink-0 text-slate-400" />
+              <User size={11} className="shrink-0 text-slate-600" />
               <span>{rec.responsible.firstName} {rec.responsible.lastName}</span>
             </div>
           </div>
@@ -108,7 +108,7 @@ function RecommendationCard({ rec }: { rec: Recommendation }) {
 
           {/* Footer badges */}
           <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-            <div className="flex items-center gap-2 text-[10px] text-slate-400">
+            <div className="flex items-center gap-2 text-[10px] text-slate-600">
               <span className="px-2 py-1 bg-slate-50 rounded-md">
                 {RECOMMENDATION_SOURCE_LABELS[rec.source]}
               </span>

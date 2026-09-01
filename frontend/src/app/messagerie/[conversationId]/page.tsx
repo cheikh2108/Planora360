@@ -538,7 +538,7 @@ export default function ConversationPage() {
               onChange={(e) => handleInputChange(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
               placeholder="Écrivez votre message..."
-              className="w-full resize-none rounded-2xl border-slate-200 bg-slate-50 px-4 py-2 text-[14px] leading-[1.4] placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 transition-all duration-200"
+              className="w-full resize-none rounded-2xl border-slate-200 bg-slate-50 px-4 py-2 text-[14px] leading-[1.4] placeholder:text-slate-600 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 transition-all duration-200"
               style={{ minHeight: '38px', maxHeight: '120px' }}
             />
           </div>
@@ -549,7 +549,7 @@ export default function ConversationPage() {
               'rounded-full p-3 transition-all duration-200 active:scale-90',
               messageInput.trim() && isConnected
                 ? 'bg-[#005c4b] text-white shadow-lg shadow-emerald-900/20 hover:bg-[#004a3d] hover:shadow-xl'
-                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                : 'bg-slate-200 text-slate-600 cursor-not-allowed'
             )}
           >
             <Send className="h-5 w-5" />
@@ -616,7 +616,7 @@ export default function ConversationPage() {
                 <h3 className="text-[16px] font-semibold text-slate-900">Détails de la conversation</h3>
                 <button
                   onClick={() => setShowInfoPanel(false)}
-                  className="rounded-full p-2 text-slate-400 transition-all duration-200 hover:bg-slate-100 hover:text-slate-600 active:scale-90"
+                  className="rounded-full p-2 text-slate-600 transition-all duration-200 hover:bg-slate-100 hover:text-slate-600 active:scale-90"
                 >
                   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -735,7 +735,7 @@ export default function ConversationPage() {
                     }
                   }}
                   disabled={isUploading}
-                  className="rounded-full p-2 text-slate-400 transition-all duration-200 hover:bg-slate-100 hover:text-slate-600 active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="rounded-full p-2 text-slate-600 transition-all duration-200 hover:bg-slate-100 hover:text-slate-600 active:scale-90 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <X className="h-5 w-5" />
                 </button>

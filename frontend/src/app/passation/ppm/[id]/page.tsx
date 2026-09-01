@@ -272,7 +272,7 @@ export default function PPMDetailPage() {
             {/* PPM Details Section */}
             <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
               <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">
                   Détails du PPM
                 </p>
                 <div className="flex items-center gap-2">
@@ -302,7 +302,7 @@ export default function PPMDetailPage() {
                 <div className="flex flex-col md:flex-row items-start justify-between mb-6 gap-4">
                   <div className="space-y-3 w-full md:w-auto">
                     <div>
-                      <p className="text-xs uppercase tracking-widest font-semibold text-slate-400 mb-1">
+                      <p className="text-xs uppercase tracking-widest font-semibold text-slate-600 mb-1">
                         Référence
                       </p>
                       <h3 className="text-xl md:text-2xl font-bold text-slate-900">{ppm?.reference}</h3>
@@ -313,7 +313,7 @@ export default function PPMDetailPage() {
                   </div>
 
                   <div className="text-right space-y-2">
-                    <p className="text-xs uppercase tracking-widest font-semibold text-slate-400">
+                    <p className="text-xs uppercase tracking-widest font-semibold text-slate-600">
                       Montant Total
                     </p>
                     <p className="text-3xl font-bold text-teal-600 tabular-nums">
@@ -330,7 +330,7 @@ export default function PPMDetailPage() {
                       <Calendar size={18} className="text-blue-600" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-[10px] uppercase tracking-widest font-semibold text-slate-400 mb-1">
+                      <p className="text-[10px] uppercase tracking-widest font-semibold text-slate-600 mb-1">
                         Année
                       </p>
                       <p className="text-lg font-semibold text-slate-900">{ppm?.year}</p>
@@ -343,7 +343,7 @@ export default function PPMDetailPage() {
                       <Building2 size={18} className="text-purple-600" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-[10px] uppercase tracking-widest font-semibold text-slate-400 mb-1">
+                      <p className="text-[10px] uppercase tracking-widest font-semibold text-slate-600 mb-1">
                         Projet
                       </p>
                       <p className="text-sm font-medium text-slate-900 truncate">
@@ -358,7 +358,7 @@ export default function PPMDetailPage() {
                       <ClipboardList size={18} className="text-amber-600" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-[10px] uppercase tracking-widest font-semibold text-slate-400 mb-1">
+                      <p className="text-[10px] uppercase tracking-widest font-semibold text-slate-600 mb-1">
                         Nombre de lignes
                       </p>
                       <p className="text-lg font-semibold text-slate-900">{ppm?.nombreLignes || 0}</p>
@@ -386,7 +386,7 @@ export default function PPMDetailPage() {
                 )}
 
                 {/* Dates */}
-                <div className="mt-6 flex items-center justify-between text-xs text-slate-400">
+                <div className="mt-6 flex items-center justify-between text-xs text-slate-600">
                   <span>Créé le {formatDate(ppm?.createdAt || '')}</span>
                   <span>Modifié le {formatDate(ppm?.updatedAt || '')}</span>
                 </div>
@@ -397,7 +397,7 @@ export default function PPMDetailPage() {
             <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
               <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">
                     Lignes du PPM
                   </p>
                   <p className="text-xs text-slate-500 mt-1">
@@ -427,7 +427,7 @@ export default function PPMDetailPage() {
               {lignes.length === 0 ? (
                 <div className="p-6 md:p-12 text-center">
                   <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
-                    <ClipboardList className="text-slate-400" size={28} />
+                    <ClipboardList className="text-slate-600" size={28} />
                   </div>
                   <h3 className="text-lg font-semibold text-slate-900 mb-2">Aucune ligne</h3>
                   <p className="text-sm text-slate-500 mb-4">
@@ -447,25 +447,25 @@ export default function PPMDetailPage() {
                   <table className="w-full min-w-[800px]">
                     <thead>
                       <tr className="bg-slate-50 border-b border-slate-200">
-                        <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400 whitespace-nowrap">
+                        <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600 whitespace-nowrap">
                           Référence
                         </th>
-                        <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400 min-w-[200px]">
+                        <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600 min-w-[200px]">
                           Objet du Marché
                         </th>
-                        <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400 whitespace-nowrap">
+                        <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600 whitespace-nowrap">
                           Montant Estimé
                         </th>
-                        <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400 whitespace-nowrap">
+                        <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600 whitespace-nowrap">
                           Méthode
                         </th>
-                        <th className="text-center px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400 whitespace-nowrap">
+                        <th className="text-center px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600 whitespace-nowrap">
                           Trimestre
                         </th>
-                        <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400 whitespace-nowrap">
+                        <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600 whitespace-nowrap">
                           Responsable
                         </th>
-                        <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400 whitespace-nowrap">
+                        <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600 whitespace-nowrap">
                           Activité
                         </th>
                       </tr>
@@ -497,7 +497,7 @@ export default function PPMDetailPage() {
                               {ligne.objet}
                             </p>
                             {ligne.observations && (
-                              <p className="text-xs text-slate-400 mt-1 line-clamp-1">
+                              <p className="text-xs text-slate-600 mt-1 line-clamp-1">
                                 {ligne.observations}
                               </p>
                             )}
@@ -594,7 +594,7 @@ export default function PPMDetailPage() {
                     className={cn('rounded-2xl border border-slate-200 p-4 flex items-center justify-between', stat.bg)}
                   >
                     <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">
                         Trimestre {stat.label}
                       </p>
                       <p className={cn('text-2xl font-bold tabular-nums mt-1', stat.color)}>

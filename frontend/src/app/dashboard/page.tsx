@@ -50,7 +50,7 @@ function FilterBar({
 
   return (
     <div className="flex items-center gap-2 flex-wrap">
-      <Filter size={14} className="text-slate-400 shrink-0" />
+      <Filter size={14} className="text-slate-600 shrink-0" />
 
       {/* Plan */}
       <Select value={filters.planId} onValueChange={(value) => onChange({ ...filters, planId: value })}>
@@ -115,7 +115,7 @@ function PerformanceByResponsable({ data }: { data: PerfEntry[] }) {
   const safeData = Array.isArray(data) ? data : [];
 
   if (!safeData.length) return (
-    <div className="flex items-center justify-center h-32 text-slate-400 text-sm">
+    <div className="flex items-center justify-center h-32 text-slate-600 text-sm">
       Aucune donnée de performance
     </div>
   );
@@ -159,7 +159,7 @@ function CriticalActivities({ activities }: { activities: Activity[] }) {
     .slice(0, 5);
 
   if (!critical.length) return (
-    <div className="flex flex-col items-center justify-center h-32 gap-2 text-slate-400">
+    <div className="flex flex-col items-center justify-center h-32 gap-2 text-slate-600">
       <CheckCircle2 size={22} className="text-green-400" />
       <p className="text-sm">Aucune activité critique</p>
     </div>
@@ -188,7 +188,7 @@ function CriticalActivities({ activities }: { activities: Activity[] }) {
             <div className="text-right shrink-0">
               <p className="text-sm font-bold text-slate-900">{act.completionRate}%</p>
               {act.dueDate && (
-                <p className={cn('text-xs', act.status === 'EN_RETARD' ? 'text-red-500 font-semibold' : 'text-slate-400')}>
+                <p className={cn('text-xs', act.status === 'EN_RETARD' ? 'text-red-500 font-semibold' : 'text-slate-600')}>
                   {formatDate(act.dueDate)}
                 </p>
               )}
@@ -221,7 +221,7 @@ function RisksAndBlockers({ activities }: { activities: Activity[] }) {
   };
 
   if (!blockers.length) return (
-    <div className="flex flex-col items-center justify-center h-32 gap-2 text-slate-400">
+    <div className="flex flex-col items-center justify-center h-32 gap-2 text-slate-600">
       <CheckCircle2 size={22} className="text-green-400" />
       <p className="text-sm">Aucun risque identifié</p>
     </div>
@@ -237,7 +237,7 @@ function RisksAndBlockers({ activities }: { activities: Activity[] }) {
               <ShieldAlert size={15} className="text-red-400 shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-slate-900 truncate group-hover:text-[#2563eb]">{act.title}</p>
-                <p className="text-xs text-slate-400 truncate">
+                <p className="text-xs text-slate-600 truncate">
                   {act.axis?.actionPlan?.title} › {act.axis?.title}
                 </p>
               </div>
@@ -293,7 +293,7 @@ function ResultsVsTargets({ activities }: { activities: Activity[] }) {
                   {m.achieved}{m.unit}
                 </span>
                 {m.target > 0 && !m.inverse && (
-                  <span className="text-xs text-slate-400">/ {m.target}{m.unit}</span>
+                  <span className="text-xs text-slate-600">/ {m.target}{m.unit}</span>
                 )}
                 <span className={cn(
                   'text-xs font-semibold px-1.5 py-0.5 rounded-full',
@@ -489,7 +489,7 @@ export default function DashboardPage() {
           {/* Budget */}
           <div className="bg-white rounded-2xl border border-slate-200 p-5">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Exécution budgétaire</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">Exécution budgétaire</p>
               <Wallet size={16} className="text-blue-500" />
             </div>
             {loadingOverview ? <div className="h-24 bg-slate-100 rounded-xl animate-pulse" /> : (
@@ -504,7 +504,7 @@ export default function DashboardPage() {
           {/* Circuit de validation */}
           <div className="bg-white rounded-2xl border border-slate-200 p-5 flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Circuit de validation</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">Circuit de validation</p>
               <Clock size={16} className="text-amber-500" />
             </div>
             <div className="flex-1 flex flex-col justify-center">
@@ -532,7 +532,7 @@ export default function DashboardPage() {
           {/* Résultats atteints vs cibles */}
           <div className="bg-white rounded-2xl border border-slate-200 p-5">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Résultats atteints vs cibles</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">Résultats atteints vs cibles</p>
               <Target size={16} className="text-teal-500" />
             </div>
             {loadingActivities ? (
@@ -545,12 +545,12 @@ export default function DashboardPage() {
           {/* Activités critiques */}
           <div className="bg-white rounded-2xl border border-slate-200 p-5">
             <div className="flex items-center justify-between mb-1">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Activités critiques</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">Activités critiques</p>
               <Link href="/activities?status=EN_RETARD" className="text-xs text-[#2563eb] hover:underline font-medium">
                 Voir tout →
               </Link>
             </div>
-            <p className="text-xs text-slate-400 mb-4">Priorité haute ou critique, non clôturées</p>
+            <p className="text-xs text-slate-600 mb-4">Priorité haute ou critique, non clôturées</p>
             {loadingActivities ? (
               <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
             ) : (
@@ -564,12 +564,12 @@ export default function DashboardPage() {
           {/* Risques et blocages */}
           <div className="bg-white rounded-2xl border border-slate-200 p-5">
             <div className="flex items-center justify-between mb-1">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Risques et blocages</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">Risques et blocages</p>
               <Link href="/activities" className="text-xs text-[#2563eb] hover:underline font-medium">
                 Voir tout →
               </Link>
             </div>
-            <p className="text-xs text-slate-400 mb-4">Activités en retard, bloquées ou suspendues</p>
+            <p className="text-xs text-slate-600 mb-4">Activités en retard, bloquées ou suspendues</p>
             {loadingActivities ? (
               <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
             ) : (
@@ -580,7 +580,7 @@ export default function DashboardPage() {
           {/* Performance par responsable */}
           <div className="bg-white rounded-2xl border border-slate-200 p-5">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Performance par responsable</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">Performance par responsable</p>
               <Users size={16} className="text-indigo-500" />
             </div>
             {loadingPerf ? (
@@ -594,7 +594,7 @@ export default function DashboardPage() {
         {/* ── Répartition statuts + Échéances proches ── */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div className="bg-white rounded-2xl border border-slate-200 p-5">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-4">Répartition par statut</p>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600 mb-4">Répartition par statut</p>
             {loadingOverview ? (
               <div className="h-52 bg-slate-100 rounded-xl animate-pulse" />
             ) : (
@@ -604,8 +604,8 @@ export default function DashboardPage() {
 
           <div className="bg-white rounded-2xl border border-slate-200 p-5">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Échéances proches</p>
-              <CalendarClock size={16} className="text-slate-400" />
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">Échéances proches</p>
+              <CalendarClock size={16} className="text-slate-600" />
             </div>
             {loadingOverview ? (
               <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-10 bg-slate-100 rounded-xl animate-pulse" />)}</div>
@@ -619,7 +619,7 @@ export default function DashboardPage() {
         <section className="grid grid-cols-1 xl:grid-cols-3 gap-4">
           <div className="xl:col-span-2 bg-white rounded-2xl border border-slate-200 overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Activités récentes</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">Activités récentes</p>
               <Link href="/activities" className="text-xs text-[#2563eb] hover:underline font-medium">
                 Voir tout →
               </Link>
@@ -629,7 +629,7 @@ export default function DashboardPage() {
                 {Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-10 bg-slate-100 rounded-xl animate-pulse" />)}
               </div>
             ) : recentActivities.length === 0 ? (
-              <div className="p-10 text-center text-slate-400 text-sm">Aucune activité</div>
+              <div className="p-10 text-center text-slate-600 text-sm">Aucune activité</div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -659,7 +659,7 @@ export default function DashboardPage() {
 
           <div className="bg-white rounded-2xl border border-slate-200 p-5">
             <div className="flex items-center justify-between mb-4">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Journal d'activité</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">Journal d'activité</p>
               <Link href="/notifications" className="text-xs text-[#2563eb] hover:underline font-medium">
                 Voir tout →
               </Link>

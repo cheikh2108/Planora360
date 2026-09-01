@@ -56,7 +56,7 @@ export function KpiCard({ title, value, subtitle, icon: Icon, iconColor, iconBg,
     )}>
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1.5 leading-tight">{title}</p>
+          <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-widest text-slate-600 mb-1.5 leading-tight">{title}</p>
           <p className={cn('text-3xl md:text-4xl font-bold leading-none tabular-nums', a ? a.value : 'text-slate-900')}>{value}</p>
         </div>
         <div className={cn(
@@ -66,13 +66,13 @@ export function KpiCard({ title, value, subtitle, icon: Icon, iconColor, iconBg,
           <Icon size={16} className={a ? a.iconColor : (iconColor ?? 'text-slate-500')} />
         </div>
       </div>
-      {subtitle && <p className={cn('text-[11px] md:text-xs', a ? a.sub : 'text-slate-400')}>{subtitle}</p>}
+      {subtitle && <p className={cn('text-[11px] md:text-xs', a ? a.sub : 'text-slate-600')}>{subtitle}</p>}
       {trend && (
         <div className="flex items-center gap-1.5 mt-auto pt-2 border-t border-slate-100">
           <span className={cn('text-xs font-semibold', trend.value >= 0 ? 'text-green-600' : 'text-red-500')}>
             {trend.value >= 0 ? '↑' : '↓'} {Math.abs(trend.value)}%
           </span>
-          <span className="text-xs text-slate-400">{trend.label}</span>
+          <span className="text-xs text-slate-600">{trend.label}</span>
         </div>
       )}
     </div>

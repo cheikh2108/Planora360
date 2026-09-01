@@ -112,7 +112,7 @@ export function NotificationsDropdown() {
               {entries.length === 0 ? (
                 <div className="py-12 text-center">
                   <div className="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-3">
-                    <Bell size={18} className="text-slate-400" />
+                    <Bell size={18} className="text-slate-600" />
                   </div>
                   <p className="text-sm font-medium text-slate-300">Aucune notification</p>
                 </div>
@@ -157,12 +157,12 @@ export function NotificationsDropdown() {
                             )}>
                               {humanAction(entry.action)}
                             </p>
-                            <span className="text-[10px] text-slate-400 shrink-0 tabular-nums">
+                            <span className="text-[10px] text-slate-600 shrink-0 tabular-nums">
                               {relativeTime(entry.createdAt)}
                             </span>
                           </div>
                           {(target || actor) && (
-                            <p className="text-[11px] text-slate-400 mt-0.5 truncate">
+                            <p className="text-[11px] text-slate-600 mt-0.5 truncate">
                               {target ? <><span className="text-slate-300 font-medium">{target}</span> · </> : ''}{actor}
                             </p>
                           )}

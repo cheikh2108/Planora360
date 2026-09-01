@@ -78,7 +78,7 @@ function StatsBar({ orgs }: { orgs: Organization[] }) {
       <div className="bg-white rounded-2xl border border-slate-200 p-4 lg:col-span-2">
         <p className="text-xs text-slate-500 mb-1">Total organisations</p>
         <p className="text-3xl font-bold text-slate-900">{orgs.length}</p>
-        <p className="text-xs text-slate-400 mt-0.5">{totalUsers} utilisateurs</p>
+        <p className="text-xs text-slate-600 mt-0.5">{totalUsers} utilisateurs</p>
       </div>
       {PLAN_ORDER.map(p => {
         const m = PLAN_META[p];
@@ -187,7 +187,7 @@ export default function SuperAdminOrganizationsPage() {
                       )}
                     </div>
                     <PlanBadge plan={org.subscriptionPlan} />
-                    <p className="text-xs text-slate-400 hidden sm:block shrink-0">{new Date(org.createdAt).toLocaleDateString('fr-FR')}</p>
+                    <p className="text-xs text-slate-600 hidden sm:block shrink-0">{new Date(org.createdAt).toLocaleDateString('fr-FR')}</p>
                     <div className="flex items-center gap-2 shrink-0">
                       <button
                         onClick={() => approveOrg(org.id)}
@@ -218,12 +218,12 @@ export default function SuperAdminOrganizationsPage() {
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-48 max-w-md">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600" />
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Rechercher une organisation..."
-            className="w-full h-9 pl-8 pr-4 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+            className="w-full h-9 pl-8 pr-4 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
           />
         </div>
         <div className="flex gap-1.5">
@@ -286,19 +286,19 @@ export default function SuperAdminOrganizationsPage() {
                         </div>
                         <div className="min-w-0">
                           <p className="text-sm font-semibold text-slate-900 truncate">{org.name}</p>
-                          <p className="text-xs text-slate-400">{org.id.slice(0, 12)}…</p>
+                          <p className="text-xs text-slate-600">{org.id.slice(0, 12)}…</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-4 py-3.5"><PlanBadge plan={org.subscriptionPlan} /></td>
                     <td className="px-4 py-3.5 hidden md:table-cell">
                       <div className="flex items-center gap-1.5 text-sm text-slate-700">
-                        <Users size={13} className="text-slate-400" />{org._count?.users ?? 0}
+                        <Users size={13} className="text-slate-600" />{org._count?.users ?? 0}
                       </div>
                     </td>
                     <td className="px-4 py-3.5 hidden lg:table-cell">
                       <div className="flex items-center gap-1.5 text-sm text-slate-700">
-                        <FolderKanban size={13} className="text-slate-400" />{org._count?.actionPlans ?? 0}
+                        <FolderKanban size={13} className="text-slate-600" />{org._count?.actionPlans ?? 0}
                       </div>
                     </td>
                     <td className="px-4 py-3.5 text-xs text-slate-500 hidden lg:table-cell">{formatDate(org.createdAt)}</td>
@@ -306,13 +306,13 @@ export default function SuperAdminOrganizationsPage() {
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => setDeleteTarget(org)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                          className="p-1.5 rounded-lg text-slate-600 hover:text-red-500 hover:bg-red-50 transition-colors"
                         >
                           <Trash2 size={14} />
                         </button>
                         <Link
                           href={`/super-admin/organizations/${org.id}`}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"
+                          className="p-1.5 rounded-lg text-slate-600 hover:text-amber-600 hover:bg-amber-50 transition-colors"
                         >
                           <ChevronRight size={16} />
                         </Link>
@@ -457,7 +457,7 @@ function CreateOrgModal({ open, onClose }: { open: boolean; onClose: () => void 
                           </span>
                         )}
                       </div>
-                      <p className="text-[11px] text-slate-400 mt-1">{m.description}</p>
+                      <p className="text-[11px] text-slate-600 mt-1">{m.description}</p>
                       <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1.5">
                         {m.limits.map(l => (
                           <span key={l} className="flex items-center gap-1 text-[10px] text-slate-500">
@@ -480,7 +480,7 @@ function CreateOrgModal({ open, onClose }: { open: boolean; onClose: () => void 
 
         {/* Séparateur admin */}
         <div className="pt-1">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 border-l-2 border-[#2563eb] pl-2">
+          <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-3 border-l-2 border-[#2563eb] pl-2">
             Compte administrateur
           </p>
           <div className="grid grid-cols-2 gap-3">
@@ -494,7 +494,7 @@ function CreateOrgModal({ open, onClose }: { open: boolean; onClose: () => void 
           <FormField label="Adresse e-mail" required error={errors.adminEmail} className="mt-3">
             <Input type="email" value={form.adminEmail} onChange={set('adminEmail')} placeholder="admin@organisation.com" error={!!errors.adminEmail} />
           </FormField>
-          <p className="text-[11px] text-slate-400 mt-2 flex items-center gap-1.5">
+          <p className="text-[11px] text-slate-600 mt-2 flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-[#2563eb] inline-block shrink-0" />
             Un mot de passe temporaire sera envoyé par email.
           </p>

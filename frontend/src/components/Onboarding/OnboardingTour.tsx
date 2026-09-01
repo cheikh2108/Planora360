@@ -124,7 +124,7 @@ export function OnboardingTour({
         </div>
 
         <h3 className="text-lg font-semibold mb-2">{step.title}</h3>
-        <div className="text-sm text-gray-600 dark:text-gray-400 mb-6">{step.content}</div>
+        <div className="text-sm text-gray-600 dark:text-gray-600 mb-6">{step.content}</div>
 
         <div className="flex justify-between gap-3">
           <Button variant="ghost" size="sm" onClick={handleSkipTour}>

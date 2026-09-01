@@ -62,7 +62,7 @@ export function SuperAdminShell({ children }: { children: React.ReactNode }) {
             <Menu size={20} />
           </button>
           <div className="flex-1" />
-          <div className="flex items-center gap-2 text-xs text-slate-400">
+          <div className="flex items-center gap-2 text-xs text-slate-600">
             <span className="w-2 h-2 rounded-full bg-green-400 inline-block" />
             Connecté en tant que super admin
           </div>

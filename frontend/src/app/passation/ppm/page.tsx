@@ -102,8 +102,8 @@ export default function PPMListPage() {
               return (
                 <div key={idx} className={cn('rounded-2xl border border-slate-200 p-4 flex flex-col gap-2', stat.bg)}>
                   <div className="flex items-center justify-between">
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">{stat.label}</p>
-                    <Icon size={14} className="text-slate-400" />
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">{stat.label}</p>
+                    <Icon size={14} className="text-slate-600" />
                   </div>
                   <p className={cn('text-2xl md:text-3xl font-bold tabular-nums', stat.color)}>
                     {typeof stat.value === 'number' ? stat.value : stat.value}
@@ -117,8 +117,8 @@ export default function PPMListPage() {
         {/* Filters */}
         <div className="bg-white rounded-2xl border border-slate-200 p-4">
           <div className="flex items-center gap-2 mb-3">
-            <Filter size={14} className="text-slate-400" />
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Filtres</p>
+            <Filter size={14} className="text-slate-600" />
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">Filtres</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -178,9 +178,9 @@ export default function PPMListPage() {
         {/* Table */}
         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
           <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Liste des PPM</p>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">Liste des PPM</p>
             {ppmList.length > 0 && (
-              <span className="text-xs tabular-nums text-slate-400">{ppmList.length}</span>
+              <span className="text-xs tabular-nums text-slate-600">{ppmList.length}</span>
             )}
           </div>
 
@@ -201,22 +201,22 @@ export default function PPMListPage() {
               <table className="w-full">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-200">
-                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600">
                       Référence
                     </th>
-                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400 hidden md:table-cell">
+                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600 hidden md:table-cell">
                       Année
                     </th>
-                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400 hidden lg:table-cell">
+                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600 hidden lg:table-cell">
                       Projet
                     </th>
-                    <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400 hidden sm:table-cell">
+                    <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600 hidden sm:table-cell">
                       Montant Total
                     </th>
-                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400 hidden md:table-cell">
+                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600 hidden md:table-cell">
                       Lignes
                     </th>
-                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600">
                       Statut
                     </th>
                     <th className="w-8" />
@@ -238,7 +238,7 @@ export default function PPMListPage() {
                               <p className="text-sm font-semibold text-slate-900 group-hover:text-[#2563eb] transition-colors">
                                 {ppm.reference}
                               </p>
-                              <p className="text-xs text-slate-400">
+                              <p className="text-xs text-slate-600">
                                 {formatDate(ppm.createdAt)}
                               </p>
                             </div>

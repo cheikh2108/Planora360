@@ -40,7 +40,7 @@ export function AuditFeed({ entries }: Props) {
 
   if (safeEntries.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-10 text-slate-400 gap-2">
+      <div className="flex flex-col items-center justify-center py-10 text-slate-600 gap-2">
         <Shield size={24} className="opacity-50" />
         <p className="text-sm">Aucune activité récente</p>
       </div>
@@ -68,7 +68,7 @@ export function AuditFeed({ entries }: Props) {
                 {' — '}{label}
                 {target && <span className="text-slate-500"> · {target}</span>}
               </p>
-              <p className="text-xs text-slate-400 mt-0.5">{formatDate(entry.createdAt)}</p>
+              <p className="text-xs text-slate-600 mt-0.5">{formatDate(entry.createdAt)}</p>
             </div>
           </li>
         );

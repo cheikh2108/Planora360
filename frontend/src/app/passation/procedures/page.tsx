@@ -86,8 +86,8 @@ export default function ProceduresPage() {
               return (
                 <div key={idx} className={cn('rounded-2xl border border-slate-200 p-4 flex flex-col gap-2', stat.bg)}>
                   <div className="flex items-center justify-between">
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">{stat.label}</p>
-                    <Icon size={14} className="text-slate-400" />
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">{stat.label}</p>
+                    <Icon size={14} className="text-slate-600" />
                   </div>
                   <p className={cn('text-2xl md:text-3xl font-bold tabular-nums', stat.color)}>{stat.value}</p>
                 </div>
@@ -99,20 +99,20 @@ export default function ProceduresPage() {
         {/* Filters */}
         <div className="bg-white rounded-2xl border border-slate-200 p-4">
           <div className="flex items-center gap-2 mb-3">
-            <Filter size={14} className="text-slate-400" />
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Filtres</p>
+            <Filter size={14} className="text-slate-600" />
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">Filtres</p>
           </div>
 
           <div className="space-y-3">
             {/* Search Bar */}
             <div className="relative max-w-lg">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-600" />
               <input
                 type="text"
                 placeholder="Rechercher par référence ou objet..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-9 w-full rounded-lg border border-slate-300 bg-white pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]"
+                className="h-9 w-full rounded-lg border border-slate-300 bg-white pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-600 focus:border-[#2563eb] focus:outline-none focus:ring-2 focus:ring-[#2563eb]"
               />
             </div>
 
@@ -142,9 +142,9 @@ export default function ProceduresPage() {
         {/* Table */}
         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
           <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Liste des procédures</p>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">Liste des procédures</p>
             {filteredProcedures && filteredProcedures.length > 0 && (
-              <span className="text-xs tabular-nums text-slate-400">{filteredProcedures.length}</span>
+              <span className="text-xs tabular-nums text-slate-600">{filteredProcedures.length}</span>
             )}
           </div>
 
@@ -157,22 +157,22 @@ export default function ProceduresPage() {
               <table className="w-full">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-200">
-                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600">
                       Référence
                     </th>
-                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600">
                       Objet
                     </th>
-                    <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400 hidden sm:table-cell">
+                    <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600 hidden sm:table-cell">
                       Montant estimé
                     </th>
-                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600">
                       Statut
                     </th>
-                    <th className="text-center px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400 hidden md:table-cell">
+                    <th className="text-center px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600 hidden md:table-cell">
                       Soumissions
                     </th>
-                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400 hidden lg:table-cell">
+                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600 hidden lg:table-cell">
                       Date publication
                     </th>
                   </tr>
@@ -198,7 +198,7 @@ export default function ProceduresPage() {
                         <div className="max-w-md">
                           <p className="truncate text-sm font-medium text-slate-900">{procedure.objet}</p>
                           {procedure.lignePPM && (
-                            <p className="mt-0.5 truncate text-xs text-slate-400">
+                            <p className="mt-0.5 truncate text-xs text-slate-600">
                               PPM: {procedure.lignePPM.reference}
                             </p>
                           )}
@@ -228,7 +228,7 @@ export default function ProceduresPage() {
           ) : (
             <div className="py-16 text-center">
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
-                <Gavel className="h-8 w-8 text-slate-400" />
+                <Gavel className="h-8 w-8 text-slate-600" />
               </div>
               <h3 className="mb-2 text-lg font-semibold text-slate-900">Aucune procédure</h3>
               <p className="mb-6 text-sm text-slate-600">

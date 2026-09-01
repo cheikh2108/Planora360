@@ -140,7 +140,7 @@ export default function ValidationsPage() {
             },
           ].map(s => (
             <div key={s.label} className={cn('rounded-2xl border p-3 md:p-4 flex flex-col gap-1', s.bg)}>
-              <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-widest text-slate-400">{s.label}</p>
+              <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-widest text-slate-600">{s.label}</p>
               <p className={cn('text-2xl md:text-4xl font-bold tabular-nums', s.color)}>{s.value}</p>
             </div>
           ))}
@@ -149,7 +149,7 @@ export default function ValidationsPage() {
         {/* Queue card */}
         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">File d'attente</p>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">File d'attente</p>
             {byStep.length > 0 && (
               <div className="flex items-center gap-2">
                 {byStep.map(s => (
@@ -272,7 +272,7 @@ export default function ValidationsPage() {
           <form onSubmit={(e) => { e.preventDefault(); process(); }} className="space-y-4">
             {/* Activity recap */}
             <div className="bg-slate-50 rounded-xl p-3.5 space-y-2">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Activité</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">Activité</p>
               <p className="text-sm font-semibold text-slate-900">{selected.activity.title}</p>
               <span className={cn('text-[10px] font-semibold px-2 py-0.5 rounded-full', STEP_PILL[selected.currentStep] ?? 'bg-slate-100 text-slate-500')}>
                 {VALIDATION_STEP_LABELS[selected.currentStep] ?? selected.currentStep}

@@ -24,7 +24,7 @@ export function PerformanceByResponsible({ data }: PerformanceByResponsibleProps
 
   if (!safeData.length) {
     return (
-      <div className="flex items-center justify-center h-32 text-slate-400 text-sm">
+      <div className="flex items-center justify-center h-32 text-slate-600 text-sm">
         Aucune donnée de performance
       </div>
     );

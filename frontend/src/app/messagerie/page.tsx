@@ -216,18 +216,18 @@ export default function MessagingPage() {
         {/* Search and filters */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative flex-1 max-w-xl">
-            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-600" />
             <input
               type="text"
               placeholder="Rechercher une conversation..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded-2xl border border-slate-200 bg-white px-12 py-3 text-[14px] placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all duration-200"
+              className="w-full rounded-2xl border border-slate-200 bg-white px-12 py-3 text-[14px] placeholder:text-slate-600 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all duration-200"
             />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm('')}
-                className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-400 transition-all duration-200 hover:bg-slate-100 hover:text-slate-600"
+                className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-600 transition-all duration-200 hover:bg-slate-100 hover:text-slate-600"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -317,7 +317,7 @@ export default function MessagingPage() {
                           <p className={cn(
                             "mt-0.5 truncate text-[13px] leading-relaxed transition-colors duration-200",
                             getConversationSubtitle(conversation) === 'Aucun message'
-                              ? 'italic text-slate-400'
+                              ? 'italic text-slate-600'
                               : 'text-slate-600'
                           )}>
                             {getConversationSubtitle(conversation)}

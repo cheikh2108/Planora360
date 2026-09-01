@@ -29,7 +29,7 @@ export function Input({ error, className, ...props }: InputProps) {
   return (
     <input
       className={cn(
-        'w-full h-10 px-3.5 rounded-xl border text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 transition',
+        'w-full h-10 px-3.5 rounded-xl border text-sm text-slate-900 placeholder:text-slate-600 focus:outline-none focus:ring-2 transition',
         error
           ? 'border-red-400 focus:ring-red-300'
           : 'border-slate-300 focus:ring-[#2563eb] focus:border-transparent',
@@ -69,7 +69,7 @@ export function Textarea({ error, className, ...props }: TextareaProps) {
   return (
     <textarea
       className={cn(
-        'w-full px-3.5 py-2.5 rounded-xl border text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 transition resize-none',
+        'w-full px-3.5 py-2.5 rounded-xl border text-sm text-slate-900 placeholder:text-slate-600 focus:outline-none focus:ring-2 transition resize-none',
         error
           ? 'border-red-400 focus:ring-red-300'
           : 'border-slate-300 focus:ring-[#2563eb] focus:border-transparent',

@@ -102,7 +102,7 @@ export default function ReportsPage() {
                         : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                     )}
                   >
-                    <Icon size={20} className={isSelected ? 'text-[#2563eb]' : 'text-slate-400'} />
+                    <Icon size={20} className={isSelected ? 'text-[#2563eb]' : 'text-slate-600'} />
                     <div>
                       <p className={cn('text-sm font-semibold', isSelected ? 'text-[#2563eb]' : 'text-slate-900')}>
                         {r.label}
@@ -134,7 +134,7 @@ export default function ReportsPage() {
                       isSelected ? 'border-[#2563eb] bg-blue-50' : 'border-slate-200 hover:border-slate-300'
                     )}
                   >
-                    <Icon size={20} className={isSelected ? 'text-[#2563eb]' : 'text-slate-400'} />
+                    <Icon size={20} className={isSelected ? 'text-[#2563eb]' : 'text-slate-600'} />
                     <span className={cn('text-sm font-semibold', isSelected ? 'text-[#2563eb]' : 'text-slate-900')}>
                       {f.label}
                     </span>
@@ -197,7 +197,7 @@ export default function ReportsPage() {
                       <Icon size={18} className={h.format === 'pdf' ? 'text-red-400' : 'text-green-500'} />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-slate-900 truncate">{h.fileName}</p>
-                        <p className="text-xs text-slate-400">{formatDate(h.generatedAt)}</p>
+                        <p className="text-xs text-slate-600">{formatDate(h.generatedAt)}</p>
                       </div>
                       <span className={cn(
                         'text-xs font-semibold px-2 py-0.5 rounded-full',

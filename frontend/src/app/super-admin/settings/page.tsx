@@ -103,7 +103,7 @@ export default function SuperAdminSettingsPage() {
             <div>
               <p className="font-semibold text-slate-900">{user?.firstName} {user?.lastName}</p>
               <p className="text-sm text-amber-600 font-medium">Super administrateur</p>
-              <p className="text-xs text-slate-400 mt-0.5">{user?.email}</p>
+              <p className="text-xs text-slate-600 mt-0.5">{user?.email}</p>
             </div>
           </div>
 

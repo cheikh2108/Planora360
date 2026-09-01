@@ -13,7 +13,7 @@ export function UpcomingDeadlines({ activities }: Props) {
 
   if (safeActivities.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-10 text-slate-400 gap-2">
+      <div className="flex flex-col items-center justify-center py-10 text-slate-600 gap-2">
         <AlertTriangle size={24} className="opacity-50" />
         <p className="text-sm">Aucune échéance proche</p>
       </div>
@@ -41,7 +41,7 @@ export function UpcomingDeadlines({ activities }: Props) {
                   {STATUS_LABELS[act.status]}
                 </span>
                 <ProgressBar value={act.completionRate} className="w-20" />
-                <span className="text-xs text-slate-400">{act.completionRate}%</span>
+                <span className="text-xs text-slate-600">{act.completionRate}%</span>
               </div>
             </div>
             {daysLabel && (

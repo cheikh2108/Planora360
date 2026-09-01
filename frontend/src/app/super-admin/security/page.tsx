@@ -425,7 +425,7 @@ function SecurityEventRow({
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
               {event.email && (
                 <div>
-                  <p className="text-[9px] md:text-[10px] uppercase tracking-wider font-semibold text-slate-400 mb-1">
+                  <p className="text-[9px] md:text-[10px] uppercase tracking-wider font-semibold text-slate-600 mb-1">
                     Email
                   </p>
                   <p className="text-[11px] md:text-xs font-mono text-slate-700 truncate">
@@ -435,7 +435,7 @@ function SecurityEventRow({
               )}
               {event.ipAddress && (
                 <div>
-                  <p className="text-[9px] md:text-[10px] uppercase tracking-wider font-semibold text-slate-400 mb-1">
+                  <p className="text-[9px] md:text-[10px] uppercase tracking-wider font-semibold text-slate-600 mb-1">
                     IP
                   </p>
                   <p className="text-[11px] md:text-xs font-mono text-slate-700">
@@ -445,7 +445,7 @@ function SecurityEventRow({
               )}
               {event.organization && (
                 <div>
-                  <p className="text-[9px] md:text-[10px] uppercase tracking-wider font-semibold text-slate-400 mb-1">
+                  <p className="text-[9px] md:text-[10px] uppercase tracking-wider font-semibold text-slate-600 mb-1">
                     Organisation
                   </p>
                   <p className="text-[11px] md:text-xs text-slate-700 truncate">
@@ -454,7 +454,7 @@ function SecurityEventRow({
                 </div>
               )}
               <div>
-                <p className="text-[9px] md:text-[10px] uppercase tracking-wider font-semibold text-slate-400 mb-1">
+                <p className="text-[9px] md:text-[10px] uppercase tracking-wider font-semibold text-slate-600 mb-1">
                   Date
                 </p>
                 <p className="text-[11px] md:text-xs text-slate-700">
@@ -531,7 +531,7 @@ function SecurityEventRow({
 
         {expanded && event.resolution && (
           <div className="pt-3 border-t border-slate-200">
-            <p className="text-[10px] uppercase tracking-wider font-semibold text-slate-400 mb-1">
+            <p className="text-[10px] uppercase tracking-wider font-semibold text-slate-600 mb-1">
               Résolution
             </p>
             <p className="text-xs text-slate-700">{event.resolution}</p>

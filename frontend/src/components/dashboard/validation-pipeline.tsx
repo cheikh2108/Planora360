@@ -31,7 +31,7 @@ export function ValidationPipeline({ currentStep, completedSteps = [], counts = 
                 'w-8 h-8 rounded-full flex items-center justify-center border-2 shrink-0 transition-colors',
                 isCompleted ? 'bg-green-500 border-green-500 text-white' :
                 isCurrent ? 'bg-[#2563eb] border-[#2563eb] text-white' :
-                'bg-white border-slate-300 text-slate-400'
+                'bg-white border-slate-300 text-slate-600'
               )}>
                 {isCompleted ? (
                   <CheckCircle2 size={16} />
@@ -47,7 +47,7 @@ export function ValidationPipeline({ currentStep, completedSteps = [], counts = 
                   'hidden sm:block text-xs',
                   isCurrent ? 'text-[#2563eb] font-semibold' :
                   isCompleted ? 'text-green-600 font-medium' :
-                  'text-slate-400'
+                  'text-slate-600'
                 )}>
                   {step.short}
                 </p>

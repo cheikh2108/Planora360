@@ -122,7 +122,7 @@ function RoleModal({ open, onClose, role }: {
         <div>
           <p className="text-sm font-medium text-slate-700 mb-3">
             Permissions
-            <span className="ml-2 text-xs text-slate-400 font-normal">({permissions.length} sélectionnée{permissions.length > 1 ? 's' : ''})</span>
+            <span className="ml-2 text-xs text-slate-600 font-normal">({permissions.length} sélectionnée{permissions.length > 1 ? 's' : ''})</span>
           </p>
           <PermissionMatrix selected={permissions} onChange={setPermissions} />
         </div>
@@ -174,7 +174,7 @@ function RoleRow({ role, onEdit, onDelete }: {
           isSystem ? 'bg-slate-100' : 'bg-[#0f1e38]/8'
         )}>
           {isSystem
-            ? <Lock size={14} className="text-slate-400" />
+            ? <Lock size={14} className="text-slate-600" />
             : <Shield size={14} className="text-[#0f1e38]" />}
         </div>
 
@@ -184,8 +184,8 @@ function RoleRow({ role, onEdit, onDelete }: {
             <div className="min-w-0">
               <p className="text-sm font-semibold text-slate-900 truncate">{role.name}</p>
               <div className="flex items-center gap-1.5 mt-0.5">
-                {isSystem && <span className="text-xs text-slate-400 font-medium">Système</span>}
-                <span className="text-xs text-slate-400 flex items-center gap-1">
+                {isSystem && <span className="text-xs text-slate-600 font-medium">Système</span>}
+                <span className="text-xs text-slate-600 flex items-center gap-1">
                   <Users size={10} />{role._count?.users ?? 0}
                 </span>
               </div>
@@ -193,10 +193,10 @@ function RoleRow({ role, onEdit, onDelete }: {
             {/* Actions */}
             {!isSystem && (
               <div className="flex items-center gap-1 shrink-0">
-                <button onClick={() => onEdit(role)} className="p-1.5 rounded-lg text-slate-400 hover:text-[#2563eb] hover:bg-[#2563eb]/8 transition-colors" title="Modifier">
+                <button onClick={() => onEdit(role)} className="p-1.5 rounded-lg text-slate-600 hover:text-[#2563eb] hover:bg-[#2563eb]/8 transition-colors" title="Modifier">
                   <Pencil size={14} />
                 </button>
-                <button onClick={() => onDelete(role)} className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors" title="Supprimer">
+                <button onClick={() => onDelete(role)} className="p-1.5 rounded-lg text-slate-600 hover:text-red-500 hover:bg-red-50 transition-colors" title="Supprimer">
                   <Trash2 size={14} />
                 </button>
               </div>
@@ -210,7 +210,7 @@ function RoleRow({ role, onEdit, onDelete }: {
                 Accès complet
               </span>
             ) : allGranted.length === 0 ? (
-              <span className="text-xs text-slate-400 italic">Aucune permission</span>
+              <span className="text-xs text-slate-600 italic">Aucune permission</span>
             ) : (
               <div className="flex items-center gap-1.5 flex-wrap">
                 {visible.map(p => (
@@ -242,7 +242,7 @@ function RoleRow({ role, onEdit, onDelete }: {
           <div className="bg-white rounded-xl border border-slate-200 p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {grantedByGroup.map(({ group, granted }) => (
               <div key={group}>
-                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">{group}</p>
+                <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2">{group}</p>
                 <div className="flex flex-col gap-1">
                   {granted.map(p => (
                     <span key={p.key} className={cn(
@@ -350,7 +350,7 @@ export default function RolesPage() {
           <h2 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
             <Shield size={15} className="text-[#2563eb]" />
             Rôles de votre organisation
-            <span className="text-xs font-normal text-slate-400">({customRoles.length})</span>
+            <span className="text-xs font-normal text-slate-600">({customRoles.length})</span>
           </h2>
           <RoleList
             roles={customRoles}
@@ -365,9 +365,9 @@ export default function RolesPage() {
         {/* Rôles système */}
         <section className="space-y-3">
           <h2 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-            <Lock size={15} className="text-slate-400" />
+            <Lock size={15} className="text-slate-600" />
             Rôles système
-            <span className="text-xs font-normal text-slate-400">(non modifiables)</span>
+            <span className="text-xs font-normal text-slate-600">(non modifiables)</span>
           </h2>
           <RoleList
             roles={systemRoles}
@@ -390,7 +390,7 @@ export default function RolesPage() {
         <p className="text-sm text-slate-600 mb-1">
           Voulez-vous supprimer le rôle <strong>« {deleteRole?.name} »</strong> ?
         </p>
-        <p className="text-xs text-slate-400 mb-5">
+        <p className="text-xs text-slate-600 mb-5">
           Les utilisateurs assignés à ce rôle doivent être réassignés d'abord.
         </p>
         <div className="flex justify-end gap-3">

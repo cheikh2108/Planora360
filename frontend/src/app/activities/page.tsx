@@ -133,7 +133,7 @@ function ActivitiesContent() {
                 { label: 'Terminées', value: terminees, color: 'text-teal-600', bg: 'bg-white' },
               ].map(k => (
                 <div key={k.label} className={cn('rounded-2xl border border-slate-200 p-3 md:p-4 flex flex-col gap-1', k.bg)}>
-                  <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-widest text-slate-400">{k.label}</p>
+                  <p className="text-[9px] md:text-[10px] font-semibold uppercase tracking-widest text-slate-600">{k.label}</p>
                   <p className={cn('text-2xl md:text-4xl font-bold tabular-nums', k.color)}>{k.value}</p>
                 </div>
               ))}
@@ -141,7 +141,7 @@ function ActivitiesContent() {
 
             {/* Donut chart */}
             <div className="bg-white rounded-2xl border border-slate-200 p-4">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-3">Répartition</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600 mb-3">Répartition</p>
               <div className="flex items-center gap-3">
                 <PieChart width={80} height={80}>
                   <Pie
@@ -177,17 +177,17 @@ function ActivitiesContent() {
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1 max-w-sm">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600" />
             <input
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Rechercher une activité..."
-              className="w-full h-10 pl-9 pr-4 rounded-xl border border-slate-300 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent bg-white"
+              className="w-full h-10 pl-9 pr-4 rounded-xl border border-slate-300 text-sm text-slate-900 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent bg-white"
             />
           </div>
           <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0">
-            <Filter size={14} className="text-slate-400 shrink-0 mr-1" />
+            <Filter size={14} className="text-slate-600 shrink-0 mr-1" />
             {STATUS_FILTERS.map(f => (
               <button
                 key={f.value}
@@ -208,9 +208,9 @@ function ActivitiesContent() {
         {/* Table card */}
         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
           <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Liste des activités</p>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">Liste des activités</p>
             {total > 0 && (
-              <span className="text-xs tabular-nums text-slate-400">{total}</span>
+              <span className="text-xs tabular-nums text-slate-600">{total}</span>
             )}
           </div>
 
@@ -229,12 +229,12 @@ function ActivitiesContent() {
               <table className="w-full">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-200">
-                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400">Activité</th>
-                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400 hidden md:table-cell">Statut</th>
-                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400 hidden lg:table-cell">Priorité</th>
-                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400 hidden sm:table-cell w-36">Avancement</th>
-                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400 hidden lg:table-cell">Responsable</th>
-                    <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400 hidden md:table-cell">Échéance</th>
+                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600">Activité</th>
+                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600 hidden md:table-cell">Statut</th>
+                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600 hidden lg:table-cell">Priorité</th>
+                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600 hidden sm:table-cell w-36">Avancement</th>
+                    <th className="text-left px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600 hidden lg:table-cell">Responsable</th>
+                    <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600 hidden md:table-cell">Échéance</th>
                     <th className="w-8" />
                   </tr>
                 </thead>
@@ -247,7 +247,7 @@ function ActivitiesContent() {
                             {act.title}
                           </p>
                           {act.axis && (
-                            <p className="text-xs text-slate-400 truncate mt-0.5">
+                            <p className="text-xs text-slate-600 truncate mt-0.5">
                               {act.axis.actionPlan?.title} › {act.axis.title}
                             </p>
                           )}

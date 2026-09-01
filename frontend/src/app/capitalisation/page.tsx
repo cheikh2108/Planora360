@@ -58,13 +58,13 @@ export default function CapitalisationPage() {
       <main className="flex-1 px-4 md:px-6 py-6 space-y-5">
         {/* Search bar */}
         <div className="relative max-w-md">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600" />
           <input
             type="text"
             placeholder="Rechercher une fiche..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-10 pl-9 pr-4 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2563eb] bg-white"
+            className="w-full h-10 pl-9 pr-4 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-[#2563eb] bg-white"
           />
         </div>
 
@@ -120,7 +120,7 @@ export default function CapitalisationPage() {
                     </h3>
 
                     {/* Context */}
-                    <p className="text-xs text-slate-400 line-clamp-3 leading-relaxed">
+                    <p className="text-xs text-slate-600 line-clamp-3 leading-relaxed">
                       {record.context}
                     </p>
 

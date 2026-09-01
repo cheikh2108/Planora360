@@ -113,7 +113,7 @@ export default function SuperAdminDashboard() {
           {isLoading ? (
             <div className="p-5 space-y-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
           ) : recent.length === 0 ? (
-            <div className="px-6 py-10 text-center text-sm text-slate-400">Aucune organisation</div>
+            <div className="px-6 py-10 text-center text-sm text-slate-600">Aucune organisation</div>
           ) : (
             <div>
               {recent.map(org => {
@@ -129,7 +129,7 @@ export default function SuperAdminDashboard() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-slate-900 truncate">{org.name}</p>
-                      <p className="text-xs text-slate-400">{formatDate(org.createdAt)}</p>
+                      <p className="text-xs text-slate-600">{formatDate(org.createdAt)}</p>
                     </div>
                     <span className={cn('text-xs font-semibold px-2.5 py-1 rounded-full shrink-0', m.bg, m.color)}>
                       {m.label}

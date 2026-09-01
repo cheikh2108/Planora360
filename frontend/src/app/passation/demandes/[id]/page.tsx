@@ -318,7 +318,7 @@ export default function DemandeDetailPage() {
                 <WorkflowTimeline validations={demande.validations} />
               ) : (
                 <div className="rounded-lg bg-slate-50 p-8 text-center">
-                  <Clock className="mx-auto h-10 w-10 text-slate-400" />
+                  <Clock className="mx-auto h-10 w-10 text-slate-600" />
                   <p className="mt-2 text-sm text-slate-600">
                     Aucune validation configurée pour cette demande
                   </p>

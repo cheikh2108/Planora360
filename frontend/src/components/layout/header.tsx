@@ -44,14 +44,14 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
       {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
 
       <div className="hidden md:flex items-center gap-1 bg-slate-100 rounded-xl px-3 py-2 w-56">
-        <Search size={15} className="text-slate-400 shrink-0" />
+        <Search size={15} className="text-slate-600 shrink-0" />
         <input
           type="text"
           value={search}
           onChange={e => setSearch(e.target.value)}
           onKeyDown={handleSearch}
           placeholder="Rechercher..."
-          className="bg-transparent text-sm text-slate-700 placeholder:text-slate-400 outline-none flex-1 min-w-0"
+          className="bg-transparent text-sm text-slate-700 placeholder:text-slate-600 outline-none flex-1 min-w-0"
         />
       </div>
 

@@ -210,7 +210,7 @@ export default function ProcedureDetailPage() {
         <Header title="Procédure introuvable" />
         <main className="flex-1 px-4 md:px-6 py-6">
           <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center">
-            <AlertCircle size={48} className="mx-auto mb-4 text-slate-400" />
+            <AlertCircle size={48} className="mx-auto mb-4 text-slate-600" />
             <h3 className="text-xl font-bold text-slate-900 mb-2">Procédure introuvable</h3>
             <p className="text-slate-600 mb-6">Cette procédure n'existe pas ou a été supprimée.</p>
             <Button onClick={() => router.push('/passation/procedures')}>
@@ -319,7 +319,7 @@ export default function ProcedureDetailPage() {
 
             {/* Objet */}
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-2">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600 mb-2">
                 Objet de la procédure
               </p>
               <p className="text-base text-slate-900">{procedure.objet}</p>
@@ -328,7 +328,7 @@ export default function ProcedureDetailPage() {
             {/* KPIs */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-2">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600 mb-2">
                   Montant estimé
                 </p>
                 <p className="text-2xl font-bold text-slate-900 tabular-nums">
@@ -336,7 +336,7 @@ export default function ProcedureDetailPage() {
                 </p>
               </div>
               <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-2">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600 mb-2">
                   Soumissions reçues
                 </p>
                 <p className="text-2xl font-bold text-slate-900 tabular-nums">
@@ -345,7 +345,7 @@ export default function ProcedureDetailPage() {
               </div>
               {soumissions.length > 0 && (
                 <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600 mb-2">
                     Offre la plus basse
                   </p>
                   <p className="text-2xl font-bold text-slate-900 tabular-nums">
@@ -360,8 +360,8 @@ export default function ProcedureDetailPage() {
           {(procedure.datePublication || procedure.dateLimite || procedure.dateOuverture) && (
             <div className="bg-white rounded-2xl border border-slate-200 p-6">
               <div className="flex items-center gap-2 mb-5">
-                <Calendar size={16} className="text-slate-400" />
-                <h2 className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+                <Calendar size={16} className="text-slate-600" />
+                <h2 className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">
                   Calendrier
                 </h2>
               </div>
@@ -410,11 +410,11 @@ export default function ProcedureDetailPage() {
           <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
             <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <FileText size={16} className="text-slate-400" />
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+                <FileText size={16} className="text-slate-600" />
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">
                   Soumissions reçues
                 </p>
-                <span className="text-xs tabular-nums text-slate-400">({soumissions.length})</span>
+                <span className="text-xs tabular-nums text-slate-600">({soumissions.length})</span>
               </div>
               {(procedure.status === 'PUBLIEE' || procedure.status === 'EN_COURS') && (
                 <Button
@@ -460,7 +460,7 @@ export default function ProcedureDetailPage() {
 
                     <div className="grid grid-cols-3 gap-4">
                       <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">
+                        <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600 mb-1">
                           Montant Total
                         </p>
                         <p className="text-sm font-bold text-slate-900 tabular-nums">
@@ -468,7 +468,7 @@ export default function ProcedureDetailPage() {
                         </p>
                       </div>
                       <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">
+                        <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600 mb-1">
                           Devise
                         </p>
                         <p className="text-sm font-bold text-slate-900">
@@ -476,7 +476,7 @@ export default function ProcedureDetailPage() {
                         </p>
                       </div>
                       <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">
+                        <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600 mb-1">
                           Statut
                         </p>
                         <p className="text-xs font-semibold text-slate-600 uppercase">
@@ -494,8 +494,8 @@ export default function ProcedureDetailPage() {
           {procedure.cahierCharges && (
             <div className="bg-white rounded-2xl border border-slate-200 p-6">
               <div className="flex items-center gap-2 mb-4">
-                <FileText size={16} className="text-slate-400" />
-                <h2 className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+                <FileText size={16} className="text-slate-600" />
+                <h2 className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">
                   Cahier des charges
                 </h2>
               </div>

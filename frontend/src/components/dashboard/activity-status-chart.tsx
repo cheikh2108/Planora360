@@ -31,7 +31,7 @@ export function ActivityStatusChart({ byStatus }: Props) {
 
   if (data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-48 text-slate-400 text-sm">
+      <div className="flex items-center justify-center h-48 text-slate-600 text-sm">
         Aucune activité
       </div>
     );

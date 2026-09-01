@@ -150,7 +150,7 @@ function ToastItem({ toast, dismiss }: { toast: Toast; dismiss: (id: string) => 
           {toast.title}
         </p>
         {toast.description && (
-          <p className="text-[11.5px] text-slate-400 mt-0.5 leading-snug">
+          <p className="text-[11.5px] text-slate-600 mt-0.5 leading-snug">
             {toast.description}
           </p>
         )}

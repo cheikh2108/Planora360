@@ -98,7 +98,7 @@ export default function DeletedOrganizationsPage() {
       <div>
         <Link
           href="/super-admin/organizations"
-          className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-700 transition-colors mb-2"
+          className="flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-700 transition-colors mb-2"
         >
           <ArrowLeft size={14} /> Retour aux organisations
         </Link>
@@ -123,12 +123,12 @@ export default function DeletedOrganizationsPage() {
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-48 max-w-md">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600" />
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Rechercher une organisation..."
-            className="w-full h-9 pl-8 pr-4 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+            className="w-full h-9 pl-8 pr-4 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
           />
         </div>
       </div>
@@ -171,25 +171,25 @@ export default function DeletedOrganizationsPage() {
                     <tr key={org.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/60 transition-colors">
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-400 shrink-0">
+                          <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600 shrink-0">
                             {org.name.slice(0, 2).toUpperCase()}
                           </div>
                           <div className="min-w-0">
                             <p className="text-sm font-semibold text-slate-500 truncate">{org.name}</p>
-                            <p className="text-xs text-slate-400">{org.id.slice(0, 12)}…</p>
+                            <p className="text-xs text-slate-600">{org.id.slice(0, 12)}…</p>
                           </div>
                         </div>
                       </td>
                       <td className="px-4 py-3.5"><PlanBadge plan={org.subscriptionPlan} /></td>
                       <td className="px-4 py-3.5 hidden md:table-cell">
                         <div className="flex items-center gap-1.5 text-sm text-slate-700">
-                          <Users size={13} className="text-slate-400" />
+                          <Users size={13} className="text-slate-600" />
                           {org._count?.users ?? 0}
                         </div>
                       </td>
                       <td className="px-4 py-3.5 hidden lg:table-cell">
                         <div className="flex items-center gap-1.5 text-sm text-slate-700">
-                          <FolderKanban size={13} className="text-slate-400" />
+                          <FolderKanban size={13} className="text-slate-600" />
                           {org._count?.actionPlans ?? 0}
                         </div>
                       </td>
@@ -213,14 +213,14 @@ export default function DeletedOrganizationsPage() {
                         <div className="flex items-center gap-1">
                           <button
                             onClick={() => setRestoreId(org.id)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                            className="p-1.5 rounded-lg text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
                             title="Restaurer"
                           >
                             <RotateCcw size={14} />
                           </button>
                           <button
                             onClick={() => setHardDeleteId(org.id)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                            className="p-1.5 rounded-lg text-slate-600 hover:text-red-600 hover:bg-red-50 transition-colors"
                             title="Supprimer définitivement"
                           >
                             <Trash2 size={14} />

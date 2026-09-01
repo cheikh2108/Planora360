@@ -197,7 +197,7 @@ export default function IndicatorsPage() {
               { label: 'En retard (<50%)', value: totalLagging, color: 'text-red-600', bg: 'bg-red-50' },
             ].map(k => (
               <div key={k.label} className={cn('rounded-2xl border border-slate-200 p-4', k.bg)}>
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">{k.label}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">{k.label}</p>
                 <p className={cn('text-3xl font-bold tabular-nums mt-1', k.color)}>{k.value}</p>
               </div>
             ))}
@@ -219,8 +219,8 @@ export default function IndicatorsPage() {
         {/* Table */}
         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Tableau de bord des indicateurs</p>
-            {total > 0 && <span className="text-xs tabular-nums text-slate-400">{total}</span>}
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">Tableau de bord des indicateurs</p>
+            {total > 0 && <span className="text-xs tabular-nums text-slate-600">{total}</span>}
           </div>
 
           {isLoading ? (
@@ -241,12 +241,12 @@ export default function IndicatorsPage() {
               <table className="w-full">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-100">
-                    <th className="text-left px-5 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400">Indicateur</th>
-                    <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400 hidden sm:table-cell">Base</th>
-                    <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400">Cible</th>
-                    <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400">Réalisé</th>
-                    <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400 hidden md:table-cell w-36">Progression</th>
-                    <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-400 hidden lg:table-cell">Échéance</th>
+                    <th className="text-left px-5 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600">Indicateur</th>
+                    <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600 hidden sm:table-cell">Base</th>
+                    <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600">Cible</th>
+                    <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600">Réalisé</th>
+                    <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600 hidden md:table-cell w-36">Progression</th>
+                    <th className="text-right px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600 hidden lg:table-cell">Échéance</th>
                     <th className="w-20" />
                   </tr>
                 </thead>
@@ -259,9 +259,9 @@ export default function IndicatorsPage() {
                         <td className="px-5 py-4">
                           <p className="text-sm font-medium text-slate-900">{ind.title}</p>
                           <div className="flex items-center gap-2 mt-0.5">
-                            {ind.unit && <span className="text-xs text-slate-400">{ind.unit}</span>}
+                            {ind.unit && <span className="text-xs text-slate-600">{ind.unit}</span>}
                             {ind.activity && (
-                              <span className="text-xs text-slate-400 truncate max-w-40">
+                              <span className="text-xs text-slate-600 truncate max-w-40">
                                 · {ind.activity.title}
                               </span>
                             )}
@@ -284,20 +284,20 @@ export default function IndicatorsPage() {
                             <RateChip rate={rate} />
                           </div>
                         </td>
-                        <td className="px-4 py-4 text-right hidden lg:table-cell text-xs text-slate-400">
+                        <td className="px-4 py-4 text-right hidden lg:table-cell text-xs text-slate-600">
                           {ind.dueDate ? formatDate(ind.dueDate) : <span className="text-slate-300">—</span>}
                         </td>
                         <td className="px-4 py-4">
                           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity justify-end">
                             <button
                               onClick={() => { setEditTarget(ind); setModalOpen(true); }}
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-[#2563eb] hover:bg-blue-50 transition-colors"
+                              className="p-1.5 rounded-lg text-slate-600 hover:text-[#2563eb] hover:bg-blue-50 transition-colors"
                             >
                               <Edit3 size={14} />
                             </button>
                             <button
                               onClick={() => { if (confirm('Supprimer cet indicateur ?')) remove(ind.id); }}
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                              className="p-1.5 rounded-lg text-slate-600 hover:text-red-500 hover:bg-red-50 transition-colors"
                             >
                               <Trash2 size={14} />
                             </button>

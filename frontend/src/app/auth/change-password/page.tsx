@@ -100,7 +100,7 @@ export default function ChangePasswordPage() {
             <h1 className="text-[2.2rem] font-extrabold text-[#020617] tracking-tight leading-[1.1] mb-2">
               Nouveau mot<br />de passe.
             </h1>
-            <p className="text-slate-400 text-[13px] mb-8 leading-relaxed">
+            <p className="text-slate-600 text-[13px] mb-8 leading-relaxed">
               {user ? `Bonjour ${user.firstName}, c` : 'C'}hoisissez un mot de passe personnel.
             </p>
 

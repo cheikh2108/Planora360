@@ -128,7 +128,7 @@ export default function NotificationsPage() {
                 </div>
               ))}
             {Object.keys(ACTION_CONFIG).length > 8 && (
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-slate-600">
                 +{Object.keys(ACTION_CONFIG).length - 8} types
               </span>
             )}
@@ -152,7 +152,7 @@ export default function NotificationsPage() {
               <section key={day}>
                 {/* Day label */}
                 <div className="flex items-center gap-3 mb-6">
-                  <Calendar size={14} className="text-slate-400" />
+                  <Calendar size={14} className="text-slate-600" />
                   <p className="text-xs font-bold uppercase tracking-[0.15em] text-slate-500 capitalize">
                     {day}
                   </p>
@@ -208,9 +208,9 @@ export default function NotificationsPage() {
                                 <p className="text-sm text-slate-600 mb-1 truncate">{target}</p>
                               )}
                               <div className="flex items-center gap-2">
-                                <span className="text-xs text-slate-400">{actor}</span>
+                                <span className="text-xs text-slate-600">{actor}</span>
                                 <span className="text-slate-300">·</span>
-                                <span className="text-xs text-slate-400 tabular-nums">{time}</span>
+                                <span className="text-xs text-slate-600 tabular-nums">{time}</span>
                               </div>
                             </div>
                           </div>

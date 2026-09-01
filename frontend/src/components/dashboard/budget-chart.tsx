@@ -50,11 +50,11 @@ export function BudgetChart({ planned, executed, committed = 0 }: Props) {
 
       <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
         <div>
-          <p className="text-[9px] text-slate-400">Disponible</p>
+          <p className="text-[9px] text-slate-600">Disponible</p>
           <p className="text-sm font-bold text-indigo-600">{formatCurrency(available)}</p>
         </div>
         <div>
-          <p className="text-[9px] text-slate-400">Reste à payer</p>
+          <p className="text-[9px] text-slate-600">Reste à payer</p>
           <p className="text-sm font-bold text-orange-600">{formatCurrency(remaining)}</p>
         </div>
       </div>

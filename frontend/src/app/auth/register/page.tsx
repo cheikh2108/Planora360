@@ -116,13 +116,13 @@ export default function RegisterPage() {
                   'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors',
                   step === s ? 'bg-[#2563eb] text-white' :
                   step > s ? 'bg-emerald-500 text-white' :
-                  'bg-white text-slate-400 border border-slate-200'
+                  'bg-white text-slate-600 border border-slate-200'
                 )}>
                   {step > s ? <CheckCircle2 size={14} /> : s}
                 </div>
                 <span className={cn(
                   'text-xs font-medium hidden sm:block',
-                  step === s ? 'text-[#2563eb]' : step > s ? 'text-emerald-600' : 'text-slate-400'
+                  step === s ? 'text-[#2563eb]' : step > s ? 'text-emerald-600' : 'text-slate-600'
                 )}>
                   {s === 1 ? 'Organisation' : s === 2 ? 'Responsable' : 'Mot de passe'}
                 </span>
@@ -255,7 +255,7 @@ export default function RegisterPage() {
             {step === 2 && (
               <div className="space-y-5">
                 <div>
-                  <button type="button" onClick={() => setStep(1)} className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 mb-4 cursor-pointer transition-colors">
+                  <button type="button" onClick={() => setStep(1)} className="flex items-center gap-1.5 text-xs text-slate-600 hover:text-slate-600 mb-4 cursor-pointer transition-colors">
                     <ChevronLeft size={14} /> Retour
                   </button>
                   <h2 className="text-xl font-bold text-slate-900">Responsable du compte</h2>
@@ -311,7 +311,7 @@ export default function RegisterPage() {
             {step === 3 && (
               <div className="space-y-5">
                 <div>
-                  <button type="button" onClick={() => setStep(2)} className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 mb-4 cursor-pointer transition-colors">
+                  <button type="button" onClick={() => setStep(2)} className="flex items-center gap-1.5 text-xs text-slate-600 hover:text-slate-600 mb-4 cursor-pointer transition-colors">
                     <ChevronLeft size={14} /> Retour
                   </button>
                   <h2 className="text-xl font-bold text-slate-900">Sécurisez votre compte</h2>
@@ -354,7 +354,7 @@ export default function RegisterPage() {
                           />
                         ))}
                       </div>
-                      <p className="text-[10px] text-slate-400">
+                      <p className="text-[10px] text-slate-600">
                         {password.length < 4 ? 'Trop court' : password.length < 7 ? 'Faible' : password.length < 10 ? 'Moyen' : 'Fort'}
                       </p>
                     </div>
@@ -392,7 +392,7 @@ export default function RegisterPage() {
             )}
           </div>
 
-          <p className="text-center text-xs text-slate-400 mt-6">
+          <p className="text-center text-xs text-slate-600 mt-6">
             Déjà un compte ?{' '}
             <Link href="/auth/login" className="text-[#2563eb] hover:underline font-medium">
               Se connecter

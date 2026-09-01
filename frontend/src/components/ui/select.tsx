@@ -66,7 +66,7 @@ export function SelectTrigger({ children, className }: { children: React.ReactNo
       )}
     >
       {children}
-      <ChevronDown className={cn('h-4 w-4 text-slate-400 shrink-0 transition-transform duration-200', open && 'rotate-180 text-[#2563eb]')} />
+      <ChevronDown className={cn('h-4 w-4 text-slate-600 shrink-0 transition-transform duration-200', open && 'rotate-180 text-[#2563eb]')} />
     </button>
   );
 }
