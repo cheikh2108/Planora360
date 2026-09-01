@@ -37,11 +37,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Vérifier si l'utilisateur est connecté (cookies httpOnly ou localStorage legacy)
-    const hasAccessTokenCookie = document.cookie.includes('accessToken=');
+    // Vérifier si l'utilisateur est connecté
+    // Note: accessToken et refreshToken sont httpOnly, donc invisibles à document.cookie
+    // On se fie au localStorage pour restaurer l'utilisateur, l'API vérifiera les cookies httpOnly
     const stored = localStorage.getItem('user');
 
-    if (hasAccessTokenCookie && stored) {
+    if (stored) {
       try {
         const u = JSON.parse(stored);
         setUser(u);
@@ -49,9 +50,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch {
         localStorage.clear();
       }
-    } else if (!hasAccessTokenCookie) {
-      // Pas de cookie = pas connecté, nettoyer localStorage legacy
-      localStorage.clear();
     }
 
     setLoading(false);
