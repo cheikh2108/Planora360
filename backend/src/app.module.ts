@@ -31,6 +31,7 @@ import { MaintenanceModule } from './maintenance/maintenance.module';
 import { MaintenanceGuard } from './common/guards/maintenance.guard';
 import { CsrfModule } from './common/csrf/csrf.module';
 import { CsrfGuard } from './common/guards/csrf.guard';
+import { CacheModule } from './common/cache/cache.module';
 import { PassationModule } from './passation/passation.module';
 import { MessagerieModule } from './messagerie/messagerie.module';
 
@@ -43,6 +44,7 @@ import { MessagerieModule } from './messagerie/messagerie.module';
       limit: 100,  // 100 requêtes max par minute (augmenté pour dashboard)
     }]),
     PrismaModule,
+    CacheModule,
     MaintenanceModule,
     CsrfModule,
     AnalyticsModule,

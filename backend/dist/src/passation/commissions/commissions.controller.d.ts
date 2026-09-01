@@ -43,8 +43,8 @@ export declare class CommissionsController {
                 lastName: string;
             };
         } & {
-            role: string;
             id: string;
+            role: string;
             userId: string;
             commissionId: string;
         })[];
@@ -103,9 +103,9 @@ export declare class CommissionsController {
         procedure: {
             id: string;
             organizationId: string;
-            status: import(".prisma/client").$Enums.StatusProcedure;
             createdAt: Date;
             updatedAt: Date;
+            status: import(".prisma/client").$Enums.StatusProcedure;
             description: string;
             objet: string;
             montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
@@ -134,8 +134,8 @@ export declare class CommissionsController {
                 lastName: string;
             };
         } & {
-            role: string;
             id: string;
+            role: string;
             userId: string;
             commissionId: string;
         })[];
@@ -156,14 +156,14 @@ export declare class CommissionsController {
             lastName: string;
         };
     } & {
-        role: string;
         id: string;
+        role: string;
         userId: string;
         commissionId: string;
     }>;
     removeMembre(id: string, membreId: string, req: any): Promise<{
-        role: string;
         id: string;
+        role: string;
         userId: string;
         commissionId: string;
     }>;

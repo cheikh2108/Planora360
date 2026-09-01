@@ -1,10 +1,12 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { DashboardsService } from './dashboards.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { HttpCacheInterceptor } from '../common/cache/cache.interceptor';
 
 @Controller('dashboards')
 @UseGuards(JwtAuthGuard)
+@UseInterceptors(HttpCacheInterceptor) // Cache activé sur tous les endpoints
 export class DashboardsController {
   constructor(private dashboardsService: DashboardsService) {}
 

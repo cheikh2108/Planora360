@@ -10,17 +10,17 @@ export declare class DemandesController {
         } | null;
         lignePPM: {
             id: string;
-            status: string;
             createdAt: Date;
             updatedAt: Date;
+            status: string;
             activityId: string | null;
+            observations: string | null;
             objet: string;
             montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
             methodeProcedure: import(".prisma/client").$Enums.MethodeProcedure;
             trimestre: number;
             sourceFinancement: string | null;
             ligneBudgetaire: string | null;
-            observations: string | null;
             reference: string;
             ppmId: string;
             dateLancement: Date | null;
@@ -37,9 +37,9 @@ export declare class DemandesController {
     } & {
         id: string;
         organizationId: string;
-        status: import(".prisma/client").$Enums.StatusDemandeAchat;
         createdAt: Date;
         updatedAt: Date;
+        status: import(".prisma/client").$Enums.StatusDemandeAchat;
         activityId: string | null;
         description: string;
         objet: string;
@@ -89,9 +89,9 @@ export declare class DemandesController {
     } & {
         id: string;
         organizationId: string;
-        status: import(".prisma/client").$Enums.StatusDemandeAchat;
         createdAt: Date;
         updatedAt: Date;
+        status: import(".prisma/client").$Enums.StatusDemandeAchat;
         activityId: string | null;
         description: string;
         objet: string;
@@ -113,17 +113,17 @@ export declare class DemandesController {
         } | null;
         lignePPM: {
             id: string;
-            status: string;
             createdAt: Date;
             updatedAt: Date;
+            status: string;
             activityId: string | null;
+            observations: string | null;
             objet: string;
             montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
             methodeProcedure: import(".prisma/client").$Enums.MethodeProcedure;
             trimestre: number;
             sourceFinancement: string | null;
             ligneBudgetaire: string | null;
-            observations: string | null;
             reference: string;
             ppmId: string;
             dateLancement: Date | null;
@@ -159,9 +159,9 @@ export declare class DemandesController {
     } & {
         id: string;
         organizationId: string;
-        status: import(".prisma/client").$Enums.StatusDemandeAchat;
         createdAt: Date;
         updatedAt: Date;
+        status: import(".prisma/client").$Enums.StatusDemandeAchat;
         activityId: string | null;
         description: string;
         objet: string;
@@ -196,9 +196,9 @@ export declare class DemandesController {
     } & {
         id: string;
         organizationId: string;
-        status: import(".prisma/client").$Enums.StatusDemandeAchat;
         createdAt: Date;
         updatedAt: Date;
+        status: import(".prisma/client").$Enums.StatusDemandeAchat;
         activityId: string | null;
         description: string;
         objet: string;
@@ -216,9 +216,9 @@ export declare class DemandesController {
     remove(id: string, req: any): Promise<{
         id: string;
         organizationId: string;
-        status: import(".prisma/client").$Enums.StatusDemandeAchat;
         createdAt: Date;
         updatedAt: Date;
+        status: import(".prisma/client").$Enums.StatusDemandeAchat;
         activityId: string | null;
         description: string;
         objet: string;
@@ -254,9 +254,9 @@ export declare class DemandesController {
     } & {
         id: string;
         organizationId: string;
-        status: import(".prisma/client").$Enums.StatusDemandeAchat;
         createdAt: Date;
         updatedAt: Date;
+        status: import(".prisma/client").$Enums.StatusDemandeAchat;
         activityId: string | null;
         description: string;
         objet: string;
@@ -292,9 +292,9 @@ export declare class DemandesController {
     } & {
         id: string;
         organizationId: string;
-        status: import(".prisma/client").$Enums.StatusDemandeAchat;
         createdAt: Date;
         updatedAt: Date;
+        status: import(".prisma/client").$Enums.StatusDemandeAchat;
         activityId: string | null;
         description: string;
         objet: string;
@@ -316,17 +316,17 @@ export declare class DemandesController {
         } | null;
         lignePPM: {
             id: string;
-            status: string;
             createdAt: Date;
             updatedAt: Date;
+            status: string;
             activityId: string | null;
+            observations: string | null;
             objet: string;
             montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
             methodeProcedure: import(".prisma/client").$Enums.MethodeProcedure;
             trimestre: number;
             sourceFinancement: string | null;
             ligneBudgetaire: string | null;
-            observations: string | null;
             reference: string;
             ppmId: string;
             dateLancement: Date | null;
@@ -362,9 +362,9 @@ export declare class DemandesController {
     } & {
         id: string;
         organizationId: string;
-        status: import(".prisma/client").$Enums.StatusDemandeAchat;
         createdAt: Date;
         updatedAt: Date;
+        status: import(".prisma/client").$Enums.StatusDemandeAchat;
         activityId: string | null;
         description: string;
         objet: string;

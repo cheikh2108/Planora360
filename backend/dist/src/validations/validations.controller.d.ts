@@ -6,44 +6,44 @@ export declare class ValidationsController {
     submit(activityId: string, user: any): Promise<{
         id: string;
         createdAt: Date;
+        activityId: string;
         step: import(".prisma/client").$Enums.ValidationStep;
         decision: import(".prisma/client").$Enums.ValidationDecision;
         validatorId: string;
         comment: string | null;
-        activityId: string;
     }>;
     transition(activityId: string, dto: TransitionDto, user: any): Promise<{
         id: string;
         createdAt: Date;
+        activityId: string;
         step: import(".prisma/client").$Enums.ValidationStep;
         decision: import(".prisma/client").$Enums.ValidationDecision;
         validatorId: string;
         comment: string | null;
-        activityId: string;
     }>;
     getHistory(activityId: string, user: any): Promise<{
         id: string;
         createdAt: Date;
+        activityId: string;
         step: import(".prisma/client").$Enums.ValidationStep;
         decision: import(".prisma/client").$Enums.ValidationDecision;
         validatorId: string;
         comment: string | null;
-        activityId: string;
     }[]>;
     getCurrentStep(activityId: string, user: any): Promise<{
         activity: {
             id: string;
             organizationId: string;
-            status: import(".prisma/client").$Enums.ActivityStatus;
             createdAt: Date;
             updatedAt: Date;
+            status: import(".prisma/client").$Enums.ActivityStatus;
+            startDate: Date;
+            description: string | null;
             axisId: string;
             parentActivityId: string | null;
             title: string;
-            description: string | null;
             expectedResults: string | null;
             responsibleId: string;
-            startDate: Date;
             dueDate: Date;
             priority: string;
             budgetPlanned: import("@prisma/client-runtime-utils").Decimal | null;
@@ -55,11 +55,11 @@ export declare class ValidationsController {
         lastValidation: {
             id: string;
             createdAt: Date;
+            activityId: string;
             step: import(".prisma/client").$Enums.ValidationStep;
             decision: import(".prisma/client").$Enums.ValidationDecision;
             validatorId: string;
             comment: string | null;
-            activityId: string;
         } | null;
     }>;
     getPending(user: any, page?: string, limit?: string): Promise<{
@@ -75,25 +75,25 @@ export declare class ValidationsController {
             validations: {
                 id: string;
                 createdAt: Date;
+                activityId: string;
                 step: import(".prisma/client").$Enums.ValidationStep;
                 decision: import(".prisma/client").$Enums.ValidationDecision;
                 validatorId: string;
                 comment: string | null;
-                activityId: string;
             }[];
         } & {
             id: string;
             organizationId: string;
-            status: import(".prisma/client").$Enums.ActivityStatus;
             createdAt: Date;
             updatedAt: Date;
+            status: import(".prisma/client").$Enums.ActivityStatus;
+            startDate: Date;
+            description: string | null;
             axisId: string;
             parentActivityId: string | null;
             title: string;
-            description: string | null;
             expectedResults: string | null;
             responsibleId: string;
-            startDate: Date;
             dueDate: Date;
             priority: string;
             budgetPlanned: import("@prisma/client-runtime-utils").Decimal | null;

@@ -4,6 +4,7 @@ import {
 import { ActivityStatus } from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { PostHogService } from '../analytics/posthog.service';
+import { CacheInvalidationService } from '../common/cache/cache-invalidation.service';
 import { CreateActivityDto } from './dto/create-activity.dto';
 import { UpdateActivityDto } from './dto/update-activity.dto';
 
@@ -40,6 +41,7 @@ export class ActivitiesService {
   constructor(
     private prisma: PrismaService,
     private posthog: PostHogService,
+    private cacheInvalidation: CacheInvalidationService,
   ) {}
 
   async create(dto: CreateActivityDto, organizationId: string, currentUserId: string) {
@@ -57,10 +59,13 @@ export class ActivitiesService {
 
     if (dto.collaboratorIds?.length) {
       await this.addCollaborators(activity.id, dto.collaboratorIds);
-      return this.findActivityById(activity.id);
     }
 
-    return activity;
+    // Invalider le cache du dashboard après création d'activité
+    await this.cacheInvalidation.invalidateDashboard(organizationId);
+    await this.cacheInvalidation.invalidateActivities(organizationId);
+
+    return dto.collaboratorIds?.length ? this.findActivityById(activity.id) : activity;
   }
 
   private async validateAxis(axisId: string, organizationId: string) {
@@ -180,8 +185,16 @@ export class ActivitiesService {
           skipDuplicates: true,
         });
       }
+      // Invalider le cache après modification
+      await this.cacheInvalidation.invalidateDashboard(organizationId);
+      await this.cacheInvalidation.invalidateActivities(organizationId);
+
       return this.prisma.activity.findFirst({ where: { id }, include: ACTIVITY_INCLUDE }) as any;
     }
+
+    // Invalider le cache après modification
+    await this.cacheInvalidation.invalidateDashboard(organizationId);
+    await this.cacheInvalidation.invalidateActivities(organizationId);
 
     return activity;
   }
@@ -196,11 +209,17 @@ export class ActivitiesService {
       );
     }
 
-    return this.prisma.activity.update({
+    const updated = await this.prisma.activity.update({
       where: { id },
       data: { status: newStatus },
       include: ACTIVITY_INCLUDE,
     });
+
+    // Invalider le cache après changement de statut
+    await this.cacheInvalidation.invalidateDashboard(organizationId);
+    await this.cacheInvalidation.invalidateActivities(organizationId);
+
+    return updated;
   }
 
   async remove(id: string, organizationId: string) {
@@ -208,6 +227,13 @@ export class ActivitiesService {
     if (activity.status === 'VALIDEE') {
       throw new ForbiddenException('Une activité validée ne peut pas être supprimée');
     }
-    return this.prisma.activity.delete({ where: { id } });
+
+    const deleted = await this.prisma.activity.delete({ where: { id } });
+
+    // Invalider le cache après suppression
+    await this.cacheInvalidation.invalidateDashboard(organizationId);
+    await this.cacheInvalidation.invalidateActivities(organizationId);
+
+    return deleted;
   }
 }

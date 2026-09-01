@@ -7,23 +7,23 @@ export declare class CapitalizationController {
     constructor(capitalizationService: CapitalizationService);
     create(dto: CreateCapitalizationDto, req: any): Promise<{
         media: {
-            id: string;
             url: string;
+            id: string;
             type: string;
+            size: number;
             capitalizationId: string;
             filename: string;
-            size: number;
             uploadedAt: Date;
         }[];
     } & {
         id: string;
         organizationId: string;
-        status: string;
         createdAt: Date;
         updatedAt: Date;
+        status: string;
+        type: string;
         tags: string[];
         title: string;
-        type: string;
         context: string;
         challenges: string;
         solutions: string;
@@ -33,23 +33,23 @@ export declare class CapitalizationController {
     }>;
     findAll(filters: FilterCapitalizationDto, req: any): Promise<({
         media: {
-            id: string;
             url: string;
+            id: string;
             type: string;
+            size: number;
             capitalizationId: string;
             filename: string;
-            size: number;
             uploadedAt: Date;
         }[];
     } & {
         id: string;
         organizationId: string;
-        status: string;
         createdAt: Date;
         updatedAt: Date;
+        status: string;
+        type: string;
         tags: string[];
         title: string;
-        type: string;
         context: string;
         challenges: string;
         solutions: string;
@@ -59,23 +59,23 @@ export declare class CapitalizationController {
     })[]>;
     findOne(id: string, req: any): Promise<{
         media: {
-            id: string;
             url: string;
+            id: string;
             type: string;
+            size: number;
             capitalizationId: string;
             filename: string;
-            size: number;
             uploadedAt: Date;
         }[];
     } & {
         id: string;
         organizationId: string;
-        status: string;
         createdAt: Date;
         updatedAt: Date;
+        status: string;
+        type: string;
         tags: string[];
         title: string;
-        type: string;
         context: string;
         challenges: string;
         solutions: string;
@@ -85,23 +85,23 @@ export declare class CapitalizationController {
     }>;
     update(id: string, dto: UpdateCapitalizationDto, req: any): Promise<{
         media: {
-            id: string;
             url: string;
+            id: string;
             type: string;
+            size: number;
             capitalizationId: string;
             filename: string;
-            size: number;
             uploadedAt: Date;
         }[];
     } & {
         id: string;
         organizationId: string;
-        status: string;
         createdAt: Date;
         updatedAt: Date;
+        status: string;
+        type: string;
         tags: string[];
         title: string;
-        type: string;
         context: string;
         challenges: string;
         solutions: string;
@@ -112,12 +112,12 @@ export declare class CapitalizationController {
     remove(id: string, req: any): Promise<{
         id: string;
         organizationId: string;
-        status: string;
         createdAt: Date;
         updatedAt: Date;
+        status: string;
+        type: string;
         tags: string[];
         title: string;
-        type: string;
         context: string;
         challenges: string;
         solutions: string;
@@ -126,21 +126,21 @@ export declare class CapitalizationController {
         authorId: string;
     }>;
     uploadMedia(id: string, file: Express.Multer.File, type: string, req: any): Promise<{
-        id: string;
         url: string;
+        id: string;
         type: string;
+        size: number;
         capitalizationId: string;
         filename: string;
-        size: number;
         uploadedAt: Date;
     }>;
     deleteMedia(id: string, mediaId: string, req: any): Promise<{
-        id: string;
         url: string;
+        id: string;
         type: string;
+        size: number;
         capitalizationId: string;
         filename: string;
-        size: number;
         uploadedAt: Date;
     }>;
 }

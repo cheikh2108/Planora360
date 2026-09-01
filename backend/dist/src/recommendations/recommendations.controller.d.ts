@@ -34,18 +34,18 @@ export declare class RecommendationsController {
             firstName: string;
             lastName: string;
         } | null;
-        validator: {
-            id: string;
-            email: string;
-            firstName: string;
-            lastName: string;
-        } | null;
         createdBy: {
             id: string;
             email: string;
             firstName: string;
             lastName: string;
         };
+        validator: {
+            id: string;
+            email: string;
+            firstName: string;
+            lastName: string;
+        } | null;
         contributors: ({
             user: {
                 id: string;
@@ -54,34 +54,37 @@ export declare class RecommendationsController {
                 lastName: string;
             };
         } & {
-            role: string | null;
             id: string;
             createdAt: Date;
+            role: string | null;
             userId: string;
             recommendationId: string;
         })[];
     } & {
         id: string;
         organizationId: string;
-        status: import(".prisma/client").$Enums.RecommendationStatus;
         createdAt: Date;
         updatedAt: Date;
-        validatorId: string | null;
+        status: import(".prisma/client").$Enums.RecommendationStatus;
         activityId: string | null;
-        title: string;
         description: string;
+        title: string;
         responsibleId: string;
         dueDate: Date;
         priority: import(".prisma/client").$Enums.RecommendationPriority;
-        code: string;
+        actionPlanId: string | null;
+        progress: number;
+        validatorId: string | null;
         source: import(".prisma/client").$Enums.RecommendationSource;
+        validatedAt: Date | null;
         sourceReference: string | null;
         sourceDocumentUrl: string | null;
         issuedAt: Date;
-        completedAt: Date | null;
-        validatedAt: Date | null;
+        issuerId: string | null;
         issuerExternal: string | null;
-        progress: number;
+        code: string;
+        completedAt: Date | null;
+        createdById: string;
         suspendedReason: string | null;
         suspendedAt: Date | null;
         suspendedBy: string | null;
@@ -90,9 +93,6 @@ export declare class RecommendationsController {
         reopenedBy: string | null;
         isRecurrent: boolean;
         recurrenceNote: string | null;
-        actionPlanId: string | null;
-        issuerId: string | null;
-        createdById: string;
     }>;
     findAll(user: any, filters: any): Promise<{
         recommendations: ({
@@ -122,18 +122,18 @@ export declare class RecommendationsController {
                 firstName: string;
                 lastName: string;
             } | null;
-            validator: {
-                id: string;
-                email: string;
-                firstName: string;
-                lastName: string;
-            } | null;
             createdBy: {
                 id: string;
                 email: string;
                 firstName: string;
                 lastName: string;
             };
+            validator: {
+                id: string;
+                email: string;
+                firstName: string;
+                lastName: string;
+            } | null;
             contributors: ({
                 user: {
                     id: string;
@@ -142,34 +142,37 @@ export declare class RecommendationsController {
                     lastName: string;
                 };
             } & {
-                role: string | null;
                 id: string;
                 createdAt: Date;
+                role: string | null;
                 userId: string;
                 recommendationId: string;
             })[];
         } & {
             id: string;
             organizationId: string;
-            status: import(".prisma/client").$Enums.RecommendationStatus;
             createdAt: Date;
             updatedAt: Date;
-            validatorId: string | null;
+            status: import(".prisma/client").$Enums.RecommendationStatus;
             activityId: string | null;
-            title: string;
             description: string;
+            title: string;
             responsibleId: string;
             dueDate: Date;
             priority: import(".prisma/client").$Enums.RecommendationPriority;
-            code: string;
+            actionPlanId: string | null;
+            progress: number;
+            validatorId: string | null;
             source: import(".prisma/client").$Enums.RecommendationSource;
+            validatedAt: Date | null;
             sourceReference: string | null;
             sourceDocumentUrl: string | null;
             issuedAt: Date;
-            completedAt: Date | null;
-            validatedAt: Date | null;
+            issuerId: string | null;
             issuerExternal: string | null;
-            progress: number;
+            code: string;
+            completedAt: Date | null;
+            createdById: string;
             suspendedReason: string | null;
             suspendedAt: Date | null;
             suspendedBy: string | null;
@@ -178,9 +181,6 @@ export declare class RecommendationsController {
             reopenedBy: string | null;
             isRecurrent: boolean;
             recurrenceNote: string | null;
-            actionPlanId: string | null;
-            issuerId: string | null;
-            createdById: string;
         })[];
         total: number;
         page: number;
@@ -209,9 +209,9 @@ export declare class RecommendationsController {
             createdAt: Date;
             updatedAt: Date;
             authorId: string;
-            recommendationId: string;
             content: string;
             isImportant: boolean;
+            recommendationId: string;
         })[];
         _count: {
             comments: number;
@@ -239,18 +239,18 @@ export declare class RecommendationsController {
             firstName: string;
             lastName: string;
         } | null;
-        validator: {
-            id: string;
-            email: string;
-            firstName: string;
-            lastName: string;
-        } | null;
         createdBy: {
             id: string;
             email: string;
             firstName: string;
             lastName: string;
         };
+        validator: {
+            id: string;
+            email: string;
+            firstName: string;
+            lastName: string;
+        } | null;
         contributors: ({
             user: {
                 id: string;
@@ -259,9 +259,9 @@ export declare class RecommendationsController {
                 lastName: string;
             };
         } & {
-            role: string | null;
             id: string;
             createdAt: Date;
+            role: string | null;
             userId: string;
             recommendationId: string;
         })[];
@@ -274,16 +274,16 @@ export declare class RecommendationsController {
             } | null;
         } & {
             id: string;
-            status: string;
             createdAt: Date;
             updatedAt: Date;
-            title: string;
+            status: string;
             description: string | null;
+            title: string;
             responsibleId: string | null;
             dueDate: Date | null;
+            order: number;
             completedAt: Date | null;
             recommendationId: string;
-            order: number;
         })[];
         evidences: ({
             uploadedBy: {
@@ -294,14 +294,14 @@ export declare class RecommendationsController {
             };
         } & {
             id: string;
-            description: string | null;
-            uploadedAt: Date;
-            recommendationId: string;
-            fileName: string;
-            fileUrl: string;
             fileSize: number;
+            description: string | null;
+            fileName: string;
             mimeType: string;
             uploadedById: string;
+            uploadedAt: Date;
+            recommendationId: string;
+            fileUrl: string;
         })[];
         history: ({
             user: {
@@ -313,36 +313,39 @@ export declare class RecommendationsController {
         } & {
             id: string;
             createdAt: Date;
-            userId: string;
             action: string;
+            userId: string;
             comment: string | null;
-            recommendationId: string;
             field: string | null;
             oldValue: string | null;
             newValue: string | null;
+            recommendationId: string;
         })[];
     } & {
         id: string;
         organizationId: string;
-        status: import(".prisma/client").$Enums.RecommendationStatus;
         createdAt: Date;
         updatedAt: Date;
-        validatorId: string | null;
+        status: import(".prisma/client").$Enums.RecommendationStatus;
         activityId: string | null;
-        title: string;
         description: string;
+        title: string;
         responsibleId: string;
         dueDate: Date;
         priority: import(".prisma/client").$Enums.RecommendationPriority;
-        code: string;
+        actionPlanId: string | null;
+        progress: number;
+        validatorId: string | null;
         source: import(".prisma/client").$Enums.RecommendationSource;
+        validatedAt: Date | null;
         sourceReference: string | null;
         sourceDocumentUrl: string | null;
         issuedAt: Date;
-        completedAt: Date | null;
-        validatedAt: Date | null;
+        issuerId: string | null;
         issuerExternal: string | null;
-        progress: number;
+        code: string;
+        completedAt: Date | null;
+        createdById: string;
         suspendedReason: string | null;
         suspendedAt: Date | null;
         suspendedBy: string | null;
@@ -351,9 +354,6 @@ export declare class RecommendationsController {
         reopenedBy: string | null;
         isRecurrent: boolean;
         recurrenceNote: string | null;
-        actionPlanId: string | null;
-        issuerId: string | null;
-        createdById: string;
     }>;
     update(id: string, dto: UpdateRecommendationDto, user: any): Promise<{
         _count: {
@@ -382,18 +382,18 @@ export declare class RecommendationsController {
             firstName: string;
             lastName: string;
         } | null;
-        validator: {
-            id: string;
-            email: string;
-            firstName: string;
-            lastName: string;
-        } | null;
         createdBy: {
             id: string;
             email: string;
             firstName: string;
             lastName: string;
         };
+        validator: {
+            id: string;
+            email: string;
+            firstName: string;
+            lastName: string;
+        } | null;
         contributors: ({
             user: {
                 id: string;
@@ -402,34 +402,37 @@ export declare class RecommendationsController {
                 lastName: string;
             };
         } & {
-            role: string | null;
             id: string;
             createdAt: Date;
+            role: string | null;
             userId: string;
             recommendationId: string;
         })[];
     } & {
         id: string;
         organizationId: string;
-        status: import(".prisma/client").$Enums.RecommendationStatus;
         createdAt: Date;
         updatedAt: Date;
-        validatorId: string | null;
+        status: import(".prisma/client").$Enums.RecommendationStatus;
         activityId: string | null;
-        title: string;
         description: string;
+        title: string;
         responsibleId: string;
         dueDate: Date;
         priority: import(".prisma/client").$Enums.RecommendationPriority;
-        code: string;
+        actionPlanId: string | null;
+        progress: number;
+        validatorId: string | null;
         source: import(".prisma/client").$Enums.RecommendationSource;
+        validatedAt: Date | null;
         sourceReference: string | null;
         sourceDocumentUrl: string | null;
         issuedAt: Date;
-        completedAt: Date | null;
-        validatedAt: Date | null;
+        issuerId: string | null;
         issuerExternal: string | null;
-        progress: number;
+        code: string;
+        completedAt: Date | null;
+        createdById: string;
         suspendedReason: string | null;
         suspendedAt: Date | null;
         suspendedBy: string | null;
@@ -438,9 +441,6 @@ export declare class RecommendationsController {
         reopenedBy: string | null;
         isRecurrent: boolean;
         recurrenceNote: string | null;
-        actionPlanId: string | null;
-        issuerId: string | null;
-        createdById: string;
     }>;
     changeStatus(id: string, dto: ChangeStatusDto, user: any): Promise<{
         _count: {
@@ -469,18 +469,18 @@ export declare class RecommendationsController {
             firstName: string;
             lastName: string;
         } | null;
-        validator: {
-            id: string;
-            email: string;
-            firstName: string;
-            lastName: string;
-        } | null;
         createdBy: {
             id: string;
             email: string;
             firstName: string;
             lastName: string;
         };
+        validator: {
+            id: string;
+            email: string;
+            firstName: string;
+            lastName: string;
+        } | null;
         contributors: ({
             user: {
                 id: string;
@@ -489,34 +489,37 @@ export declare class RecommendationsController {
                 lastName: string;
             };
         } & {
-            role: string | null;
             id: string;
             createdAt: Date;
+            role: string | null;
             userId: string;
             recommendationId: string;
         })[];
     } & {
         id: string;
         organizationId: string;
-        status: import(".prisma/client").$Enums.RecommendationStatus;
         createdAt: Date;
         updatedAt: Date;
-        validatorId: string | null;
+        status: import(".prisma/client").$Enums.RecommendationStatus;
         activityId: string | null;
-        title: string;
         description: string;
+        title: string;
         responsibleId: string;
         dueDate: Date;
         priority: import(".prisma/client").$Enums.RecommendationPriority;
-        code: string;
+        actionPlanId: string | null;
+        progress: number;
+        validatorId: string | null;
         source: import(".prisma/client").$Enums.RecommendationSource;
+        validatedAt: Date | null;
         sourceReference: string | null;
         sourceDocumentUrl: string | null;
         issuedAt: Date;
-        completedAt: Date | null;
-        validatedAt: Date | null;
+        issuerId: string | null;
         issuerExternal: string | null;
-        progress: number;
+        code: string;
+        completedAt: Date | null;
+        createdById: string;
         suspendedReason: string | null;
         suspendedAt: Date | null;
         suspendedBy: string | null;
@@ -525,9 +528,6 @@ export declare class RecommendationsController {
         reopenedBy: string | null;
         isRecurrent: boolean;
         recurrenceNote: string | null;
-        actionPlanId: string | null;
-        issuerId: string | null;
-        createdById: string;
     }>;
     suspend(id: string, dto: SuspendRecommendationDto, user: any): Promise<{
         _count: {
@@ -556,18 +556,18 @@ export declare class RecommendationsController {
             firstName: string;
             lastName: string;
         } | null;
-        validator: {
-            id: string;
-            email: string;
-            firstName: string;
-            lastName: string;
-        } | null;
         createdBy: {
             id: string;
             email: string;
             firstName: string;
             lastName: string;
         };
+        validator: {
+            id: string;
+            email: string;
+            firstName: string;
+            lastName: string;
+        } | null;
         contributors: ({
             user: {
                 id: string;
@@ -576,34 +576,37 @@ export declare class RecommendationsController {
                 lastName: string;
             };
         } & {
-            role: string | null;
             id: string;
             createdAt: Date;
+            role: string | null;
             userId: string;
             recommendationId: string;
         })[];
     } & {
         id: string;
         organizationId: string;
-        status: import(".prisma/client").$Enums.RecommendationStatus;
         createdAt: Date;
         updatedAt: Date;
-        validatorId: string | null;
+        status: import(".prisma/client").$Enums.RecommendationStatus;
         activityId: string | null;
-        title: string;
         description: string;
+        title: string;
         responsibleId: string;
         dueDate: Date;
         priority: import(".prisma/client").$Enums.RecommendationPriority;
-        code: string;
+        actionPlanId: string | null;
+        progress: number;
+        validatorId: string | null;
         source: import(".prisma/client").$Enums.RecommendationSource;
+        validatedAt: Date | null;
         sourceReference: string | null;
         sourceDocumentUrl: string | null;
         issuedAt: Date;
-        completedAt: Date | null;
-        validatedAt: Date | null;
+        issuerId: string | null;
         issuerExternal: string | null;
-        progress: number;
+        code: string;
+        completedAt: Date | null;
+        createdById: string;
         suspendedReason: string | null;
         suspendedAt: Date | null;
         suspendedBy: string | null;
@@ -612,9 +615,6 @@ export declare class RecommendationsController {
         reopenedBy: string | null;
         isRecurrent: boolean;
         recurrenceNote: string | null;
-        actionPlanId: string | null;
-        issuerId: string | null;
-        createdById: string;
     }>;
     reopen(id: string, dto: ReopenRecommendationDto, user: any): Promise<{
         _count: {
@@ -643,18 +643,18 @@ export declare class RecommendationsController {
             firstName: string;
             lastName: string;
         } | null;
-        validator: {
-            id: string;
-            email: string;
-            firstName: string;
-            lastName: string;
-        } | null;
         createdBy: {
             id: string;
             email: string;
             firstName: string;
             lastName: string;
         };
+        validator: {
+            id: string;
+            email: string;
+            firstName: string;
+            lastName: string;
+        } | null;
         contributors: ({
             user: {
                 id: string;
@@ -663,34 +663,37 @@ export declare class RecommendationsController {
                 lastName: string;
             };
         } & {
-            role: string | null;
             id: string;
             createdAt: Date;
+            role: string | null;
             userId: string;
             recommendationId: string;
         })[];
     } & {
         id: string;
         organizationId: string;
-        status: import(".prisma/client").$Enums.RecommendationStatus;
         createdAt: Date;
         updatedAt: Date;
-        validatorId: string | null;
+        status: import(".prisma/client").$Enums.RecommendationStatus;
         activityId: string | null;
-        title: string;
         description: string;
+        title: string;
         responsibleId: string;
         dueDate: Date;
         priority: import(".prisma/client").$Enums.RecommendationPriority;
-        code: string;
+        actionPlanId: string | null;
+        progress: number;
+        validatorId: string | null;
         source: import(".prisma/client").$Enums.RecommendationSource;
+        validatedAt: Date | null;
         sourceReference: string | null;
         sourceDocumentUrl: string | null;
         issuedAt: Date;
-        completedAt: Date | null;
-        validatedAt: Date | null;
+        issuerId: string | null;
         issuerExternal: string | null;
-        progress: number;
+        code: string;
+        completedAt: Date | null;
+        createdById: string;
         suspendedReason: string | null;
         suspendedAt: Date | null;
         suspendedBy: string | null;
@@ -699,32 +702,32 @@ export declare class RecommendationsController {
         reopenedBy: string | null;
         isRecurrent: boolean;
         recurrenceNote: string | null;
-        actionPlanId: string | null;
-        issuerId: string | null;
-        createdById: string;
     }>;
     remove(id: string, user: any): Promise<{
         id: string;
         organizationId: string;
-        status: import(".prisma/client").$Enums.RecommendationStatus;
         createdAt: Date;
         updatedAt: Date;
-        validatorId: string | null;
+        status: import(".prisma/client").$Enums.RecommendationStatus;
         activityId: string | null;
-        title: string;
         description: string;
+        title: string;
         responsibleId: string;
         dueDate: Date;
         priority: import(".prisma/client").$Enums.RecommendationPriority;
-        code: string;
+        actionPlanId: string | null;
+        progress: number;
+        validatorId: string | null;
         source: import(".prisma/client").$Enums.RecommendationSource;
+        validatedAt: Date | null;
         sourceReference: string | null;
         sourceDocumentUrl: string | null;
         issuedAt: Date;
-        completedAt: Date | null;
-        validatedAt: Date | null;
+        issuerId: string | null;
         issuerExternal: string | null;
-        progress: number;
+        code: string;
+        completedAt: Date | null;
+        createdById: string;
         suspendedReason: string | null;
         suspendedAt: Date | null;
         suspendedBy: string | null;
@@ -733,48 +736,45 @@ export declare class RecommendationsController {
         reopenedBy: string | null;
         isRecurrent: boolean;
         recurrenceNote: string | null;
-        actionPlanId: string | null;
-        issuerId: string | null;
-        createdById: string;
     }>;
     addAction(id: string, dto: CreateActionDto, user: any): Promise<{
         id: string;
-        status: string;
         createdAt: Date;
         updatedAt: Date;
-        title: string;
+        status: string;
         description: string | null;
+        title: string;
         responsibleId: string | null;
         dueDate: Date | null;
+        order: number;
         completedAt: Date | null;
         recommendationId: string;
-        order: number;
     }>;
     updateAction(actionId: string, updates: any, user: any): Promise<{
         id: string;
-        status: string;
         createdAt: Date;
         updatedAt: Date;
-        title: string;
+        status: string;
         description: string | null;
+        title: string;
         responsibleId: string | null;
         dueDate: Date | null;
+        order: number;
         completedAt: Date | null;
         recommendationId: string;
-        order: number;
     }>;
     deleteAction(actionId: string, user: any): Promise<{
         id: string;
-        status: string;
         createdAt: Date;
         updatedAt: Date;
-        title: string;
+        status: string;
         description: string | null;
+        title: string;
         responsibleId: string | null;
         dueDate: Date | null;
+        order: number;
         completedAt: Date | null;
         recommendationId: string;
-        order: number;
     }>;
     addComment(id: string, dto: CreateCommentDto, user: any): Promise<{
         author: {
@@ -788,9 +788,9 @@ export declare class RecommendationsController {
         createdAt: Date;
         updatedAt: Date;
         authorId: string;
-        recommendationId: string;
         content: string;
         isImportant: boolean;
+        recommendationId: string;
     }>;
     getComments(id: string, user: any): Promise<({
         author: {
@@ -804,8 +804,8 @@ export declare class RecommendationsController {
         createdAt: Date;
         updatedAt: Date;
         authorId: string;
-        recommendationId: string;
         content: string;
         isImportant: boolean;
+        recommendationId: string;
     })[]>;
 }

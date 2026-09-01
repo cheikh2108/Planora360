@@ -16,7 +16,6 @@ export declare class AuditController {
             id: string;
             organizationId: string;
             createdAt: Date;
-            userId: string;
             action: string;
             entityType: string;
             entityId: string;
@@ -26,6 +25,7 @@ export declare class AuditController {
             requestId: string | null;
             oldValues: import("@prisma/client/runtime/client").JsonValue | null;
             newValues: import("@prisma/client/runtime/client").JsonValue | null;
+            userId: string;
         })[];
         total: number;
         page: number;
@@ -35,7 +35,6 @@ export declare class AuditController {
         id: string;
         organizationId: string;
         createdAt: Date;
-        userId: string;
         action: string;
         entityType: string;
         entityId: string;
@@ -45,6 +44,7 @@ export declare class AuditController {
         requestId: string | null;
         oldValues: import("@prisma/client/runtime/client").JsonValue | null;
         newValues: import("@prisma/client/runtime/client").JsonValue | null;
+        userId: string;
     }[]>;
     searchWithFilters(filters: AuditFiltersDto, user: any): Promise<{
         entries: ({
@@ -58,7 +58,6 @@ export declare class AuditController {
             id: string;
             organizationId: string;
             createdAt: Date;
-            userId: string;
             action: string;
             entityType: string;
             entityId: string;
@@ -68,6 +67,7 @@ export declare class AuditController {
             requestId: string | null;
             oldValues: import("@prisma/client/runtime/client").JsonValue | null;
             newValues: import("@prisma/client/runtime/client").JsonValue | null;
+            userId: string;
         })[];
         total: number;
         page: number;

@@ -21,8 +21,8 @@ export declare class ChecklistService {
         order: number;
         label: string;
         isMandatory: boolean;
-        observations: string | null;
         progress: number;
+        observations: string | null;
         isValidated: boolean;
     }>;
     findAll(activityId: string, organizationId: string): import(".prisma/client").Prisma.PrismaPromise<({
@@ -47,8 +47,8 @@ export declare class ChecklistService {
         order: number;
         label: string;
         isMandatory: boolean;
-        observations: string | null;
         progress: number;
+        observations: string | null;
         isValidated: boolean;
     })[]>;
     findOne(id: string, organizationId: string): Promise<{
@@ -79,8 +79,8 @@ export declare class ChecklistService {
         order: number;
         label: string;
         isMandatory: boolean;
-        observations: string | null;
         progress: number;
+        observations: string | null;
         isValidated: boolean;
     }>;
     update(id: string, dto: UpdateChecklistItemDto, organizationId: string): Promise<{
@@ -99,8 +99,8 @@ export declare class ChecklistService {
         order: number;
         label: string;
         isMandatory: boolean;
-        observations: string | null;
         progress: number;
+        observations: string | null;
         isValidated: boolean;
     }>;
     remove(id: string, organizationId: string): Promise<void>;

@@ -9,23 +9,23 @@ export declare class CapitalizationService {
     constructor(prisma: PrismaService, storage: StorageService);
     create(dto: CreateCapitalizationDto, organizationId: string, userId: string): Promise<{
         media: {
-            id: string;
             url: string;
+            id: string;
             type: string;
+            size: number;
             capitalizationId: string;
             filename: string;
-            size: number;
             uploadedAt: Date;
         }[];
     } & {
         id: string;
         organizationId: string;
-        status: string;
         createdAt: Date;
         updatedAt: Date;
+        status: string;
+        type: string;
         tags: string[];
         title: string;
-        type: string;
         context: string;
         challenges: string;
         solutions: string;
@@ -35,23 +35,23 @@ export declare class CapitalizationService {
     }>;
     findAll(organizationId: string, filters?: FilterCapitalizationDto): Promise<({
         media: {
-            id: string;
             url: string;
+            id: string;
             type: string;
+            size: number;
             capitalizationId: string;
             filename: string;
-            size: number;
             uploadedAt: Date;
         }[];
     } & {
         id: string;
         organizationId: string;
-        status: string;
         createdAt: Date;
         updatedAt: Date;
+        status: string;
+        type: string;
         tags: string[];
         title: string;
-        type: string;
         context: string;
         challenges: string;
         solutions: string;
@@ -61,23 +61,23 @@ export declare class CapitalizationService {
     })[]>;
     findOne(id: string, organizationId: string): Promise<{
         media: {
-            id: string;
             url: string;
+            id: string;
             type: string;
+            size: number;
             capitalizationId: string;
             filename: string;
-            size: number;
             uploadedAt: Date;
         }[];
     } & {
         id: string;
         organizationId: string;
-        status: string;
         createdAt: Date;
         updatedAt: Date;
+        status: string;
+        type: string;
         tags: string[];
         title: string;
-        type: string;
         context: string;
         challenges: string;
         solutions: string;
@@ -87,23 +87,23 @@ export declare class CapitalizationService {
     }>;
     update(id: string, dto: UpdateCapitalizationDto, organizationId: string, userId: string): Promise<{
         media: {
-            id: string;
             url: string;
+            id: string;
             type: string;
+            size: number;
             capitalizationId: string;
             filename: string;
-            size: number;
             uploadedAt: Date;
         }[];
     } & {
         id: string;
         organizationId: string;
-        status: string;
         createdAt: Date;
         updatedAt: Date;
+        status: string;
+        type: string;
         tags: string[];
         title: string;
-        type: string;
         context: string;
         challenges: string;
         solutions: string;
@@ -114,12 +114,12 @@ export declare class CapitalizationService {
     remove(id: string, organizationId: string, userId: string): Promise<{
         id: string;
         organizationId: string;
-        status: string;
         createdAt: Date;
         updatedAt: Date;
+        status: string;
+        type: string;
         tags: string[];
         title: string;
-        type: string;
         context: string;
         challenges: string;
         solutions: string;
@@ -128,21 +128,21 @@ export declare class CapitalizationService {
         authorId: string;
     }>;
     uploadMedia(capitalizationId: string, file: Express.Multer.File, type: string, organizationId: string): Promise<{
-        id: string;
         url: string;
+        id: string;
         type: string;
+        size: number;
         capitalizationId: string;
         filename: string;
-        size: number;
         uploadedAt: Date;
     }>;
     deleteMedia(mediaId: string, capitalizationId: string, organizationId: string): Promise<{
-        id: string;
         url: string;
+        id: string;
         type: string;
+        size: number;
         capitalizationId: string;
         filename: string;
-        size: number;
         uploadedAt: Date;
     }>;
 }

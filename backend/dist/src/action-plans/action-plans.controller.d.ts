@@ -9,15 +9,15 @@ export declare class ActionPlansController {
         axes: {
             id: string;
             title: string;
-            actionPlanId: string;
             order: number;
+            actionPlanId: string;
         }[];
     } & {
         id: string;
         organizationId: string;
-        status: import(".prisma/client").$Enums.PlanStatus;
         createdAt: Date;
         updatedAt: Date;
+        status: import(".prisma/client").$Enums.PlanStatus;
         title: string;
         expectedResults: string | null;
         periodStart: Date;
@@ -37,15 +37,15 @@ export declare class ActionPlansController {
             } & {
                 id: string;
                 title: string;
-                actionPlanId: string;
                 order: number;
+                actionPlanId: string;
             })[];
         } & {
             id: string;
             organizationId: string;
-            status: import(".prisma/client").$Enums.PlanStatus;
             createdAt: Date;
             updatedAt: Date;
+            status: import(".prisma/client").$Enums.PlanStatus;
             title: string;
             expectedResults: string | null;
             periodStart: Date;
@@ -73,16 +73,16 @@ export declare class ActionPlansController {
             } & {
                 id: string;
                 organizationId: string;
-                status: import(".prisma/client").$Enums.ActivityStatus;
                 createdAt: Date;
                 updatedAt: Date;
+                status: import(".prisma/client").$Enums.ActivityStatus;
+                startDate: Date;
+                description: string | null;
                 axisId: string;
                 parentActivityId: string | null;
                 title: string;
-                description: string | null;
                 expectedResults: string | null;
                 responsibleId: string;
-                startDate: Date;
                 dueDate: Date;
                 priority: string;
                 budgetPlanned: import("@prisma/client-runtime-utils").Decimal | null;
@@ -93,15 +93,15 @@ export declare class ActionPlansController {
         } & {
             id: string;
             title: string;
-            actionPlanId: string;
             order: number;
+            actionPlanId: string;
         })[];
     } & {
         id: string;
         organizationId: string;
-        status: import(".prisma/client").$Enums.PlanStatus;
         createdAt: Date;
         updatedAt: Date;
+        status: import(".prisma/client").$Enums.PlanStatus;
         title: string;
         expectedResults: string | null;
         periodStart: Date;
@@ -113,15 +113,15 @@ export declare class ActionPlansController {
         axes: {
             id: string;
             title: string;
-            actionPlanId: string;
             order: number;
+            actionPlanId: string;
         }[];
     } & {
         id: string;
         organizationId: string;
-        status: import(".prisma/client").$Enums.PlanStatus;
         createdAt: Date;
         updatedAt: Date;
+        status: import(".prisma/client").$Enums.PlanStatus;
         title: string;
         expectedResults: string | null;
         periodStart: Date;
@@ -132,9 +132,9 @@ export declare class ActionPlansController {
     remove(id: string, user: any): Promise<{
         id: string;
         organizationId: string;
-        status: import(".prisma/client").$Enums.PlanStatus;
         createdAt: Date;
         updatedAt: Date;
+        status: import(".prisma/client").$Enums.PlanStatus;
         title: string;
         expectedResults: string | null;
         periodStart: Date;
@@ -145,19 +145,19 @@ export declare class ActionPlansController {
     createAxis(planId: string, dto: CreateAxisDto, user: any): Promise<{
         id: string;
         title: string;
-        actionPlanId: string;
         order: number;
+        actionPlanId: string;
     }>;
     updateAxis(axisId: string, dto: UpdateAxisDto, user: any): Promise<{
         id: string;
         title: string;
-        actionPlanId: string;
         order: number;
+        actionPlanId: string;
     }>;
     removeAxis(axisId: string, user: any): Promise<{
         id: string;
         title: string;
-        actionPlanId: string;
         order: number;
+        actionPlanId: string;
     }>;
 }

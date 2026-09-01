@@ -1,12 +1,14 @@
 import { ActivityStatus } from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { PostHogService } from '../analytics/posthog.service';
+import { CacheInvalidationService } from '../common/cache/cache-invalidation.service';
 import { CreateActivityDto } from './dto/create-activity.dto';
 import { UpdateActivityDto } from './dto/update-activity.dto';
 export declare class ActivitiesService {
     private prisma;
     private posthog;
-    constructor(prisma: PrismaService, posthog: PostHogService);
+    private cacheInvalidation;
+    constructor(prisma: PrismaService, posthog: PostHogService, cacheInvalidation: CacheInvalidationService);
     create(dto: CreateActivityDto, organizationId: string, currentUserId: string): Promise<any>;
     private validateAxis;
     private validateParentActivity;
@@ -115,8 +117,8 @@ export declare class ActivitiesService {
             order: number;
             label: string;
             isMandatory: boolean;
-            observations: string | null;
             progress: number;
+            observations: string | null;
             isValidated: boolean;
         })[];
         _count: {
@@ -170,8 +172,8 @@ export declare class ActivitiesService {
             activityId: string;
             step: import(".prisma/client").$Enums.ValidationStep;
             decision: import(".prisma/client").$Enums.ValidationDecision;
-            comment: string | null;
             validatorId: string;
+            comment: string | null;
         }[];
         collaborators: ({
             user: {

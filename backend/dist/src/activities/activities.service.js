@@ -13,6 +13,7 @@ exports.ActivitiesService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../common/prisma/prisma.service");
 const posthog_service_1 = require("../analytics/posthog.service");
+const cache_invalidation_service_1 = require("../common/cache/cache-invalidation.service");
 const ACTIVITY_INCLUDE = {
     responsible: { select: { id: true, firstName: true, lastName: true, email: true } },
     collaborators: {
@@ -41,9 +42,11 @@ const ALLOWED_STATUS_TRANSITIONS = {
 let ActivitiesService = class ActivitiesService {
     prisma;
     posthog;
-    constructor(prisma, posthog) {
+    cacheInvalidation;
+    constructor(prisma, posthog, cacheInvalidation) {
         this.prisma = prisma;
         this.posthog = posthog;
+        this.cacheInvalidation = cacheInvalidation;
     }
     async create(dto, organizationId, currentUserId) {
         await this.validateAxis(dto.axisId, organizationId);
@@ -56,9 +59,10 @@ let ActivitiesService = class ActivitiesService {
         }
         if (dto.collaboratorIds?.length) {
             await this.addCollaborators(activity.id, dto.collaboratorIds);
-            return this.findActivityById(activity.id);
         }
-        return activity;
+        await this.cacheInvalidation.invalidateDashboard(organizationId);
+        await this.cacheInvalidation.invalidateActivities(organizationId);
+        return dto.collaboratorIds?.length ? this.findActivityById(activity.id) : activity;
     }
     async validateAxis(axisId, organizationId) {
         const axis = await this.prisma.axis.findFirst({
@@ -167,8 +171,12 @@ let ActivitiesService = class ActivitiesService {
                     skipDuplicates: true,
                 });
             }
+            await this.cacheInvalidation.invalidateDashboard(organizationId);
+            await this.cacheInvalidation.invalidateActivities(organizationId);
             return this.prisma.activity.findFirst({ where: { id }, include: ACTIVITY_INCLUDE });
         }
+        await this.cacheInvalidation.invalidateDashboard(organizationId);
+        await this.cacheInvalidation.invalidateActivities(organizationId);
         return activity;
     }
     async updateStatus(id, newStatus, organizationId) {
@@ -177,24 +185,31 @@ let ActivitiesService = class ActivitiesService {
         if (!allowed.includes(newStatus)) {
             throw new common_1.BadRequestException(`Transition de statut invalide : ${activity.status} → ${newStatus}`);
         }
-        return this.prisma.activity.update({
+        const updated = await this.prisma.activity.update({
             where: { id },
             data: { status: newStatus },
             include: ACTIVITY_INCLUDE,
         });
+        await this.cacheInvalidation.invalidateDashboard(organizationId);
+        await this.cacheInvalidation.invalidateActivities(organizationId);
+        return updated;
     }
     async remove(id, organizationId) {
         const activity = await this.findOne(id, organizationId);
         if (activity.status === 'VALIDEE') {
             throw new common_1.ForbiddenException('Une activité validée ne peut pas être supprimée');
         }
-        return this.prisma.activity.delete({ where: { id } });
+        const deleted = await this.prisma.activity.delete({ where: { id } });
+        await this.cacheInvalidation.invalidateDashboard(organizationId);
+        await this.cacheInvalidation.invalidateActivities(organizationId);
+        return deleted;
     }
 };
 exports.ActivitiesService = ActivitiesService;
 exports.ActivitiesService = ActivitiesService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        posthog_service_1.PostHogService])
+        posthog_service_1.PostHogService,
+        cache_invalidation_service_1.CacheInvalidationService])
 ], ActivitiesService);
 //# sourceMappingURL=activities.service.js.map

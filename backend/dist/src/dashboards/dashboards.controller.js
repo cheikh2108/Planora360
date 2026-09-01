@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const dashboards_service_1 = require("./dashboards.service");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
 const current_user_decorator_1 = require("../common/decorators/current-user.decorator");
+const cache_interceptor_1 = require("../common/cache/cache.interceptor");
 let DashboardsController = class DashboardsController {
     dashboardsService;
     constructor(dashboardsService) {
@@ -63,6 +64,7 @@ __decorate([
 exports.DashboardsController = DashboardsController = __decorate([
     (0, common_1.Controller)('dashboards'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseInterceptors)(cache_interceptor_1.HttpCacheInterceptor),
     __metadata("design:paramtypes", [dashboards_service_1.DashboardsService])
 ], DashboardsController);
 //# sourceMappingURL=dashboards.controller.js.map

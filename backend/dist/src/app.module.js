@@ -40,6 +40,7 @@ const maintenance_module_1 = require("./maintenance/maintenance.module");
 const maintenance_guard_1 = require("./common/guards/maintenance.guard");
 const csrf_module_1 = require("./common/csrf/csrf.module");
 const csrf_guard_1 = require("./common/guards/csrf.guard");
+const cache_module_1 = require("./common/cache/cache.module");
 const passation_module_1 = require("./passation/passation.module");
 const messagerie_module_1 = require("./messagerie/messagerie.module");
 let AppModule = class AppModule {
@@ -55,6 +56,7 @@ exports.AppModule = AppModule = __decorate([
                     limit: 100,
                 }]),
             prisma_module_1.PrismaModule,
+            cache_module_1.CacheModule,
             maintenance_module_1.MaintenanceModule,
             csrf_module_1.CsrfModule,
             analytics_module_1.AnalyticsModule,
