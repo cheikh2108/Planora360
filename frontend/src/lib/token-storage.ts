@@ -23,7 +23,9 @@ export const TokenStorage = {
 
   clearTokens(): void {
     if (typeof window === 'undefined') return;
-    localStorage.clear();
+    // Supprimer uniquement les tokens, pas tout le localStorage
+    localStorage.removeItem(TOKEN_KEYS.ACCESS);
+    localStorage.removeItem(TOKEN_KEYS.REFRESH);
   },
 
   hasRefreshToken(): boolean {

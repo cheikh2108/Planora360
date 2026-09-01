@@ -109,6 +109,8 @@ async function refreshAccessToken(): Promise<void> {
 
 function redirectToLogin() {
   TokenStorage.clearTokens();
+  // Note: on ne fait PAS localStorage.clear() ici pour préserver d'autres données
+  // L'utilisateur sera redirigé vers login qui nettoiera si nécessaire
   if (typeof window !== 'undefined') {
     window.location.href = LOGIN_REDIRECT_URL;
   }
