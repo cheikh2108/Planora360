@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Logo } from '@/components/ui/logo';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -89,7 +90,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="relative px-10 pt-10 shrink-0">
           <div className="flex items-center gap-2.5">
-            <img src="/logo-light.svg" alt="PLANORA 360" className="h-20 w-auto" />
+            <Logo variant="light" className="h-16 w-auto" />
           </div>
         </div>
 
@@ -151,7 +152,7 @@ export default function LoginPage() {
 
           {/* Logo mobile */}
           <div className="flex items-center gap-2.5 mb-10 lg:hidden">
-            <img src="/logo-light.svg" alt="PLANORA 360" className="h-20 w-auto" />
+            <Logo variant="light" className="h-16 w-auto" />
           </div>
 
           <div className="w-full max-w-[340px]">

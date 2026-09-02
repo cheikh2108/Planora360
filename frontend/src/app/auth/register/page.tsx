@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { authApi } from '@/lib/api';
 import { Eye, EyeOff, Loader2, CheckCircle2, ChevronLeft } from 'lucide-react';
+import { Logo } from '@/components/ui/logo';
 import { cn } from '@/lib/utils';
 
 type Plan = 'INDIVIDUEL' | 'PRO' | 'EQUIPE' | 'ORGANISATION' | 'ENTERPRISE';
@@ -100,7 +101,7 @@ export default function RegisterPage() {
     <div className="min-h-screen bg-[#eef5ff] flex flex-col">
       {/* Header */}
       <div className="px-6 py-5 flex items-center gap-3">
-        <img src="/logo-light.svg" alt="PLANORA 360" className="h-20 w-auto" />
+        <Logo variant="light" className="h-16 w-auto" />
       </div>
 
       {/* Form container */}
