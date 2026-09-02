@@ -84,7 +84,7 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
   return (
     <aside className="flex flex-col h-full text-white w-64 shrink-0" style={{ backgroundColor: 'var(--color-brand-dark, #0f1e38)' }}>
       <div className="flex items-center gap-3 px-5 py-5 border-b border-white/10">
-        <img src="/logo-dark.svg" alt="PLANORA 360" className="h-12 w-auto" />
+        <img src="/logo-light.svg" alt="PLANORA 360" className="h-16 w-auto" />
         <p className="text-xs text-white/40 truncate max-w-35 ml-auto">{user?.organization?.name ?? '—'}</p>
       </div>
 
