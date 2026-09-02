@@ -120,7 +120,7 @@ function CreatePlanModal({ open, onClose, onCreated }: { open: boolean; onClose:
   const { data: zonesData } = useQuery({
     queryKey: ['zones'],
     queryFn: async () => {
-      const r = await zonesApi.list();
+      const r = await zonesApi.getAll();
       return r.data;
     },
   });

@@ -131,7 +131,7 @@ function AddActivityModal({
   const { data: zonesData } = useQuery({
     queryKey: ['zones'],
     queryFn: async () => {
-      const r = await zonesApi.list();
+      const r = await zonesApi.getAll();
       return r.data;
     },
   });
