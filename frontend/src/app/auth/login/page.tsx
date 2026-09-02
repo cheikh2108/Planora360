@@ -89,7 +89,7 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="relative px-10 pt-10 shrink-0">
           <div className="flex items-center gap-2.5">
-            <img src="/logo-dark.svg" alt="PLANORA 360" className="h-20 w-auto" />
+            <img src="/logo-dark.svg" alt="PLANORA 360" className="h-24 w-auto" />
           </div>
         </div>
 
@@ -151,7 +151,7 @@ export default function LoginPage() {
 
           {/* Logo mobile */}
           <div className="flex items-center gap-2.5 mb-10 lg:hidden">
-            <img src="/logo-dark.svg" alt="PLANORA 360" className="h-20 w-auto" />
+            <img src="/logo-dark.svg" alt="PLANORA 360" className="h-24 w-auto" />
           </div>
 
           <div className="w-full max-w-[340px]">
