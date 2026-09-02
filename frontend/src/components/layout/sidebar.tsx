@@ -68,12 +68,24 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
         href={item.href}
         onClick={onClose}
         className={cn(
-          'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
-          active ? 'text-white' : 'text-white/60 hover:bg-white/8 hover:text-white'
+          'group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200',
+          active
+            ? 'text-slate-900 shadow-sm'
+            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
         )}
-        style={active ? { backgroundColor: 'var(--color-brand)' } : undefined}
+        style={active ? {
+          backgroundColor: 'color-mix(in srgb, var(--color-brand, #2563eb) 8%, white)',
+          borderLeft: '3px solid var(--color-brand, #2563eb)'
+        } : undefined}
       >
-        <item.icon size={18} className="shrink-0" />
+        <item.icon
+          size={18}
+          className={cn(
+            "shrink-0 transition-transform duration-200",
+            active ? "scale-110" : "group-hover:scale-105"
+          )}
+          style={active ? { color: 'var(--color-brand, #2563eb)' } : undefined}
+        />
         <span className="flex-1 truncate">{item.label}</span>
       </Link>
     );
@@ -82,42 +94,69 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
   const visibleAdmin = ORG_ADMIN_ITEMS.filter(canSee);
 
   return (
-    <aside className="flex flex-col h-full text-white w-64 shrink-0" style={{ backgroundColor: 'var(--color-brand-dark, #0f1e38)' }}>
-      <div className="flex items-center gap-3 px-5 py-5 border-b border-white/10">
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm" style={{ backgroundColor: 'var(--color-brand)' }}>P</div>
-        <div>
-          <p className="font-semibold text-sm leading-tight">PLANORA 360</p>
-          <p className="text-xs text-white/40 truncate max-w-35">{user?.organization?.name ?? '—'}</p>
+    <aside className="flex flex-col h-full bg-white border-r border-slate-100 w-64 shrink-0">
+      {/* Header avec brandColor subtile */}
+      <div className="px-5 py-6 border-b border-slate-100">
+        <div className="flex items-center gap-3">
+          <div
+            className="w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-white text-base shadow-sm"
+            style={{ backgroundColor: 'var(--color-brand, #2563eb)' }}
+          >
+            P
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-base text-slate-900 leading-tight tracking-tight">PLANORA</p>
+            <p className="text-xs text-slate-500 truncate font-medium mt-0.5">{user?.organization?.name ?? '—'}</p>
+          </div>
         </div>
+
+        {/* Accent bar - brandColor */}
+        <div
+          className="h-1 rounded-full mt-4 transition-all duration-300"
+          style={{
+            background: `linear-gradient(90deg, var(--color-brand, #2563eb) 0%, color-mix(in srgb, var(--color-brand, #2563eb) 20%, white) 100%)`
+          }}
+        />
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
+      {/* Navigation avec whitespace généreux */}
+      <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-1">
         {NAV_ITEMS.filter(canSee).map(navLink)}
 
         {visibleAdmin.length > 0 && (
-          <div className="pt-4">
+          <div className="pt-6 mt-6 border-t border-slate-100">
             <button
               onClick={() => setAdminOpen(v => !v)}
-              className="flex items-center gap-2 px-3 py-1.5 w-full text-xs font-semibold uppercase tracking-wider text-white/30 hover:text-white/60 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 w-full text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-colors rounded-lg hover:bg-slate-50"
             >
               <span className="flex-1 text-left">Administration</span>
-              <ChevronDown className={cn('w-3.5 h-3.5 transition-transform', adminOpen && 'rotate-180')} />
+              <ChevronDown
+                className={cn('w-3.5 h-3.5 transition-transform duration-200', adminOpen && 'rotate-180')}
+              />
             </button>
-            {adminOpen && <div className="mt-1 space-y-0.5">{visibleAdmin.map(navLink)}</div>}
+            {adminOpen && <div className="mt-2 space-y-1">{visibleAdmin.map(navLink)}</div>}
           </div>
         )}
       </nav>
 
-      <div className="px-3 py-3 border-t border-white/10">
-        <div className="flex items-center gap-3 px-3 py-2 rounded-lg">
-          <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 text-white" style={{ backgroundColor: 'var(--color-brand)', opacity: 0.85 }}>
+      {/* User section moderne */}
+      <div className="px-4 py-4 border-t border-slate-100">
+        <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 transition-colors group">
+          <div
+            className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0 shadow-sm"
+            style={{ backgroundColor: 'var(--color-brand, #2563eb)' }}
+          >
             {user?.firstName?.[0]}{user?.lastName?.[0]}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-white truncate">{user?.firstName} {user?.lastName}</p>
-            <p className="text-xs text-white/40 truncate">{user?.role?.name}</p>
+            <p className="text-sm font-semibold text-slate-900 truncate">{user?.firstName} {user?.lastName}</p>
+            <p className="text-xs text-slate-500 truncate">{user?.role?.name}</p>
           </div>
-          <button onClick={logout} title="Se déconnecter" className="p-1.5 rounded-md text-white/30 hover:text-red-400 hover:bg-white/8 transition-colors">
+          <button
+            onClick={logout}
+            title="Se déconnecter"
+            className="p-2 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all duration-200 opacity-0 group-hover:opacity-100"
+          >
             <LogOut size={16} />
           </button>
         </div>
