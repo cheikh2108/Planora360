@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="720" height="168" viewBox="0 0 720 168" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&amp;display=swap');
+    text { font-family: 'Montserrat', Arial, sans-serif; }
+  </style>
+
+  <!-- Cercle doré -->
+  <circle cx="84" cy="84" r="58" fill="none" stroke="#C5A572" stroke-width="2.5"/>
+
+  <!-- Point doré -->
+  <circle cx="104" cy="84" r="11" fill="#C5A572"/>
+
+  <!-- Lettre P bleu marine -->
+  <path d="M 66 50 L 66 118 M 66 50 L 94 50 C 104 50 110 56 110 66 C 110 76 104 82 94 82 L 66 82"
+        stroke="#1E3A5F" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+  <!-- PLANORA en bleu marine -->
+  <text x="178" y="106" font-size="70" font-weight="700" fill="#1E3A5F" letter-spacing="-2">PLANORA</text>
+
+  <!-- 360 en doré -->
+  <text x="605" y="106" font-size="70" font-weight="700" fill="#C5A572" letter-spacing="-2">360</text>
+
+  <!-- Sous-titre bleu marine -->
+  <text x="178" y="138" font-size="20" font-weight="400" fill="#1E3A5F" opacity="0.8">Planifier - Suivre - Performer</text>
+</svg>
