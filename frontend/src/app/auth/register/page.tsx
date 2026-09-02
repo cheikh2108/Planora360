@@ -100,8 +100,7 @@ export default function RegisterPage() {
     <div className="min-h-screen bg-[#eef5ff] flex flex-col">
       {/* Header */}
       <div className="px-6 py-5 flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-[#0b1629] flex items-center justify-center font-extrabold text-white text-sm">P</div>
-        <span className="font-semibold text-slate-900 text-sm">PLANORA 360</span>
+        <img src="/logo-light.svg" alt="PLANORA 360" className="h-10 w-auto" />
       </div>
 
       {/* Form container */}

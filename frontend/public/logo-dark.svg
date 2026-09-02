@@ -1,0 +1,13 @@
+<svg width="720" height="168" viewBox="0 0 720 168" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Circle with P (dark version - light text) -->
+  <circle cx="84" cy="84" r="56" stroke="#C5A572" stroke-width="4" fill="none"/>
+  <circle cx="102" cy="84" r="12" fill="#C5A572"/>
+  <path d="M68 50 L68 118 M68 50 L90 50 C100 50 108 58 108 68 C108 78 100 86 90 86 L68 86" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+  <!-- PLANORA360 Text -->
+  <text x="178" y="100" font-family="Arial, sans-serif" font-size="72" font-weight="700" fill="#FFFFFF">PLANORA</text>
+  <text x="605" y="100" font-family="Arial, sans-serif" font-size="72" font-weight="700" fill="#C5A572">360</text>
+
+  <!-- Subtitle -->
+  <text x="178" y="140" font-family="Arial, sans-serif" font-size="24" font-weight="400" fill="#FFFFFF">Planifier - Suivre - Performer</text>
+</svg>

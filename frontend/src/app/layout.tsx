@@ -14,6 +14,11 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: "PLANORA 360",
   description: "Plateforme intégrée de planification, suivi-évaluation, gestion financière et pilotage de la performance",
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+  },
 };
 
 export default function RootLayout({
