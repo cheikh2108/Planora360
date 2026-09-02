@@ -295,16 +295,16 @@ export default function ZonesAdminPage() {
       {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md" style={{ colorScheme: 'light' }}>
             <div className="px-6 py-5 border-b border-slate-100">
-              <h2 className="text-lg font-semibold text-slate-900">
+              <h2 className="text-lg font-semibold" style={{ color: '#0f172a' }}>
                 {editingZone ? 'Modifier la zone' : 'Nouvelle zone'}
               </h2>
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-900 mb-1.5">
+                <label className="block text-xs font-medium mb-1.5" style={{ color: '#0f172a' }}>
                   Nom <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -312,12 +312,13 @@ export default function ZonesAdminPage() {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#2563eb] focus:border-transparent"
+                  style={{ color: '#0f172a', backgroundColor: '#ffffff' }}
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-900 mb-1.5">
+                <label className="block text-xs font-medium mb-1.5" style={{ color: '#0f172a' }}>
                   Code (ex: DK, TH)
                 </label>
                 <input
@@ -325,30 +326,33 @@ export default function ZonesAdminPage() {
                   value={formData.code}
                   onChange={(e) => setFormData({ ...formData, code: e.target.value })}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#2563eb] focus:border-transparent"
+                  style={{ color: '#0f172a', backgroundColor: '#ffffff' }}
                   maxLength={5}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-900 mb-1.5">
+                <label className="block text-xs font-medium mb-1.5" style={{ color: '#0f172a' }}>
                   Description
                 </label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#2563eb] focus:border-transparent"
+                  style={{ color: '#0f172a', backgroundColor: '#ffffff' }}
                   rows={3}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-900 mb-1.5">
+                <label className="block text-xs font-medium mb-1.5" style={{ color: '#0f172a' }}>
                   Niveau <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={formData.level}
                   onChange={(e) => setFormData({ ...formData, level: parseInt(e.target.value) })}
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#2563eb] focus:border-transparent"
+                  style={{ color: '#0f172a', backgroundColor: '#ffffff' }}
                   required
                 >
                   {Object.entries(LEVEL_LABELS).map(([value, label]) => (
