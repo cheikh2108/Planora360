@@ -90,7 +90,7 @@ export default function ChangePasswordPage() {
 
             {/* Logo mobile */}
             <div className="flex items-center gap-2.5 mb-10 lg:hidden">
-              <img src="/logo-light.svg" alt="PLANORA 360" className="h-10 w-auto" />
+              <img src="/logo-light.png" alt="PLANORA 360" className="h-10 w-auto" />
             </div>
 
             <p className="text-[10px] font-bold text-[#2563eb] uppercase tracking-[0.2em] mb-3 border-l-2 border-[#2563eb] pl-2.5 leading-none py-0.5">
