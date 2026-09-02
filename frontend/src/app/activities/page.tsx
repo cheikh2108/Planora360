@@ -3,13 +3,14 @@
 import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { activitiesApi, plansApi } from '@/lib/api';
+import { activitiesApi, plansApi, zonesApi } from '@/lib/api';
 import type { Activity, ActivityStatus, ActionPlan } from '@/lib/types';
 import { Pagination } from '@/components/ui/pagination';
 import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
 import { FormField, Input, Textarea, Select } from '@/components/ui/form-field';
+import { ZoneMultiselect } from '@/components/ui/zone-multiselect';
 import { useToast } from '@/components/ui/toast';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { ProgressBar } from '@/components/ui/progress-bar';
@@ -360,7 +361,7 @@ function CreateActivityModal({ open, onClose }: { open: boolean; onClose: () => 
     dueDate: '',
     planId: '',
     axisId: '',
-    zoneId: '',
+    zoneIds: [] as string[],
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -420,7 +421,7 @@ function CreateActivityModal({ open, onClose }: { open: boolean; onClose: () => 
         dueDate: '',
         planId: '',
         axisId: '',
-        zoneId: '',
+        zoneIds: [],
       });
       setErrors({});
     },
@@ -469,7 +470,7 @@ function CreateActivityModal({ open, onClose }: { open: boolean; onClose: () => 
       ...activityData,
       startDate: form.startDate || undefined,
       dueDate: form.dueDate || undefined,
-      zoneId: form.zoneId || undefined,
+      zoneIds: form.zoneIds.length > 0 ? form.zoneIds : undefined,
     });
   }
 
@@ -536,16 +537,14 @@ function CreateActivityModal({ open, onClose }: { open: boolean; onClose: () => 
           </Select>
         </FormField>
 
-        {/* Zone géographique */}
-        <FormField label="Zone d'intervention">
-          <Select value={form.zoneId} onChange={set('zoneId')}>
-            <option value="">Aucune zone</option>
-            {zones.map((z: any) => (
-              <option key={z.id} value={z.id}>
-                {z.code ? `[${z.code}] ${z.name}` : z.name}
-              </option>
-            ))}
-          </Select>
+        {/* Zones géographiques (multi-sélection) */}
+        <FormField label="Zones d'intervention">
+          <ZoneMultiselect
+            value={form.zoneIds}
+            onChange={(zoneIds) => setForm(f => ({ ...f, zoneIds }))}
+            zones={zones}
+            placeholder="Sélectionner les zones d'intervention..."
+          />
         </FormField>
 
         {/* Dates */}
