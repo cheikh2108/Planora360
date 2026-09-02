@@ -89,56 +89,106 @@ export class ActionPlansService {
 
   async findAll(organizationId: string, page = 1, limit = 10) {
     const where = { organizationId };
-    const [data, total] = await Promise.all([
-      this.prisma.actionPlan.findMany({
-        where,
-        orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * limit,
-        take: limit,
+
+    try {
+      const [data, total] = await Promise.all([
+        this.prisma.actionPlan.findMany({
+          where,
+          orderBy: { createdAt: 'desc' },
+          skip: (page - 1) * limit,
+          take: limit,
+          include: {
+            axes: {
+              orderBy: { order: 'asc' },
+              include: { _count: { select: { activities: true } } },
+            },
+            zones: {
+              include: {
+                zone: { select: { id: true, name: true, code: true, level: true } },
+              },
+            },
+            _count: { select: { axes: true } },
+          },
+        }),
+        this.prisma.actionPlan.count({ where }),
+      ]);
+      return { data, total, page, limit };
+    } catch (error) {
+      // Fallback si la table zones n'existe pas encore (migration en cours)
+      console.warn('Zones table not available, falling back to basic query:', error.message);
+      const [data, total] = await Promise.all([
+        this.prisma.actionPlan.findMany({
+          where,
+          orderBy: { createdAt: 'desc' },
+          skip: (page - 1) * limit,
+          take: limit,
+          include: {
+            axes: {
+              orderBy: { order: 'asc' },
+              include: { _count: { select: { activities: true } } },
+            },
+            _count: { select: { axes: true } },
+          },
+        }),
+        this.prisma.actionPlan.count({ where }),
+      ]);
+      return { data, total, page, limit };
+    }
+  }
+
+  async findOne(id: string, organizationId: string) {
+    try {
+      const plan = await this.prisma.actionPlan.findFirst({
+        where: { id, organizationId },
         include: {
           axes: {
             orderBy: { order: 'asc' },
-            include: { _count: { select: { activities: true } } },
+            include: {
+              activities: {
+                where: { parentActivityId: null },
+                orderBy: { createdAt: 'asc' },
+                include: {
+                  responsible: { select: { id: true, firstName: true, lastName: true, email: true } },
+                  _count: { select: { checklistItems: true, subActivities: true } },
+                },
+              },
+            },
           },
           zones: {
             include: {
               zone: { select: { id: true, name: true, code: true, level: true } },
             },
           },
-          _count: { select: { axes: true } },
         },
-      }),
-      this.prisma.actionPlan.count({ where }),
-    ]);
-    return { data, total, page, limit };
-  }
+      });
+      if (!plan) throw new NotFoundException('Plan d\'action introuvable');
+      return plan;
+    } catch (error) {
+      // Fallback si la table zones n'existe pas encore
+      if (error instanceof NotFoundException) throw error;
 
-  async findOne(id: string, organizationId: string) {
-    const plan = await this.prisma.actionPlan.findFirst({
-      where: { id, organizationId },
-      include: {
-        axes: {
-          orderBy: { order: 'asc' },
-          include: {
-            activities: {
-              where: { parentActivityId: null },
-              orderBy: { createdAt: 'asc' },
-              include: {
-                responsible: { select: { id: true, firstName: true, lastName: true, email: true } },
-                _count: { select: { checklistItems: true, subActivities: true } },
+      console.warn('Zones table not available in findOne, falling back:', error.message);
+      const plan = await this.prisma.actionPlan.findFirst({
+        where: { id, organizationId },
+        include: {
+          axes: {
+            orderBy: { order: 'asc' },
+            include: {
+              activities: {
+                where: { parentActivityId: null },
+                orderBy: { createdAt: 'asc' },
+                include: {
+                  responsible: { select: { id: true, firstName: true, lastName: true, email: true } },
+                  _count: { select: { checklistItems: true, subActivities: true } },
+                },
               },
             },
           },
         },
-        zones: {
-          include: {
-            zone: { select: { id: true, name: true, code: true, level: true } },
-          },
-        },
-      },
-    });
-    if (!plan) throw new NotFoundException('Plan d\'action introuvable');
-    return plan;
+      });
+      if (!plan) throw new NotFoundException('Plan d\'action introuvable');
+      return plan;
+    }
   }
 
   async update(id: string, dto: UpdateActionPlanDto, organizationId: string) {
