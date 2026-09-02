@@ -53,7 +53,7 @@ export class ActivitiesService {
     await this.validateAxis(dto.axisId, organizationId);
     await this.validateParentActivity(dto.parentActivityId, organizationId);
     await this.validateResponsible(dto.responsibleId, organizationId);
-    await this.validateZone(dto.zoneId, organizationId);
+    await this.validateZones(dto.zoneIds, organizationId);
 
     const activity = await this.createActivity(dto, organizationId, currentUserId);
 
@@ -67,15 +67,15 @@ export class ActivitiesService {
       await this.addCollaborators(activity.id, dto.collaboratorIds);
     }
 
-    if (dto.zoneId) {
-      await this.assignZone(activity.id, dto.zoneId);
+    if (dto.zoneIds?.length) {
+      await this.assignZones(activity.id, dto.zoneIds);
     }
 
     // Invalider le cache du dashboard après création d'activité
     await this.cacheInvalidation.invalidateDashboard(organizationId);
     await this.cacheInvalidation.invalidateActivities(organizationId);
 
-    return dto.collaboratorIds?.length || dto.zoneId ? this.findActivityById(activity.id) : activity;
+    return dto.collaboratorIds?.length || dto.zoneIds?.length ? this.findActivityById(activity.id) : activity;
   }
 
   private async validateAxis(axisId: string, organizationId: string) {
@@ -103,17 +103,19 @@ export class ActivitiesService {
     if (!responsible) throw new NotFoundException('Responsable introuvable');
   }
 
-  private async validateZone(zoneId: string | undefined, organizationId: string) {
-    if (!zoneId) return;
+  private async validateZones(zoneIds: string[] | undefined, organizationId: string) {
+    if (!zoneIds?.length) return;
 
-    const zone = await this.prisma.geographicZone.findFirst({
-      where: { id: zoneId, organizationId },
+    const zones = await this.prisma.geographicZone.findMany({
+      where: { id: { in: zoneIds }, organizationId },
     });
-    if (!zone) throw new NotFoundException('Zone géographique introuvable');
+    if (zones.length !== zoneIds.length) {
+      throw new BadRequestException('Une ou plusieurs zones géographiques sont invalides');
+    }
   }
 
   private async createActivity(dto: CreateActivityDto, organizationId: string, currentUserId: string) {
-    const { collaboratorIds, zoneId, responsibleId, startDate, dueDate, ...rest } = dto;
+    const { collaboratorIds, zoneIds, responsibleId, startDate, dueDate, ...rest } = dto;
 
     return this.prisma.activity.create({
       data: {
@@ -134,9 +136,14 @@ export class ActivitiesService {
     });
   }
 
-  private async assignZone(activityId: string, zoneId: string) {
-    await this.prisma.activityZone.create({
-      data: { activityId, zoneId, isPrimary: true },
+  private async assignZones(activityId: string, zoneIds: string[]) {
+    await this.prisma.activityZone.createMany({
+      data: zoneIds.map((zoneId, index) => ({
+        activityId,
+        zoneId,
+        isPrimary: index === 0, // La première zone est primaire
+      })),
+      skipDuplicates: true,
     });
   }
 
@@ -193,7 +200,7 @@ export class ActivitiesService {
 
   async update(id: string, dto: UpdateActivityDto, organizationId: string) {
     await this.findOne(id, organizationId);
-    const { collaboratorIds, zoneId, status, ...data } = dto as any;
+    const { collaboratorIds, zoneIds, status, ...data } = dto as any;
     const updateData: any = { ...data };
     if (dto.startDate) updateData.startDate = new Date(dto.startDate);
     if (dto.dueDate) updateData.dueDate = new Date(dto.dueDate);
@@ -217,16 +224,16 @@ export class ActivitiesService {
       needsReload = true;
     }
 
-    // Gérer la zone si fournie
-    if (zoneId !== undefined) {
-      if (zoneId) {
-        await this.validateZone(zoneId, organizationId);
+    // Gérer les zones si fournies
+    if (Array.isArray(zoneIds)) {
+      if (zoneIds.length) {
+        await this.validateZones(zoneIds, organizationId);
       }
       // Supprimer les zones existantes
       await this.prisma.activityZone.deleteMany({ where: { activityId: id } });
-      // Ajouter la nouvelle zone si fournie
-      if (zoneId) {
-        await this.assignZone(id, zoneId);
+      // Ajouter les nouvelles zones si fournies
+      if (zoneIds.length) {
+        await this.assignZones(id, zoneIds);
       }
       needsReload = true;
     }

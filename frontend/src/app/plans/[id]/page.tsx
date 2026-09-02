@@ -3,13 +3,14 @@
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { plansApi, activitiesApi } from '@/lib/api';
+import { plansApi, activitiesApi, zonesApi } from '@/lib/api';
 import api from '@/lib/api';
 import type { ActionPlan, Axis, Activity, PlanStatus } from '@/lib/types';
 import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
 import { FormField, Input, Textarea, Select } from '@/components/ui/form-field';
+import { ZoneMultiselect } from '@/components/ui/zone-multiselect';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -123,9 +124,18 @@ function AddActivityModal({
   planPeriodEnd: string;
 }) {
   const [form, setForm] = useState({
-    title: '', description: '', expectedResults: '', priority: 'NORMALE', startDate: '', dueDate: '',
+    title: '', description: '', expectedResults: '', priority: 'NORMALE', startDate: '', dueDate: '', zoneIds: [] as string[],
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const { data: zonesData } = useQuery({
+    queryKey: ['zones'],
+    queryFn: async () => {
+      const r = await zonesApi.list();
+      return r.data;
+    },
+  });
+  const zones = Array.isArray(zonesData) ? zonesData : [];
 
   function validate() {
     const e: Record<string, string> = {};
@@ -159,7 +169,12 @@ function AddActivityModal({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!validate()) return;
-    onCreate({ ...form, startDate: form.startDate || undefined, dueDate: form.dueDate || undefined });
+    onCreate({
+      ...form,
+      startDate: form.startDate || undefined,
+      dueDate: form.dueDate || undefined,
+      zoneIds: form.zoneIds.length > 0 ? form.zoneIds : undefined,
+    });
   }
 
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -209,6 +224,14 @@ function AddActivityModal({
             />
           </FormField>
         </div>
+        <FormField label="Zones d'intervention">
+          <ZoneMultiselect
+            value={form.zoneIds}
+            onChange={(zoneIds) => setForm(f => ({ ...f, zoneIds }))}
+            zones={zones}
+            placeholder="Sélectionner les zones d'intervention..."
+          />
+        </FormField>
         <div className="flex justify-end gap-3 pt-2">
           <Button type="button" variant="secondary" onClick={onClose}>Annuler</Button>
           <Button type="submit" isLoading={loading}>Créer l'activité</Button>

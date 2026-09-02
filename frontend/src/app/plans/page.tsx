@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { plansApi } from '@/lib/api';
+import { plansApi, zonesApi } from '@/lib/api';
 import type { ActionPlan } from '@/lib/types';
 import { Pagination } from '@/components/ui/pagination';
 import { Header } from '@/components/layout/header';
@@ -11,6 +11,7 @@ import { Modal } from '@/components/ui/modal';
 import { FormField, Input, Textarea } from '@/components/ui/form-field';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ZoneMultiselect } from '@/components/ui/zone-multiselect';
 import { formatDate, formatCurrency } from '@/lib/utils';
 import type { PlanStatus } from '@/lib/types';
 import { FolderKanban, Plus, ChevronRight, Calendar, Target, Wallet, Activity } from 'lucide-react';
@@ -112,9 +113,18 @@ function PlanCard({ plan }: { plan: ActionPlan }) {
 function CreatePlanModal({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated?: () => void }) {
   const qc = useQueryClient();
   const [form, setForm] = useState({
-    title: '', periodStart: '', periodEnd: '', strategicGoals: '', expectedResults: '', budgetPrevisional: '',
+    title: '', periodStart: '', periodEnd: '', strategicGoals: '', expectedResults: '', budgetPrevisional: '', zoneIds: [] as string[],
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const { data: zonesData } = useQuery({
+    queryKey: ['zones'],
+    queryFn: async () => {
+      const r = await zonesApi.list();
+      return r.data;
+    },
+  });
+  const zones = Array.isArray(zonesData) ? zonesData : [];
 
   const { mutate, isPending } = useMutation({
     mutationFn: () => plansApi.create({
@@ -126,7 +136,7 @@ function CreatePlanModal({ open, onClose, onCreated }: { open: boolean; onClose:
       qc.invalidateQueries({ queryKey: ['plans', 'active'], exact: false });
       onClose();
       onCreated?.();
-      setForm({ title: '', periodStart: '', periodEnd: '', strategicGoals: '', expectedResults: '', budgetPrevisional: '' });
+      setForm({ title: '', periodStart: '', periodEnd: '', strategicGoals: '', expectedResults: '', budgetPrevisional: '', zoneIds: [] });
     },
   });
 
@@ -171,6 +181,14 @@ function CreatePlanModal({ open, onClose, onCreated }: { open: boolean; onClose:
         </FormField>
         <FormField label="Budget prévisionnel (FCFA)">
           <Input type="number" value={form.budgetPrevisional} onChange={set('budgetPrevisional')} placeholder="Ex: 50000000" min="0" />
+        </FormField>
+        <FormField label="Zones d'intervention">
+          <ZoneMultiselect
+            value={form.zoneIds}
+            onChange={(zoneIds) => setForm(f => ({ ...f, zoneIds }))}
+            zones={zones}
+            placeholder="Sélectionner les zones d'intervention..."
+          />
         </FormField>
         <div className="flex justify-end gap-3 pt-2">
           <Button type="button" variant="secondary" onClick={onClose}>Annuler</Button>

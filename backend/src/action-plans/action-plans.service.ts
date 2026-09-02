@@ -16,7 +16,7 @@ export class ActionPlansService {
   ) {}
 
   async create(dto: CreateActionPlanDto, organizationId: string, userId: string) {
-    const { axes, ...planData } = dto;
+    const { axes, zoneIds, ...planData } = dto;
 
     // Vérifier la limite de plans d'action selon le plan tarifaire
     const organization = await this.prisma.organization.findUnique({
@@ -44,6 +44,11 @@ export class ActionPlansService {
       );
     }
 
+    // Valider les zones si fournies
+    if (zoneIds?.length) {
+      await this.validateZones(zoneIds, organizationId);
+    }
+
     const plan = await this.prisma.actionPlan.create({
       data: {
         ...planData,
@@ -53,14 +58,33 @@ export class ActionPlansService {
         axes: axes?.length
           ? { create: axes.map((a, i) => ({ title: a.title, order: a.order ?? i })) }
           : undefined,
+        zones: zoneIds?.length
+          ? { create: zoneIds.map((zoneId) => ({ zoneId })) }
+          : undefined,
       },
-      include: { axes: { orderBy: { order: 'asc' } } },
+      include: {
+        axes: { orderBy: { order: 'asc' } },
+        zones: {
+          include: {
+            zone: { select: { id: true, name: true, code: true, level: true } },
+          },
+        },
+      },
     });
 
     // Track action plan creation
     this.posthog.trackActionPlanCreated(userId, plan.id, organizationId);
 
     return plan;
+  }
+
+  private async validateZones(zoneIds: string[], organizationId: string) {
+    const zones = await this.prisma.geographicZone.findMany({
+      where: { id: { in: zoneIds }, organizationId },
+    });
+    if (zones.length !== zoneIds.length) {
+      throw new BadRequestException('Une ou plusieurs zones géographiques sont invalides');
+    }
   }
 
   async findAll(organizationId: string, page = 1, limit = 10) {
@@ -75,6 +99,11 @@ export class ActionPlansService {
           axes: {
             orderBy: { order: 'asc' },
             include: { _count: { select: { activities: true } } },
+          },
+          zones: {
+            include: {
+              zone: { select: { id: true, name: true, code: true, level: true } },
+            },
           },
           _count: { select: { axes: true } },
         },
@@ -99,6 +128,11 @@ export class ActionPlansService {
                 _count: { select: { checklistItems: true, subActivities: true } },
               },
             },
+          },
+        },
+        zones: {
+          include: {
+            zone: { select: { id: true, name: true, code: true, level: true } },
           },
         },
       },

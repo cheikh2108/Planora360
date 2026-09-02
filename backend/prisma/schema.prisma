@@ -294,6 +294,9 @@ model ActionPlan {
   // Messagerie (canaux projet)
   conversations Conversation[]
 
+  // Zones géographiques d'intervention
+  zones ActionPlanZone[]
+
   @@index([organizationId])
   @@map("action_plans")
 }
@@ -1712,6 +1715,7 @@ model GeographicZone {
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   activities     ActivityZone[]
+  actionPlans    ActionPlanZone[]
 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -1732,7 +1736,7 @@ model ActivityZone {
   zoneId     String
   zone       GeographicZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
 
-  isPrimary  Boolean  @default(true) // Pour supporter multi-zone en Phase 2
+  isPrimary  Boolean  @default(true)
 
   createdAt  DateTime @default(now())
 
@@ -1740,4 +1744,21 @@ model ActivityZone {
   @@index([activityId])
   @@index([zoneId])
   @@map("activity_zones")
+}
+
+model ActionPlanZone {
+  id           String     @id @default(cuid())
+
+  actionPlanId String
+  actionPlan   ActionPlan @relation(fields: [actionPlanId], references: [id], onDelete: Cascade)
+
+  zoneId       String
+  zone         GeographicZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+
+  createdAt    DateTime @default(now())
+
+  @@unique([actionPlanId, zoneId])
+  @@index([actionPlanId])
+  @@index([zoneId])
+  @@map("action_plan_zones")
 }

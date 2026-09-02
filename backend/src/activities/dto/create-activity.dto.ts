@@ -52,6 +52,7 @@ export class CreateActivityDto {
   risks?: string;
 
   @IsOptional()
-  @IsString()
-  zoneId?: string;
+  @IsArray()
+  @IsString({ each: true })
+  zoneIds?: string[];
 }

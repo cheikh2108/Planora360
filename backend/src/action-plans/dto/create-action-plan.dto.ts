@@ -44,4 +44,9 @@ export class CreateActionPlanDto {
   @ValidateNested({ each: true })
   @Type(() => CreateAxisDto)
   axes?: CreateAxisDto[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  zoneIds?: string[];
 }
