@@ -1,8 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, MapPin, Edit2, Trash2, ChevronRight, ChevronDown } from 'lucide-react';
+import { Plus, MapPin, Edit2, Trash2, ChevronRight, ChevronDown, Loader2 } from 'lucide-react';
+import { Header } from '@/components/layout/header';
+import { Button } from '@/components/ui/button';
 import { zonesApi } from '@/lib/api';
+import { cn } from '@/lib/utils';
 
 interface Zone {
   id: string;
@@ -15,6 +18,14 @@ interface Zone {
   children?: Zone[];
   _count: { children: number; activities: number };
 }
+
+const LEVEL_LABELS: Record<number, string> = {
+  0: 'Pays',
+  1: 'Région',
+  2: 'Département',
+  3: 'Arrondissement',
+  4: 'Commune',
+};
 
 export default function ZonesAdminPage() {
   const [zones, setZones] = useState<Zone[]>([]);
@@ -107,6 +118,24 @@ export default function ZonesAdminPage() {
     });
   };
 
+  const countTotalZones = (zones: Zone[]): number => {
+    return zones.reduce((sum, zone) => {
+      return sum + 1 + (zone.children ? countTotalZones(zone.children) : 0);
+    }, 0);
+  };
+
+  const countActivities = (zones: Zone[]): number => {
+    return zones.reduce((sum, zone) => {
+      return sum + zone._count.activities + (zone.children ? countActivities(zone.children) : 0);
+    }, 0);
+  };
+
+  const stats = {
+    total: countTotalZones(zones),
+    activities: countActivities(zones),
+    topLevel: zones.length,
+  };
+
   const renderZone = (zone: Zone, depth = 0) => {
     const hasChildren = zone.children && zone.children.length > 0;
     const isExpanded = expandedZones.has(zone.id);
@@ -114,51 +143,64 @@ export default function ZonesAdminPage() {
     return (
       <div key={zone.id}>
         <div
-          className="flex items-center gap-3 py-3 px-4 hover:bg-gray-50 border-b border-gray-100"
+          className={cn(
+            'flex items-center gap-3 py-3 px-4 border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors group',
+          )}
           style={{ paddingLeft: `${depth * 2 + 1}rem` }}
         >
           {hasChildren ? (
             <button
               onClick={() => toggleExpand(zone.id)}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-slate-400 hover:text-slate-600 transition-colors"
             >
-              {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+              {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
             </button>
           ) : (
-            <div className="w-[18px]" />
+            <div className="w-[16px]" />
           )}
 
-          <MapPin size={18} className="text-blue-500" />
+          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+            <MapPin size={14} className="text-blue-600" />
+          </div>
 
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <span className="font-medium">{zone.name}</span>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-sm font-medium text-slate-900">{zone.name}</span>
               {zone.code && (
-                <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded">
+                <span className="text-[10px] px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded uppercase font-medium tracking-wide">
                   {zone.code}
                 </span>
               )}
-              <span className="text-xs text-gray-500">
-                ({zone._count.activities} activité{zone._count.activities > 1 ? 's' : ''})
+              <span className="text-xs text-slate-500">
+                • {zone._count.activities} activité{zone._count.activities > 1 ? 's' : ''}
+              </span>
+              <span className="text-[10px] px-1.5 py-0.5 bg-purple-50 text-purple-600 rounded uppercase font-medium tracking-wide">
+                {LEVEL_LABELS[zone.level]}
               </span>
             </div>
             {zone.description && (
-              <p className="text-sm text-gray-500 mt-1">{zone.description}</p>
+              <p className="text-xs text-slate-600 mt-1 truncate">{zone.description}</p>
             )}
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <button
-              onClick={() => openModal(zone)}
-              className="p-2 text-blue-600 hover:bg-blue-50 rounded"
+              onClick={(e) => {
+                e.stopPropagation();
+                openModal(zone);
+              }}
+              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
             >
-              <Edit2 size={16} />
+              <Edit2 size={14} />
             </button>
             <button
-              onClick={() => handleDelete(zone)}
-              className="p-2 text-red-600 hover:bg-red-50 rounded"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete(zone);
+              }}
+              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
             >
-              <Trash2 size={16} />
+              <Trash2 size={14} />
             </button>
           </div>
         </div>
@@ -170,116 +212,150 @@ export default function ZonesAdminPage() {
 
   if (loading) {
     return (
-      <div className="p-8">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/3 mb-6"></div>
-          <div className="space-y-3">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-16 bg-gray-100 rounded"></div>
-            ))}
-          </div>
+      <div className="flex flex-col flex-1 min-h-0">
+        <Header
+          title="Zones Géographiques"
+          subtitle="Gérez le découpage territorial de vos activités"
+        />
+        <div className="flex items-center justify-center flex-1">
+          <Loader2 className="h-8 w-8 animate-spin text-[#2563eb]" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-8">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Zones géographiques</h1>
-          <p className="text-gray-600 mt-1">
-            Gérez le découpage territorial de vos activités
-          </p>
-        </div>
-        <button
-          onClick={() => openModal()}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          <Plus size={20} />
-          Nouvelle zone
-        </button>
-      </div>
+    <div className="flex flex-col flex-1 min-h-0 overflow-auto">
+      <Header
+        title="Zones Géographiques"
+        subtitle={`${stats.total} zone${stats.total > 1 ? 's' : ''} • ${stats.activities} activités`}
+        actions={
+          <Button
+            icon={<Plus size={16} />}
+            onClick={() => openModal()}
+          >
+            Nouvelle zone
+          </Button>
+        }
+      />
 
-      <div className="bg-white rounded-lg shadow">
-        {zones.length === 0 ? (
-          <div className="p-12 text-center">
-            <MapPin size={48} className="mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500 mb-4">Aucune zone géographique définie</p>
-            <button
-              onClick={() => openModal()}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              Créer la première zone
-            </button>
+      <main className="flex-1 px-4 md:px-6 py-6 space-y-5">
+        {/* KPI Cards */}
+        {zones.length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {[
+              { label: 'Total Zones', value: stats.total, color: 'text-slate-900', bg: 'bg-white' },
+              { label: 'Niveaux supérieurs', value: stats.topLevel, color: 'text-blue-600', bg: 'bg-blue-50' },
+              { label: 'Activités', value: stats.activities, color: 'text-green-600', bg: 'bg-green-50' },
+            ].map((stat, idx) => (
+              <div key={idx} className={cn('rounded-2xl border border-slate-200 p-4 flex flex-col gap-2', stat.bg)}>
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">{stat.label}</p>
+                <p className={cn('text-2xl md:text-3xl font-bold tabular-nums', stat.color)}>{stat.value}</p>
+              </div>
+            ))}
           </div>
-        ) : (
-          <div>{zones.map((zone) => renderZone(zone))}</div>
         )}
-      </div>
+
+        {/* Zones Tree */}
+        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <MapPin size={16} className="text-slate-600" />
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">
+                Hiérarchie des zones
+              </p>
+            </div>
+            {zones.length > 0 && (
+              <span className="text-xs tabular-nums text-slate-600">{stats.total}</span>
+            )}
+          </div>
+
+          {zones.length === 0 ? (
+            <div className="py-16 text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
+                <MapPin className="h-8 w-8 text-slate-600" />
+              </div>
+              <h3 className="mb-2 text-lg font-semibold text-slate-900">Aucune zone géographique</h3>
+              <p className="mb-6 text-sm text-slate-600">
+                Commencez par créer votre première zone géographique.
+              </p>
+              <Button
+                icon={<Plus size={16} />}
+                onClick={() => openModal()}
+              >
+                Créer la première zone
+              </Button>
+            </div>
+          ) : (
+            <div>{zones.map((zone) => renderZone(zone))}</div>
+          )}
+        </div>
+      </main>
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">
-              {editingZone ? 'Modifier la zone' : 'Nouvelle zone'}
-            </h2>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
+            <div className="px-6 py-5 border-b border-slate-100">
+              <h2 className="text-lg font-semibold text-slate-900">
+                {editingZone ? 'Modifier la zone' : 'Nouvelle zone'}
+              </h2>
+            </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-slate-900 mb-1.5">
                   Nom <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#2563eb] focus:border-transparent"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-slate-900 mb-1.5">
                   Code (ex: DK, TH)
                 </label>
                 <input
                   type="text"
                   value={formData.code}
                   onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#2563eb] focus:border-transparent"
                   maxLength={5}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-slate-900 mb-1.5">
                   Description
                 </label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#2563eb] focus:border-transparent"
                   rows={3}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-slate-900 mb-1.5">
                   Niveau <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={formData.level}
                   onChange={(e) => setFormData({ ...formData, level: parseInt(e.target.value) })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#2563eb] focus:border-transparent"
                   required
                 >
-                  <option value={0}>Pays</option>
-                  <option value={1}>Région</option>
-                  <option value={2}>Département</option>
-                  <option value={3}>Arrondissement</option>
-                  <option value={4}>Commune</option>
+                  {Object.entries(LEVEL_LABELS).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -287,13 +363,13 @@ export default function ZonesAdminPage() {
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                  className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 text-sm font-medium transition-colors"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  className="flex-1 px-4 py-2 bg-[#2563eb] text-white rounded-lg hover:bg-[#1d4ed8] text-sm font-medium transition-colors"
                 >
                   {editingZone ? 'Mettre à jour' : 'Créer'}
                 </button>
