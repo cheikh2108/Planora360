@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Plus, MapPin, Edit2, Trash2, ChevronRight, ChevronDown, Loader2 } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { zonesApi } from '@/lib/api';
@@ -28,6 +29,7 @@ const LEVEL_LABELS: Record<number, string> = {
 };
 
 export default function ZonesAdminPage() {
+  const queryClient = useQueryClient();
   const [zones, setZones] = useState<Zone[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -74,6 +76,10 @@ export default function ZonesAdminPage() {
       } else {
         await zonesApi.create(cleanData);
       }
+
+      // Invalider le cache pour forcer le rechargement partout
+      queryClient.invalidateQueries({ queryKey: ['zones'] });
+
       await loadZones();
       closeModal();
     } catch (error: any) {
@@ -86,6 +92,10 @@ export default function ZonesAdminPage() {
 
     try {
       await zonesApi.remove(zone.id);
+
+      // Invalider le cache pour forcer le rechargement partout
+      queryClient.invalidateQueries({ queryKey: ['zones'] });
+
       await loadZones();
     } catch (error: any) {
       alert(error.response?.data?.message || 'Erreur lors de la suppression');
