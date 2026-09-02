@@ -38,6 +38,7 @@ export declare class MessagerieController {
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
+            parentId: string | null;
             metadata: import("@prisma/client/runtime/client").JsonValue | null;
             authorId: string;
             content: string;
@@ -47,7 +48,6 @@ export declare class MessagerieController {
             editedAt: Date | null;
             isDeleted: boolean;
             isSystem: boolean;
-            parentId: string | null;
         })[];
     } & {
         id: string;
@@ -55,9 +55,9 @@ export declare class MessagerieController {
         createdAt: Date;
         updatedAt: Date;
         name: string | null;
+        description: string | null;
         activityId: string | null;
         type: import(".prisma/client").$Enums.ConversationType;
-        description: string | null;
         createdById: string;
         recommendationId: string | null;
         projectId: string | null;
@@ -97,9 +97,9 @@ export declare class MessagerieController {
         createdAt: Date;
         updatedAt: Date;
         name: string | null;
+        description: string | null;
         activityId: string | null;
         type: import(".prisma/client").$Enums.ConversationType;
-        description: string | null;
         createdById: string;
         recommendationId: string | null;
         projectId: string | null;
@@ -135,9 +135,9 @@ export declare class MessagerieController {
         createdAt: Date;
         updatedAt: Date;
         name: string | null;
+        description: string | null;
         activityId: string | null;
         type: import(".prisma/client").$Enums.ConversationType;
-        description: string | null;
         createdById: string;
         recommendationId: string | null;
         projectId: string | null;
@@ -196,6 +196,7 @@ export declare class MessagerieController {
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
+            parentId: string | null;
             metadata: import("@prisma/client/runtime/client").JsonValue | null;
             authorId: string;
             content: string;
@@ -205,7 +206,6 @@ export declare class MessagerieController {
             editedAt: Date | null;
             isDeleted: boolean;
             isSystem: boolean;
-            parentId: string | null;
         })[];
         hasMore: boolean;
         nextCursor: string | null;
@@ -252,6 +252,7 @@ export declare class MessagerieController {
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
+        parentId: string | null;
         metadata: import("@prisma/client/runtime/client").JsonValue | null;
         authorId: string;
         content: string;
@@ -261,7 +262,6 @@ export declare class MessagerieController {
         editedAt: Date | null;
         isDeleted: boolean;
         isSystem: boolean;
-        parentId: string | null;
     }>;
     markConversationAsRead(req: any, conversationId: string): Promise<{
         success: boolean;
@@ -280,9 +280,9 @@ export declare class MessagerieController {
             createdAt: Date;
             updatedAt: Date;
             name: string | null;
+            description: string | null;
             activityId: string | null;
             type: import(".prisma/client").$Enums.ConversationType;
-            description: string | null;
             createdById: string;
             recommendationId: string | null;
             projectId: string | null;
@@ -302,9 +302,9 @@ export declare class MessagerieController {
             createdAt: Date;
             updatedAt: Date;
             name: string | null;
+            description: string | null;
             activityId: string | null;
             type: import(".prisma/client").$Enums.ConversationType;
-            description: string | null;
             createdById: string;
             recommendationId: string | null;
             projectId: string | null;

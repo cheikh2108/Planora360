@@ -38,6 +38,7 @@ export declare class MessagerieService {
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
+            parentId: string | null;
             metadata: import("@prisma/client/runtime/client").JsonValue | null;
             authorId: string;
             content: string;
@@ -47,7 +48,6 @@ export declare class MessagerieService {
             editedAt: Date | null;
             isDeleted: boolean;
             isSystem: boolean;
-            parentId: string | null;
         })[];
     } & {
         id: string;
@@ -55,9 +55,9 @@ export declare class MessagerieService {
         createdAt: Date;
         updatedAt: Date;
         name: string | null;
+        description: string | null;
         activityId: string | null;
         type: import(".prisma/client").$Enums.ConversationType;
-        description: string | null;
         createdById: string;
         recommendationId: string | null;
         projectId: string | null;
@@ -97,9 +97,9 @@ export declare class MessagerieService {
         createdAt: Date;
         updatedAt: Date;
         name: string | null;
+        description: string | null;
         activityId: string | null;
         type: import(".prisma/client").$Enums.ConversationType;
-        description: string | null;
         createdById: string;
         recommendationId: string | null;
         projectId: string | null;
@@ -141,9 +141,9 @@ export declare class MessagerieService {
         createdAt: Date;
         updatedAt: Date;
         name: string | null;
+        description: string | null;
         activityId: string | null;
         type: import(".prisma/client").$Enums.ConversationType;
-        description: string | null;
         createdById: string;
         recommendationId: string | null;
         projectId: string | null;
@@ -195,6 +195,7 @@ export declare class MessagerieService {
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
+        parentId: string | null;
         metadata: import("@prisma/client/runtime/client").JsonValue | null;
         authorId: string;
         content: string;
@@ -204,7 +205,6 @@ export declare class MessagerieService {
         editedAt: Date | null;
         isDeleted: boolean;
         isSystem: boolean;
-        parentId: string | null;
     }>;
     sendMessageWithAttachments(conversationId: string, authorId: string, content: string, attachments: Array<{
         fileName: string;
@@ -253,6 +253,7 @@ export declare class MessagerieService {
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
+        parentId: string | null;
         metadata: import("@prisma/client/runtime/client").JsonValue | null;
         authorId: string;
         content: string;
@@ -262,7 +263,6 @@ export declare class MessagerieService {
         editedAt: Date | null;
         isDeleted: boolean;
         isSystem: boolean;
-        parentId: string | null;
     }>;
     editMessage(messageId: string, authorId: string, content: string): Promise<{
         attachments: {
@@ -295,6 +295,7 @@ export declare class MessagerieService {
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
+        parentId: string | null;
         metadata: import("@prisma/client/runtime/client").JsonValue | null;
         authorId: string;
         content: string;
@@ -304,13 +305,13 @@ export declare class MessagerieService {
         editedAt: Date | null;
         isDeleted: boolean;
         isSystem: boolean;
-        parentId: string | null;
     }>;
     deleteMessage(messageId: string, authorId: string): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
+        parentId: string | null;
         metadata: import("@prisma/client/runtime/client").JsonValue | null;
         authorId: string;
         content: string;
@@ -320,7 +321,6 @@ export declare class MessagerieService {
         editedAt: Date | null;
         isDeleted: boolean;
         isSystem: boolean;
-        parentId: string | null;
     }>;
     getMessage(messageId: string): Promise<{
         author: {
@@ -333,6 +333,7 @@ export declare class MessagerieService {
         createdAt: Date;
         updatedAt: Date;
         deletedAt: Date | null;
+        parentId: string | null;
         metadata: import("@prisma/client/runtime/client").JsonValue | null;
         authorId: string;
         content: string;
@@ -342,7 +343,6 @@ export declare class MessagerieService {
         editedAt: Date | null;
         isDeleted: boolean;
         isSystem: boolean;
-        parentId: string | null;
     }>;
     getMessages(conversationId: string, userId: string, limit?: number, before?: string): Promise<{
         messages: ({
@@ -393,6 +393,7 @@ export declare class MessagerieService {
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
+            parentId: string | null;
             metadata: import("@prisma/client/runtime/client").JsonValue | null;
             authorId: string;
             content: string;
@@ -402,7 +403,6 @@ export declare class MessagerieService {
             editedAt: Date | null;
             isDeleted: boolean;
             isSystem: boolean;
-            parentId: string | null;
         })[];
         hasMore: boolean;
         nextCursor: string | null;
@@ -441,9 +441,9 @@ export declare class MessagerieService {
             createdAt: Date;
             updatedAt: Date;
             name: string | null;
+            description: string | null;
             activityId: string | null;
             type: import(".prisma/client").$Enums.ConversationType;
-            description: string | null;
             createdById: string;
             recommendationId: string | null;
             projectId: string | null;
@@ -463,9 +463,9 @@ export declare class MessagerieService {
             createdAt: Date;
             updatedAt: Date;
             name: string | null;
+            description: string | null;
             activityId: string | null;
             type: import(".prisma/client").$Enums.ConversationType;
-            description: string | null;
             createdById: string;
             recommendationId: string | null;
             projectId: string | null;

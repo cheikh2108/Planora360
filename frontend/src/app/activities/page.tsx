@@ -52,6 +52,7 @@ const PRIORITY_PILL: Record<string, string> = {
 function ActivitiesContent() {
   const searchParams = useSearchParams();
   const [statusFilter, setStatusFilter] = useState<ActivityStatus | 'ALL'>('ALL');
+  const [zoneFilter, setZoneFilter] = useState<string>('ALL');
   const [search, setSearch] = useState(searchParams.get('search') ?? '');
   const [page, setPage] = useState(1);
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -61,13 +62,33 @@ function ActivitiesContent() {
     if (q) setSearch(q);
   }, [searchParams]);
 
-  useEffect(() => { setPage(1); }, [statusFilter]);
+  useEffect(() => { setPage(1); }, [statusFilter, zoneFilter]);
+
+  // Charger les zones pour le filtre
+  const { data: zonesData } = useQuery({
+    queryKey: ['zones'],
+    queryFn: async () => {
+      try {
+        const r = await fetch('/api/zones', {
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        });
+        if (!r.ok) return [];
+        const data = await r.json();
+        return Array.isArray(data) ? data : [];
+      } catch {
+        return [];
+      }
+    },
+  });
+  const zones = Array.isArray(zonesData) ? zonesData : [];
 
   const { data: activitiesPage, isLoading } = useQuery({
-    queryKey: ['activities', statusFilter, page],
+    queryKey: ['activities', statusFilter, zoneFilter, page],
     queryFn: async () => {
       const params: Record<string, string | number> = { page };
       if (statusFilter !== 'ALL') params.status = statusFilter;
+      if (zoneFilter !== 'ALL') params.zoneId = zoneFilter;
       const r = await activitiesApi.list(params);
       return r.data as { data: Activity[]; total: number; page: number; limit: number };
     },
@@ -186,22 +207,38 @@ function ActivitiesContent() {
               className="w-full h-10 pl-9 pr-4 rounded-xl border border-slate-300 text-sm text-slate-900 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent bg-white"
             />
           </div>
-          <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0">
-            <Filter size={14} className="text-slate-600 shrink-0 mr-1" />
-            {STATUS_FILTERS.map(f => (
-              <button
-                key={f.value}
-                onClick={() => setStatusFilter(f.value)}
-                className={cn(
-                  'px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-colors shrink-0',
-                  statusFilter === f.value
-                    ? 'bg-[#0f1e38] text-white'
-                    : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
-                )}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 overflow-x-auto">
+            <div className="flex items-center gap-1">
+              <Filter size={14} className="text-slate-600 shrink-0 mr-1" />
+              {STATUS_FILTERS.map(f => (
+                <button
+                  key={f.value}
+                  onClick={() => setStatusFilter(f.value)}
+                  className={cn(
+                    'px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-colors shrink-0',
+                    statusFilter === f.value
+                      ? 'bg-[#0f1e38] text-white'
+                      : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+                  )}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+            {zones.length > 0 && (
+              <select
+                value={zoneFilter}
+                onChange={(e) => setZoneFilter(e.target.value)}
+                className="px-3 py-1.5 rounded-xl text-xs font-medium border border-slate-200 text-slate-600 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-[#2563eb]"
               >
-                {f.label}
-              </button>
-            ))}
+                <option value="ALL">📍 Toutes les zones</option>
+                {zones.map((z: any) => (
+                  <option key={z.id} value={z.id}>
+                    {z.code ? `[${z.code}] ${z.name}` : z.name}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
         </div>
 
@@ -323,6 +360,7 @@ function CreateActivityModal({ open, onClose }: { open: boolean; onClose: () => 
     dueDate: '',
     planId: '',
     axisId: '',
+    zoneId: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -345,6 +383,26 @@ function CreateActivityModal({ open, onClose }: { open: boolean; onClose: () => 
   // Guard défensif absolu
   const axes = Array.isArray(selectedPlan?.axes) ? selectedPlan.axes : [];
 
+  // Charger les zones géographiques
+  const { data: zonesData } = useQuery({
+    queryKey: ['zones'],
+    queryFn: async () => {
+      try {
+        const r = await fetch('/api/zones', {
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        });
+        if (!r.ok) return [];
+        const data = await r.json();
+        return Array.isArray(data) ? data : [];
+      } catch {
+        return [];
+      }
+    },
+    enabled: open,
+  });
+  const zones = Array.isArray(zonesData) ? zonesData : [];
+
   const { mutate: createActivity, isPending } = useMutation({
     mutationFn: (data: Record<string, unknown>) => activitiesApi.create(data),
     onSuccess: () => {
@@ -362,6 +420,7 @@ function CreateActivityModal({ open, onClose }: { open: boolean; onClose: () => 
         dueDate: '',
         planId: '',
         axisId: '',
+        zoneId: '',
       });
       setErrors({});
     },
@@ -410,6 +469,7 @@ function CreateActivityModal({ open, onClose }: { open: boolean; onClose: () => 
       ...activityData,
       startDate: form.startDate || undefined,
       dueDate: form.dueDate || undefined,
+      zoneId: form.zoneId || undefined,
     });
   }
 
@@ -473,6 +533,18 @@ function CreateActivityModal({ open, onClose }: { open: boolean; onClose: () => 
             <option value="NORMALE">Normale</option>
             <option value="HAUTE">Haute</option>
             <option value="CRITIQUE">Critique</option>
+          </Select>
+        </FormField>
+
+        {/* Zone géographique */}
+        <FormField label="Zone d'intervention">
+          <Select value={form.zoneId} onChange={set('zoneId')}>
+            <option value="">Aucune zone</option>
+            {zones.map((z: any) => (
+              <option key={z.id} value={z.id}>
+                {z.code ? `[${z.code}] ${z.name}` : z.name}
+              </option>
+            ))}
           </Select>
         </FormField>
 

@@ -50,4 +50,8 @@ export class CreateActivityDto {
   @IsOptional()
   @IsString()
   risks?: string;
+
+  @IsOptional()
+  @IsString()
+  zoneId?: string;
 }

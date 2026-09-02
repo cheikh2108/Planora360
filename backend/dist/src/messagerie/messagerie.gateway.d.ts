@@ -59,6 +59,7 @@ export declare class MessagerieGateway implements OnGatewayConnection, OnGateway
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
+            parentId: string | null;
             metadata: import("@prisma/client/runtime/client").JsonValue | null;
             authorId: string;
             content: string;
@@ -68,7 +69,6 @@ export declare class MessagerieGateway implements OnGatewayConnection, OnGateway
             editedAt: Date | null;
             isDeleted: boolean;
             isSystem: boolean;
-            parentId: string | null;
         };
         error?: undefined;
     } | {
@@ -112,6 +112,7 @@ export declare class MessagerieGateway implements OnGatewayConnection, OnGateway
             createdAt: Date;
             updatedAt: Date;
             deletedAt: Date | null;
+            parentId: string | null;
             metadata: import("@prisma/client/runtime/client").JsonValue | null;
             authorId: string;
             content: string;
@@ -121,7 +122,6 @@ export declare class MessagerieGateway implements OnGatewayConnection, OnGateway
             editedAt: Date | null;
             isDeleted: boolean;
             isSystem: boolean;
-            parentId: string | null;
         };
         error?: undefined;
     } | {

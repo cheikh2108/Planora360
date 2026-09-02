@@ -20,6 +20,11 @@ const ACTIVITY_INCLUDE = {
       _count: { select: { checklistItems: true } },
     },
   },
+  zones: {
+    include: {
+      zone: { select: { id: true, name: true, code: true, level: true } },
+    },
+  },
   _count: { select: { checklistItems: true, documents: true, validations: true } },
 };
 
@@ -48,6 +53,7 @@ export class ActivitiesService {
     await this.validateAxis(dto.axisId, organizationId);
     await this.validateParentActivity(dto.parentActivityId, organizationId);
     await this.validateResponsible(dto.responsibleId, organizationId);
+    await this.validateZone(dto.zoneId, organizationId);
 
     const activity = await this.createActivity(dto, organizationId, currentUserId);
 
@@ -61,11 +67,15 @@ export class ActivitiesService {
       await this.addCollaborators(activity.id, dto.collaboratorIds);
     }
 
+    if (dto.zoneId) {
+      await this.assignZone(activity.id, dto.zoneId);
+    }
+
     // Invalider le cache du dashboard après création d'activité
     await this.cacheInvalidation.invalidateDashboard(organizationId);
     await this.cacheInvalidation.invalidateActivities(organizationId);
 
-    return dto.collaboratorIds?.length ? this.findActivityById(activity.id) : activity;
+    return dto.collaboratorIds?.length || dto.zoneId ? this.findActivityById(activity.id) : activity;
   }
 
   private async validateAxis(axisId: string, organizationId: string) {
@@ -93,8 +103,17 @@ export class ActivitiesService {
     if (!responsible) throw new NotFoundException('Responsable introuvable');
   }
 
+  private async validateZone(zoneId: string | undefined, organizationId: string) {
+    if (!zoneId) return;
+
+    const zone = await this.prisma.geographicZone.findFirst({
+      where: { id: zoneId, organizationId },
+    });
+    if (!zone) throw new NotFoundException('Zone géographique introuvable');
+  }
+
   private async createActivity(dto: CreateActivityDto, organizationId: string, currentUserId: string) {
-    const { collaboratorIds, responsibleId, startDate, dueDate, ...rest } = dto;
+    const { collaboratorIds, zoneId, responsibleId, startDate, dueDate, ...rest } = dto;
 
     return this.prisma.activity.create({
       data: {
@@ -115,6 +134,12 @@ export class ActivitiesService {
     });
   }
 
+  private async assignZone(activityId: string, zoneId: string) {
+    await this.prisma.activityZone.create({
+      data: { activityId, zoneId, isPrimary: true },
+    });
+  }
+
   private async findActivityById(activityId: string) {
     return this.prisma.activity.findFirst({
       where: { id: activityId },
@@ -125,13 +150,15 @@ export class ActivitiesService {
   async findAll(
     organizationId: string,
     planId?: string,
+    zoneId?: string,
     page = 1,
     limit = 20,
   ) {
-    const where = {
+    const where: any = {
       organizationId,
       parentActivityId: null,
       ...(planId ? { axis: { actionPlanId: planId } } : {}),
+      ...(zoneId ? { zones: { some: { zoneId } } } : {}),
     };
     const [data, total] = await Promise.all([
       this.prisma.activity.findMany({
@@ -166,7 +193,7 @@ export class ActivitiesService {
 
   async update(id: string, dto: UpdateActivityDto, organizationId: string) {
     await this.findOne(id, organizationId);
-    const { collaboratorIds, status, ...data } = dto as any;
+    const { collaboratorIds, zoneId, status, ...data } = dto as any;
     const updateData: any = { ...data };
     if (dto.startDate) updateData.startDate = new Date(dto.startDate);
     if (dto.dueDate) updateData.dueDate = new Date(dto.dueDate);
@@ -177,6 +204,8 @@ export class ActivitiesService {
       include: ACTIVITY_INCLUDE,
     });
 
+    let needsReload = false;
+
     if (Array.isArray(collaboratorIds)) {
       await this.prisma.activityCollaborator.deleteMany({ where: { activityId: id } });
       if (collaboratorIds.length) {
@@ -185,18 +214,30 @@ export class ActivitiesService {
           skipDuplicates: true,
         });
       }
-      // Invalider le cache après modification
-      await this.cacheInvalidation.invalidateDashboard(organizationId);
-      await this.cacheInvalidation.invalidateActivities(organizationId);
+      needsReload = true;
+    }
 
-      return this.prisma.activity.findFirst({ where: { id }, include: ACTIVITY_INCLUDE }) as any;
+    // Gérer la zone si fournie
+    if (zoneId !== undefined) {
+      if (zoneId) {
+        await this.validateZone(zoneId, organizationId);
+      }
+      // Supprimer les zones existantes
+      await this.prisma.activityZone.deleteMany({ where: { activityId: id } });
+      // Ajouter la nouvelle zone si fournie
+      if (zoneId) {
+        await this.assignZone(id, zoneId);
+      }
+      needsReload = true;
     }
 
     // Invalider le cache après modification
     await this.cacheInvalidation.invalidateDashboard(organizationId);
     await this.cacheInvalidation.invalidateActivities(organizationId);
 
-    return activity;
+    return needsReload
+      ? (this.prisma.activity.findFirst({ where: { id }, include: ACTIVITY_INCLUDE }) as any)
+      : activity;
   }
 
   async updateStatus(id: string, newStatus: ActivityStatus, organizationId: string) {

@@ -6,7 +6,7 @@ import {
   LayoutDashboard, FolderKanban, CheckSquare, GitBranch,
   PiggyBank, FileText, Bell, BarChart3, Settings, LogOut,
   ChevronDown, Users, Shield, Archive, Target, UserPlus,
-  BookOpen, Calendar, HelpCircle, ShieldAlert, Gavel, MessageSquare,
+  BookOpen, Calendar, HelpCircle, ShieldAlert, Gavel, MessageSquare, MapPin,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth-context';
@@ -21,6 +21,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard',     label: 'Tableau de bord', icon: LayoutDashboard, permission: 'dashboard.view' },
+  { href: '/dashboards/territorial', label: 'Vue Territoriale', icon: MapPin, permission: 'dashboard.view' },
   { href: '/plans',         label: "Plans d'action",  icon: FolderKanban,    permission: 'plan.read' },
   { href: '/plans/archives', label: 'Archives',        icon: Archive,         permission: 'plan.read' },
   { href: '/activities',    label: 'Activités',       icon: CheckSquare,     permission: 'activity.read' },
@@ -41,6 +42,7 @@ const NAV_ITEMS: NavItem[] = [
 const ORG_ADMIN_ITEMS: NavItem[] = [
   { href: '/admin/users',  label: 'Utilisateurs',  icon: Users,       permission: 'user.read' },
   { href: '/admin/roles',  label: 'Rôles',         icon: Shield,      permission: 'user.create' },
+  { href: '/admin/zones',  label: 'Zones',         icon: MapPin,      permission: 'plan.read' },
   { href: '/admin/help',   label: 'Centre d\'aide', icon: HelpCircle }, // Accessible à tous
   { href: '/settings',     label: 'Paramètres',    icon: Settings },
 ];

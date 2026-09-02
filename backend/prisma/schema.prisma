@@ -146,6 +146,9 @@ model Organization {
   // Messagerie
   conversations Conversation[]
 
+  // Zones géographiques
+  geographicZones GeographicZone[]
+
   @@map("organizations")
 }
 
@@ -346,6 +349,9 @@ model Activity {
 
   // Messagerie contextuelle
   conversations Conversation[]
+
+  // Zones géographiques
+  zones ActivityZone[]
 
   @@index([organizationId])
   @@index([organizationId, status])
@@ -1681,4 +1687,57 @@ model MessageMention {
   @@index([userId])
   @@index([notified])
   @@map("message_mentions")
+}
+
+// ==================== MODULE ZONES GÉOGRAPHIQUES ====================
+
+model GeographicZone {
+  id             String   @id @default(cuid())
+  name           String
+  code           String?
+  level          Int      @default(0) // 0=pays, 1=région, 2=département, 3=arrondissement, etc.
+  description    String?  @db.Text
+
+  // Hiérarchie
+  parentId       String?
+  parent         GeographicZone?  @relation("ZoneHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children       GeographicZone[] @relation("ZoneHierarchy")
+
+  // Métadonnées géographiques (optionnel pour Phase 2)
+  latitude       Float?
+  longitude      Float?
+  polygon        Json?    // GeoJSON pour les contours
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  activities     ActivityZone[]
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([organizationId, code])
+  @@index([organizationId])
+  @@index([parentId])
+  @@index([level])
+  @@map("geographic_zones")
+}
+
+model ActivityZone {
+  id         String   @id @default(cuid())
+
+  activityId String
+  activity   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  zoneId     String
+  zone       GeographicZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+
+  isPrimary  Boolean  @default(true) // Pour supporter multi-zone en Phase 2
+
+  createdAt  DateTime @default(now())
+
+  @@unique([activityId, zoneId])
+  @@index([activityId])
+  @@index([zoneId])
+  @@map("activity_zones")
 }

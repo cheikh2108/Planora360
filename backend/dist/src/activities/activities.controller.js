@@ -30,8 +30,8 @@ let ActivitiesController = class ActivitiesController {
     create(dto, user) {
         return this.activitiesService.create(dto, user.organizationId, user.id);
     }
-    findAll(user, planId, page, limit) {
-        return this.activitiesService.findAll(user.organizationId, planId, page ? parseInt(page) : 1, limit ? parseInt(limit) : 20);
+    findAll(user, planId, zoneId, page, limit) {
+        return this.activitiesService.findAll(user.organizationId, planId, zoneId, page ? parseInt(page) : 1, limit ? parseInt(limit) : 20);
     }
     findOne(id, user) {
         return this.activitiesService.findOne(id, user.organizationId);
@@ -60,10 +60,11 @@ __decorate([
     (0, common_1.Get)(),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Query)('planId')),
-    __param(2, (0, common_1.Query)('page')),
-    __param(3, (0, common_1.Query)('limit')),
+    __param(2, (0, common_1.Query)('zoneId')),
+    __param(3, (0, common_1.Query)('page')),
+    __param(4, (0, common_1.Query)('limit')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String, String, String]),
+    __metadata("design:paramtypes", [Object, String, String, String, String]),
     __metadata("design:returntype", void 0)
 ], ActivitiesController.prototype, "findAll", null);
 __decorate([

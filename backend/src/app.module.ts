@@ -34,6 +34,7 @@ import { CsrfGuard } from './common/guards/csrf.guard';
 import { CacheModule } from './common/cache/cache.module';
 import { PassationModule } from './passation/passation.module';
 import { MessagerieModule } from './messagerie/messagerie.module';
+import { ZonesModule } from './zones/zones.module';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { MessagerieModule } from './messagerie/messagerie.module';
     RecommendationsModule,
     PassationModule,
     MessagerieModule,
+    ZonesModule,
   ],
   providers: [
     // Ordre d'exécution des guards globaux :

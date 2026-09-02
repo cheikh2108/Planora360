@@ -6,7 +6,7 @@ export declare class ActivitiesController {
     private activitiesService;
     constructor(activitiesService: ActivitiesService);
     create(dto: CreateActivityDto, user: any): Promise<any>;
-    findAll(user: any, planId?: string, page?: string, limit?: string): Promise<{
+    findAll(user: any, planId?: string, zoneId?: string, page?: string, limit?: string): Promise<{
         data: ({
             _count: {
                 checklistItems: number;
@@ -33,8 +33,8 @@ export declare class ActivitiesController {
                 createdAt: Date;
                 updatedAt: Date;
                 status: import(".prisma/client").$Enums.ActivityStatus;
-                startDate: Date;
                 description: string | null;
+                startDate: Date;
                 axisId: string;
                 parentActivityId: string | null;
                 title: string;
@@ -66,14 +66,28 @@ export declare class ActivitiesController {
                 activityId: string;
                 userId: string;
             })[];
+            zones: ({
+                zone: {
+                    id: string;
+                    name: string;
+                    code: string | null;
+                    level: number;
+                };
+            } & {
+                id: string;
+                createdAt: Date;
+                activityId: string;
+                zoneId: string;
+                isPrimary: boolean;
+            })[];
         } & {
             id: string;
             organizationId: string;
             createdAt: Date;
             updatedAt: Date;
             status: import(".prisma/client").$Enums.ActivityStatus;
-            startDate: Date;
             description: string | null;
+            startDate: Date;
             axisId: string;
             parentActivityId: string | null;
             title: string;
@@ -136,8 +150,8 @@ export declare class ActivitiesController {
             createdAt: Date;
             updatedAt: Date;
             status: import(".prisma/client").$Enums.ActivityStatus;
-            startDate: Date;
             description: string | null;
+            startDate: Date;
             axisId: string;
             parentActivityId: string | null;
             title: string;
@@ -178,14 +192,28 @@ export declare class ActivitiesController {
             activityId: string;
             userId: string;
         })[];
+        zones: ({
+            zone: {
+                id: string;
+                name: string;
+                code: string | null;
+                level: number;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            activityId: string;
+            zoneId: string;
+            isPrimary: boolean;
+        })[];
     } & {
         id: string;
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;
         status: import(".prisma/client").$Enums.ActivityStatus;
-        startDate: Date;
         description: string | null;
+        startDate: Date;
         axisId: string;
         parentActivityId: string | null;
         title: string;
@@ -225,8 +253,8 @@ export declare class ActivitiesController {
             createdAt: Date;
             updatedAt: Date;
             status: import(".prisma/client").$Enums.ActivityStatus;
-            startDate: Date;
             description: string | null;
+            startDate: Date;
             axisId: string;
             parentActivityId: string | null;
             title: string;
@@ -258,14 +286,28 @@ export declare class ActivitiesController {
             activityId: string;
             userId: string;
         })[];
+        zones: ({
+            zone: {
+                id: string;
+                name: string;
+                code: string | null;
+                level: number;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            activityId: string;
+            zoneId: string;
+            isPrimary: boolean;
+        })[];
     } & {
         id: string;
         organizationId: string;
         createdAt: Date;
         updatedAt: Date;
         status: import(".prisma/client").$Enums.ActivityStatus;
-        startDate: Date;
         description: string | null;
+        startDate: Date;
         axisId: string;
         parentActivityId: string | null;
         title: string;
@@ -284,8 +326,8 @@ export declare class ActivitiesController {
         createdAt: Date;
         updatedAt: Date;
         status: import(".prisma/client").$Enums.ActivityStatus;
-        startDate: Date;
         description: string | null;
+        startDate: Date;
         axisId: string;
         parentActivityId: string | null;
         title: string;

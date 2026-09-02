@@ -26,12 +26,14 @@ export class ActivitiesController {
   findAll(
     @CurrentUser() user: any,
     @Query('planId') planId?: string,
+    @Query('zoneId') zoneId?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
     return this.activitiesService.findAll(
       user.organizationId,
       planId,
+      zoneId,
       page ? parseInt(page) : 1,
       limit ? parseInt(limit) : 20,
     );

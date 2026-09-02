@@ -43,6 +43,7 @@ const csrf_guard_1 = require("./common/guards/csrf.guard");
 const cache_module_1 = require("./common/cache/cache.module");
 const passation_module_1 = require("./passation/passation.module");
 const messagerie_module_1 = require("./messagerie/messagerie.module");
+const zones_module_1 = require("./zones/zones.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -84,6 +85,7 @@ exports.AppModule = AppModule = __decorate([
             recommendations_module_1.RecommendationsModule,
             passation_module_1.PassationModule,
             messagerie_module_1.MessagerieModule,
+            zones_module_1.ZonesModule,
         ],
         providers: [
             {

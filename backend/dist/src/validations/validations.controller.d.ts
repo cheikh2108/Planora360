@@ -37,8 +37,8 @@ export declare class ValidationsController {
             createdAt: Date;
             updatedAt: Date;
             status: import(".prisma/client").$Enums.ActivityStatus;
-            startDate: Date;
             description: string | null;
+            startDate: Date;
             axisId: string;
             parentActivityId: string | null;
             title: string;
@@ -87,8 +87,8 @@ export declare class ValidationsController {
             createdAt: Date;
             updatedAt: Date;
             status: import(".prisma/client").$Enums.ActivityStatus;
-            startDate: Date;
             description: string | null;
+            startDate: Date;
             axisId: string;
             parentActivityId: string | null;
             title: string;

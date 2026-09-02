@@ -183,6 +183,51 @@ async function main() {
     else {
         console.log('Compte test existe déjà.');
     }
+    console.log('Seeding zones géographiques...');
+    const existingSenegal = await prisma.geographicZone.findFirst({
+        where: { organizationId: org.id, code: 'SN' },
+    });
+    if (!existingSenegal) {
+        const senegal = await prisma.geographicZone.create({
+            data: {
+                name: 'Sénégal',
+                code: 'SN',
+                level: 0,
+                organizationId: org.id,
+            },
+        });
+        const regions = [
+            { name: 'Dakar', code: 'DK' },
+            { name: 'Thiès', code: 'TH' },
+            { name: 'Saint-Louis', code: 'SL' },
+            { name: 'Diourbel', code: 'DB' },
+            { name: 'Kaolack', code: 'KL' },
+            { name: 'Fatick', code: 'FK' },
+            { name: 'Louga', code: 'LG' },
+            { name: 'Matam', code: 'MT' },
+            { name: 'Tambacounda', code: 'TC' },
+            { name: 'Kolda', code: 'KD' },
+            { name: 'Ziguinchor', code: 'ZG' },
+            { name: 'Sédhiou', code: 'SD' },
+            { name: 'Kaffrine', code: 'KF' },
+            { name: 'Kédougou', code: 'KE' },
+        ];
+        for (const region of regions) {
+            await prisma.geographicZone.create({
+                data: {
+                    name: region.name,
+                    code: region.code,
+                    level: 1,
+                    parentId: senegal.id,
+                    organizationId: org.id,
+                },
+            });
+        }
+        console.log(`✅ ${regions.length + 1} zones géographiques créées (Sénégal + régions)`);
+    }
+    else {
+        console.log('Zones géographiques existent déjà.');
+    }
 }
 main()
     .catch((e) => { console.error(e); process.exit(1); })

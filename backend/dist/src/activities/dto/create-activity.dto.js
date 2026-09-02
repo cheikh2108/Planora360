@@ -24,6 +24,7 @@ class CreateActivityDto {
     priority;
     budgetPlanned;
     risks;
+    zoneId;
 }
 exports.CreateActivityDto = CreateActivityDto;
 __decorate([
@@ -86,4 +87,9 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateActivityDto.prototype, "risks", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateActivityDto.prototype, "zoneId", void 0);
 //# sourceMappingURL=create-activity.dto.js.map

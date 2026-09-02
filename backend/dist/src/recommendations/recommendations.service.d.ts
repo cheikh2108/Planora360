@@ -71,8 +71,9 @@ export declare class RecommendationsService {
         createdAt: Date;
         updatedAt: Date;
         status: import(".prisma/client").$Enums.RecommendationStatus;
-        activityId: string | null;
+        code: string;
         description: string;
+        activityId: string | null;
         title: string;
         responsibleId: string;
         dueDate: Date;
@@ -87,7 +88,6 @@ export declare class RecommendationsService {
         issuedAt: Date;
         issuerId: string | null;
         issuerExternal: string | null;
-        code: string;
         completedAt: Date | null;
         createdById: string;
         suspendedReason: string | null;
@@ -159,8 +159,9 @@ export declare class RecommendationsService {
             createdAt: Date;
             updatedAt: Date;
             status: import(".prisma/client").$Enums.RecommendationStatus;
-            activityId: string | null;
+            code: string;
             description: string;
+            activityId: string | null;
             title: string;
             responsibleId: string;
             dueDate: Date;
@@ -175,7 +176,6 @@ export declare class RecommendationsService {
             issuedAt: Date;
             issuerId: string | null;
             issuerExternal: string | null;
-            code: string;
             completedAt: Date | null;
             createdById: string;
             suspendedReason: string | null;
@@ -289,8 +289,8 @@ export declare class RecommendationsService {
             };
         } & {
             id: string;
-            fileSize: number;
             description: string | null;
+            fileSize: number;
             fileName: string;
             mimeType: string;
             uploadedById: string;
@@ -322,8 +322,9 @@ export declare class RecommendationsService {
         createdAt: Date;
         updatedAt: Date;
         status: import(".prisma/client").$Enums.RecommendationStatus;
-        activityId: string | null;
+        code: string;
         description: string;
+        activityId: string | null;
         title: string;
         responsibleId: string;
         dueDate: Date;
@@ -338,7 +339,6 @@ export declare class RecommendationsService {
         issuedAt: Date;
         issuerId: string | null;
         issuerExternal: string | null;
-        code: string;
         completedAt: Date | null;
         createdById: string;
         suspendedReason: string | null;
@@ -409,8 +409,9 @@ export declare class RecommendationsService {
         createdAt: Date;
         updatedAt: Date;
         status: import(".prisma/client").$Enums.RecommendationStatus;
-        activityId: string | null;
+        code: string;
         description: string;
+        activityId: string | null;
         title: string;
         responsibleId: string;
         dueDate: Date;
@@ -425,7 +426,6 @@ export declare class RecommendationsService {
         issuedAt: Date;
         issuerId: string | null;
         issuerExternal: string | null;
-        code: string;
         completedAt: Date | null;
         createdById: string;
         suspendedReason: string | null;
@@ -496,8 +496,9 @@ export declare class RecommendationsService {
         createdAt: Date;
         updatedAt: Date;
         status: import(".prisma/client").$Enums.RecommendationStatus;
-        activityId: string | null;
+        code: string;
         description: string;
+        activityId: string | null;
         title: string;
         responsibleId: string;
         dueDate: Date;
@@ -512,7 +513,6 @@ export declare class RecommendationsService {
         issuedAt: Date;
         issuerId: string | null;
         issuerExternal: string | null;
-        code: string;
         completedAt: Date | null;
         createdById: string;
         suspendedReason: string | null;
@@ -583,8 +583,9 @@ export declare class RecommendationsService {
         createdAt: Date;
         updatedAt: Date;
         status: import(".prisma/client").$Enums.RecommendationStatus;
-        activityId: string | null;
+        code: string;
         description: string;
+        activityId: string | null;
         title: string;
         responsibleId: string;
         dueDate: Date;
@@ -599,7 +600,6 @@ export declare class RecommendationsService {
         issuedAt: Date;
         issuerId: string | null;
         issuerExternal: string | null;
-        code: string;
         completedAt: Date | null;
         createdById: string;
         suspendedReason: string | null;
@@ -670,8 +670,9 @@ export declare class RecommendationsService {
         createdAt: Date;
         updatedAt: Date;
         status: import(".prisma/client").$Enums.RecommendationStatus;
-        activityId: string | null;
+        code: string;
         description: string;
+        activityId: string | null;
         title: string;
         responsibleId: string;
         dueDate: Date;
@@ -686,7 +687,6 @@ export declare class RecommendationsService {
         issuedAt: Date;
         issuerId: string | null;
         issuerExternal: string | null;
-        code: string;
         completedAt: Date | null;
         createdById: string;
         suspendedReason: string | null;
@@ -704,8 +704,9 @@ export declare class RecommendationsService {
         createdAt: Date;
         updatedAt: Date;
         status: import(".prisma/client").$Enums.RecommendationStatus;
-        activityId: string | null;
+        code: string;
         description: string;
+        activityId: string | null;
         title: string;
         responsibleId: string;
         dueDate: Date;
@@ -720,7 +721,6 @@ export declare class RecommendationsService {
         issuedAt: Date;
         issuerId: string | null;
         issuerExternal: string | null;
-        code: string;
         completedAt: Date | null;
         createdById: string;
         suspendedReason: string | null;

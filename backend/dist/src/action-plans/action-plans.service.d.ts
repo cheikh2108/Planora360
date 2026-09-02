@@ -78,8 +78,8 @@ export declare class ActionPlansService {
                 createdAt: Date;
                 updatedAt: Date;
                 status: import(".prisma/client").$Enums.ActivityStatus;
-                startDate: Date;
                 description: string | null;
+                startDate: Date;
                 axisId: string;
                 parentActivityId: string | null;
                 title: string;
