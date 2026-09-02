@@ -500,3 +500,17 @@ export const messagesApi = {
       `/messagerie/conversations/${conversationId}/messages/${messageId}/reactions/${reactionId}`,
     ),
 };
+
+// ============================================================================
+// ZONES GÉOGRAPHIQUES
+// ============================================================================
+
+export const zonesApi = {
+  getAll: () => api.get('/zones'),
+  getTree: () => api.get('/zones/tree'),
+  getStats: () => api.get('/zones/stats'),
+  getOne: (id: string) => api.get(`/zones/${id}`),
+  create: (data: any) => api.post('/zones', data),
+  update: (id: string, data: any) => api.patch(`/zones/${id}`, data),
+  remove: (id: string) => api.delete(`/zones/${id}`),
+};

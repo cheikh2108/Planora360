@@ -69,12 +69,12 @@ function ActivitiesContent() {
     queryKey: ['zones'],
     queryFn: async () => {
       try {
-        const r = await fetch('/api/zones', {
+        const response = await fetch('/api/zones', {
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
         });
-        if (!r.ok) return [];
-        const data = await r.json();
+        if (!response.ok) return [];
+        const data = await response.json();
         return Array.isArray(data) ? data : [];
       } catch {
         return [];
@@ -388,12 +388,12 @@ function CreateActivityModal({ open, onClose }: { open: boolean; onClose: () => 
     queryKey: ['zones'],
     queryFn: async () => {
       try {
-        const r = await fetch('/api/zones', {
+        const response = await fetch('/api/zones', {
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
         });
-        if (!r.ok) return [];
-        const data = await r.json();
+        if (!response.ok) return [];
+        const data = await response.json();
         return Array.isArray(data) ? data : [];
       } catch {
         return [];

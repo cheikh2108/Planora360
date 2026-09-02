@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Plus, MapPin, Edit2, Trash2, ChevronRight, ChevronDown } from 'lucide-react';
-import { api } from '@/lib/api';
+import { zonesApi } from '@/lib/api';
 
 interface Zone {
   id: string;
@@ -37,8 +37,8 @@ export default function ZonesAdminPage() {
 
   const loadZones = async () => {
     try {
-      const data = await api.get('/zones/tree');
-      setZones(data);
+      const response = await zonesApi.getTree();
+      setZones(response.data);
     } catch (error) {
       console.error('Erreur chargement zones:', error);
     } finally {
@@ -50,9 +50,9 @@ export default function ZonesAdminPage() {
     e.preventDefault();
     try {
       if (editingZone) {
-        await api.patch(`/zones/${editingZone.id}`, formData);
+        await zonesApi.update(editingZone.id, formData);
       } else {
-        await api.post('/zones', formData);
+        await zonesApi.create(formData);
       }
       await loadZones();
       closeModal();
@@ -65,7 +65,7 @@ export default function ZonesAdminPage() {
     if (!confirm(`Supprimer "${zone.name}" ?`)) return;
 
     try {
-      await api.delete(`/zones/${zone.id}`);
+      await zonesApi.remove(zone.id);
       await loadZones();
     } catch (error: any) {
       alert(error.response?.data?.message || 'Erreur lors de la suppression');

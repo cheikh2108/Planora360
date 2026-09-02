@@ -5,6 +5,7 @@ import { MapPin, TrendingUp, Activity as ActivityIcon, DollarSign } from 'lucide
 import { Header } from '@/components/layout/header';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
+import { zonesApi } from '@/lib/api';
 import Link from 'next/link';
 
 interface ZoneStat {
@@ -24,12 +25,8 @@ export default function TerritorialDashboardPage() {
   const { data: stats, isLoading } = useQuery<ZoneStat[]>({
     queryKey: ['zones', 'stats'],
     queryFn: async () => {
-      const r = await fetch('/api/zones/stats', {
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-      });
-      if (!r.ok) throw new Error('Erreur chargement stats');
-      return r.json();
+      const response = await zonesApi.getStats();
+      return response.data;
     },
   });
 
