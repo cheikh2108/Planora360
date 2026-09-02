@@ -26,7 +26,7 @@ export function SuperAdminSidebar({ onClose }: { onClose?: () => void }) {
     <aside className="flex flex-col h-full bg-[#0a1628] text-white w-64 shrink-0">
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 py-5 border-b border-white/8">
-        <img src="/logo-dark.svg" alt="PLANORA 360" className="h-10 w-auto" />
+        <img src="/logo-dark.png" alt="PLANORA 360" className="h-10 w-auto" />
         <p className="text-xs font-semibold text-amber-400/90 ml-auto">Super Admin</p>
       </div>
 

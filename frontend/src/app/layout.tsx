@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   description: "Plateforme intégrée de planification, suivi-évaluation, gestion financière et pilotage de la performance",
   icons: {
     icon: [
-      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/logo-dark.png', type: 'image/png' },
     ],
   },
 };
