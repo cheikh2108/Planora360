@@ -39,8 +39,12 @@ export function ZoneMultiselect({
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const selectedZones = zones.filter((z) => value.includes(z.id));
-  const availableZones = zones.filter((z) => !value.includes(z.id));
+  // Protection: s'assurer que zones et value sont des tableaux
+  const safeZones = Array.isArray(zones) ? zones : [];
+  const safeValue = Array.isArray(value) ? value : [];
+
+  const selectedZones = safeZones.filter((z) => safeValue.includes(z.id));
+  const availableZones = safeZones.filter((z) => !safeValue.includes(z.id));
 
   const filteredZones = availableZones.filter((zone) => {
     const search = searchTerm.toLowerCase();
@@ -51,12 +55,12 @@ export function ZoneMultiselect({
   });
 
   const handleSelect = (zoneId: string) => {
-    onChange([...value, zoneId]);
+    onChange([...safeValue, zoneId]);
     setSearchTerm('');
   };
 
   const handleRemove = (zoneId: string) => {
-    onChange(value.filter((id) => id !== zoneId));
+    onChange(safeValue.filter((id) => id !== zoneId));
   };
 
   useEffect(() => {

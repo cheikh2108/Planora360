@@ -67,17 +67,20 @@ function PlanBadge({ plan }: { plan: SubscriptionPlan }) {
 }
 
 function StatsBar({ orgs }: { orgs: Organization[] }) {
+  // Protection: s'assurer que orgs est bien un tableau
+  const safeOrgs = Array.isArray(orgs) ? orgs : [];
+
   const byPlan = PLAN_ORDER.reduce<Record<SubscriptionPlan, number>>((acc, p) => {
-    acc[p] = orgs.filter(o => o.subscriptionPlan === p).length;
+    acc[p] = safeOrgs.filter(o => o.subscriptionPlan === p).length;
     return acc;
   }, {} as Record<SubscriptionPlan, number>);
-  const totalUsers = orgs.reduce((s, o) => s + (o._count?.users ?? 0), 0);
+  const totalUsers = safeOrgs.reduce((s, o) => s + (o._count?.users ?? 0), 0);
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
       <div className="bg-white rounded-2xl border border-slate-200 p-4 lg:col-span-2">
         <p className="text-xs text-slate-500 mb-1">Total organisations</p>
-        <p className="text-3xl font-bold text-slate-900">{orgs.length}</p>
+        <p className="text-3xl font-bold text-slate-900">{safeOrgs.length}</p>
         <p className="text-xs text-slate-600 mt-0.5">{totalUsers} utilisateurs</p>
       </div>
       {PLAN_ORDER.map(p => {
@@ -104,17 +107,26 @@ export default function SuperAdminOrganizationsPage() {
 
   const { data: orgs = [], isLoading } = useQuery<Organization[]>({
     queryKey: ['organizations'],
-    queryFn: async () => { const r = await organizationsApi.list(); return r.data; },
+    queryFn: async () => {
+      const r = await organizationsApi.list();
+      return Array.isArray(r.data) ? r.data : [];
+    },
   });
 
   const { data: pendingOrgs = [], isLoading: pendingLoading } = useQuery<Organization[]>({
     queryKey: ['organizations-pending'],
-    queryFn: async () => { const r = await organizationsApi.listPending(); return r.data; },
+    queryFn: async () => {
+      const r = await organizationsApi.listPending();
+      return Array.isArray(r.data) ? r.data : [];
+    },
   });
 
   const { data: deletedOrgs = [] } = useQuery<Organization[]>({
     queryKey: ['organizations-deleted'],
-    queryFn: async () => { const r = await organizationsApi.getDeleted(); return r.data; },
+    queryFn: async () => {
+      const r = await organizationsApi.getDeleted();
+      return Array.isArray(r.data) ? r.data : [];
+    },
   });
 
   const { mutate: approveOrg, isPending: approving } = useMutation({
@@ -144,11 +156,11 @@ export default function SuperAdminOrganizationsPage() {
     },
   });
 
-  const filtered = orgs.filter(o => {
+  const filtered = Array.isArray(orgs) ? orgs.filter(o => {
     const matchSearch = !search.trim() || o.name.toLowerCase().includes(search.toLowerCase());
     const matchPlan = planFilter === 'ALL' || o.subscriptionPlan === planFilter;
     return matchSearch && matchPlan;
-  });
+  }) : [];
 
   return (
     <main className="px-4 md:px-8 py-8 space-y-6 max-w-7xl mx-auto">

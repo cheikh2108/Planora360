@@ -10,21 +10,26 @@ if (typeof window !== 'undefined') {
   const posthogHost = process.env.NEXT_PUBLIC_POSTHOG_HOST;
 
   if (posthogKey && posthogHost) {
-    posthog.init(posthogKey, {
-      api_host: posthogHost,
-      person_profiles: 'identified_only',
-      capture_pageview: false, // On gère manuellement les pageviews
-      capture_pageleave: true,
-      autocapture: false, // On capture manuellement les événements importants
+    try {
+      posthog.init(posthogKey, {
+        api_host: posthogHost,
+        person_profiles: 'identified_only',
+        capture_pageview: false, // On gère manuellement les pageviews
+        capture_pageleave: true,
+        autocapture: false, // On capture manuellement les événements importants
 
-      // Session Replay - Enregistrement vidéo des sessions
-      // Le simple fait de définir session_recording l'active automatiquement
-      session_recording: {
-        maskAllInputs: true, // Masque tous les champs de formulaire (sécurité)
-        maskTextSelector: '[data-private]', // Masque les éléments avec data-private
-        recordCrossOriginIframes: false, // Sécurité : pas d'enregistrement d'iframes externes
-      },
-    });
+        // Session Replay - Enregistrement vidéo des sessions
+        // Le simple fait de définir session_recording l'active automatiquement
+        session_recording: {
+          maskAllInputs: true, // Masque tous les champs de formulaire (sécurité)
+          maskTextSelector: '[data-private]', // Masque les éléments avec data-private
+          recordCrossOriginIframes: false, // Sécurité : pas d'enregistrement d'iframes externes
+        },
+      });
+    } catch (error) {
+      // PostHog bloqué par adblocker ou autre erreur → ignore silencieusement
+      console.warn('[PostHog] Failed to initialize (likely blocked by adblocker):', error);
+    }
   }
 }
 
@@ -34,13 +39,17 @@ function PostHogPageView() {
 
   useEffect(() => {
     if (pathname) {
-      let url = window.origin + pathname;
-      if (searchParams && searchParams.toString()) {
-        url += `?${searchParams.toString()}`;
+      try {
+        let url = window.origin + pathname;
+        if (searchParams && searchParams.toString()) {
+          url += `?${searchParams.toString()}`;
+        }
+        posthog.capture('$pageview', {
+          $current_url: url,
+        });
+      } catch (error) {
+        // PostHog bloqué → ignore silencieusement
       }
-      posthog.capture('$pageview', {
-        $current_url: url,
-      });
     }
   }, [pathname, searchParams]);
 

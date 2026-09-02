@@ -98,7 +98,9 @@ export function FileUpload({
   };
 
   const removeFile = (index: number) => {
-    const newFiles = selectedFiles.filter((_, i) => i !== index);
+    // Protection: s'assurer que selectedFiles est un tableau
+    const safeFiles = Array.isArray(selectedFiles) ? selectedFiles : [];
+    const newFiles = safeFiles.filter((_, i) => i !== index);
     setSelectedFiles(newFiles);
     onFilesSelected(newFiles);
     setError(null);

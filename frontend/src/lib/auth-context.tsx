@@ -80,14 +80,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Identify user in PostHog
     if (data.user?.id) {
-      posthog.identify(data.user.id, {
-        email: data.user.email,
-        firstName: data.user.firstName,
-        lastName: data.user.lastName,
-        role: data.user.role?.name,
-        organizationId: data.user.organizationId,
-        organizationName: data.user.organization?.name,
-      });
+      try {
+        posthog.identify(data.user.id, {
+          email: data.user.email,
+          firstName: data.user.firstName,
+          lastName: data.user.lastName,
+          role: data.user.role?.name,
+          organizationId: data.user.organizationId,
+          organizationName: data.user.organization?.name,
+        });
+      } catch {
+        // PostHog bloqué → ignore
+      }
     }
 
     return data.user as import('./types').User;
@@ -95,7 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function logout() {
     try { await authApi.logout(); } catch { /* ignore */ }
-    posthog.reset(); // Clear PostHog identity
+    try { posthog.reset(); } catch { /* ignore if PostHog blocked */ }
     localStorage.clear();
     setUser(null);
     window.location.href = '/auth/login';

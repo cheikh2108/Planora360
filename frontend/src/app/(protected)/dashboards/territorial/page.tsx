@@ -40,7 +40,8 @@ export default function TerritorialDashboardPage() {
     totalBudgetPlanned > 0 ? Math.round((totalBudgetExecuted / totalBudgetPlanned) * 100) : 0;
 
   // Zones niveau 0 et 1 seulement (pays + régions)
-  const displayedZones = stats?.filter((z) => z.level <= 1) || [];
+  // Protection: s'assurer que stats est bien un tableau avant filter
+  const displayedZones = Array.isArray(stats) ? stats.filter((z) => z.level <= 1) : [];
 
   const kpiCards = [
     {

@@ -97,12 +97,12 @@ export class AuthController {
   private setSecureCookies(response: Response, accessToken: string, refreshToken: string, csrfToken: string) {
     const isProduction = process.env.NODE_ENV === 'production';
 
-    // Access Token (15 minutes)
+    // Access Token (7 jours - aligné avec JWT_EXPIRES_IN)
     response.cookie('accessToken', accessToken, {
       httpOnly: true, // Protection XSS
       secure: isProduction, // HTTPS seulement en production
       sameSite: 'lax', // Protection CSRF basique
-      maxAge: 15 * 60 * 1000, // 15 minutes
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 jours
       path: '/',
     });
 

@@ -54,7 +54,9 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
 
   const canSee = (item: NavItem) => {
     if (!item.permission) return true;
-    const perms: string[] = user?.role?.permissions ?? [];
+    const perms = user?.role?.permissions;
+    // Protection: s'assurer que permissions est bien un tableau
+    if (!Array.isArray(perms)) return false;
     return perms.includes('*') || perms.includes(item.permission);
   };
 
@@ -79,6 +81,8 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
     );
   };
 
+  // Protection: filter peut échouer si NAV_ITEMS ou ORG_ADMIN_ITEMS sont corrompus
+  const visibleNav = NAV_ITEMS.filter(canSee);
   const visibleAdmin = ORG_ADMIN_ITEMS.filter(canSee);
 
   return (
@@ -89,7 +93,7 @@ export function Sidebar({ onClose }: { onClose?: () => void }) {
       </div>
 
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
-        {NAV_ITEMS.filter(canSee).map(navLink)}
+        {visibleNav.map(navLink)}
 
         {visibleAdmin.length > 0 && (
           <div className="pt-4">
