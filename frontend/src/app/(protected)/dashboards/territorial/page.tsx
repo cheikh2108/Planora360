@@ -71,18 +71,18 @@ export default function TerritorialDashboardPage() {
         />
         <div className="p-8">
           <EmptyState
-            illustration="map"
+            icon={<MapPin size={64} className="text-gray-300" />}
             title="Aucune zone configurée"
             description="Créez des zones géographiques dans Administration > Zones"
-            action={
-              <Link
-                href="/admin/zones"
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                Configurer les zones
-              </Link>
-            }
           />
+          <div className="flex justify-center mt-6">
+            <Link
+              href="/admin/zones"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              Configurer les zones
+            </Link>
+          </div>
         </div>
       </div>
     );
