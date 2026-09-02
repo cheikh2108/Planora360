@@ -191,6 +191,37 @@ export class AuthController {
     return { csrfToken };
   }
 
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async getMe(@CurrentUser() user: any) {
+    // Récupérer les infos fraîches depuis la BDD (incluant subscriptionPlan mis à jour)
+    const freshUser = await this.prisma.user.findUnique({
+      where: { id: user.id },
+      include: {
+        role: true,
+        organization: true,
+      },
+    });
+
+    if (!freshUser) {
+      throw new Error('Utilisateur introuvable');
+    }
+
+    return {
+      user: {
+        id: freshUser.id,
+        email: freshUser.email,
+        firstName: freshUser.firstName,
+        lastName: freshUser.lastName,
+        organizationId: freshUser.organizationId,
+        isActive: freshUser.isActive,
+        role: freshUser.role,
+        organization: freshUser.organization,
+      },
+    };
+  }
+
   @Post('logout')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)

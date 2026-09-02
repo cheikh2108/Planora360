@@ -10,6 +10,7 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string, password: string, totp?: string) => Promise<import('./types').User>;
   logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
   hasPermission: (permission: string) => boolean;
   hasRole: (...roles: string[]) => boolean;
   setBrandColor: (color: string) => void;
@@ -100,6 +101,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.location.href = '/auth/login';
   }
 
+  async function refreshUser() {
+    try {
+      const { data } = await api.get('/auth/me');
+      if (data.user) {
+        localStorage.setItem('user', JSON.stringify(data.user));
+        setUser(data.user);
+        applyBrandColor(data.user?.organization?.brandColor);
+      }
+    } catch (error) {
+      console.error('Erreur lors du rafraîchissement des infos utilisateur:', error);
+    }
+  }
+
   function hasPermission(permission: string): boolean {
     if (!user) return false;
     return user.role?.permissions?.includes(permission) ?? false;
@@ -120,7 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, hasPermission, hasRole, setBrandColor }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, refreshUser, hasPermission, hasRole, setBrandColor }}>
       {children}
     </AuthContext.Provider>
   );
