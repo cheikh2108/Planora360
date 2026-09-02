@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PLANORA 360 — Planifiez. Suivez. Évaluez. Agissez. Performez.</title>
+
+<!-- CRITICAL: Preload fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&family=Geist:wght@400;500;600&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&family=Geist:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+
+<!-- OPTIMIZED: Build Tailwind CSS au lieu du CDN -->
+<style>
+/* Minimal critical CSS inline */
+*,::before,::after{box-sizing:border-box;border-width:0;border-style:solid;border-color:currentColor}
+html{line-height:1.5;-webkit-text-size-adjust:100%;tab-size:4;font-family:Geist,ui-sans-serif,system-ui,-apple-system,sans-serif}
+body{margin:0;line-height:inherit}
+.font-jakarta{font-family:'Plus Jakarta Sans',sans-serif!important}
+.font-geist{font-family:'Geist',sans-serif!important}
+
+/* Base styles */
+body{min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;color:#f1f5f9;background:#080c14}
+.bg-dark{background:#080c14}
+.text-white{color:#fff}
+.text-slate-100{color:#f1f5f9}
+.text-slate-400{color:#94a3b8}
+.text-cyan-100{color:#cffafe}
+.text-cyan-200{color:#a5f3fc}
+
+/* Layout */
+.container{max-width:1360px;margin:0 auto;border-left:1px solid rgba(255,255,255,.06);border-right:1px solid rgba(255,255,255,.06)}
+.px-5{padding-left:1.25rem;padding-right:1.25rem}
+.py-24{padding-top:6rem;padding-bottom:6rem}
+.pt-20{padding-top:5rem}
+.pb-20{padding-bottom:5rem}
+.sticky{position:sticky}
+.top-0{top:0}
+.z-50{z-index:50}
+
+/* Header */
+header{position:sticky;top:0;z-index:50;background:rgba(8,12,20,.7);border-bottom:1px solid rgba(255,255,255,.06);backdrop-filter:blur(24px)}
+nav{display:flex;align-items:center;justify-content:space-between;height:4rem;max-width:1280px;margin:0 auto;padding:0 1.25rem}
+
+/* Hero */
+.hero-title{font-size:2.4rem;line-height:1.08;font-weight:500;letter-spacing:-.05em}
+.hero-text{font-size:1rem;line-height:1.75;color:#94a3b8;max-width:28rem}
+
+/* Button */
+.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1.25rem;border-radius:9999px;font-size:.875rem;font-weight:600;transition:all .3s}
+.btn-primary{background:#a5f3fc;color:#0f172a;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.btn-primary:hover{background:#cffafe;transform:scale(1.03)}
+.btn-secondary{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:#fff;backdrop-filter:blur(12px)}
+.btn-secondary:hover{background:rgba(255,255,255,.08)}
+
+/* Grid */
+.grid{display:grid;gap:1rem}
+.grid-2{grid-template-columns:repeat(2,1fr)}
+.grid-3{grid-template-columns:repeat(3,1fr)}
+
+/* Cards */
+.card{border-radius:1.5rem;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.035);padding:2rem;backdrop-filter:blur(12px)}
+
+/* Utilities */
+.mt-6{margin-top:1.5rem}
+.mt-8{margin-top:2rem}
+.mb-7{margin-bottom:1.75rem}
+.gap-3{gap:.75rem}
+.gap-8{gap:2rem}
+.gap-12{gap:3rem}
+.rounded-full{border-radius:9999px}
+.hidden{display:none}
+
+/* Responsive */
+@media(min-width:640px){
+.sm\\:px-8{padding-left:2rem;padding-right:2rem}
+.sm\\:pt-28{padding-top:7rem}
+.sm\\:pb-28{padding-bottom:7rem}
+.hero-title{font-size:3rem}
+}
+@media(min-width:1024px){
+.lg\\:px-10{padding-left:2.5rem;padding-right:2.5rem}
+.lg\\:pt-32{padding-top:8rem}
+.lg\\:pb-32{padding-bottom:8rem}
+.lg\\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.lg\\:block{display:block}
+.hero-title{font-size:4rem}
+}
+@media(min-width:1280px){
+.hero-title{font-size:4.5rem}
+}
+
+/* Background effects - simplified */
+.bg-gradient{position:fixed;inset:0;z-index:-50;background:radial-gradient(circle at 50% -10%,rgba(88,166,255,.16),transparent 36%),linear-gradient(180deg,#0b1020 0%,#080c14 42%,#0a0d13 100%);pointer-events:none}
+.bg-noise{position:fixed;inset:0;z-index:-40;opacity:.035;background-image:url('data:image/svg+xml,%3Csvg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)"/%3E%3C/svg%3E');pointer-events:none}
+
+/* Animation - reduced */
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.animate-in{animation:fadeIn .8s ease-out forwards}
+
+/* Dashboard mock - simplified static version */
+.dashboard-mock{border-radius:2rem;border:1px solid rgba(255,255,255,.15);background:rgba(15,18,32,.7);padding:1rem;box-shadow:0 40px 100px rgba(0,0,0,.8)}
+.dashboard-inner{overflow:hidden;border-radius:1.5rem;border:1px solid rgba(255,255,255,.08);background:rgba(11,18,32,.95)}
+.dashboard-header{display:flex;align-items:center;justify-content:between;border-bottom:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.02);padding:1rem 1.25rem}
+.stat-card{border-radius:1rem;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.02);padding:1rem}
+.text-xs{font-size:.75rem}
+.text-sm{font-size:.875rem}
+.text-base{font-size:1rem}
+.text-lg{font-size:1.125rem}
+.text-xl{font-size:1.25rem}
+.text-2xl{font-size:1.5rem}
+.text-4xl{font-size:2.25rem}
+.text-5xl{font-size:3rem}
+.tracking-tighter{letter-spacing:-.05em}
+.font-medium{font-weight:500}
+.font-semibold{font-weight:600}
+.font-bold{font-weight:700}
+</style>
+
+<!-- NO Iconify CDN - Use inline SVG instead -->
+</head>
+
+<body class="bg-dark">
+<!-- Background effects -->
+<div class="bg-gradient"></div>
+<div class="bg-noise"></div>
+
+<div class="container">
+
+  <!-- Header -->
+  <header>
+    <nav>
+      <a href="/" class="font-geist font-semibold text-white">PLANORA 360</a>
+
+      <div class="hidden lg:flex gap-8">
+        <a href="#features" class="text-sm text-slate-400 hover:text-white font-geist">Fonctionnalités</a>
+        <a href="#pricing" class="text-sm text-slate-400 hover:text-white font-geist">Tarifs</a>
+      </div>
+
+      <div class="hidden sm:flex gap-3">
+        <a href="/auth/login" class="text-sm text-slate-400 hover:text-white font-geist">Se connecter</a>
+        <a href="/auth/register" class="btn btn-primary font-geist">Commencer</a>
+      </div>
+
+      <button id="mobile-menu-btn" aria-label="Menu" class="lg:hidden text-slate-300">☰</button>
+    </nav>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="px-5 sm:px-8 lg:px-10 pt-20 sm:pt-28 lg:pt-32 pb-20 sm:pb-28 lg:pb-32">
+    <div class="grid lg:grid-cols-2 gap-12 items-center max-w-[1280px] mx-auto">
+
+      <!-- Left content -->
+      <div class="animate-in">
+        <div class="mb-7 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-xs text-slate-300 backdrop-blur-xl font-geist">
+          <span class="h-1.5 w-1.5 rounded-full bg-cyan-200"></span>
+          Pilotage des plans d'action pour les équipes
+        </div>
+
+        <h1 class="hero-title text-white font-jakarta">
+          Pilotez vos plans d'action stratégiques avec efficacité.
+        </h1>
+
+        <p class="hero-text mt-6 font-geist">
+          Planifiez, suivez et validez vos activités. Gérez votre budget en cascade (Prévu → Engagé → Exécuté). Générez des rapports automatisés. Tout dans un seul espace centralisé.
+        </p>
+
+        <div class="mt-8 flex flex-col sm:flex-row gap-3">
+          <a href="/auth/register" class="btn btn-primary font-geist">
+            Commencer →
+          </a>
+          <a href="#features" class="btn btn-secondary font-geist">
+            Voir comment ça marche
+          </a>
+        </div>
+      </div>
+
+      <!-- Right dashboard visual - Simplified static -->
+      <div class="hidden lg:block animate-in">
+        <div class="dashboard-mock">
+          <div class="dashboard-inner">
+            <div class="dashboard-header">
+              <div>
+                <p class="text-xs text-slate-400 font-geist">PLANORA 360 workspace</p>
+                <p class="text-sm font-medium text-white mt-0.5 font-geist">Tableau de bord</p>
+              </div>
+              <div class="flex gap-1.5">
+                <span class="h-6 w-6 rounded-full bg-cyan-200"></span>
+                <span class="h-6 w-6 rounded-full bg-slate-300"></span>
+              </div>
+            </div>
+
+            <div class="p-5">
+              <div class="grid grid-3 gap-3">
+                <div class="stat-card">
+                  <p class="text-xs text-cyan-200 font-geist">ACTIVITÉS</p>
+                  <p class="text-2xl text-white mt-2 font-jakarta font-medium">24</p>
+                  <p class="text-xs text-slate-400 mt-1 font-geist">6 en retard</p>
+                </div>
+                <div class="stat-card">
+                  <p class="text-xs text-slate-400 font-geist">VALIDÉES</p>
+                  <p class="text-2xl text-white mt-2 font-jakarta font-medium">38</p>
+                  <p class="text-xs text-emerald-300 mt-1 font-geist">Complété</p>
+                </div>
+                <div class="stat-card">
+                  <p class="text-xs text-slate-400 font-geist">TAUX EXEC.</p>
+                  <p class="text-2xl text-white mt-2 font-jakarta font-medium">74%</p>
+                  <p class="text-xs text-cyan-200 mt-1 font-geist">Bonne voie</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="px-5 sm:px-8 lg:px-10 py-24 border-t border-white/[0.06]">
+    <div class="max-w-[1280px] mx-auto">
+      <div class="mb-12">
+        <p class="text-base text-cyan-100 font-medium font-geist">Fonctionnalités</p>
+        <h2 class="text-4xl sm:text-5xl text-white font-jakarta font-medium tracking-tighter mt-4">
+          Tout ce dont vous avez besoin
+        </h2>
+      </div>
+
+      <div class="grid sm:grid-2 lg:grid-3 gap-6">
+        <div class="card">
+          <h3 class="text-lg font-semibold text-white font-geist">Plans d'action</h3>
+          <p class="text-sm text-slate-400 mt-2 font-geist">Structurez vos projets en axes et activités</p>
+        </div>
+        <div class="card">
+          <h3 class="text-lg font-semibold text-white font-geist">Validations</h3>
+          <p class="text-sm text-slate-400 mt-2 font-geist">Circuit de validation configurable</p>
+        </div>
+        <div class="card">
+          <h3 class="text-lg font-semibold text-white font-geist">Budget</h3>
+          <p class="text-sm text-slate-400 mt-2 font-geist">Suivi Prévu → Engagé → Exécuté</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section id="pricing" class="px-5 sm:px-8 lg:px-10 py-24 border-t border-white/[0.06]">
+    <div class="max-w-3xl mx-auto text-center">
+      <h2 class="text-4xl sm:text-5xl text-white font-jakarta font-medium tracking-tighter">
+        Prêt à démarrer ?
+      </h2>
+      <p class="text-lg text-slate-400 mt-6 font-geist">
+        Essayez PLANORA 360 gratuitement pendant 14 jours
+      </p>
+      <div class="mt-8 flex justify-center gap-3">
+        <a href="/auth/register" class="btn btn-primary font-geist">Créer un compte →</a>
+        <a href="/auth/login" class="btn btn-secondary font-geist">Se connecter</a>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- NO Three.js, NO Lenis, NO heavy libraries on initial load -->
+<!-- Mobile menu - minimal JS -->
+<script>
+(function(){
+  const btn=document.getElementById('mobile-menu-btn');
+  btn?.addEventListener('click',()=>alert('Menu mobile - à implémenter si besoin'));
+})();
+</script>
+
+</body>
+</html>
