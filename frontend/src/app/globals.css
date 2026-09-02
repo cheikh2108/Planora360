@@ -104,59 +104,7 @@ body {
   --z-tooltip: 1070;
 }
 
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0f172a;
-    --foreground: #f8fafc;
-    --color-brand: #3b82f6;
-    --color-brand-hover: #60a5fa;
-    --color-brand-light: #1e3a8a;
-
-    /* Inverted Gray Scale for dark mode */
-    --gray-50: #0f172a;
-    --gray-100: #1e293b;
-    --gray-200: #334155;
-    --gray-300: #475569;
-    --gray-400: #64748b;
-    --gray-500: #94a3b8;
-    --gray-600: #cbd5e1;
-    --gray-700: #e2e8f0;
-    --gray-800: #f1f5f9;
-    --gray-900: #f8fafc;
-
-    /* Dark mode status colors */
-    --color-success-bg: #064e3b;
-    --color-warning-bg: #78350f;
-    --color-error-bg: #7f1d1d;
-    --color-info-bg: #1e3a8a;
-  }
-}
-
-/* Manual dark mode toggle (via class) */
-.dark {
-  --background: #0f172a;
-  --foreground: #f8fafc;
-  --color-brand: #3b82f6;
-  --color-brand-hover: #60a5fa;
-  --color-brand-light: #1e3a8a;
-
-  --gray-50: #0f172a;
-  --gray-100: #1e293b;
-  --gray-200: #334155;
-  --gray-300: #475569;
-  --gray-400: #64748b;
-  --gray-500: #94a3b8;
-  --gray-600: #cbd5e1;
-  --gray-700: #e2e8f0;
-  --gray-800: #f1f5f9;
-  --gray-900: #f8fafc;
-
-  --color-success-bg: #064e3b;
-  --color-warning-bg: #78350f;
-  --color-error-bg: #7f1d1d;
-  --color-info-bg: #1e3a8a;
-}
+/* Dark mode désactivé - application toujours en mode clair */
 
 /* === ACCESSIBILITÉ === */
 
