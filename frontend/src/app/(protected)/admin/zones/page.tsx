@@ -60,10 +60,19 @@ export default function ZonesAdminPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Nettoyer les champs vides (string vide → undefined)
+      const cleanData = {
+        name: formData.name,
+        code: formData.code || undefined,
+        description: formData.description || undefined,
+        level: formData.level,
+        parentId: formData.parentId || undefined,
+      };
+
       if (editingZone) {
-        await zonesApi.update(editingZone.id, formData);
+        await zonesApi.update(editingZone.id, cleanData);
       } else {
-        await zonesApi.create(formData);
+        await zonesApi.create(cleanData);
       }
       await loadZones();
       closeModal();

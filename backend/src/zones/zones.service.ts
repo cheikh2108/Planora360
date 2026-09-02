@@ -12,10 +12,18 @@ export class ZonesService {
   ) {}
 
   async create(dto: CreateZoneDto, organizationId: string) {
+    // Nettoyer les strings vides
+    const cleanedDto = {
+      ...dto,
+      code: dto.code?.trim() || undefined,
+      description: dto.description?.trim() || undefined,
+      parentId: dto.parentId?.trim() || undefined,
+    };
+
     // Valider que le parent existe si parentId est fourni
-    if (dto.parentId) {
+    if (cleanedDto.parentId) {
       const parent = await this.prisma.geographicZone.findFirst({
-        where: { id: dto.parentId, organizationId },
+        where: { id: cleanedDto.parentId, organizationId },
       });
       if (!parent) {
         throw new NotFoundException('Zone parente introuvable');
@@ -23,9 +31,9 @@ export class ZonesService {
     }
 
     // Vérifier l'unicité du code si fourni
-    if (dto.code) {
+    if (cleanedDto.code) {
       const existing = await this.prisma.geographicZone.findFirst({
-        where: { organizationId, code: dto.code },
+        where: { organizationId, code: cleanedDto.code },
       });
       if (existing) {
         throw new BadRequestException('Ce code de zone existe déjà');
@@ -34,7 +42,7 @@ export class ZonesService {
 
     const zone = await this.prisma.geographicZone.create({
       data: {
-        ...dto,
+        ...cleanedDto,
         organizationId,
       },
       include: {
@@ -122,10 +130,18 @@ export class ZonesService {
   async update(id: string, dto: UpdateZoneDto, organizationId: string) {
     const existing = await this.findOne(id, organizationId);
 
+    // Nettoyer les strings vides
+    const cleanedDto = {
+      ...dto,
+      code: dto.code?.trim() || undefined,
+      description: dto.description?.trim() || undefined,
+      parentId: dto.parentId?.trim() || undefined,
+    };
+
     // Vérifier l'unicité du code si modifié
-    if (dto.code && dto.code !== existing.code) {
+    if (cleanedDto.code && cleanedDto.code !== existing.code) {
       const duplicate = await this.prisma.geographicZone.findFirst({
-        where: { organizationId, code: dto.code, id: { not: id } },
+        where: { organizationId, code: cleanedDto.code, id: { not: id } },
       });
       if (duplicate) {
         throw new BadRequestException('Ce code de zone existe déjà');
@@ -133,13 +149,13 @@ export class ZonesService {
     }
 
     // Empêcher une zone d'être son propre parent ou créer une boucle
-    if (dto.parentId === id) {
+    if (cleanedDto.parentId === id) {
       throw new BadRequestException('Une zone ne peut pas être son propre parent');
     }
 
     const zone = await this.prisma.geographicZone.update({
       where: { id },
-      data: dto,
+      data: cleanedDto,
       include: {
         parent: { select: { id: true, name: true, level: true } },
         _count: { select: { children: true, activities: true } },
