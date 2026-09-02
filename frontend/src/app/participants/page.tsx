@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
-import { EmptyState } from '@/components/ui/empty-state';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { UserPlus, Upload, Trash2, FileSpreadsheet, Phone, CreditCard, DollarSign } from 'lucide-react';
+import { UserPlus, Upload, Trash2, FileSpreadsheet, Phone, CreditCard, DollarSign, Users, Loader2, Filter } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import api from '@/lib/api';
 
 export default function ParticipantsPage() {
@@ -88,40 +88,94 @@ export default function ParticipantsPage() {
     return mode === 'WAVE' ? 'Wave' : 'Orange Money';
   };
 
+  const stats = {
+    total: participants.length,
+    montantTotal: participants.reduce((sum, p) => sum + (p.amount || 0), 0),
+    wave: participants.filter(p => p.paymentMode === 'WAVE').length,
+    orange: participants.filter(p => p.paymentMode === 'ORANGE_MONEY').length,
+    montantWave: participants.filter(p => p.paymentMode === 'WAVE').reduce((sum, p) => sum + (p.amount || 0), 0),
+    montantOrange: participants.filter(p => p.paymentMode === 'ORANGE_MONEY').reduce((sum, p) => sum + (p.amount || 0), 0),
+  };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col flex-1 min-h-0">
+        <Header
+          title="Participants"
+          subtitle="Gérez les participants de vos activités"
+        />
+        <div className="flex items-center justify-center flex-1">
+          <Loader2 className="h-8 w-8 animate-spin text-[#2563eb]" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col flex-1 min-h-0 overflow-auto">
       <Header
         title="Participants"
-        subtitle="Gérez les participants de vos activités"
+        subtitle={selectedActivityId && participants.length > 0 ? `${stats.total} participant${stats.total > 1 ? 's' : ''}` : 'Gérez les participants de vos activités'}
         actions={
-          <>
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
+              icon={<Upload size={16} />}
               onClick={() => router.push('/participants/import')}
               className="hidden sm:flex"
             >
-              <Upload size={14} className="mr-1.5" />
               Importer Excel
             </Button>
-            <Button onClick={() => router.push('/participants/new')}>
-              <UserPlus size={14} className="mr-1.5" />
+            <Button
+              icon={<UserPlus size={16} />}
+              onClick={() => router.push('/participants/new')}
+            >
               <span className="hidden sm:inline">Ajouter</span>
               <span className="sm:hidden">+</span>
             </Button>
-          </>
+          </div>
         }
       />
 
       <main className="flex-1 px-4 md:px-6 py-6 space-y-5">
+        {/* KPI Cards */}
+        {selectedActivityId && participants.length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            {[
+              { label: 'Total', value: stats.total, color: 'text-slate-900', bg: 'bg-white', icon: Users },
+              { label: 'Montant Total', value: `${(stats.montantTotal / 1000).toFixed(0)}k`, color: 'text-green-600', bg: 'bg-green-50', icon: DollarSign },
+              { label: 'Wave', value: stats.wave, color: 'text-blue-600', bg: 'bg-blue-50', icon: CreditCard },
+              { label: 'Orange Money', value: stats.orange, color: 'text-orange-600', bg: 'bg-orange-50', icon: CreditCard },
+              { label: 'Wave (FCFA)', value: `${(stats.montantWave / 1000).toFixed(0)}k`, color: 'text-blue-600', bg: 'bg-blue-50', icon: DollarSign },
+              { label: 'Orange (FCFA)', value: `${(stats.montantOrange / 1000).toFixed(0)}k`, color: 'text-orange-600', bg: 'bg-orange-50', icon: DollarSign },
+            ].map((stat, idx) => {
+              const Icon = stat.icon;
+              return (
+                <div key={idx} className={cn('rounded-2xl border border-slate-200 p-4 flex flex-col gap-2', stat.bg)}>
+                  <div className="flex items-center justify-between">
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">{stat.label}</p>
+                    <Icon size={14} className="text-slate-600" />
+                  </div>
+                  <p className={cn('text-2xl md:text-3xl font-bold tabular-nums', stat.color)}>{stat.value}</p>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
         {/* Filtre par activité */}
         {activities.length > 0 && (
           <div className="bg-white rounded-2xl border border-slate-200 p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Filter size={14} className="text-slate-600" />
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">Filtres</p>
+            </div>
             <div className="flex items-center gap-3">
-              <label className="text-sm font-medium text-slate-700 whitespace-nowrap">
+              <label className="text-xs font-medium text-slate-900 whitespace-nowrap">
                 Activité :
               </label>
               <Select value={selectedActivityId} onValueChange={setSelectedActivityId}>
-                <SelectTrigger className="w-full max-w-md">
+                <SelectTrigger className="w-full max-w-md h-9">
                   <SelectValue placeholder="Sélectionnez une activité" />
                 </SelectTrigger>
                 <SelectContent>
@@ -137,157 +191,141 @@ export default function ParticipantsPage() {
         )}
 
         {/* Liste des participants */}
-        {loading ? (
-          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-slate-50 border-b border-slate-200">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Prénom</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Nom</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Téléphone</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Mode de paiement</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Montant</th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200">
-                  {[...Array(3)].map((_, i) => (
-                    <tr key={i} className="animate-pulse">
-                      <td className="px-4 py-3"><div className="h-4 bg-slate-200 rounded w-20"></div></td>
-                      <td className="px-4 py-3"><div className="h-4 bg-slate-200 rounded w-24"></div></td>
-                      <td className="px-4 py-3"><div className="h-4 bg-slate-200 rounded w-28"></div></td>
-                      <td className="px-4 py-3"><div className="h-6 bg-slate-200 rounded-full w-24"></div></td>
-                      <td className="px-4 py-3"><div className="h-4 bg-slate-200 rounded w-20 ml-auto"></div></td>
-                      <td className="px-4 py-3 text-center"><div className="h-8 bg-slate-200 rounded w-8 mx-auto"></div></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        ) : participants.length === 0 ? (
+        {participants.length === 0 ? (
           <>
-            <EmptyState
-              illustration="users"
-              title="Aucun participant"
-              description={
-                selectedActivityId
+            <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
+                <Users className="h-8 w-8 text-slate-600" />
+              </div>
+              <h3 className="mb-2 text-lg font-semibold text-slate-900">
+                Aucun participant
+              </h3>
+              <p className="mb-6 text-sm text-slate-600">
+                {selectedActivityId
                   ? "Cette activité n'a pas encore de participants"
-                  : "Sélectionnez une activité pour voir ses participants"
-              }
-              action={
-                selectedActivityId
-                  ? {
-                      label: 'Ajouter un participant',
-                      onClick: () => router.push('/participants/new'),
-                      leftIcon: <UserPlus size={14} />
-                    }
-                  : undefined
-              }
-            />
+                  : "Sélectionnez une activité pour voir ses participants"}
+              </p>
+              {selectedActivityId && (
+                <Button
+                  icon={<UserPlus size={16} />}
+                  onClick={() => router.push('/participants/new')}
+                >
+                  Ajouter un participant
+                </Button>
+              )}
+            </div>
 
             {/* Format attendu */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-6">
-              <div className="flex items-center gap-3 mb-5">
-                <div className="w-9 h-9 rounded-xl bg-[#0f1e38] flex items-center justify-center shrink-0">
-                  <FileSpreadsheet size={16} className="text-white" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-slate-900 text-sm">Format du fichier Excel</h3>
-                  <p className="text-xs text-slate-600 mt-0.5">Votre fichier doit contenir les colonnes suivantes</p>
+            <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+              <div className="px-5 py-4 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <FileSpreadsheet size={14} className="text-slate-600" />
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">
+                    Format du Fichier Excel
+                  </p>
                 </div>
               </div>
-
-              <div className="space-y-3">
-                <div className="flex items-start gap-3 text-sm">
-                  <div className="w-32 shrink-0 font-medium text-slate-700">Prénom</div>
-                  <div className="text-slate-500">Prénom du participant</div>
-                </div>
-                <div className="flex items-start gap-3 text-sm">
-                  <div className="w-32 shrink-0 font-medium text-slate-700">Nom</div>
-                  <div className="text-slate-500">Nom du participant</div>
-                </div>
-                <div className="flex items-start gap-3 text-sm">
-                  <div className="w-32 shrink-0 font-medium text-slate-700 flex items-center gap-1.5">
-                    <Phone size={12} className="text-slate-600" />
-                    Téléphone
+              <div className="p-5">
+                <p className="text-xs text-slate-600 mb-4">Votre fichier doit contenir les colonnes suivantes :</p>
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3 text-sm">
+                    <div className="w-32 shrink-0 font-medium text-slate-900">Prénom</div>
+                    <div className="text-slate-600">Prénom du participant</div>
                   </div>
-                  <div className="text-slate-500">Numéro de téléphone</div>
-                </div>
-                <div className="flex items-start gap-3 text-sm">
-                  <div className="w-32 shrink-0 font-medium text-slate-700 flex items-center gap-1.5">
-                    <CreditCard size={12} className="text-slate-600" />
-                    Mode de paiement
+                  <div className="flex items-start gap-3 text-sm">
+                    <div className="w-32 shrink-0 font-medium text-slate-900">Nom</div>
+                    <div className="text-slate-600">Nom du participant</div>
                   </div>
-                  <div className="text-slate-500">WAVE ou ORANGE_MONEY</div>
-                </div>
-                <div className="flex items-start gap-3 text-sm">
-                  <div className="w-32 shrink-0 font-medium text-slate-700 flex items-center gap-1.5">
-                    <DollarSign size={12} className="text-slate-600" />
-                    Montant
+                  <div className="flex items-start gap-3 text-sm">
+                    <div className="w-32 shrink-0 font-medium text-slate-900 flex items-center gap-1.5">
+                      <Phone size={12} className="text-slate-600" />
+                      Téléphone
+                    </div>
+                    <div className="text-slate-600">Numéro de téléphone</div>
                   </div>
-                  <div className="text-slate-500">Montant en FCFA</div>
+                  <div className="flex items-start gap-3 text-sm">
+                    <div className="w-32 shrink-0 font-medium text-slate-900 flex items-center gap-1.5">
+                      <CreditCard size={12} className="text-slate-600" />
+                      Mode de paiement
+                    </div>
+                    <div className="text-slate-600">WAVE ou ORANGE_MONEY</div>
+                  </div>
+                  <div className="flex items-start gap-3 text-sm">
+                    <div className="w-32 shrink-0 font-medium text-slate-900 flex items-center gap-1.5">
+                      <DollarSign size={12} className="text-slate-600" />
+                      Montant
+                    </div>
+                    <div className="text-slate-600">Montant en FCFA</div>
+                  </div>
                 </div>
               </div>
             </div>
           </>
         ) : (
           <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Users size={14} className="text-slate-600" />
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">
+                  Liste des Participants
+                </p>
+              </div>
+              <span className="text-xs tabular-nums text-slate-600">{participants.length}</span>
+            </div>
+
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-slate-50 border-b border-slate-200">
+                <thead className="bg-slate-50 border-b border-slate-100">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                    <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-slate-600">
                       Prénom
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                    <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-slate-600">
                       Nom
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                    <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-slate-600">
                       Téléphone
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                    <th className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-slate-600">
                       Mode de paiement
                     </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">
+                    <th className="px-5 py-3 text-right text-[10px] font-semibold uppercase tracking-widest text-slate-600">
                       Montant
                     </th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-slate-500 uppercase tracking-wider">
+                    <th className="px-5 py-3 text-center text-[10px] font-semibold uppercase tracking-widest text-slate-600">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200">
+                <tbody>
                   {participants.map((participant) => (
-                    <tr key={participant.id} className="hover:bg-slate-50">
-                      <td className="px-4 py-3 text-sm text-slate-900">{participant.firstName}</td>
-                      <td className="px-4 py-3 text-sm text-slate-900">{participant.lastName}</td>
-                      <td className="px-4 py-3 text-sm text-slate-600">{participant.phone}</td>
-                      <td className="px-4 py-3 text-sm text-slate-600">
+                    <tr key={participant.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors">
+                      <td className="px-5 py-4 text-sm font-medium text-slate-900">{participant.firstName}</td>
+                      <td className="px-5 py-4 text-sm font-medium text-slate-900">{participant.lastName}</td>
+                      <td className="px-5 py-4 text-sm text-slate-600">{participant.phone}</td>
+                      <td className="px-5 py-4">
                         <span
-                          className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium ${
+                          className={cn(
+                            'inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-medium uppercase tracking-wide',
                             participant.paymentMode === 'WAVE'
                               ? 'bg-blue-50 text-blue-700'
                               : 'bg-orange-50 text-orange-700'
-                          }`}
+                          )}
                         >
                           <CreditCard size={12} />
                           {getPaymentModeLabel(participant.paymentMode)}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm text-slate-900 text-right font-medium">
+                      <td className="px-5 py-4 text-sm text-slate-900 text-right font-semibold tabular-nums">
                         {formatAmount(participant.amount)}
                       </td>
-                      <td className="px-4 py-3 text-center">
-                        <Button
-                          size="sm"
-                          variant="ghost"
+                      <td className="px-5 py-4 text-center">
+                        <button
                           onClick={() => handleDelete(participant.id)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
                         >
                           <Trash2 size={14} />
-                        </Button>
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -296,12 +334,12 @@ export default function ParticipantsPage() {
             </div>
 
             {/* Total */}
-            <div className="border-t border-slate-200 bg-slate-50 px-4 py-3">
-              <div className="flex items-center justify-between text-sm">
-                <span className="font-medium text-slate-700">
+            <div className="border-t border-slate-100 bg-slate-50 px-5 py-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-slate-700">
                   Total : {participants.length} participant{participants.length > 1 ? 's' : ''}
                 </span>
-                <span className="font-semibold text-slate-900">
+                <span className="text-sm font-bold text-slate-900 tabular-nums">
                   {formatAmount(participants.reduce((sum, p) => sum + (p.amount || 0), 0))}
                 </span>
               </div>
