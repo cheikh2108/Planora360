@@ -8,6 +8,19 @@ export declare class ActionPlansService {
     private posthog;
     constructor(prisma: PrismaService, posthog: PostHogService);
     create(dto: CreateActionPlanDto, organizationId: string, userId: string): Promise<{
+        zones: ({
+            zone: {
+                id: string;
+                name: string;
+                code: string | null;
+                level: number;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            zoneId: string;
+            actionPlanId: string;
+        })[];
         axes: {
             id: string;
             title: string;
@@ -27,11 +40,25 @@ export declare class ActionPlansService {
         strategicGoals: string | null;
         budgetPrevisional: import("@prisma/client-runtime-utils").Decimal | null;
     }>;
+    private validateZones;
     findAll(organizationId: string, page?: number, limit?: number): Promise<{
         data: ({
             _count: {
                 axes: number;
             };
+            zones: ({
+                zone: {
+                    id: string;
+                    name: string;
+                    code: string | null;
+                    level: number;
+                };
+            } & {
+                id: string;
+                createdAt: Date;
+                zoneId: string;
+                actionPlanId: string;
+            })[];
             axes: ({
                 _count: {
                     activities: number;
@@ -60,6 +87,19 @@ export declare class ActionPlansService {
         limit: number;
     }>;
     findOne(id: string, organizationId: string): Promise<{
+        zones: ({
+            zone: {
+                id: string;
+                name: string;
+                code: string | null;
+                level: number;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            zoneId: string;
+            actionPlanId: string;
+        })[];
         axes: ({
             activities: ({
                 _count: {

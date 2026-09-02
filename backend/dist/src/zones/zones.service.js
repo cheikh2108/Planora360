@@ -21,17 +21,23 @@ let ZonesService = class ZonesService {
         this.cacheInvalidation = cacheInvalidation;
     }
     async create(dto, organizationId) {
-        if (dto.parentId) {
+        const cleanedDto = {
+            ...dto,
+            code: dto.code?.trim() || undefined,
+            description: dto.description?.trim() || undefined,
+            parentId: dto.parentId?.trim() || undefined,
+        };
+        if (cleanedDto.parentId) {
             const parent = await this.prisma.geographicZone.findFirst({
-                where: { id: dto.parentId, organizationId },
+                where: { id: cleanedDto.parentId, organizationId },
             });
             if (!parent) {
                 throw new common_1.NotFoundException('Zone parente introuvable');
             }
         }
-        if (dto.code) {
+        if (cleanedDto.code) {
             const existing = await this.prisma.geographicZone.findFirst({
-                where: { organizationId, code: dto.code },
+                where: { organizationId, code: cleanedDto.code },
             });
             if (existing) {
                 throw new common_1.BadRequestException('Ce code de zone existe déjà');
@@ -39,7 +45,7 @@ let ZonesService = class ZonesService {
         }
         const zone = await this.prisma.geographicZone.create({
             data: {
-                ...dto,
+                ...cleanedDto,
                 organizationId,
             },
             include: {
@@ -112,20 +118,26 @@ let ZonesService = class ZonesService {
     }
     async update(id, dto, organizationId) {
         const existing = await this.findOne(id, organizationId);
-        if (dto.code && dto.code !== existing.code) {
+        const cleanedDto = {
+            ...dto,
+            code: dto.code?.trim() || undefined,
+            description: dto.description?.trim() || undefined,
+            parentId: dto.parentId?.trim() || undefined,
+        };
+        if (cleanedDto.code && cleanedDto.code !== existing.code) {
             const duplicate = await this.prisma.geographicZone.findFirst({
-                where: { organizationId, code: dto.code, id: { not: id } },
+                where: { organizationId, code: cleanedDto.code, id: { not: id } },
             });
             if (duplicate) {
                 throw new common_1.BadRequestException('Ce code de zone existe déjà');
             }
         }
-        if (dto.parentId === id) {
+        if (cleanedDto.parentId === id) {
             throw new common_1.BadRequestException('Une zone ne peut pas être son propre parent');
         }
         const zone = await this.prisma.geographicZone.update({
             where: { id },
-            data: dto,
+            data: cleanedDto,
             include: {
                 parent: { select: { id: true, name: true, level: true } },
                 _count: { select: { children: true, activities: true } },

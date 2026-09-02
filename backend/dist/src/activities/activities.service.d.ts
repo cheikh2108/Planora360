@@ -13,10 +13,10 @@ export declare class ActivitiesService {
     private validateAxis;
     private validateParentActivity;
     private validateResponsible;
-    private validateZone;
+    private validateZones;
     private createActivity;
     private addCollaborators;
-    private assignZone;
+    private assignZones;
     private findActivityById;
     findAll(organizationId: string, planId?: string, zoneId?: string, page?: number, limit?: number): Promise<{
         data: ({

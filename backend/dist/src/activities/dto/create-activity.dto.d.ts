@@ -11,5 +11,5 @@ export declare class CreateActivityDto {
     priority?: string;
     budgetPlanned?: number;
     risks?: string;
-    zoneId?: string;
+    zoneIds?: string[];
 }

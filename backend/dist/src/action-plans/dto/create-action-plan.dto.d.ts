@@ -12,4 +12,5 @@ export declare class CreateActionPlanDto {
     budgetPrevisional?: number;
     status?: PlanStatus;
     axes?: CreateAxisDto[];
+    zoneIds?: string[];
 }

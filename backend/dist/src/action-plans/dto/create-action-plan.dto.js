@@ -36,6 +36,7 @@ class CreateActionPlanDto {
     budgetPrevisional;
     status;
     axes;
+    zoneIds;
 }
 exports.CreateActionPlanDto = CreateActionPlanDto;
 __decorate([
@@ -77,4 +78,10 @@ __decorate([
     (0, class_transformer_1.Type)(() => CreateAxisDto),
     __metadata("design:type", Array)
 ], CreateActionPlanDto.prototype, "axes", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsArray)(),
+    (0, class_validator_1.IsString)({ each: true }),
+    __metadata("design:type", Array)
+], CreateActionPlanDto.prototype, "zoneIds", void 0);
 //# sourceMappingURL=create-action-plan.dto.js.map

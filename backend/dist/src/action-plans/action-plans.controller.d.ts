@@ -6,6 +6,19 @@ export declare class ActionPlansController {
     private actionPlansService;
     constructor(actionPlansService: ActionPlansService);
     create(dto: CreateActionPlanDto, user: any): Promise<{
+        zones: ({
+            zone: {
+                id: string;
+                name: string;
+                code: string | null;
+                level: number;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            zoneId: string;
+            actionPlanId: string;
+        })[];
         axes: {
             id: string;
             title: string;
@@ -30,6 +43,19 @@ export declare class ActionPlansController {
             _count: {
                 axes: number;
             };
+            zones: ({
+                zone: {
+                    id: string;
+                    name: string;
+                    code: string | null;
+                    level: number;
+                };
+            } & {
+                id: string;
+                createdAt: Date;
+                zoneId: string;
+                actionPlanId: string;
+            })[];
             axes: ({
                 _count: {
                     activities: number;
@@ -58,6 +84,19 @@ export declare class ActionPlansController {
         limit: number;
     }>;
     findOne(id: string, user: any): Promise<{
+        zones: ({
+            zone: {
+                id: string;
+                name: string;
+                code: string | null;
+                level: number;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            zoneId: string;
+            actionPlanId: string;
+        })[];
         axes: ({
             activities: ({
                 _count: {

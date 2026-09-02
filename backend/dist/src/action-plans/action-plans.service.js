@@ -22,7 +22,7 @@ let ActionPlansService = class ActionPlansService {
         this.posthog = posthog;
     }
     async create(dto, organizationId, userId) {
-        const { axes, ...planData } = dto;
+        const { axes, zoneIds, ...planData } = dto;
         const organization = await this.prisma.organization.findUnique({
             where: { id: organizationId },
             select: { subscriptionPlan: true },
@@ -41,6 +41,9 @@ let ActionPlansService = class ActionPlansService {
                 `Maximum autorisé : ${planLimit.maxPlans} plans actifs. ` +
                 `Archivez des plans existants ou passez à une formule supérieure.`);
         }
+        if (zoneIds?.length) {
+            await this.validateZones(zoneIds, organizationId);
+        }
         const plan = await this.prisma.actionPlan.create({
             data: {
                 ...planData,
@@ -50,11 +53,29 @@ let ActionPlansService = class ActionPlansService {
                 axes: axes?.length
                     ? { create: axes.map((a, i) => ({ title: a.title, order: a.order ?? i })) }
                     : undefined,
+                zones: zoneIds?.length
+                    ? { create: zoneIds.map((zoneId) => ({ zoneId })) }
+                    : undefined,
             },
-            include: { axes: { orderBy: { order: 'asc' } } },
+            include: {
+                axes: { orderBy: { order: 'asc' } },
+                zones: {
+                    include: {
+                        zone: { select: { id: true, name: true, code: true, level: true } },
+                    },
+                },
+            },
         });
         this.posthog.trackActionPlanCreated(userId, plan.id, organizationId);
         return plan;
+    }
+    async validateZones(zoneIds, organizationId) {
+        const zones = await this.prisma.geographicZone.findMany({
+            where: { id: { in: zoneIds }, organizationId },
+        });
+        if (zones.length !== zoneIds.length) {
+            throw new common_1.BadRequestException('Une ou plusieurs zones géographiques sont invalides');
+        }
     }
     async findAll(organizationId, page = 1, limit = 10) {
         const where = { organizationId };
@@ -68,6 +89,11 @@ let ActionPlansService = class ActionPlansService {
                     axes: {
                         orderBy: { order: 'asc' },
                         include: { _count: { select: { activities: true } } },
+                    },
+                    zones: {
+                        include: {
+                            zone: { select: { id: true, name: true, code: true, level: true } },
+                        },
                     },
                     _count: { select: { axes: true } },
                 },
@@ -91,6 +117,11 @@ let ActionPlansService = class ActionPlansService {
                                 _count: { select: { checklistItems: true, subActivities: true } },
                             },
                         },
+                    },
+                },
+                zones: {
+                    include: {
+                        zone: { select: { id: true, name: true, code: true, level: true } },
                     },
                 },
             },

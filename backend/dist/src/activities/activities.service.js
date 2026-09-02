@@ -57,7 +57,7 @@ let ActivitiesService = class ActivitiesService {
         await this.validateAxis(dto.axisId, organizationId);
         await this.validateParentActivity(dto.parentActivityId, organizationId);
         await this.validateResponsible(dto.responsibleId, organizationId);
-        await this.validateZone(dto.zoneId, organizationId);
+        await this.validateZones(dto.zoneIds, organizationId);
         const activity = await this.createActivity(dto, organizationId, currentUserId);
         const axis = await this.prisma.axis.findUnique({ where: { id: dto.axisId }, select: { actionPlanId: true } });
         if (axis) {
@@ -66,12 +66,12 @@ let ActivitiesService = class ActivitiesService {
         if (dto.collaboratorIds?.length) {
             await this.addCollaborators(activity.id, dto.collaboratorIds);
         }
-        if (dto.zoneId) {
-            await this.assignZone(activity.id, dto.zoneId);
+        if (dto.zoneIds?.length) {
+            await this.assignZones(activity.id, dto.zoneIds);
         }
         await this.cacheInvalidation.invalidateDashboard(organizationId);
         await this.cacheInvalidation.invalidateActivities(organizationId);
-        return dto.collaboratorIds?.length || dto.zoneId ? this.findActivityById(activity.id) : activity;
+        return dto.collaboratorIds?.length || dto.zoneIds?.length ? this.findActivityById(activity.id) : activity;
     }
     async validateAxis(axisId, organizationId) {
         const axis = await this.prisma.axis.findFirst({
@@ -98,17 +98,18 @@ let ActivitiesService = class ActivitiesService {
         if (!responsible)
             throw new common_1.NotFoundException('Responsable introuvable');
     }
-    async validateZone(zoneId, organizationId) {
-        if (!zoneId)
+    async validateZones(zoneIds, organizationId) {
+        if (!zoneIds?.length)
             return;
-        const zone = await this.prisma.geographicZone.findFirst({
-            where: { id: zoneId, organizationId },
+        const zones = await this.prisma.geographicZone.findMany({
+            where: { id: { in: zoneIds }, organizationId },
         });
-        if (!zone)
-            throw new common_1.NotFoundException('Zone géographique introuvable');
+        if (zones.length !== zoneIds.length) {
+            throw new common_1.BadRequestException('Une ou plusieurs zones géographiques sont invalides');
+        }
     }
     async createActivity(dto, organizationId, currentUserId) {
-        const { collaboratorIds, zoneId, responsibleId, startDate, dueDate, ...rest } = dto;
+        const { collaboratorIds, zoneIds, responsibleId, startDate, dueDate, ...rest } = dto;
         return this.prisma.activity.create({
             data: {
                 ...rest,
@@ -126,9 +127,14 @@ let ActivitiesService = class ActivitiesService {
             skipDuplicates: true,
         });
     }
-    async assignZone(activityId, zoneId) {
-        await this.prisma.activityZone.create({
-            data: { activityId, zoneId, isPrimary: true },
+    async assignZones(activityId, zoneIds) {
+        await this.prisma.activityZone.createMany({
+            data: zoneIds.map((zoneId, index) => ({
+                activityId,
+                zoneId,
+                isPrimary: index === 0,
+            })),
+            skipDuplicates: true,
         });
     }
     async findActivityById(activityId) {
@@ -176,7 +182,7 @@ let ActivitiesService = class ActivitiesService {
     }
     async update(id, dto, organizationId) {
         await this.findOne(id, organizationId);
-        const { collaboratorIds, zoneId, status, ...data } = dto;
+        const { collaboratorIds, zoneIds, status, ...data } = dto;
         const updateData = { ...data };
         if (dto.startDate)
             updateData.startDate = new Date(dto.startDate);
@@ -198,13 +204,13 @@ let ActivitiesService = class ActivitiesService {
             }
             needsReload = true;
         }
-        if (zoneId !== undefined) {
-            if (zoneId) {
-                await this.validateZone(zoneId, organizationId);
+        if (Array.isArray(zoneIds)) {
+            if (zoneIds.length) {
+                await this.validateZones(zoneIds, organizationId);
             }
             await this.prisma.activityZone.deleteMany({ where: { activityId: id } });
-            if (zoneId) {
-                await this.assignZone(id, zoneId);
+            if (zoneIds.length) {
+                await this.assignZones(id, zoneIds);
             }
             needsReload = true;
         }
