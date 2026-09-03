@@ -4,11 +4,12 @@ interface FieldProps {
   label: string;
   error?: string;
   required?: boolean;
+  hint?: string;
   children: React.ReactNode;
   className?: string;
 }
 
-export function FormField({ label, error, required, children, className }: FieldProps) {
+export function FormField({ label, error, required, hint, children, className }: FieldProps) {
   return (
     <div className={cn('space-y-1.5', className)}>
       <label className="block text-sm font-medium text-slate-700">
@@ -16,6 +17,7 @@ export function FormField({ label, error, required, children, className }: Field
         {required && <span className="text-red-500 ml-0.5">*</span>}
       </label>
       {children}
+      {hint && !error && <p className="text-xs text-slate-500">{hint}</p>}
       {error && <p className="text-xs text-red-600">{error}</p>}
     </div>
   );

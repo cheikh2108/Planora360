@@ -485,7 +485,8 @@ function CreateUserModal({ open, onClose, roles }: { open: boolean; onClose: () 
     if (!form.firstName.trim()) e.firstName = 'Prénom requis';
     if (!form.lastName.trim()) e.lastName = 'Nom requis';
     if (!form.email.trim()) e.email = 'Email requis';
-    if (!form.password || form.password.length < 8) e.password = 'Mot de passe minimum 8 caractères';
+    // Mot de passe optionnel : seulement valider s'il est fourni
+    if (form.password && form.password.length < 8) e.password = 'Mot de passe minimum 8 caractères';
     if (!form.roleId) e.roleId = 'Rôle requis';
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -508,8 +509,12 @@ function CreateUserModal({ open, onClose, roles }: { open: boolean; onClose: () 
         <FormField label="Adresse email" required error={errors.email}>
           <Input type="email" value={form.email} onChange={set('email')} placeholder="jean@organisation.com" error={!!errors.email} />
         </FormField>
-        <FormField label="Mot de passe" required error={errors.password}>
-          <Input type="password" value={form.password} onChange={set('password')} placeholder="Minimum 8 caractères" error={!!errors.password} />
+        <FormField
+          label="Mot de passe"
+          error={errors.password}
+          hint="Optionnel — Si laissé vide, un mot de passe temporaire sera généré et envoyé par email à l'utilisateur"
+        >
+          <Input type="password" value={form.password} onChange={set('password')} placeholder="Laisser vide pour génération automatique" error={!!errors.password} />
         </FormField>
         <FormField label="Rôle" required error={errors.roleId}>
           <Select value={form.roleId} onChange={set('roleId')} error={!!errors.roleId}>
