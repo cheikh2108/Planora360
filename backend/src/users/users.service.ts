@@ -30,7 +30,7 @@ export class UsersService {
 
     // Générer un mot de passe temporaire si non fourni
     const tempPassword = dto.password || randomBytes(6).toString('base64url').slice(0, 10);
-    const user = await this.createUser({ ...dto, password: tempPassword }, orgId);
+    const user = await this.createUser(dto, tempPassword, orgId);
 
     // Récupérer le nom de l'organisation pour l'email
     const organization = await this.prisma.organization.findUnique({
@@ -100,8 +100,8 @@ export class UsersService {
     }
   }
 
-  private async createUser(dto: CreateUserDto, organizationId: string) {
-    const passwordHash = await this.hashPassword(dto.password);
+  private async createUser(dto: CreateUserDto, password: string, organizationId: string) {
+    const passwordHash = await this.hashPassword(password);
 
     return this.prisma.user.create({
       data: {
