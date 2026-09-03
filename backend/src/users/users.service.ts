@@ -5,7 +5,9 @@ import {
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
+import { randomBytes } from 'crypto';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcryptjs';
@@ -14,7 +16,10 @@ import { BCRYPT_SALT_ROUNDS, ROLE_SUPER_ADMIN } from '../common/constants/auth.c
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notifications: NotificationsService,
+  ) {}
 
   async create(dto: CreateUserDto, actorOrganizationId: string, actorRole: string) {
     const orgId = this.resolveOrganizationId(dto.organizationId, actorOrganizationId, actorRole);
@@ -23,7 +28,24 @@ export class UsersService {
     const role = await this.validateRole(dto.roleId, actorRole);
     await this.validateUserLimit(orgId);
 
-    const user = await this.createUser(dto, orgId);
+    // Générer un mot de passe temporaire si non fourni
+    const tempPassword = dto.password || randomBytes(6).toString('base64url').slice(0, 10);
+    const user = await this.createUser({ ...dto, password: tempPassword }, orgId);
+
+    // Récupérer le nom de l'organisation pour l'email
+    const organization = await this.prisma.organization.findUnique({
+      where: { id: orgId },
+      select: { name: true },
+    });
+
+    // Envoyer l'email de bienvenue avec les identifiants
+    await this.notifications.sendWelcomeCredentials({
+      email: user.email,
+      firstName: user.firstName,
+      orgName: organization?.name || 'votre organisation',
+      tempPassword,
+    });
+
     return this.sanitizeUserResponse(user);
   }
 
