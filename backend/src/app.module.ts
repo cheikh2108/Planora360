@@ -35,6 +35,7 @@ import { CacheModule } from './common/cache/cache.module';
 import { PassationModule } from './passation/passation.module';
 import { MessagerieModule } from './messagerie/messagerie.module';
 import { ZonesModule } from './zones/zones.module';
+import { DexpayModule } from './dexpay/dexpay.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { ZonesModule } from './zones/zones.module';
     AuditModule,
     SecurityEventsModule,
     NotificationsModule,
+    DexpayModule,
     StorageModule,
     AuthModule,
     OrganizationsModule,

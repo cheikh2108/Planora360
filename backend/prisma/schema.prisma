@@ -23,8 +23,19 @@ enum SubscriptionPlan {
 
 enum OrganizationStatus {
   PENDING
+  PENDING_PAYMENT
+  PENDING_VERIFICATION
   ACTIVE
   REJECTED
+  SUSPENDED
+}
+
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
 }
 
 enum ActivityStatus {
@@ -122,11 +133,24 @@ model Organization {
   logoUrl          String?
   brandColor       String?            @default("#2563eb")
   subscriptionPlan SubscriptionPlan   @default(INDIVIDUEL)
-  status           OrganizationStatus @default(ACTIVE)
+  status           OrganizationStatus @default(PENDING_PAYMENT)
   rejectionReason  String?
   trialEndsAt      DateTime?
   createdAt        DateTime           @default(now())
   deletedAt        DateTime?
+
+  // DexPay - Paiement & Abonnement
+  dexpayCustomerId     String?            @unique
+  dexpaySubscriptionId String?            @unique
+  subscriptionStatus   SubscriptionStatus @default(TRIAL)
+  subscriptionCurrency String?            @default("XOF") // XOF, XAF, GNF
+  currentPeriodEnd     DateTime?
+  nextPaymentDate      DateTime?
+
+  // Vérification email
+  emailVerified            Boolean   @default(false)
+  emailVerificationToken   String?   @unique
+  emailVerificationExpiry  DateTime?
 
   users                 User[]
   roles                 Role[]
@@ -148,6 +172,9 @@ model Organization {
 
   // Zones géographiques
   geographicZones GeographicZone[]
+
+  // DexPay - Paiements
+  payments        Payment[]
 
   @@map("organizations")
 }
@@ -1761,4 +1788,36 @@ model ActionPlanZone {
   @@index([actionPlanId])
   @@index([zoneId])
   @@map("action_plan_zones")
+}
+
+// DexPay - Historique des paiements
+model Payment {
+  id             String   @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // DexPay checkout session
+  dexpayReference   String   @unique  // reference de la checkout session
+  dexpayCheckoutId  String?  @unique  // ID de la checkout session
+
+  // Informations paiement
+  amount          Int      // montant en centimes (ex: 1500000 = 15 000 XOF)
+  currency        String   // XOF, XAF, GNF
+  status          String   // pending, completed, failed, cancelled, refunded
+  paymentMethod   String?  // wave, orange_money, mtn_money, etc.
+
+  // Plan acheté
+  plan            SubscriptionPlan
+  periodStart     DateTime?
+  periodEnd       DateTime?
+
+  // Métadonnées
+  metadata        Json?    // infos supplémentaires du paiement
+
+  createdAt       DateTime @default(now())
+  paidAt          DateTime?
+
+  @@index([organizationId])
+  @@index([status])
+  @@map("payments")
 }
