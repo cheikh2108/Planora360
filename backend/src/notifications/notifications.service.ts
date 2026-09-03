@@ -27,7 +27,7 @@ export class NotificationsService {
     }
     try {
       await this.resend.emails.send({
-        from: 'PLANORA 360 <noreply@ataabaentreprise.org>',
+        from: 'PLANORA 360 <noreply@planora360.org>',
         to,
         subject,
         html,
