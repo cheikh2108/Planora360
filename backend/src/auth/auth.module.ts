@@ -6,6 +6,8 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { SecurityEventsModule } from '../security-events/security-events.module';
+import { DexpayModule } from '../dexpay/dexpay.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { SecurityEventsModule } from '../security-events/security-events.module'
       }),
     }),
     SecurityEventsModule,
+    DexpayModule,
+    NotificationsModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],

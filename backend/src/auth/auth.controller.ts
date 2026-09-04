@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Body, UseGuards, HttpCode, HttpStatus, Req, Res, ServiceUnavailableException } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Param, UseGuards, HttpCode, HttpStatus, Req, Res, ServiceUnavailableException } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
@@ -38,6 +38,13 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   register(@Body() dto: RegisterOrganizationDto) {
     return this.authService.register(dto);
+  }
+
+  @Get('verify-email/:token')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @HttpCode(HttpStatus.OK)
+  verifyEmail(@Param('token') token: string) {
+    return this.authService.verifyEmail(token);
   }
 
   @Post('login')

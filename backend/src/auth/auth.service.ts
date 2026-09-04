@@ -9,6 +9,8 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { PostHogService } from '../analytics/posthog.service';
+import { DexpayService } from '../dexpay/dexpay.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterOrganizationDto } from './dto/register-organization.dto';
 import * as bcrypt from 'bcryptjs';
@@ -45,6 +47,8 @@ export class AuthService {
     private jwtService: JwtService,
     private config: ConfigService,
     private posthog: PostHogService,
+    private dexpay: DexpayService,
+    private notifications: NotificationsService,
   ) {}
 
   async register(dto: RegisterOrganizationDto) {
@@ -52,18 +56,147 @@ export class AuthService {
     await this.validateUniqueEmail(dto.email);
 
     const adminRole = await this.findAdminRole();
+    const plan = dto.subscriptionPlan ?? 'INDIVIDUEL';
 
-    // Transaction atomique : soit tout réussit, soit tout échoue
+    // Plan ENTERPRISE → demande de devis (pas de paiement auto)
+    if (plan === 'ENTERPRISE') {
+      return {
+        requiresQuote: true,
+        message: 'Pour le plan ENTERPRISE, veuillez demander un devis. Notre équipe vous contactera.'
+      };
+    }
+
+    // Générer mot de passe temporaire (8 caractères alphanumériques)
+    const tempPassword = randomBytes(4).toString('hex'); // 8 caractères
+
+    // Transaction atomique : créer organisation + user admin
     const { organization, user } = await this.prisma.$transaction(async (tx) => {
-      const organization = await this.createOrganization(dto, tx);
-      const user = await this.createAdminUser(dto, organization.id, adminRole.id, tx);
+      const organization = await tx.organization.create({
+        data: {
+          name: dto.organizationName,
+          subscriptionPlan: plan,
+          brandColor: dto.brandColor ?? DEFAULT_BRAND_COLOR,
+          status: 'PENDING_PAYMENT', // Attente paiement
+          subscriptionStatus: 'INCOMPLETE',
+          subscriptionCurrency: 'XOF',
+        },
+      });
+
+      const passwordHash = await this.hashPassword(tempPassword);
+      const user = await tx.user.create({
+        data: {
+          email: dto.email,
+          firstName: dto.firstName,
+          lastName: dto.lastName,
+          passwordHash,
+          organizationId: organization.id,
+          roleId: adminRole.id,
+          isActive: false, // Activé après paiement + vérification email
+        },
+      });
+
       return { organization, user };
     });
 
-    // Track registration in PostHog
-    this.posthog.trackRegistration(user.id, organization.id, dto.subscriptionPlan ?? 'INDIVIDUEL');
+    // Créer checkout session DexPay
+    const frontendUrl = this.config.get<string>('FRONTEND_URL') || 'https://planora360.org';
+    const amount = this.dexpay.getPlanPrice(plan);
 
-    return { message: 'Votre demande a été enregistrée. Vous serez notifié par email après validation.' };
+    const checkout = await this.dexpay.createCheckoutSession({
+      amount,
+      currency: 'XOF',
+      customerEmail: user.email,
+      customerName: `${user.firstName} ${user.lastName}`,
+      description: `Abonnement PLANORA 360 - ${plan}`,
+      plan,
+      organizationId: organization.id,
+      successUrl: `${frontendUrl}/payment/success`,
+      failureUrl: `${frontendUrl}/payment/failed`,
+    });
+
+    // Track registration in PostHog
+    this.posthog.trackRegistration(user.id, organization.id, plan);
+
+    return {
+      checkoutUrl: checkout.payment_url,
+      reference: checkout.reference,
+      message: 'Redirection vers le paiement...'
+    };
+  }
+
+  async verifyEmail(token: string) {
+    // Récupérer l'organisation avec ce token
+    const organization = await this.prisma.organization.findFirst({
+      where: {
+        emailVerificationToken: token,
+        deletedAt: null,
+      },
+      include: {
+        users: {
+          where: { deletedAt: null },
+          orderBy: { createdAt: 'asc' },
+          take: 1,
+        },
+      },
+    });
+
+    if (!organization) {
+      throw new BadRequestException('Token de vérification invalide ou expiré');
+    }
+
+    // Vérifier expiration (24h)
+    if (organization.emailVerificationExpiry && organization.emailVerificationExpiry < new Date()) {
+      throw new BadRequestException('Le lien de vérification a expiré. Veuillez contacter le support.');
+    }
+
+    // Vérifier que le paiement a été effectué
+    if (organization.status !== 'PENDING_VERIFICATION') {
+      throw new BadRequestException('L\'organisation n\'est pas en attente de vérification');
+    }
+
+    const admin = organization.users[0];
+    if (!admin) {
+      throw new NotFoundException('Utilisateur administrateur introuvable');
+    }
+
+    // Générer nouveau mot de passe temporaire pour l'envoi par email
+    const tempPassword = randomBytes(4).toString('hex'); // 8 caractères
+    const passwordHash = await this.hashPassword(tempPassword);
+
+    // Activer l'organisation et l'utilisateur
+    await this.prisma.$transaction(async (tx) => {
+      await tx.organization.update({
+        where: { id: organization.id },
+        data: {
+          status: 'ACTIVE',
+          emailVerified: true,
+          emailVerificationToken: null,
+          emailVerificationExpiry: null,
+        },
+      });
+
+      await tx.user.update({
+        where: { id: admin.id },
+        data: {
+          isActive: true,
+          passwordHash,
+        },
+      });
+    });
+
+    // Envoyer email de bienvenue avec mot de passe temporaire
+    await this.notifications.sendWelcomeCredentials({
+      email: admin.email,
+      firstName: admin.firstName,
+      orgName: organization.name,
+      tempPassword,
+    });
+
+    return {
+      success: true,
+      message: 'Votre compte a été activé ! Consultez votre email pour récupérer vos identifiants.',
+      email: admin.email,
+    };
   }
 
   private async validateUniqueOrganization(name: string) {
