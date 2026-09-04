@@ -9,15 +9,18 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { SubscriptionPlan } from '@prisma/client';
 import { ZonesService } from './zones.service';
 import { CreateZoneDto } from './dto/create-zone.dto';
 import { UpdateZoneDto } from './dto/update-zone.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { SubscriptionGuard, RequiresPlan } from '../common/guards/subscription.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { HttpCacheInterceptor } from '../common/cache/cache.interceptor';
 
 @Controller('zones')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, SubscriptionGuard)
+@RequiresPlan(SubscriptionPlan.ORGANISATION, SubscriptionPlan.ENTERPRISE)
 @UseInterceptors(HttpCacheInterceptor)
 export class ZonesController {
   constructor(private readonly zonesService: ZonesService) {}

@@ -9,14 +9,17 @@ import {
   UseGuards,
   Request,
 } from '@nestjs/common';
+import { SubscriptionPlan } from '@prisma/client';
 import { PlanningService } from './planning.service';
 import { CreateAnnualWorkPlanDto } from './dto/create-annual-work-plan.dto';
 import { UpdateAnnualWorkPlanDto } from './dto/update-annual-work-plan.dto';
 import { UpdateResultsMatrixDto } from './dto/update-results-matrix.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { SubscriptionGuard, RequiresPlan } from '../common/guards/subscription.guard';
 
 @Controller('planning')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, SubscriptionGuard)
+@RequiresPlan(SubscriptionPlan.PRO, SubscriptionPlan.EQUIPE, SubscriptionPlan.ORGANISATION, SubscriptionPlan.ENTERPRISE)
 export class PlanningController {
   constructor(private readonly planningService: PlanningService) {}
 

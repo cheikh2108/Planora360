@@ -10,11 +10,13 @@ import {
   Req,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { SubscriptionGuard, RequiresPlan } from '../common/guards/subscription.guard';
 import { MessagerieService } from './messagerie.service';
-import { ConversationType } from '@prisma/client';
+import { ConversationType, SubscriptionPlan } from '@prisma/client';
 
 @Controller('messagerie')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, SubscriptionGuard)
+@RequiresPlan(SubscriptionPlan.EQUIPE, SubscriptionPlan.ORGANISATION, SubscriptionPlan.ENTERPRISE)
 export class MessagerieController {
   constructor(private readonly messagerieService: MessagerieService) {}
 
