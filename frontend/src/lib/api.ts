@@ -144,7 +144,6 @@ export const authApi = {
     firstName: string;
     lastName: string;
     email: string;
-    password: string;
   }) => api.post('/auth/register', data),
   logout: () => api.post('/auth/logout'),
   setup2fa: () => api.post('/auth/2fa/setup'),

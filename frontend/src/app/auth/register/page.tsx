@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { authApi } from '@/lib/api';
-import { Eye, EyeOff, Loader2, CheckCircle2, ChevronLeft } from 'lucide-react';
+import { Loader2, CheckCircle2, ChevronLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type Plan = 'INDIVIDUEL' | 'PRO' | 'EQUIPE' | 'ORGANISATION' | 'ENTERPRISE';
@@ -41,59 +41,54 @@ const PLANS: { id: Plan; label: string; description: string; price: string; feat
     id: 'ENTERPRISE',
     label: 'Enterprise',
     description: 'Grandes organisations',
-    price: 'À partir de 250 000 FCFA',
+    price: 'Sur devis',
     features: ['Illimité', 'Environnement dédié', 'Intégrations API', 'SLA garanti', 'Support premium'],
   },
 ];
 
 export default function RegisterPage() {
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [step, setStep] = useState<1 | 2>(1);
   const [plan, setPlan] = useState<Plan>('INDIVIDUEL');
   const [orgName, setOrgName] = useState('');
   const [brandColor, setBrandColor] = useState('#2563eb');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [done, setDone] = useState(false);
 
   async function handleSubmit() {
     setError('');
     setLoading(true);
+
     try {
-      await authApi.register({ organizationName: orgName, subscriptionPlan: plan, brandColor, firstName, lastName, email, password });
-      setDone(true);
+      const response = await authApi.register({
+        organizationName: orgName,
+        subscriptionPlan: plan,
+        brandColor,
+        firstName,
+        lastName,
+        email,
+      });
+
+      // Cas ENTERPRISE → demande de devis
+      if (response.requiresQuote) {
+        alert(response.message || 'Pour le plan ENTERPRISE, notre équipe vous contactera.');
+        window.location.href = '/auth/login';
+        return;
+      }
+
+      // Redirection automatique vers DexPay
+      if (response.checkoutUrl) {
+        window.location.href = response.checkoutUrl;
+      } else {
+        throw new Error('URL de paiement manquante');
+      }
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
       setError(typeof msg === 'string' ? msg : 'Une erreur est survenue, veuillez réessayer.');
-    } finally {
       setLoading(false);
     }
-  }
-
-  if (done) {
-    return (
-      <div className="min-h-screen bg-[#eef5ff] flex items-center justify-center p-6">
-        <div className="bg-white rounded-2xl border border-slate-200 p-10 max-w-md w-full text-center">
-          <div className="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-5">
-            <CheckCircle2 size={32} className="text-emerald-500" />
-          </div>
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">Demande envoyée</h1>
-          <p className="text-sm text-slate-500 leading-relaxed mb-6">
-            Votre demande d&apos;inscription a bien été reçue. Notre équipe va examiner votre dossier et vous contacterez par e-mail sous 48h.
-          </p>
-          <Link
-            href="/auth/login"
-            className="block w-full h-11 leading-[2.75rem] text-center bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-semibold rounded-xl text-sm transition-colors"
-          >
-            Retour à la connexion
-          </Link>
-        </div>
-      </div>
-    );
   }
 
   return (
@@ -109,7 +104,7 @@ export default function RegisterPage() {
 
           {/* Steps indicator */}
           <div className="flex items-center gap-2 mb-8 justify-center">
-            {([1, 2, 3] as const).map((s) => (
+            {([1, 2] as const).map((s) => (
               <div key={s} className="flex items-center gap-2">
                 <div className={cn(
                   'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors',
@@ -123,9 +118,9 @@ export default function RegisterPage() {
                   'text-xs font-medium hidden sm:block',
                   step === s ? 'text-[#2563eb]' : step > s ? 'text-emerald-600' : 'text-slate-600'
                 )}>
-                  {s === 1 ? 'Organisation' : s === 2 ? 'Responsable' : 'Mot de passe'}
+                  {s === 1 ? 'Organisation' : 'Responsable'}
                 </span>
-                {s < 3 && <div className={cn('w-8 h-px', step > s ? 'bg-emerald-400' : 'bg-slate-200')} />}
+                {s < 2 && <div className={cn('w-8 h-px', step > s ? 'bg-emerald-400' : 'bg-slate-200')} />}
               </div>
             ))}
           </div>
@@ -250,7 +245,7 @@ export default function RegisterPage() {
               </div>
             )}
 
-            {/* Step 2 — Responsable */}
+            {/* Step 2 — Responsable + Paiement */}
             {step === 2 && (
               <div className="space-y-5">
                 <div>
@@ -258,7 +253,9 @@ export default function RegisterPage() {
                     <ChevronLeft size={14} /> Retour
                   </button>
                   <h2 className="text-xl font-bold text-slate-900">Responsable du compte</h2>
-                  <p className="text-sm text-slate-500 mt-1">Informations du compte administrateur de votre organisation.</p>
+                  <p className="text-sm text-slate-500 mt-1">
+                    Après validation du paiement, vous recevrez un email de vérification puis vos identifiants de connexion.
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -295,77 +292,13 @@ export default function RegisterPage() {
                   />
                 </div>
 
-                <button
-                  type="button"
-                  disabled={!firstName.trim() || !lastName.trim() || !email.trim()}
-                  onClick={() => setStep(3)}
-                  className="w-full h-11 bg-[#2563eb] hover:bg-[#1d4ed8] disabled:opacity-40 text-white font-bold rounded-xl text-sm transition-colors cursor-pointer"
-                >
-                  Continuer
-                </button>
-              </div>
-            )}
-
-            {/* Step 3 — Mot de passe */}
-            {step === 3 && (
-              <div className="space-y-5">
-                <div>
-                  <button type="button" onClick={() => setStep(2)} className="flex items-center gap-1.5 text-xs text-slate-600 hover:text-slate-600 mb-4 cursor-pointer transition-colors">
-                    <ChevronLeft size={14} /> Retour
-                  </button>
-                  <h2 className="text-xl font-bold text-slate-900">Sécurisez votre compte</h2>
-                  <p className="text-sm text-slate-500 mt-1">Choisissez un mot de passe fort pour votre compte administrateur.</p>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-900 mb-1.5">Mot de passe <span className="text-red-400">*</span></label>
-                  <div className="relative">
-                    <input
-                      type={showPwd ? 'text' : 'password'}
-                      value={password}
-                      onChange={e => setPassword(e.target.value)}
-                      className="w-full h-11 px-4 pr-11 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20 focus:border-[#2563eb] transition-all"
-                      placeholder="Minimum 8 caractères"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPwd(v => !v)}
-                      aria-label={showPwd ? 'Masquer' : 'Afficher'}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors cursor-pointer"
-                    >
-                      {showPwd ? <EyeOff size={15} /> : <Eye size={15} />}
-                    </button>
-                  </div>
-
-                  {/* Password strength indicator */}
-                  {password.length > 0 && (
-                    <div className="mt-2 space-y-1">
-                      <div className="flex gap-1">
-                        {[1, 2, 3, 4].map(i => (
-                          <div
-                            key={i}
-                            className={cn(
-                              'h-1 flex-1 rounded-full transition-colors',
-                              password.length >= i * 3
-                                ? i <= 1 ? 'bg-red-400' : i === 2 ? 'bg-amber-400' : i === 3 ? 'bg-blue-400' : 'bg-emerald-500'
-                                : 'bg-slate-200'
-                            )}
-                          />
-                        ))}
-                      </div>
-                      <p className="text-[10px] text-slate-600">
-                        {password.length < 4 ? 'Trop court' : password.length < 7 ? 'Faible' : password.length < 10 ? 'Moyen' : 'Fort'}
-                      </p>
-                    </div>
-                  )}
-                </div>
-
                 {/* Récapitulatif */}
                 <div className="bg-slate-50 rounded-xl p-4 space-y-2">
                   <p className="text-xs font-semibold text-slate-700">Récapitulatif</p>
                   <div className="text-xs text-slate-500 space-y-1">
                     <p><span className="font-medium text-slate-700">Organisation :</span> {orgName}</p>
                     <p><span className="font-medium text-slate-700">Formule :</span> {PLANS.find(p => p.id === plan)?.label}</p>
+                    <p><span className="font-medium text-slate-700">Tarif :</span> {PLANS.find(p => p.id === plan)?.price}</p>
                     <p><span className="font-medium text-slate-700">Responsable :</span> {firstName} {lastName}</p>
                     <p><span className="font-medium text-slate-700">E-mail :</span> {email}</p>
                   </div>
@@ -380,13 +313,19 @@ export default function RegisterPage() {
 
                 <button
                   type="button"
-                  disabled={loading || password.length < 8}
+                  disabled={loading || !firstName.trim() || !lastName.trim() || !email.trim()}
                   onClick={handleSubmit}
                   className="w-full h-11 bg-[#0f1e38] hover:bg-[#162d52] disabled:opacity-40 text-white font-bold rounded-xl text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {loading && <Loader2 size={15} className="animate-spin" />}
-                  {loading ? 'Envoi en cours…' : 'Envoyer la demande'}
+                  {loading ? 'Redirection vers le paiement...' : plan === 'ENTERPRISE' ? 'Demander un devis' : 'S\'inscrire et payer'}
                 </button>
+
+                {plan !== 'ENTERPRISE' && (
+                  <p className="text-[10px] text-center text-slate-500">
+                    Vous serez redirigé vers notre plateforme de paiement sécurisée DexPay pour finaliser votre abonnement.
+                  </p>
+                )}
               </div>
             )}
           </div>
