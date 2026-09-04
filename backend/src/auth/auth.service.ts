@@ -253,38 +253,6 @@ export class AuthService {
     return adminRole;
   }
 
-  private async createOrganization(dto: RegisterOrganizationDto, tx?: any) {
-    const isTrialPlan = !dto.subscriptionPlan || dto.subscriptionPlan === 'INDIVIDUEL';
-    const trialEndsAt = isTrialPlan ? calculateTrialEndDate() : undefined;
-
-    const prismaClient = tx || this.prisma;
-    return prismaClient.organization.create({
-      data: {
-        name: dto.organizationName,
-        subscriptionPlan: dto.subscriptionPlan ?? 'INDIVIDUEL',
-        brandColor: dto.brandColor ?? DEFAULT_BRAND_COLOR,
-        status: ORG_STATUS_PENDING,
-        trialEndsAt,
-      },
-    });
-  }
-
-  private async createAdminUser(dto: RegisterOrganizationDto, organizationId: string, roleId: string, tx?: any) {
-    const passwordHash = await this.hashPassword(dto.password);
-    const prismaClient = tx || this.prisma;
-    return prismaClient.user.create({
-      data: {
-        email: dto.email,
-        firstName: dto.firstName,
-        lastName: dto.lastName,
-        passwordHash,
-        organizationId,
-        roleId,
-        isActive: false,
-      },
-    });
-  }
-
   private async hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
   }
