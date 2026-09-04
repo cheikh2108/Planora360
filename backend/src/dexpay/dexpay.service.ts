@@ -42,6 +42,9 @@ export class DexpayService {
    */
   async createCheckoutSession(params: CreateCheckoutParams): Promise<CheckoutSession> {
     try {
+      const frontendUrl = this.config.get<string>('FRONTEND_URL') || 'https://planora360.org';
+      const webhookUrl = `${frontendUrl.replace(/\/+$/, '')}/api/dexpay/webhook`;
+
       const response = await axios.post(
         `${this.apiUrl}/checkout-sessions`,
         {
@@ -54,6 +57,7 @@ export class DexpayService {
           description: params.description,
           success_url: params.successUrl,
           failure_url: params.failureUrl,
+          webhook_url: webhookUrl, // URL pour recevoir les notifications
           metadata: {
             organization_id: params.organizationId,
             plan: params.plan,
@@ -102,25 +106,40 @@ export class DexpayService {
   }
 
   /**
-   * Vérifier la signature d'un webhook DexPay
-   * (À adapter selon la doc DexPay pour la vérification de signature)
+   * Vérifier la signature HMAC-SHA256 d'un webhook DexPay
+   * Header: X-Webhook-Signature
    */
   verifyWebhookSignature(signature: string, payload: any): boolean {
-    // TODO: Implémenter la vérification selon la doc DexPay
-    // Pour l'instant, on retourne true en développement
     if (!this.webhookSecret) {
       this.logger.warn('⚠️ Webhook secret non configuré - Signature non vérifiée');
-      return true;
+      return true; // Développement uniquement
     }
 
-    // Exemple de vérification (à adapter selon DexPay):
-    // const computedSignature = crypto
-    //   .createHmac('sha256', this.webhookSecret)
-    //   .update(JSON.stringify(payload))
-    //   .digest('hex');
-    // return computedSignature === signature;
+    if (!signature) {
+      this.logger.error('❌ Aucune signature fournie dans le header X-Webhook-Signature');
+      return false;
+    }
 
-    return true; // À remplacer par la vraie vérification
+    try {
+      const crypto = require('crypto');
+      const computedSignature = crypto
+        .createHmac('sha256', this.webhookSecret)
+        .update(JSON.stringify(payload))
+        .digest('hex');
+
+      const isValid = computedSignature === signature;
+
+      if (!isValid) {
+        this.logger.error('❌ Signature webhook invalide');
+        this.logger.debug(`Expected: ${computedSignature}`);
+        this.logger.debug(`Received: ${signature}`);
+      }
+
+      return isValid;
+    } catch (error) {
+      this.logger.error(`❌ Erreur vérification signature: ${error.message}`);
+      return false;
+    }
   }
 
   /**

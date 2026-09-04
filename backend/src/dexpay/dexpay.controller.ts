@@ -19,7 +19,7 @@ export class DexpayController {
    */
   @Post('webhook')
   async handleWebhook(
-    @Headers('x-dexpay-signature') signature: string,
+    @Headers('X-Webhook-Signature') signature: string,
     @Body() payload: any,
   ) {
     this.logger.log(`📥 Webhook reçu: ${payload.event}`);
