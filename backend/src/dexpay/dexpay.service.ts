@@ -8,7 +8,8 @@ export interface CreateCheckoutParams {
   customerEmail: string;
   customerName: string;
   description: string;
-  plan: string;           // INDIVIDUEL, PRO, EQUIPE, ORGANISATION
+  plan: string;           // INDIVIDUEL uniquement
+  billingCycle: 'MONTHLY' | 'YEARLY';
   organizationId: string;
   successUrl: string;
   failureUrl: string;
@@ -143,16 +144,18 @@ export class DexpayService {
   }
 
   /**
-   * Calculer le prix d'un plan
+   * Calculer le prix d'un plan (INDIVIDUEL uniquement)
    */
-  getPlanPrice(plan: string): number {
+  getPlanPrice(plan: string, billingCycle: 'MONTHLY' | 'YEARLY' = 'MONTHLY'): number {
+    if (plan !== 'INDIVIDUEL') {
+      throw new Error(`Le plan ${plan} n'est pas disponible en paiement automatique. Veuillez demander un devis.`);
+    }
+
     const prices = {
-      INDIVIDUEL: parseInt(this.config.get<string>('PLAN_INDIVIDUEL_PRICE')) || 1000000,
-      PRO: parseInt(this.config.get<string>('PLAN_PRO_PRICE')) || 2500000,
-      EQUIPE: parseInt(this.config.get<string>('PLAN_EQUIPE_PRICE')) || 5000000,
-      ORGANISATION: parseInt(this.config.get<string>('PLAN_ORGANISATION_PRICE')) || 10000000,
+      MONTHLY: parseInt(this.config.get<string>('PLAN_INDIVIDUEL_MONTHLY')) || 1000000,  // 10 000 FCFA/mois
+      YEARLY: parseInt(this.config.get<string>('PLAN_INDIVIDUEL_YEARLY')) || 10000000,  // 100 000 FCFA/an
     };
 
-    return prices[plan] || 0;
+    return prices[billingCycle] || prices.MONTHLY;
   }
 }

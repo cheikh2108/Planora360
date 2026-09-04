@@ -47,6 +47,13 @@ export class AuthController {
     return this.authService.verifyEmail(token);
   }
 
+  @Post('request-quote')
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
+  @HttpCode(HttpStatus.OK)
+  requestQuote(@Body() dto: any) {
+    return this.authService.requestQuote(dto);
+  }
+
   @Post('login')
   @Throttle({ default: { limit: 5, ttl: 60000 } }) // 5 tentatives max par minute
   @HttpCode(HttpStatus.OK)

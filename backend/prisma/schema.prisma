@@ -25,6 +25,7 @@ enum OrganizationStatus {
   PENDING
   PENDING_PAYMENT
   PENDING_VERIFICATION
+  PENDING_APPROVAL
   ACTIVE
   REJECTED
   SUSPENDED
@@ -36,6 +37,11 @@ enum SubscriptionStatus {
   PAST_DUE
   CANCELED
   INCOMPLETE
+}
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
 }
 
 enum ActivityStatus {
@@ -144,6 +150,7 @@ model Organization {
   dexpaySubscriptionId String?            @unique
   subscriptionStatus   SubscriptionStatus @default(TRIAL)
   subscriptionCurrency String?            @default("XOF") // XOF, XAF, GNF
+  billingCycle         BillingCycle       @default(MONTHLY)
   currentPeriodEnd     DateTime?
   nextPaymentDate      DateTime?
 

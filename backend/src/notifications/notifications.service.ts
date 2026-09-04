@@ -299,4 +299,169 @@ export class NotificationsService {
       </html>`,
     );
   }
+
+  async sendQuoteRequest(params: {
+    organizationName: string;
+    plan: string;
+    billingCycle: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    estimatedUsers?: number;
+    customMessage?: string;
+  }) {
+    const supportEmail = 'contact@planora360.org';
+
+    const planLabels = {
+      PRO: 'Pro',
+      EQUIPE: 'Équipe',
+      ORGANISATION: 'Organisation',
+      ENTERPRISE: 'Enterprise',
+    };
+
+    const cycleLabel = params.billingCycle === 'YEARLY' ? 'Annuel' : 'Mensuel';
+
+    await this.sendEmail(
+      supportEmail,
+      `[PLANORA 360] Demande de devis - ${planLabels[params.plan] || params.plan}`,
+      `<!DOCTYPE html>
+      <html lang="fr">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin:0;padding:0;background:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif">
+        <div style="max-width:600px;margin:0 auto;background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1),0 2px 4px -1px rgba(0,0,0,0.06)">
+
+          <!-- Header -->
+          <div style="background:linear-gradient(135deg,#0b1629 0%,#1e3a5f 100%);padding:32px;text-align:center">
+            <h1 style="margin:0;color:white;font-size:22px;font-weight:700">📋 Demande de devis</h1>
+          </div>
+
+          <!-- Corps -->
+          <div style="padding:32px">
+            <div style="background:#f1f5f9;border-radius:12px;padding:24px;margin-bottom:24px">
+              <h2 style="margin:0 0 16px;color:#0f172a;font-size:16px;font-weight:700">Informations client</h2>
+              <table style="width:100%;border-collapse:collapse">
+                <tr>
+                  <td style="padding:8px 0;color:#64748b;font-size:13px;font-weight:600;width:40%">Organisation :</td>
+                  <td style="padding:8px 0;color:#0f172a;font-size:14px;font-weight:600">${params.organizationName}</td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 0;color:#64748b;font-size:13px;font-weight:600">Contact :</td>
+                  <td style="padding:8px 0;color:#0f172a;font-size:14px">${params.firstName} ${params.lastName}</td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 0;color:#64748b;font-size:13px;font-weight:600">Email :</td>
+                  <td style="padding:8px 0;color:#0f172a;font-size:14px"><a href="mailto:${params.email}" style="color:#2563eb;text-decoration:none">${params.email}</a></td>
+                </tr>
+              </table>
+            </div>
+
+            <div style="background:#eff6ff;border-left:4px solid #2563eb;border-radius:12px;padding:20px;margin-bottom:24px">
+              <h2 style="margin:0 0 12px;color:#0f172a;font-size:16px;font-weight:700">Formule demandée</h2>
+              <p style="margin:0 0 8px;color:#0f172a;font-size:18px;font-weight:700">${planLabels[params.plan] || params.plan}</p>
+              <p style="margin:0;color:#475569;font-size:13px">Cycle de facturation : <strong>${cycleLabel}</strong></p>
+              ${params.estimatedUsers ? `<p style="margin:8px 0 0;color:#475569;font-size:13px">Utilisateurs estimés : <strong>${params.estimatedUsers}</strong></p>` : ''}
+            </div>
+
+            ${params.customMessage ? `
+              <div style="background:#f8fafc;border-radius:12px;padding:20px;margin-bottom:24px">
+                <h3 style="margin:0 0 12px;color:#64748b;font-size:13px;font-weight:700;text-transform:uppercase">Message personnalisé</h3>
+                <p style="margin:0;color:#0f172a;font-size:14px;line-height:1.6;white-space:pre-wrap">${params.customMessage}</p>
+              </div>
+            ` : ''}
+
+            <div style="background:#fef3c7;border-radius:12px;padding:16px;margin-bottom:24px">
+              <p style="margin:0;color:#92400e;font-size:13px;line-height:1.5">
+                ⏱️ <strong>À traiter rapidement</strong> — Le client attend une réponse sous 48h maximum.
+              </p>
+            </div>
+
+            <p style="margin:0 0 16px;color:#64748b;font-size:13px;line-height:1.6">
+              Pour répondre à cette demande, contactez directement le client à l'adresse email ci-dessus.
+            </p>
+          </div>
+
+          <!-- Footer -->
+          <div style="background:#f1f5f9;padding:24px 32px;text-align:center">
+            <p style="margin:0;color:#94a3b8;font-size:11px">
+              © 2026 PLANORA 360 — Système de gestion commerciale automatique
+            </p>
+          </div>
+
+        </div>
+      </body>
+      </html>`,
+    );
+
+    // Envoyer aussi un email de confirmation au client
+    await this.sendEmail(
+      params.email,
+      `[PLANORA 360] Demande de devis reçue`,
+      `<!DOCTYPE html>
+      <html lang="fr">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin:0;padding:0;background:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif">
+        <div style="max-width:600px;margin:0 auto;background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1),0 2px 4px -1px rgba(0,0,0,0.06)">
+
+          <!-- Header -->
+          <div style="background:linear-gradient(135deg,#0b1629 0%,#1e3a5f 100%);padding:40px 32px;text-align:center">
+            <img src="${this.frontendUrl}/logo-light.svg" alt="PLANORA 360" style="height:48px;width:auto;margin-bottom:16px" />
+            <h1 style="margin:0;color:white;font-size:24px;font-weight:700">Demande bien reçue !</h1>
+          </div>
+
+          <!-- Corps -->
+          <div style="padding:40px 32px">
+            <p style="margin:0 0 24px;color:#0f172a;font-size:16px;line-height:1.6">
+              Bonjour <strong>${params.firstName}</strong>,
+            </p>
+            <p style="margin:0 0 24px;color:#475569;font-size:15px;line-height:1.6">
+              Nous avons bien reçu votre demande de devis pour le plan <strong>${planLabels[params.plan] || params.plan}</strong> (facturation ${cycleLabel.toLowerCase()}).
+            </p>
+
+            <div style="background:#eff6ff;border-left:4px solid #2563eb;border-radius:12px;padding:20px;margin-bottom:24px">
+              <p style="margin:0;color:#1e40af;font-size:14px;line-height:1.6">
+                ⏱️ Notre équipe commerciale vous contactera sous <strong>48 heures</strong> pour vous proposer une offre personnalisée adaptée à vos besoins.
+              </p>
+            </div>
+
+            <div style="background:#f8fafc;border-radius:12px;padding:24px">
+              <h3 style="margin:0 0 12px;color:#0f172a;font-size:15px;font-weight:700">Récapitulatif de votre demande</h3>
+              <table style="width:100%;border-collapse:collapse">
+                <tr>
+                  <td style="padding:6px 0;color:#64748b;font-size:13px">Organisation :</td>
+                  <td style="padding:6px 0;color:#0f172a;font-size:13px;text-align:right;font-weight:600">${params.organizationName}</td>
+                </tr>
+                <tr>
+                  <td style="padding:6px 0;color:#64748b;font-size:13px">Plan :</td>
+                  <td style="padding:6px 0;color:#0f172a;font-size:13px;text-align:right;font-weight:600">${planLabels[params.plan] || params.plan}</td>
+                </tr>
+                <tr>
+                  <td style="padding:6px 0;color:#64748b;font-size:13px">Cycle :</td>
+                  <td style="padding:6px 0;color:#0f172a;font-size:13px;text-align:right;font-weight:600">${cycleLabel}</td>
+                </tr>
+              </table>
+            </div>
+
+            <p style="margin:32px 0 0;color:#64748b;font-size:13px;line-height:1.6">
+              En attendant, si vous avez des questions, n'hésitez pas à nous contacter à <a href="mailto:contact@planora360.org" style="color:#2563eb;text-decoration:none">contact@planora360.org</a>
+            </p>
+          </div>
+
+          <!-- Footer -->
+          <div style="background:#f1f5f9;padding:24px 32px;text-align:center">
+            <p style="margin:0;color:#94a3b8;font-size:11px">
+              © 2026 PLANORA 360 — Gestion de projets et pilotage stratégique
+            </p>
+          </div>
+
+        </div>
+      </body>
+      </html>`,
+    );
+  }
 }

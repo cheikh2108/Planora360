@@ -57,12 +57,14 @@ export class AuthService {
 
     const adminRole = await this.findAdminRole();
     const plan = dto.subscriptionPlan ?? 'INDIVIDUEL';
+    const billingCycle = dto.billingCycle ?? 'MONTHLY';
 
-    // Plan ENTERPRISE → demande de devis (pas de paiement auto)
-    if (plan === 'ENTERPRISE') {
+    // Seul INDIVIDUEL peut payer directement, autres plans → devis
+    if (plan !== 'INDIVIDUEL') {
       return {
         requiresQuote: true,
-        message: 'Pour le plan ENTERPRISE, veuillez demander un devis. Notre équipe vous contactera.'
+        plan,
+        message: `Le plan ${plan} nécessite une demande de devis. Notre équipe commerciale vous contactera.`
       };
     }
 
@@ -79,6 +81,7 @@ export class AuthService {
           status: 'PENDING_PAYMENT', // Attente paiement
           subscriptionStatus: 'INCOMPLETE',
           subscriptionCurrency: 'XOF',
+          billingCycle,
         },
       });
 
@@ -100,15 +103,16 @@ export class AuthService {
 
     // Créer checkout session DexPay
     const frontendUrl = this.config.get<string>('FRONTEND_URL') || 'https://planora360.org';
-    const amount = this.dexpay.getPlanPrice(plan);
+    const amount = this.dexpay.getPlanPrice(plan, billingCycle);
 
     const checkout = await this.dexpay.createCheckoutSession({
       amount,
       currency: 'XOF',
       customerEmail: user.email,
       customerName: `${user.firstName} ${user.lastName}`,
-      description: `Abonnement PLANORA 360 - ${plan}`,
+      description: `Abonnement PLANORA 360 - ${plan} ${billingCycle === 'YEARLY' ? '(Annuel)' : '(Mensuel)'}`,
       plan,
+      billingCycle,
       organizationId: organization.id,
       successUrl: `${frontendUrl}/payment/success`,
       failureUrl: `${frontendUrl}/payment/failed`,
@@ -196,6 +200,34 @@ export class AuthService {
       success: true,
       message: 'Votre compte a été activé ! Consultez votre email pour récupérer vos identifiants.',
       email: admin.email,
+    };
+  }
+
+  async requestQuote(data: {
+    organizationName: string;
+    plan: string;
+    billingCycle: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    estimatedUsers?: number;
+    message?: string;
+  }) {
+    // Envoyer email au support avec demande de devis
+    await this.notifications.sendQuoteRequest({
+      organizationName: data.organizationName,
+      plan: data.plan,
+      billingCycle: data.billingCycle,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      estimatedUsers: data.estimatedUsers,
+      customMessage: data.message,
+    });
+
+    return {
+      success: true,
+      message: 'Votre demande de devis a bien été envoyée. Notre équipe vous contactera sous 48h.',
     };
   }
 
