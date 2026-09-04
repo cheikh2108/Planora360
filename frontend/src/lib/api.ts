@@ -140,6 +140,7 @@ export const authApi = {
   register: (data: {
     organizationName: string;
     subscriptionPlan?: string;
+    billingCycle?: 'MONTHLY' | 'YEARLY';
     brandColor?: string;
     firstName: string;
     lastName: string;
