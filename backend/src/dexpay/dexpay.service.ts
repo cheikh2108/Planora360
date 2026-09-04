@@ -29,9 +29,9 @@ export class DexpayService {
   private readonly webhookSecret: string;
 
   constructor(private config: ConfigService) {
-    this.apiUrl = this.config.get<string>('DEXPAY_API_URL');
-    this.apiKey = this.config.get<string>('DEXPAY_API_KEY');
-    this.webhookSecret = this.config.get<string>('DEXPAY_WEBHOOK_SECRET');
+    this.apiUrl = this.config.get<string>('DEXPAY_API_URL') || '';
+    this.apiKey = this.config.get<string>('DEXPAY_API_KEY') || '';
+    this.webhookSecret = this.config.get<string>('DEXPAY_WEBHOOK_SECRET') || '';
 
     if (!this.apiUrl || !this.apiKey) {
       this.logger.warn('⚠️ DexPay non configuré - Paiements désactivés');
@@ -79,7 +79,7 @@ export class DexpayService {
         payment_url: response.data.data.payment_url,
         status: response.data.data.status,
       };
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`❌ Erreur création checkout: ${error.message}`);
       throw error;
     }
@@ -100,7 +100,7 @@ export class DexpayService {
       );
 
       return response.data.data;
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`❌ Erreur récupération checkout: ${error.message}`);
       throw error;
     }
@@ -137,7 +137,7 @@ export class DexpayService {
       }
 
       return isValid;
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`❌ Erreur vérification signature: ${error.message}`);
       return false;
     }
@@ -152,8 +152,8 @@ export class DexpayService {
     }
 
     const prices = {
-      MONTHLY: parseInt(this.config.get<string>('PLAN_INDIVIDUEL_MONTHLY')) || 1000000,  // 10 000 FCFA/mois
-      YEARLY: parseInt(this.config.get<string>('PLAN_INDIVIDUEL_YEARLY')) || 10000000,  // 100 000 FCFA/an
+      MONTHLY: parseInt(this.config.get<string>('PLAN_INDIVIDUEL_MONTHLY') || '1000000'),
+      YEARLY: parseInt(this.config.get<string>('PLAN_INDIVIDUEL_YEARLY') || '10000000'),
     };
 
     return prices[billingCycle] || prices.MONTHLY;
