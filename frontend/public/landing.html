@@ -27,6 +27,21 @@ transform: translateY(0);
 filter: blur(0px);
 }
 }
+
+/* Prevent horizontal overflow on mobile */
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+img, video, canvas, svg {
+  max-width: 100%;
+  height: auto;
+}
 </style>
 <link id="all-fonts-link-font-geist" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap">
 <style id="all-fonts-style-font-geist">
@@ -46,11 +61,11 @@ filter: blur(0px);
 </script>
 <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
 </head>
-  <body class="min-h-screen overflow-x-hidden antialiased selection:bg-cyan-300/20 selection:text-cyan-100 text-slate-100 font-sans bg-[#080c14]" style="font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+  <body class="min-h-screen overflow-x-hidden antialiased selection:bg-cyan-300/20 selection:text-cyan-100 text-slate-100 font-sans bg-[#080c14]" style="font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 100vw; overflow-x: hidden;">
     <div class="pointer-events-none fixed inset-0 -z-50" style="background: radial-gradient(circle at 50% -10%, rgba(88, 166, 255, 0.16), transparent 36%), radial-gradient(circle at 82% 18%, rgba(103, 232, 249, 0.08), transparent 28%), linear-gradient(180deg, #0b1020 0%, #080c14 42%, #0a0d13 100%);"></div>
     <div class="pointer-events-none fixed inset-0 -z-40 opacity-[0.035]" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 256 256%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.75%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
 
-    <div class="mx-auto min-h-screen w-full max-w-[1360px] border-x border-white/[0.06]">
+    <div class="mx-auto min-h-screen w-full max-w-[1360px] border-x border-white/[0.06]" style="overflow-x: hidden;">
       <div class="pointer-events-none fixed left-1/2 top-0 -z-30 hidden h-full w-full max-w-[1360px] -translate-x-1/2 grid-cols-4 md:grid">
         <div class="border-r border-white/[0.045]"></div>
         <div class="border-r border-white/[0.045]"></div>
@@ -126,7 +141,7 @@ filter: blur(0px);
       </header>
 
       <main class="">
-        <section class="overflow-hidden sm:px-8 lg:px-10 pr-5 pl-5 pt-20 pb-20 sm:pt-28 sm:pb-28 lg:pt-32 lg:pb-32 min-h-[calc(100vh-4rem)] flex items-center relative" id="blueprint">
+        <section class="overflow-x-hidden sm:px-8 lg:px-10 px-5 pt-20 pb-20 sm:pt-28 sm:pb-28 lg:pt-32 lg:pb-32 min-h-[calc(100vh-4rem)] flex items-center relative" id="blueprint">
           <canvas id="webgl-canvas" class="absolute inset-0 z-0 pointer-events-none opacity-60 mix-blend-screen w-full h-full"></canvas>
           <div class="pointer-events-none absolute left-1/2 top-24 h-72 w-72 -translate-x-1/2 rounded-full bg-cyan-200/10 blur-3xl"></div>
           <div class="grid gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16 w-full max-w-[1280px] mr-auto ml-auto items-center">
@@ -2205,20 +2220,23 @@ filter: blur(0px);
                 </div>
 
                 <div class="mt-8">
-                  <div class="flex items-end gap-2">
+                  <div class="flex items-baseline gap-2 flex-wrap">
                     <span class="text-5xl tracking-tight text-white font-jakarta font-medium" data-monthly="10 000" data-annual="100 000">
                       10 000
                     </span>
                     <span class="pb-2 text-sm text-slate-500 font-geist">
                       FCFA <span class="pricing-period">/ mois</span>
                     </span>
+                    <span class="annual-badge hidden px-2 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[10px] font-bold text-emerald-400 uppercase tracking-wide">
+                      2 mois offerts
+                    </span>
                   </div>
                   <p class="mt-4 text-[15px] leading-relaxed text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                    Idéal pour les petits projets individuels ou les organisations qui démarrent.
+                    Idéal pour les petits projets individuels ou les organisations qui démarrent. Paiement automatique.
                   </p>
                 </div>
 
-                <a href="/auth/register" class="mt-8 inline-flex items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-medium text-slate-200 transition duration-300 ease-out hover:border-white/20 hover:bg-white/[0.07] font-geist">
+                <a href="/auth/register?plan=INDIVIDUEL" class="mt-8 inline-flex items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-medium text-slate-200 transition duration-300 ease-out hover:border-white/20 hover:bg-white/[0.07] font-geist">
                   Commencer
                 </a>
 
@@ -2285,21 +2303,18 @@ filter: blur(0px);
                 </div>
 
                 <div class="mt-8">
-                  <div class="flex items-end gap-2">
-                    <span class="text-5xl tracking-tight text-white font-jakarta font-medium" data-monthly="25 000" data-annual="250 000">
-                      25 000
-                    </span>
-                    <span class="pb-2 text-sm text-slate-500 font-geist">
-                      FCFA <span class="pricing-period">/ mois</span>
+                  <div class="flex items-baseline gap-2">
+                    <span class="text-4xl tracking-tight text-white font-jakarta font-medium">
+                      Sur devis
                     </span>
                   </div>
                   <p class="mt-4 text-[15px] leading-relaxed text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                    Gestion multi-projets avec rapports avancés et workflows de validation.
+                    Gestion multi-projets avec rapports avancés et workflows de validation. Tarif personnalisé selon vos besoins.
                   </p>
                 </div>
 
-                <a href="/auth/register" class="mt-8 inline-flex items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-medium text-slate-200 transition duration-300 ease-out hover:border-white/20 hover:bg-white/[0.07] font-geist">
-                  Essayer gratuitement
+                <a href="/auth/register?plan=PRO" class="mt-8 inline-flex items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-medium text-slate-200 transition duration-300 ease-out hover:border-white/20 hover:bg-white/[0.07] font-geist">
+                  Demander un devis
                 </a>
 
                 <div class="mt-8 h-px w-full bg-white/[0.08]"></div>
@@ -2376,21 +2391,18 @@ filter: blur(0px);
                 </div>
 
                 <div class="mt-8">
-                  <div class="flex items-end gap-2">
-                    <span class="text-5xl tracking-tight text-white font-jakarta font-medium" data-monthly="50 000" data-annual="500 000">
-                      50 000
-                    </span>
-                    <span class="pb-2 text-sm text-slate-400 font-geist">
-                      FCFA <span class="pricing-period">/ mois</span>
+                  <div class="flex items-baseline gap-2">
+                    <span class="text-4xl tracking-tight text-white font-jakarta font-medium">
+                      Sur devis
                     </span>
                   </div>
                   <p class="mt-4 text-[15px] leading-relaxed text-slate-300 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                    Solution complète avec messagerie, gestion documentaire et passation de marchés.
+                    Solution complète avec messagerie, gestion documentaire et passation de marchés. Tarif personnalisé selon vos besoins.
                   </p>
                 </div>
 
-                <a href="/auth/register" class="mt-8 inline-flex items-center justify-center rounded-full bg-cyan-100 px-5 py-3 text-sm font-semibold text-slate-950 shadow-2xl shadow-cyan-950/20 transition duration-300 ease-out hover:bg-cyan-50 font-geist">
-                  Essai 14 jours gratuit
+                <a href="/auth/register?plan=EQUIPE" class="mt-8 inline-flex items-center justify-center rounded-full bg-cyan-100 px-5 py-3 text-sm font-semibold text-slate-950 shadow-2xl shadow-cyan-950/20 transition duration-300 ease-out hover:bg-cyan-50 font-geist">
+                  Demander un devis
                 </a>
 
                 <div class="mt-8 h-px w-full bg-blue-200/15"></div>
@@ -2478,21 +2490,18 @@ filter: blur(0px);
                 </div>
 
                 <div class="mt-8">
-                  <div class="flex items-end gap-2">
-                    <span class="text-5xl tracking-tight text-white font-jakarta font-medium" data-monthly="100 000" data-annual="1 000 000">
-                      100 000
-                    </span>
-                    <span class="pb-2 text-sm text-slate-500 font-geist">
-                      FCFA <span class="pricing-period">/ mois</span>
+                  <div class="flex items-baseline gap-2">
+                    <span class="text-4xl tracking-tight text-white font-jakarta font-medium">
+                      Sur devis
                     </span>
                   </div>
                   <p class="mt-4 text-[15px] leading-relaxed text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                    Passation complète, géolocalisation avancée et consolidation multi-projets.
+                    Passation complète, géolocalisation avancée et consolidation multi-projets. Tarif personnalisé selon vos besoins.
                   </p>
                 </div>
 
-                <a href="/auth/register" class="mt-8 inline-flex items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-medium text-slate-200 transition duration-300 ease-out hover:border-white/20 hover:bg-white/[0.07] font-geist">
-                  Contacter l'équipe
+                <a href="/auth/register?plan=ORGANISATION" class="mt-8 inline-flex items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-medium text-slate-200 transition duration-300 ease-out hover:border-white/20 hover:bg-white/[0.07] font-geist">
+                  Demander un devis
                 </a>
 
                 <div class="mt-8 h-px w-full bg-white/[0.08]"></div>
@@ -2577,25 +2586,17 @@ filter: blur(0px);
                 </div>
 
                 <div class="mt-8">
-                  <div class="flex items-end gap-2">
+                  <div class="flex items-baseline gap-2">
                     <span class="text-4xl tracking-tight text-white font-jakarta font-medium">
-                      À partir de
-                    </span>
-                  </div>
-                  <div class="flex items-end gap-2 mt-2">
-                    <span class="text-5xl tracking-tight text-white font-jakarta font-medium">
-                      250 000
-                    </span>
-                    <span class="pb-2 text-sm text-slate-500 font-geist">
-                      FCFA / mois
+                      Sur devis
                     </span>
                   </div>
                   <p class="mt-4 text-[15px] leading-relaxed text-slate-400 font-geist" style=" transition: opacity 900ms ease-out, transform 900ms ease-out; will-change: opacity, transform;">
-                    Solution complète personnalisée avec accompagnement dédié et support premium.
+                    Solution complète personnalisée avec accompagnement dédié, support premium et environnement dédié. Tarif sur mesure selon vos besoins.
                   </p>
                 </div>
 
-                <a href="/auth/register" class="mt-8 inline-flex items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-medium text-slate-200 transition duration-300 ease-out hover:border-white/20 hover:bg-white/[0.07] font-geist">
+                <a href="/auth/register?plan=ENTERPRISE" class="mt-8 inline-flex items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-medium text-slate-200 transition duration-300 ease-out hover:border-white/20 hover:bg-white/[0.07] font-geist">
                   Demander un devis
                 </a>
 
@@ -2699,6 +2700,10 @@ filter: blur(0px);
                   periods.forEach(period => {
                     period.textContent = '/ an';
                   });
+
+                  // Afficher le badge "2 mois offerts" pour INDIVIDUEL
+                  const annualBadges = document.querySelectorAll('.annual-badge');
+                  annualBadges.forEach(badge => badge.classList.remove('hidden'));
                 } else {
                   // Style bouton mensuel
                   btnMonthly.classList.add('bg-cyan-100', 'text-slate-950', 'shadow-[0_12px_35px_rgba(0,0,0,0.28)]');
@@ -2718,6 +2723,10 @@ filter: blur(0px);
                   periods.forEach(period => {
                     period.textContent = '/ mois';
                   });
+
+                  // Cacher le badge "2 mois offerts"
+                  const annualBadges = document.querySelectorAll('.annual-badge');
+                  annualBadges.forEach(badge => badge.classList.add('hidden'));
                 }
               }
 
@@ -3497,54 +3506,63 @@ filter: blur(0px);
       }
     </script>
 <script>
-  const lenis = new Lenis({ duration: 1.2, easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)), smooth: true });
-  function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
-  requestAnimationFrame(raf);
-  // Smooth anchor scrolling
-  document.querySelectorAll('a[href^="#"]').forEach(a => {
-    a.addEventListener('click', e => {
-      e.preventDefault();
-      const target = document.querySelector(a.getAttribute('href'));
-      if (target) lenis.scrollTo(target, { offset: -80 });
+  // Wait for DOM to be ready
+  document.addEventListener('DOMContentLoaded', function() {
+    const lenis = new Lenis({ duration: 1.2, easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)), smooth: true });
+    function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+    requestAnimationFrame(raf);
+
+    // Smooth anchor scrolling
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) lenis.scrollTo(target, { offset: -80 });
+      });
     });
-  });
-  const btn = document.getElementById('back-to-top');
-  if (btn) {
-    lenis.on('scroll', ({ scroll }) => {
-      if (scroll > 400) btn.classList.add('visible');
-      else btn.classList.remove('visible');
-    });
-  }
 
-  // Mobile Menu
-  const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-  const mobileMenu = document.getElementById('mobile-menu');
-  const mobileMenuClose = document.getElementById('mobile-menu-close');
-  const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
-  const mobileLinks = document.querySelectorAll('.mobile-link');
-
-  function openMobileMenu() {
-    mobileMenu.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function closeMobileMenu() {
-    mobileMenu.classList.add('hidden');
-    document.body.style.overflow = '';
-  }
-
-  mobileMenuBtn.addEventListener('click', openMobileMenu);
-  mobileMenuClose.addEventListener('click', closeMobileMenu);
-  mobileMenuOverlay.addEventListener('click', closeMobileMenu);
-
-  mobileLinks.forEach(link => {
-    link.addEventListener('click', closeMobileMenu);
-  });
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !mobileMenu.classList.contains('hidden')) {
-      closeMobileMenu();
+    const btn = document.getElementById('back-to-top');
+    if (btn) {
+      lenis.on('scroll', ({ scroll }) => {
+        if (scroll > 400) btn.classList.add('visible');
+        else btn.classList.remove('visible');
+      });
     }
+
+    // Mobile Menu
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileMenuClose = document.getElementById('mobile-menu-close');
+    const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+    const mobileLinks = document.querySelectorAll('.mobile-link');
+
+    function openMobileMenu() {
+      if (mobileMenu) {
+        mobileMenu.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeMobileMenu() {
+      if (mobileMenu) {
+        mobileMenu.classList.add('hidden');
+        document.body.style.overflow = '';
+      }
+    }
+
+    if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', openMobileMenu);
+    if (mobileMenuClose) mobileMenuClose.addEventListener('click', closeMobileMenu);
+    if (mobileMenuOverlay) mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+
+    mobileLinks.forEach(link => {
+      link.addEventListener('click', closeMobileMenu);
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && mobileMenu && !mobileMenu.classList.contains('hidden')) {
+        closeMobileMenu();
+      }
+    });
   });
 </script>
 
