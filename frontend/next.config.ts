@@ -10,12 +10,12 @@ const nextConfig: NextConfig = {
   async rewrites() {
     const apiUrl = process.env.NODE_ENV === 'production'
       ? 'https://firebrick-lyrebird-183958.hostingersite.com'
-      : 'http://localhost:3000';
+      : 'http://localhost:3001'; // ✅ Backend sur port 3001
 
     return [
       {
         source: '/api/:path*',
-        destination: `${apiUrl}/api/:path*`,
+        destination: `${apiUrl}/:path*`, // ✅ Pas de /api prefix car backend utilise routes directes
       },
       {
         source: '/uploads/:path*',
