@@ -98,30 +98,73 @@ export class OrganizationsService {
   }
 
   async approve(id: string) {
-    const org = await this.findOne(id);
-    if (org.status !== 'PENDING') throw new BadRequestException('Organisation non en attente');
-
-    await this.prisma.organization.update({
+    const org = await this.prisma.organization.findUnique({
       where: { id },
-      data: { status: 'ACTIVE' },
+      include: {
+        users: {
+          where: { deletedAt: null },
+          orderBy: { createdAt: 'asc' },
+          take: 1, // Premier utilisateur créé (admin)
+        },
+      },
     });
 
-    await this.prisma.user.updateMany({
-      where: { organizationId: id },
-      data: { isActive: true },
+    if (!org) throw new NotFoundException('Organisation introuvable');
+    if (org.status !== 'PENDING' && org.status !== 'PENDING_APPROVAL') {
+      throw new BadRequestException('Organisation non en attente de validation');
+    }
+
+    // Récupérer le mot de passe temporaire depuis la base (si stocké) ou en générer un nouveau
+    const tempPassword = randomBytes(4).toString('hex'); // 8 caractères
+    const passwordHash = await bcrypt.hash(tempPassword, 12);
+
+    // Transaction: activer organisation + utilisateurs
+    await this.prisma.$transaction(async (tx) => {
+      await tx.organization.update({
+        where: { id },
+        data: {
+          status: 'ACTIVE',
+          subscriptionStatus: 'ACTIVE',
+        },
+      });
+
+      // Mettre à jour le mot de passe et activer les utilisateurs
+      await tx.user.updateMany({
+        where: { organizationId: id, deletedAt: null },
+        data: {
+          isActive: true,
+          passwordHash, // Nouveau mot de passe temporaire
+        },
+      });
     });
 
-    return { message: 'Organisation approuvée' };
+    // Envoyer les credentials au premier utilisateur (admin)
+    if (org.users.length > 0) {
+      const admin = org.users[0];
+      await this.notifications.sendWelcomeCredentials({
+        email: admin.email,
+        firstName: admin.firstName,
+        orgName: org.name,
+        tempPassword,
+      });
+    }
+
+    return { message: 'Organisation approuvée et credentials envoyés' };
   }
 
   async reject(id: string, reason?: string) {
     const org = await this.findOne(id);
-    if (org.status !== 'PENDING') throw new BadRequestException('Organisation non en attente');
+    if (org.status !== 'PENDING' && org.status !== 'PENDING_APPROVAL') {
+      throw new BadRequestException('Organisation non en attente de validation');
+    }
 
     await this.prisma.organization.update({
       where: { id },
       data: { status: 'REJECTED', rejectionReason: reason ?? null },
     });
+
+    // TODO: Envoyer un email à l'utilisateur pour l'informer du rejet avec la raison
+    // await this.notifications.sendRejectionEmail(...)
 
     return { message: 'Organisation rejetée' };
   }
@@ -158,6 +201,9 @@ export class OrganizationsService {
     const currentUser = await this.getCurrentUser(currentUserId);
     this.preventSelfDeletion(currentUser.organizationId, id);
 
+    // 🛡️ Protection SuperAdmin : empêcher la suppression d'organisations contenant des superadmins
+    await this.preventSuperAdminDeletion(id);
+
     await this.softDeleteOrganizationWithUsers(id);
     return { message: 'Organisation et utilisateurs désactivés' };
   }
@@ -175,6 +221,9 @@ export class OrganizationsService {
   async hardDelete(id: string) {
     // Vérifier que l'organisation existe et est supprimée
     const organization = await this.findDeletedOrganization(id);
+
+    // 🛡️ Protection SuperAdmin : empêcher la suppression DÉFINITIVE d'organisations contenant des superadmins (même soft-deleted)
+    await this.preventSuperAdminDeletion(id, true);
 
     // Suppression définitive (libère le nom d'organisation et les emails)
     await this.prisma.$transaction([
@@ -218,6 +267,26 @@ export class OrganizationsService {
       throw new BadRequestException(
         'Vous ne pouvez pas supprimer votre propre organisation. ' +
         'Cela vous déconnecterait et supprimerait votre compte.'
+      );
+    }
+  }
+
+  private async preventSuperAdminDeletion(organizationId: string, includeDeleted = false) {
+    // Vérifier s'il y a des superadmins dans l'organisation (actifs ou tous selon le contexte)
+    const superAdminCount = await this.prisma.user.count({
+      where: {
+        organizationId,
+        ...(includeDeleted ? {} : { deletedAt: null }),
+        role: {
+          name: 'Super administrateur',
+        },
+      },
+    });
+
+    if (superAdminCount > 0) {
+      throw new BadRequestException(
+        `Cette organisation contient ${superAdminCount} Super Administrateur(s) et ne peut pas être supprimée. ` +
+        'Transférez d\'abord les Super Administrateurs vers une autre organisation.'
       );
     }
   }

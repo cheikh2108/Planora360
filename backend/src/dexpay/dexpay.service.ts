@@ -25,16 +25,31 @@ export interface CheckoutSession {
 export class DexpayService {
   private readonly logger = new Logger(DexpayService.name);
   private readonly apiUrl: string;
-  private readonly apiKey: string;
-  private readonly webhookSecret: string;
+  private readonly publicKey: string;
+  private readonly secretKey: string;
 
   constructor(private config: ConfigService) {
-    this.apiUrl = this.config.get<string>('DEXPAY_API_URL') || '';
-    this.apiKey = this.config.get<string>('DEXPAY_API_KEY') || '';
-    this.webhookSecret = this.config.get<string>('DEXPAY_WEBHOOK_SECRET') || '';
+    // Auto-détection sandbox/production basée sur les clés
+    this.publicKey = this.config.get<string>('DEXPAY_PUBLIC_KEY') || '';
+    this.secretKey = this.config.get<string>('DEXPAY_SECRET_KEY') || '';
 
-    if (!this.apiUrl || !this.apiKey) {
+    // Déterminer l'URL correcte en fonction de l'environnement
+    const env = this.config.get<string>('DEXPAY_ENV') || 'sandbox';
+    const configuredUrl = this.config.get<string>('DEXPAY_API_URL');
+
+    if (env === 'live' || this.publicKey.startsWith('pk_live_')) {
+      this.apiUrl = configuredUrl || 'https://api.dexpay.africa/api/v1';
+      this.logger.log('🔴 DexPay en mode PRODUCTION');
+    } else {
+      this.apiUrl = configuredUrl || 'https://api.sandbox.dexpay.africa/api/v1';
+      this.logger.log('🟢 DexPay en mode SANDBOX');
+    }
+
+    if (!this.apiUrl || !this.publicKey || !this.secretKey) {
       this.logger.warn('⚠️ DexPay non configuré - Paiements désactivés');
+    } else {
+      this.logger.log(`📍 URL: ${this.apiUrl}`);
+      this.logger.log(`🔑 Clé: ${this.publicKey.substring(0, 15)}...`);
     }
   }
 
@@ -43,36 +58,50 @@ export class DexpayService {
    */
   async createCheckoutSession(params: CreateCheckoutParams): Promise<CheckoutSession> {
     try {
-      const frontendUrl = this.config.get<string>('FRONTEND_URL') || 'https://planora360.org';
-      const webhookUrl = `${frontendUrl.replace(/\/+$/, '')}/api/dexpay/webhook`;
+      this.logger.log(`🚀 Création checkout session DexPay pour ${params.customerEmail}`);
+
+      this.logger.debug(`🔑 Utilisation clé: ${this.publicKey.substring(0, 20)}...`);
+      this.logger.debug(`📍 URL API: ${this.apiUrl}`);
+
+      // Prendre la première URL si FRONTEND_URL contient plusieurs valeurs séparées par virgule
+      const frontendUrlRaw = this.config.get<string>('FRONTEND_URL') || 'http://localhost:3001';
+      const frontendUrl = frontendUrlRaw.split(',')[0].trim();
+      const webhookUrl = `${this.apiUrl.replace(/\/api\/v1$/, '')}/api/dexpay/webhook`;
+
+      const payload = {
+        reference: `ORG-${params.organizationId}-${Date.now()}`,
+        item_name: params.description,
+        amount: params.amount,
+        currency: params.currency,
+        success_url: params.successUrl,
+        failure_url: params.failureUrl,
+        webhook_url: webhookUrl,
+        customer: {
+          email: params.customerEmail,
+          name: params.customerName,
+        },
+        metadata: {
+          organization_id: params.organizationId,
+          plan: params.plan,
+          billing_cycle: params.billingCycle,
+        },
+      };
+
+      this.logger.debug(`📦 Payload: ${JSON.stringify(payload, null, 2)}`);
 
       const response = await axios.post(
         `${this.apiUrl}/checkout-sessions`,
-        {
-          amount: params.amount,
-          currency: params.currency,
-          customer: {
-            email: params.customerEmail,
-            name: params.customerName,
-          },
-          description: params.description,
-          success_url: params.successUrl,
-          failure_url: params.failureUrl,
-          webhook_url: webhookUrl, // URL pour recevoir les notifications
-          metadata: {
-            organization_id: params.organizationId,
-            plan: params.plan,
-          },
-        },
+        payload,
         {
           headers: {
-            'x-api-key': this.apiKey,
+            'x-api-key': this.publicKey,
             'Content-Type': 'application/json',
           },
         }
       );
 
       this.logger.log(`✅ Checkout session créée: ${response.data.data.reference}`);
+      this.logger.log(`🔗 URL paiement: ${response.data.data.payment_url}`);
 
       return {
         reference: response.data.data.reference,
@@ -80,8 +109,19 @@ export class DexpayService {
         status: response.data.data.status,
       };
     } catch (error: any) {
+      const dexpayError = error.response?.data;
       this.logger.error(`❌ Erreur création checkout: ${error.message}`);
-      throw error;
+      this.logger.error(`🔢 Status Code: ${error.response?.status}`);
+      if (dexpayError) {
+        this.logger.error(`📛 DexPay response: ${JSON.stringify(dexpayError, null, 2)}`);
+      }
+      if (error.response?.status === 403) {
+        this.logger.error('🚫 Erreur 403: Vérifiez que l\'URL correspond aux clés (sandbox avec pk_test, production avec pk_live)');
+      }
+      if (error.response?.status === 422) {
+        this.logger.error('⚠️ Erreur 422: Données invalides. Vérifiez le format du payload ci-dessus.');
+      }
+      throw new Error(`DexPay API Error (${error.response?.status || 'unknown'}): ${JSON.stringify(dexpayError || error.message)}`);
     }
   }
 
@@ -94,7 +134,7 @@ export class DexpayService {
         `${this.apiUrl}/checkout-sessions/${reference}`,
         {
           headers: {
-            'x-api-key': this.apiKey,
+            'x-api-key': this.publicKey,
           },
         }
       );
@@ -108,23 +148,23 @@ export class DexpayService {
 
   /**
    * Vérifier la signature HMAC-SHA256 d'un webhook DexPay
-   * Header: X-Webhook-Signature
+   * Header: x-dexchange-signature
    */
   verifyWebhookSignature(signature: string, payload: any): boolean {
-    if (!this.webhookSecret) {
-      this.logger.warn('⚠️ Webhook secret non configuré - Signature non vérifiée');
+    if (!this.secretKey) {
+      this.logger.warn('⚠️ Secret key non configurée - Signature non vérifiée');
       return true; // Développement uniquement
     }
 
     if (!signature) {
-      this.logger.error('❌ Aucune signature fournie dans le header X-Webhook-Signature');
+      this.logger.error('❌ Aucune signature fournie dans le header x-dexchange-signature');
       return false;
     }
 
     try {
       const crypto = require('crypto');
       const computedSignature = crypto
-        .createHmac('sha256', this.webhookSecret)
+        .createHmac('sha256', this.secretKey)
         .update(JSON.stringify(payload))
         .digest('hex');
 

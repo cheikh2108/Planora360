@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { authApi } from '@/lib/api';
-import { Loader2, CheckCircle2, ChevronLeft, X, Mail } from 'lucide-react';
+import { Loader2, CheckCircle2, ChevronLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import axios from 'axios';
 
 type Plan = 'INDIVIDUEL' | 'PRO' | 'EQUIPE' | 'ORGANISATION' | 'ENTERPRISE';
 type BillingCycle = 'MONTHLY' | 'YEARLY';
@@ -26,41 +26,10 @@ const PLANS: {
     priceYearly: '100 000 FCFA/an',
     features: ['3 projets', '1 utilisateur', 'Tableau de bord personnel', 'Support e-mail'],
   },
-  {
-    id: 'PRO',
-    label: 'Pro',
-    description: 'Petites structures',
-    priceMonthly: 'Sur devis',
-    priceYearly: 'Sur devis',
-    features: ['10 projets', '3 utilisateurs', 'Rapports avancés', 'Workflow validation'],
-  },
-  {
-    id: 'EQUIPE',
-    label: 'Équipe',
-    description: 'PME & associations',
-    priceMonthly: 'Sur devis',
-    priceYearly: 'Sur devis',
-    features: ['25 projets', '10 utilisateurs', 'Cartographie', 'Gestion documentaire', 'Passation marchés'],
-  },
-  {
-    id: 'ORGANISATION',
-    label: 'Organisation',
-    description: 'ONG & programmes',
-    priceMonthly: 'Sur devis',
-    priceYearly: 'Sur devis',
-    features: ['50 projets', '25 utilisateurs', 'Passation complète', 'Rapports bailleurs', 'Audit'],
-  },
-  {
-    id: 'ENTERPRISE',
-    label: 'Enterprise',
-    description: 'Grandes organisations',
-    priceMonthly: 'Sur devis',
-    priceYearly: 'Sur devis',
-    features: ['Illimité', 'Environnement dédié', 'Intégrations API', 'SLA garanti', 'Support premium'],
-  },
 ];
 
 export default function RegisterPage() {
+  const searchParams = useSearchParams();
   const [step, setStep] = useState<1 | 2>(1);
   const [plan, setPlan] = useState<Plan>('INDIVIDUEL');
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('MONTHLY');
@@ -72,26 +41,22 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Modal de demande de devis
-  const [showQuoteModal, setShowQuoteModal] = useState(false);
-  const [estimatedUsers, setEstimatedUsers] = useState('');
-  const [customMessage, setCustomMessage] = useState('');
-  const [quoteLoading, setQuoteLoading] = useState(false);
-  const [quoteSent, setQuoteSent] = useState(false);
+  // Lire le plan depuis l'URL au chargement
+  useEffect(() => {
+    const urlPlan = searchParams.get('plan')?.toUpperCase() as Plan | null;
+    if (urlPlan && PLANS.some(p => p.id === urlPlan)) {
+      setPlan(urlPlan);
+    }
+  }, [searchParams]);
 
   const selectedPlan = PLANS.find((p) => p.id === plan);
   const displayPrice = billingCycle === 'YEARLY' ? selectedPlan?.priceYearly : selectedPlan?.priceMonthly;
 
+  const [successMessage, setSuccessMessage] = useState('');
+
   async function handleSubmit() {
     setError('');
-
-    // Si ce n'est pas INDIVIDUEL → ouvrir modal devis
-    if (plan !== 'INDIVIDUEL') {
-      setShowQuoteModal(true);
-      return;
-    }
-
-    // INDIVIDUEL → paiement direct
+    setSuccessMessage('');
     setLoading(true);
 
     try {
@@ -105,41 +70,34 @@ export default function RegisterPage() {
         email,
       });
 
-      // Redirection automatique vers DexPay
-      if (response.checkoutUrl) {
-        window.location.href = response.checkoutUrl;
-      } else {
-        throw new Error('URL de paiement manquante');
+      // Nouveau flow : inscription en attente d'approbation
+      if (response.data.status === 'PENDING_APPROVAL') {
+        const message = response.data.message ||
+          'Demande d\'inscription reçue ! Un administrateur va examiner votre demande et vous recevrez un email de confirmation sous 24-48h.';
+        setSuccessMessage(message);
+        setLoading(false);
+
+        // Rediriger vers la page de connexion après 5 secondes
+        setTimeout(() => {
+          window.location.href = '/auth/login';
+        }, 5000);
+      }
+      // Ancien flow : redirection vers paiement (si le paiement est réactivé plus tard)
+      else if (response.data.checkoutUrl) {
+        window.location.href = response.data.checkoutUrl;
+      }
+      // Autre cas de succès
+      else if (response.data.success) {
+        setSuccessMessage(response.data.message || 'Inscription réussie !');
+        setLoading(false);
+      }
+      else {
+        throw new Error('Réponse inattendue du serveur');
       }
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
       setError(typeof msg === 'string' ? msg : 'Une erreur est survenue, veuillez réessayer.');
       setLoading(false);
-    }
-  }
-
-  async function handleQuoteRequest() {
-    setQuoteLoading(true);
-
-    try {
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/auth/request-quote`, {
-        organizationName: orgName,
-        plan,
-        billingCycle,
-        firstName,
-        lastName,
-        email,
-        estimatedUsers: estimatedUsers ? parseInt(estimatedUsers) : undefined,
-        message: customMessage,
-      });
-
-      setQuoteSent(true);
-      setTimeout(() => {
-        window.location.href = '/auth/login';
-      }, 3000);
-    } catch (err) {
-      setError('Erreur lors de l\'envoi de la demande. Veuillez réessayer.');
-      setQuoteLoading(false);
     }
   }
 
@@ -323,6 +281,29 @@ export default function RegisterPage() {
                       </button>
                     ))}
                   </div>
+
+                  {/* Call-to-action Plans Entreprise */}
+                  <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-violet-50 rounded-xl border border-blue-200">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-1">
+                        <h4 className="text-sm font-bold text-slate-900 mb-1">
+                          Besoin d'un plan entreprise ?
+                        </h4>
+                        <p className="text-xs text-slate-600 mb-2">
+                          Plans Pro, Équipe, Organisation et Enterprise disponibles sur devis.
+                        </p>
+                        <Link
+                          href="/contact-commercial"
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+                        >
+                          <span>Contactez notre équipe commerciale</span>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <button
@@ -350,7 +331,7 @@ export default function RegisterPage() {
                   <h2 className="text-xl font-bold text-slate-900">Responsable du compte</h2>
                   <p className="text-sm text-slate-500 mt-1">
                     {plan === 'INDIVIDUEL'
-                      ? 'Après validation du paiement, vous recevrez un email de vérification puis vos identifiants.'
+                      ? 'Votre demande sera examinée par notre équipe. Vous recevrez un email avec vos identifiants sous 24-48h.'
                       : 'Notre équipe commerciale vous contactera sous 48h pour vous proposer une offre personnalisée.'}
                   </p>
                 </div>
@@ -421,6 +402,27 @@ export default function RegisterPage() {
                   </div>
                 </div>
 
+                {successMessage && (
+                  <div className="space-y-3">
+                    <div
+                      role="alert"
+                      className="flex items-start gap-2.5 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-4 py-3 rounded-xl"
+                    >
+                      <span className="shrink-0 mt-0.5 text-emerald-500">✓</span>
+                      <div>
+                        <p className="font-semibold mb-1">{successMessage}</p>
+                        <p className="text-emerald-600 text-[11px]">
+                          Vous recevrez un email avec vos identifiants une fois votre demande approuvée.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-center gap-2 text-xs text-slate-600">
+                      <Loader2 size={12} className="animate-spin" />
+                      <span>Redirection vers la page de connexion...</span>
+                    </div>
+                  </div>
+                )}
+
                 {error && (
                   <div
                     role="alert"
@@ -433,21 +435,23 @@ export default function RegisterPage() {
 
                 <button
                   type="button"
-                  disabled={loading || !firstName.trim() || !lastName.trim() || !email.trim()}
+                  disabled={loading || !firstName.trim() || !lastName.trim() || !email.trim() || !!successMessage}
                   onClick={handleSubmit}
                   className="w-full h-11 bg-[#0f1e38] hover:bg-[#162d52] disabled:opacity-40 text-white font-bold rounded-xl text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {loading && <Loader2 size={15} className="animate-spin" />}
                   {loading
-                    ? 'Redirection vers le paiement...'
-                    : plan === 'INDIVIDUEL'
-                      ? "S'inscrire et payer"
-                      : 'Demander un devis'}
+                    ? 'Envoi de la demande...'
+                    : successMessage
+                      ? 'Demande envoyée ✓'
+                      : plan === 'INDIVIDUEL'
+                        ? "Demander l'accès"
+                        : 'Demander un devis'}
                 </button>
 
-                {plan === 'INDIVIDUEL' && (
+                {plan === 'INDIVIDUEL' && !successMessage && (
                   <p className="text-[10px] text-center text-slate-500">
-                    Vous serez redirigé vers notre plateforme de paiement sécurisée DexPay.
+                    Votre demande sera examinée par notre équipe sous 24-48h.
                   </p>
                 )}
               </div>
@@ -462,86 +466,6 @@ export default function RegisterPage() {
           </p>
         </div>
       </div>
-
-      {/* Modal Demande de devis */}
-      {showQuoteModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-8 relative animate-in fade-in slide-in-from-bottom-4 duration-300">
-            {!quoteSent ? (
-              <>
-                <button
-                  onClick={() => setShowQuoteModal(false)}
-                  className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors"
-                >
-                  <X size={20} />
-                </button>
-
-                <div className="mb-6">
-                  <h3 className="text-2xl font-bold text-slate-900 mb-2">Demande de devis</h3>
-                  <p className="text-sm text-slate-500">
-                    Complétez les informations ci-dessous. Notre équipe vous contactera sous 48h.
-                  </p>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-900 mb-1.5">
-                      Nombre d&apos;utilisateurs estimé (optionnel)
-                    </label>
-                    <input
-                      type="number"
-                      value={estimatedUsers}
-                      onChange={(e) => setEstimatedUsers(e.target.value)}
-                      className="w-full h-11 px-4 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20 focus:border-[#2563eb] transition-all"
-                      placeholder="Ex: 10"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-900 mb-1.5">
-                      Message personnalisé (optionnel)
-                    </label>
-                    <textarea
-                      value={customMessage}
-                      onChange={(e) => setCustomMessage(e.target.value)}
-                      rows={4}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20 focus:border-[#2563eb] transition-all resize-none"
-                      placeholder="Décrivez vos besoins spécifiques..."
-                    />
-                  </div>
-
-                  <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
-                    <p className="text-xs text-blue-700 leading-relaxed">
-                      <strong className="font-semibold">Récapitulatif :</strong> Plan {selectedPlan?.label} (
-                      {billingCycle === 'YEARLY' ? 'Annuel' : 'Mensuel'}) pour {orgName}
-                    </p>
-                  </div>
-
-                  <button
-                    type="button"
-                    disabled={quoteLoading}
-                    onClick={handleQuoteRequest}
-                    className="w-full h-11 bg-[#2563eb] hover:bg-[#1d4ed8] disabled:opacity-40 text-white font-bold rounded-xl text-sm transition-colors flex items-center justify-center gap-2"
-                  >
-                    {quoteLoading && <Loader2 size={15} className="animate-spin" />}
-                    {quoteLoading ? 'Envoi en cours...' : 'Envoyer la demande'}
-                  </button>
-                </div>
-              </>
-            ) : (
-              <div className="text-center py-4">
-                <div className="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-4">
-                  <Mail size={32} className="text-emerald-500" />
-                </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-2">Demande envoyée !</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  Notre équipe commerciale vous contactera sous 48h. Redirection vers la connexion...
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

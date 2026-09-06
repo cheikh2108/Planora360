@@ -9,7 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { PostHogService } from '../analytics/posthog.service';
-import { DexpayService } from '../dexpay/dexpay.service';
+// import { DexpayService } from '../dexpay/dexpay.service'; // Désactivé - intégration paiement à faire
 import { NotificationsService } from '../notifications/notifications.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterOrganizationDto } from './dto/register-organization.dto';
@@ -47,7 +47,7 @@ export class AuthService {
     private jwtService: JwtService,
     private config: ConfigService,
     private posthog: PostHogService,
-    private dexpay: DexpayService,
+    // private dexpay: DexpayService, // Désactivé - intégration paiement à faire par un autre dev
     private notifications: NotificationsService,
   ) {}
 
@@ -78,7 +78,7 @@ export class AuthService {
           name: dto.organizationName,
           subscriptionPlan: plan,
           brandColor: dto.brandColor ?? DEFAULT_BRAND_COLOR,
-          status: 'PENDING_PAYMENT', // Attente paiement
+          status: 'PENDING_APPROVAL', // ⏳ En attente d'approbation par le SuperAdmin
           subscriptionStatus: 'INCOMPLETE',
           subscriptionCurrency: 'XOF',
           billingCycle,
@@ -94,37 +94,36 @@ export class AuthService {
           passwordHash,
           organizationId: organization.id,
           roleId: adminRole.id,
-          isActive: false, // Activé après paiement + vérification email
+          isActive: false, // ⏳ Inactif jusqu'à approbation
         },
       });
 
       return { organization, user };
     });
 
-    // Créer checkout session DexPay
-    const frontendUrl = this.config.get<string>('FRONTEND_URL') || 'https://planora360.org';
-    const amount = this.dexpay.getPlanPrice(plan, billingCycle);
-
-    const checkout = await this.dexpay.createCheckoutSession({
-      amount,
-      currency: 'XOF',
-      customerEmail: user.email,
-      customerName: `${user.firstName} ${user.lastName}`,
-      description: `Abonnement PLANORA 360 - ${plan} ${billingCycle === 'YEARLY' ? '(Annuel)' : '(Mensuel)'}`,
-      plan,
-      billingCycle,
-      organizationId: organization.id,
-      successUrl: `${frontendUrl}/payment/success`,
-      failureUrl: `${frontendUrl}/payment/failed`,
-    });
-
     // Track registration in PostHog
     this.posthog.trackRegistration(user.id, organization.id, plan);
 
+    // ✅ Notifier le SuperAdmin de la nouvelle inscription
+    await this.notifications.sendNewRegistrationToAdmin({
+      organizationName: organization.name,
+      organizationId: organization.id,
+      plan,
+      billingCycle,
+      userEmail: user.email,
+      userName: `${user.firstName} ${user.lastName}`,
+      tempPassword, // Le SuperAdmin peut le voir pour le communiquer après validation
+    });
+
+    console.log(`⏳ Organisation ${organization.name} créée en attente d'approbation (ID: ${organization.id})`);
+    console.log(`📧 Notification envoyée au SuperAdmin`);
+
     return {
-      checkoutUrl: checkout.payment_url,
-      reference: checkout.reference,
-      message: 'Redirection vers le paiement...'
+      success: true,
+      organizationId: organization.id,
+      userId: user.id,
+      status: 'PENDING_APPROVAL',
+      message: 'Demande d\'inscription reçue ! Un administrateur va examiner votre demande et vous recevrez un email de confirmation sous 24-48h.'
     };
   }
 
@@ -204,23 +203,23 @@ export class AuthService {
   }
 
   async requestQuote(data: {
-    organizationName: string;
+    organization: string;
     plan: string;
-    billingCycle: string;
-    firstName: string;
-    lastName: string;
+    billingCycle?: string;
+    fullName: string;
     email: string;
+    phone?: string;
     estimatedUsers?: number;
     message?: string;
   }) {
     // Envoyer email au support avec demande de devis
     await this.notifications.sendQuoteRequest({
-      organizationName: data.organizationName,
+      organizationName: data.organization,
       plan: data.plan,
-      billingCycle: data.billingCycle,
-      firstName: data.firstName,
-      lastName: data.lastName,
+      billingCycle: data.billingCycle || 'MONTHLY',
+      fullName: data.fullName,
       email: data.email,
+      phone: data.phone,
       estimatedUsers: data.estimatedUsers,
       customMessage: data.message,
     });

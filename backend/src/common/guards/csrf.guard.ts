@@ -23,9 +23,9 @@ export class CsrfGuard implements CanActivate {
       return true;
     }
 
-    // Ignorer CSRF pour /auth/login et /auth/register (pas encore de cookie)
+    // Ignorer CSRF pour routes publiques (pas encore de cookie)
     const url = request.url;
-    if (url.match(/^\/(api\/)?auth\/(login|register|refresh)/)) {
+    if (url.match(/^\/(api\/)?auth\/(login|register|refresh|request-quote)/)) {
       return true;
     }
 
