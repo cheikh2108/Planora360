@@ -67,7 +67,7 @@ export class EmailTemplates {
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                 <tr>
                   <td align="center" style="padding-bottom:20px">
-                    <img src="https://f005.backblazeb2.com/file/ataaba-pilot/email-assets/logo-light.svg" alt="PLANORA 360" width="160" height="40" style="display:block;max-width:160px;height:auto;margin:0 auto" />
+                    <img src="${this.frontendUrl}/email-assets/logo-light.svg" alt="PLANORA 360" width="160" height="40" style="display:block;max-width:160px;height:auto;margin:0 auto" />
                   </td>
                 </tr>
               </table>
