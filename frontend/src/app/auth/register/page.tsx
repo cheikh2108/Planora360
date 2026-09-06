@@ -49,6 +49,13 @@ function RegisterForm() {
     }
   }, [searchParams]);
 
+  // Récupérer le CSRF token au chargement de la page
+  useEffect(() => {
+    fetch('/api/auth/csrf', { credentials: 'include' })
+      .then(res => res.json())
+      .catch(err => console.error('Failed to fetch CSRF token:', err));
+  }, []);
+
   const selectedPlan = PLANS.find((p) => p.id === plan);
   const displayPrice = billingCycle === 'YEARLY' ? selectedPlan?.priceYearly : selectedPlan?.priceMonthly;
 
