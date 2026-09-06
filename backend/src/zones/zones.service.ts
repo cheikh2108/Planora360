@@ -3,6 +3,9 @@ import { PrismaService } from '../common/prisma/prisma.service';
 import { CacheInvalidationService } from '../common/cache/cache-invalidation.service';
 import { CreateZoneDto } from './dto/create-zone.dto';
 import { UpdateZoneDto } from './dto/update-zone.dto';
+import { CreateZoneConfigDto } from './dto/create-zone-config.dto';
+import { UpdateZoneConfigDto } from './dto/update-zone-config.dto';
+import { ZONE_PRESETS } from './constants/zone-presets';
 
 @Injectable()
 export class ZonesService {
@@ -249,5 +252,94 @@ export class ZonesService {
             : 0,
       };
     });
+  }
+
+  /**
+   * Configuration des zones géographiques
+   */
+  async getZoneConfig(organizationId: string) {
+    let config = await this.prisma.organizationZoneConfig.findUnique({
+      where: { organizationId },
+    });
+
+    // Créer une config par défaut si elle n'existe pas
+    if (!config) {
+      try {
+        config = await this.prisma.organizationZoneConfig.create({
+          data: {
+            organizationId,
+            preset: 'STANDARD',
+            levelLabels: ZONE_PRESETS.STANDARD.levelLabels,
+            description: ZONE_PRESETS.STANDARD.description,
+          },
+        });
+      } catch (error) {
+        console.error('Erreur création config zone:', error);
+        // Si ça échoue, retourner une config virtuelle
+        return {
+          id: 'virtual',
+          organizationId,
+          preset: 'STANDARD',
+          levelLabels: ZONE_PRESETS.STANDARD.levelLabels,
+          description: ZONE_PRESETS.STANDARD.description,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+      }
+    }
+
+    return config;
+  }
+
+  async createOrUpdateZoneConfig(
+    dto: CreateZoneConfigDto | UpdateZoneConfigDto,
+    organizationId: string,
+  ) {
+    try {
+      // Si un preset est fourni, charger les labels du preset
+      const levelLabels = dto.levelLabels || (dto.preset ? ZONE_PRESETS[dto.preset].levelLabels : ZONE_PRESETS.STANDARD.levelLabels);
+      const description = dto.description || (dto.preset ? ZONE_PRESETS[dto.preset].description : ZONE_PRESETS.STANDARD.description);
+
+      const config = await this.prisma.organizationZoneConfig.upsert({
+        where: { organizationId },
+        create: {
+          organizationId,
+          preset: (dto as CreateZoneConfigDto).preset || 'STANDARD',
+          levelLabels,
+          description,
+        },
+        update: {
+          ...(dto.preset && { preset: dto.preset }),
+          ...(levelLabels && { levelLabels }),
+          ...(description !== undefined && { description }),
+        },
+      });
+
+      // Invalider le cache
+      await this.cacheInvalidation.invalidateDashboard(organizationId);
+
+      return config;
+    } catch (error) {
+      console.error('Erreur upsert config zone:', error);
+      throw new BadRequestException('Impossible de sauvegarder la configuration des zones');
+    }
+  }
+
+  async getAvailablePresets() {
+    return Object.entries(ZONE_PRESETS).map(([key, value]) => ({
+      key,
+      name: value.name,
+      description: value.description,
+      levelLabels: value.levelLabels,
+    }));
+  }
+
+  /**
+   * Obtenir le label d'un niveau géographique
+   */
+  async getLevelLabel(level: number, organizationId: string): Promise<string> {
+    const config = await this.getZoneConfig(organizationId);
+    const labels = config.levelLabels as Record<string, string>;
+    return labels[level.toString()] || `Niveau ${level}`;
   }
 }

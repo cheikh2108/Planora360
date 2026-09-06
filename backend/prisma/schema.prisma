@@ -179,6 +179,7 @@ model Organization {
 
   // Zones géographiques
   geographicZones GeographicZone[]
+  zoneConfig      OrganizationZoneConfig?
 
   // DexPay - Paiements
   payments        Payment[]
@@ -1795,6 +1796,29 @@ model ActionPlanZone {
   @@index([actionPlanId])
   @@index([zoneId])
   @@map("action_plan_zones")
+}
+
+// Configuration des niveaux géographiques par organisation
+model OrganizationZoneConfig {
+  id             String   @id @default(cuid())
+  organizationId String   @unique
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Preset: SANTE, STANDARD, CUSTOM
+  preset         String   @default("STANDARD")
+
+  // Configuration des labels par niveau (JSON)
+  // Exemple: {"0": "Pays", "1": "Région", "2": "District", "3": "Structure"}
+  levelLabels    Json     @default("{\"0\":\"Pays\",\"1\":\"Région\",\"2\":\"Département\",\"3\":\"Commune\"}")
+
+  // Description de la configuration
+  description    String?  @db.Text
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([organizationId])
+  @@map("organization_zone_configs")
 }
 
 // DexPay - Historique des paiements

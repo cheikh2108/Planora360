@@ -13,6 +13,8 @@ import { SubscriptionPlan } from '@prisma/client';
 import { ZonesService } from './zones.service';
 import { CreateZoneDto } from './dto/create-zone.dto';
 import { UpdateZoneDto } from './dto/update-zone.dto';
+import { CreateZoneConfigDto } from './dto/create-zone-config.dto';
+import { UpdateZoneConfigDto } from './dto/update-zone-config.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { SubscriptionGuard, RequiresPlan } from '../common/guards/subscription.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -62,5 +64,27 @@ export class ZonesController {
   @Delete(':id')
   remove(@Param('id') id: string, @CurrentUser() user: any) {
     return this.zonesService.remove(id, user.organizationId);
+  }
+
+  // ========== Configuration des zones géographiques ==========
+
+  @Get('config/presets')
+  getPresets() {
+    return this.zonesService.getAvailablePresets();
+  }
+
+  @Get('config')
+  getConfig(@CurrentUser() user: any) {
+    return this.zonesService.getZoneConfig(user.organizationId);
+  }
+
+  @Post('config')
+  createConfig(@Body() dto: CreateZoneConfigDto, @CurrentUser() user: any) {
+    return this.zonesService.createOrUpdateZoneConfig(dto, user.organizationId);
+  }
+
+  @Patch('config')
+  updateConfig(@Body() dto: UpdateZoneConfigDto, @CurrentUser() user: any) {
+    return this.zonesService.createOrUpdateZoneConfig(dto, user.organizationId);
   }
 }
