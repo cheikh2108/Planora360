@@ -8,18 +8,20 @@ const nextConfig: NextConfig = {
 
   // Proxy API calls to backend (évite problème cross-domain cookies)
   async rewrites() {
-    const apiUrl = process.env.NODE_ENV === 'production'
+    // En production: backend sur sous-domaine Hostinger temporaire
+    // En dev: backend local sur port 3001
+    const backendUrl = process.env.NODE_ENV === 'production'
       ? 'https://firebrick-lyrebird-183958.hostingersite.com'
-      : 'http://localhost:3001'; // ✅ Backend sur port 3001
+      : 'http://localhost:3001';
 
     return [
       {
         source: '/api/:path*',
-        destination: `${apiUrl}/:path*`, // ✅ Pas de /api prefix car backend utilise routes directes
+        destination: `${backendUrl}/:path*`,
       },
       {
         source: '/uploads/:path*',
-        destination: `${apiUrl}/uploads/:path*`,
+        destination: `${backendUrl}/uploads/:path*`,
       },
     ];
   },
