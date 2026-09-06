@@ -1,14 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { authApi } from '@/lib/api';
 import { Loader2, CheckCircle2, ChevronLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-// Désactiver le pre-rendering pour permettre useSearchParams()
-export const dynamic = 'force-dynamic';
 
 type Plan = 'INDIVIDUEL' | 'PRO' | 'EQUIPE' | 'ORGANISATION' | 'ENTERPRISE';
 type BillingCycle = 'MONTHLY' | 'YEARLY';
@@ -31,7 +28,7 @@ const PLANS: {
   },
 ];
 
-export default function RegisterPage() {
+function RegisterForm() {
   const searchParams = useSearchParams();
   const [step, setStep] = useState<1 | 2>(1);
   const [plan, setPlan] = useState<Plan>('INDIVIDUEL');
@@ -470,5 +467,17 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2563eb]"></div>
+      </div>
+    }>
+      <RegisterForm />
+    </Suspense>
   );
 }
