@@ -86,7 +86,7 @@ export default function PaymentMockPage() {
             <Button
               onClick={handlePaymentFailure}
               disabled={isProcessing}
-              variant="destructive"
+              variant="danger"
               className="w-full"
               size="lg"
             >
