@@ -21,6 +21,36 @@ export class ProceduresService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(organizationId: string, userId: string, dto: any) {
+    // Vérifier que la ligne PPM existe si fournie
+    if (dto.lignePpmId) {
+      const lignePPM = await this.prisma.lignePPM.findFirst({
+        where: {
+          id: dto.lignePpmId,
+          ppm: { organizationId },
+        },
+      });
+
+      if (!lignePPM) {
+        throw new BadRequestException(
+          `Ligne PPM #${dto.lignePpmId} introuvable dans votre organisation`,
+        );
+      }
+
+      // Vérifier qu'elle n'est pas déjà liée à une autre procédure
+      const existingProcedure = await this.prisma.procedure.findFirst({
+        where: {
+          lignePPMId: dto.lignePpmId,
+          organizationId,
+        },
+      });
+
+      if (existingProcedure) {
+        throw new BadRequestException(
+          `Cette ligne PPM est déjà rattachée à la procédure ${existingProcedure.reference}`,
+        );
+      }
+    }
+
     // Générer référence unique
     const count = await this.prisma.procedure.count({
       where: { organizationId },

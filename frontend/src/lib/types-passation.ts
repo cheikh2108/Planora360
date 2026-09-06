@@ -84,6 +84,7 @@ export interface PlanPassationMarche {
   organizationId: string;
   reference: string;
   year: number;
+  title: string;
   projectId: string | null;
   project?: { id: string; title: string };
   status: StatusPPM;

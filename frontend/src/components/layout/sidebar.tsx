@@ -42,7 +42,6 @@ const NAV_ITEMS: NavItem[] = [
 const ORG_ADMIN_ITEMS: NavItem[] = [
   { href: '/admin/users',  label: 'Utilisateurs',  icon: Users,       permission: 'user.read' },
   { href: '/admin/roles',  label: 'Rôles',         icon: Shield,      permission: 'user.create' },
-  { href: '/admin/zones',  label: 'Zones',         icon: MapPin,      permission: 'plan.read' },
   { href: '/admin/help',   label: 'Centre d\'aide', icon: HelpCircle }, // Accessible à tous
   { href: '/settings',     label: 'Paramètres',    icon: Settings },
 ];

@@ -4,6 +4,7 @@ import { SubscriptionGuard, RequiresPlan } from '../../common/guards/subscriptio
 import { SubscriptionPlan } from '@prisma/client';
 import { ContratsService } from './contrats.service';
 import { StatusContrat } from '@prisma/client';
+import { CreateContratDto } from './dto/create-contrat.dto';
 
 @Controller('passation/contrats')
 @UseGuards(JwtAuthGuard, SubscriptionGuard)
@@ -12,7 +13,7 @@ export class ContratsController {
   constructor(private readonly contratsService: ContratsService) {}
 
   @Post()
-  create(@Req() req, @Body() dto: any) {
+  create(@Req() req, @Body() dto: CreateContratDto) {
     return this.contratsService.create(req.user.organizationId, req.user.id, dto);
   }
 

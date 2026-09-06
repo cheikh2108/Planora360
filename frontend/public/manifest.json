@@ -1,0 +1,16 @@
+{
+  "name": "PLANORA 360",
+  "short_name": "PLANORA 360",
+  "description": "Plateforme de gestion de projets et pilotage stratégique",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b1629",
+  "theme_color": "#0b1629",
+  "icons": [
+    {
+      "src": "/logo-dark.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

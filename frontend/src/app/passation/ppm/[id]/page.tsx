@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PassationStatusBadge } from '@/components/passation/PassationStatusBadge';
 import { AddLignePPMModal } from '@/components/passation/AddLignePPMModal';
+import { EditPPMModal } from '@/components/passation/EditPPMModal';
 import { formatDate, formatCurrency, cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/toast';
 import {
@@ -27,6 +28,7 @@ import {
   Plus,
   MoreVertical,
   Trash2,
+  Edit2,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -52,6 +54,7 @@ export default function PPMDetailPage() {
   const ppmId = params?.id as string;
   const [exportingFormat, setExportingFormat] = useState<'pdf' | 'excel' | null>(null);
   const [addLigneModalOpen, setAddLigneModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const [statusMenuOpen, setStatusMenuOpen] = useState(false);
 
   // Fetch PPM details
@@ -168,6 +171,27 @@ export default function PPMDetailPage() {
               </Button>
               <Button variant="secondary" size="sm" icon={<ArrowLeft size={14} />} className="md:hidden" />
             </Link>
+
+            {ppm?.status === 'BROUILLON' && (
+              <>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  icon={<Edit2 size={14} />}
+                  onClick={() => setEditModalOpen(true)}
+                  className="hidden md:flex"
+                >
+                  Modifier
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  icon={<Edit2 size={14} />}
+                  onClick={() => setEditModalOpen(true)}
+                  className="md:hidden"
+                />
+              </>
+            )}
 
             {ppm?.status === 'BROUILLON' && (
               <>
@@ -615,6 +639,14 @@ export default function PPMDetailPage() {
         onClose={() => setAddLigneModalOpen(false)}
         ppmId={ppmId}
       />
+
+      {ppm && (
+        <EditPPMModal
+          open={editModalOpen}
+          onClose={() => setEditModalOpen(false)}
+          ppm={ppm}
+        />
+      )}
     </div>
   );
 }

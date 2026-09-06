@@ -223,6 +223,14 @@ export const activitiesApi = {
   create: (data: Record<string, unknown>) => api.post('/activities', data),
   update: (id: string, data: Record<string, unknown>) => api.patch(`/activities/${id}`, data),
   updateStatus: (id: string, status: string) => api.patch(`/activities/${id}/status`, { status }),
+  import: (file: File, planId: string) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('planId', planId);
+    return api.post('/activities/import', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
 };
 
 // Checklist
@@ -513,4 +521,9 @@ export const zonesApi = {
   create: (data: any) => api.post('/zones', data),
   update: (id: string, data: any) => api.patch(`/zones/${id}`, data),
   remove: (id: string) => api.delete(`/zones/${id}`),
+  // Configuration des zones
+  getConfig: () => api.get('/zones/config'),
+  getPresets: () => api.get('/zones/config/presets'),
+  createConfig: (data: any) => api.post('/zones/config', data),
+  updateConfig: (data: any) => api.patch('/zones/config', data),
 };

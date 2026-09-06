@@ -7,6 +7,7 @@ import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
 import { FormField, Input, Select } from '@/components/ui/form-field';
 import { useToast } from '@/components/ui/toast';
+import { AlertCircle } from 'lucide-react';
 
 const METHODES = [
   { value: 'ACHAT_DIRECT', label: 'Achat Direct' },

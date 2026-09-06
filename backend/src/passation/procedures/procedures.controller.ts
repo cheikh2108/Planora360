@@ -14,6 +14,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { SubscriptionGuard, RequiresPlan } from '../../common/guards/subscription.guard';
 import { SubscriptionPlan } from '@prisma/client';
 import { ProceduresService } from './procedures.service';
+import { CreateProcedureDto } from './dto/create-procedure.dto';
 
 @Controller('passation/procedures')
 @UseGuards(JwtAuthGuard, SubscriptionGuard)
@@ -22,7 +23,7 @@ export class ProceduresController {
   constructor(private readonly proceduresService: ProceduresService) {}
 
   @Post()
-  create(@Req() req, @Body() dto: any) {
+  create(@Req() req, @Body() dto: CreateProcedureDto) {
     return this.proceduresService.create(req.user.organizationId, req.user.id, dto);
   }
 

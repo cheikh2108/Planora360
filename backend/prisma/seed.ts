@@ -109,7 +109,11 @@ async function main() {
 
   const existingOrg = await prisma.organization.findFirst({ where: { name: 'ATAABA' } });
   const org = existingOrg ?? await prisma.organization.create({
-    data: { name: 'ATAABA', subscriptionPlan: 'ENTERPRISE' },
+    data: {
+      name: 'ATAABA',
+      subscriptionPlan: 'ENTERPRISE',
+      status: 'ACTIVE',
+    },
   });
 
   const existingAdmin = await prisma.user.findUnique({ where: { email: 'admin@ataaba.com' } });
@@ -133,7 +137,11 @@ async function main() {
   // Organisation et compte test
   const existingTestOrg = await prisma.organization.findFirst({ where: { name: 'Test Org' } });
   const testOrg = existingTestOrg ?? await prisma.organization.create({
-    data: { name: 'Test Org', subscriptionPlan: 'ENTERPRISE' },
+    data: {
+      name: 'Test Org',
+      subscriptionPlan: 'ENTERPRISE',
+      status: 'ACTIVE',
+    },
   });
 
   const coordRole = await prisma.role.findFirst({ where: { name: 'Coordinateur', organizationId: null } });

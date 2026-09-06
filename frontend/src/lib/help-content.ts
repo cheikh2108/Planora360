@@ -49,6 +49,161 @@ export const HELP_CONTENT: HelpPage[] = [
     ],
   },
   {
+    page: 'territorial',
+    articles: [
+      {
+        id: 'terr-1',
+        title: 'Vue d\'ensemble de Vue Territoriale',
+        content: `
+          <p>La <strong>Vue Territoriale</strong> vous permet de gérer le découpage géographique de vos activités.</p>
+          <p>Cette page centralise :</p>
+          <ul>
+            <li><strong>Gestion des zones</strong> : Créer, modifier, supprimer la hiérarchie</li>
+            <li><strong>Configuration de la nomenclature</strong> : Adapter les noms des niveaux à votre secteur</li>
+            <li><strong>Statistiques par zone</strong> : Activités, budgets, taux d'exécution</li>
+          </ul>
+        `,
+      },
+      {
+        id: 'terr-2',
+        title: 'Configurer la nomenclature (Bouton "Configurer")',
+        content: `
+          <p>Par défaut, PLANORA 360 utilise la nomenclature <strong>STANDARD</strong> :</p>
+          <ul>
+            <li>Niveau 0 : <strong>Pays</strong></li>
+            <li>Niveau 1 : <strong>Région</strong></li>
+            <li>Niveau 2 : <strong>Département</strong></li>
+            <li>Niveau 3 : <strong>Commune</strong></li>
+          </ul>
+          <p><strong>Comment adapter à votre secteur :</strong></p>
+          <ol>
+            <li>Cliquez sur le bouton <strong>"Configurer"</strong> ⚙️</li>
+            <li>Sélectionnez un modèle pré-configuré (SANTÉ, ÉDUCATION, AGRICULTURE)</li>
+            <li>Enregistrez pour appliquer immédiatement</li>
+          </ol>
+          <p class="bg-blue-50 border border-blue-200 rounded p-2 text-sm text-blue-800 my-2">
+            💡 <strong>Important :</strong> Les zones existantes conservent leur niveau numérique. Seul l'affichage des labels change.
+          </p>
+        `,
+      },
+      {
+        id: 'terr-3',
+        title: 'Les 5 modèles de nomenclature',
+        content: `
+          <p>PLANORA 360 propose 5 configurations adaptées aux différents secteurs :</p>
+          <ul>
+            <li><strong>STANDARD</strong> (par défaut) : Pays → Région → Département → Commune</li>
+            <li><strong>SANTÉ</strong> : Pays → Région → <strong>District sanitaire</strong> → <strong>Structure de santé</strong></li>
+            <li><strong>ÉDUCATION</strong> : Pays → Région → <strong>Inspection</strong> → <strong>École</strong></li>
+            <li><strong>AGRICULTURE</strong> : Pays → Région → <strong>Zone agricole</strong> → <strong>Périmètre</strong></li>
+            <li><strong>CUSTOM</strong> : Personnalisez chaque niveau selon vos besoins</li>
+          </ul>
+          <p><strong>Exemple d'utilisation :</strong> Un projet de santé communautaire utilisera le modèle SANTÉ pour suivre les activités par district sanitaire et centre de santé.</p>
+        `,
+      },
+      {
+        id: 'terr-4',
+        title: 'Créer une zone géographique',
+        content: `
+          <p>Pour ajouter une nouvelle zone :</p>
+          <ol>
+            <li>Cliquez sur <strong>"Nouvelle zone"</strong></li>
+            <li>Renseignez :
+              <ul>
+                <li><strong>Nom</strong> : Ex: "Dakar", "District de Thiès"</li>
+                <li><strong>Code</strong> (optionnel) : Ex: "DK", "THIES-DS1"</li>
+                <li><strong>Niveau</strong> : Sélectionnez selon votre nomenclature</li>
+                <li><strong>Description</strong> (optionnelle)</li>
+              </ul>
+            </li>
+            <li>Enregistrez</li>
+          </ol>
+          <p class="bg-amber-50 border border-amber-200 rounded p-2 text-sm text-amber-800 my-2">
+            ⚠️ <strong>Attention :</strong> Les niveaux doivent suivre un ordre logique. Créez d'abord les pays, puis les régions, etc.
+          </p>
+        `,
+      },
+      {
+        id: 'terr-5',
+        title: 'Hiérarchie et navigation',
+        content: `
+          <p>Les zones s'organisent en <strong>arbre hiérarchique</strong> :</p>
+          <ul>
+            <li>Les zones de niveau supérieur (Pays, Régions) apparaissent en premier</li>
+            <li>Cliquez sur <strong>▶</strong> pour déplier et voir les sous-zones</li>
+            <li>Cliquez sur <strong>▼</strong> pour replier</li>
+          </ul>
+          <p><strong>Badge de niveau :</strong> Chaque zone affiche son niveau sous forme de badge coloré (Pays, Région, District, etc.)</p>
+          <p><strong>Nombre d'activités :</strong> Le compteur "• X activité(s)" indique combien d'activités sont assignées à cette zone.</p>
+        `,
+      },
+      {
+        id: 'terr-6',
+        title: 'Modifier ou supprimer une zone',
+        content: `
+          <p><strong>Pour modifier :</strong></p>
+          <ol>
+            <li>Passez la souris sur une zone → les boutons apparaissent</li>
+            <li>Cliquez sur l'icône <strong>crayon</strong> ✏️</li>
+            <li>Modifiez les informations et enregistrez</li>
+          </ol>
+          <p><strong>Pour supprimer :</strong></p>
+          <ol>
+            <li>Cliquez sur l'icône <strong>corbeille</strong> 🗑️</li>
+            <li>Confirmez la suppression</li>
+          </ol>
+          <p class="bg-red-50 border border-red-200 rounded p-2 text-sm text-red-800 my-2">
+            ⚠️ <strong>Restrictions :</strong>
+            <ul class="mt-2">
+              <li>Vous ne pouvez pas supprimer une zone qui contient des sous-zones</li>
+              <li>Vous ne pouvez pas supprimer une zone assignée à des activités</li>
+            </ul>
+          </p>
+        `,
+      },
+      {
+        id: 'terr-7',
+        title: 'Statistiques et performances',
+        content: `
+          <p>En bas de page, un tableau affiche les <strong>performances des zones de niveaux supérieurs</strong> (Pays, Régions) :</p>
+          <ul>
+            <li><strong>Activités</strong> : Nombre total d'activités dans la zone et ses sous-zones</li>
+            <li><strong>Complétion</strong> : Pourcentage d'activités terminées
+              <ul>
+                <li class="text-green-700">≥ 80% = Vert (Excellent)</li>
+                <li class="text-blue-700">≥ 50% = Bleu (Bien)</li>
+                <li class="text-orange-700">< 50% = Orange (À améliorer)</li>
+              </ul>
+            </li>
+            <li><strong>Budget Planifié</strong> : Somme des budgets de toutes les activités</li>
+            <li><strong>Exécution</strong> : Pourcentage du budget effectivement dépensé (mêmes couleurs)</li>
+          </ul>
+          <p><strong>Les KPIs en haut de page</strong> agrègent les données de toutes vos zones pour une vue d'ensemble rapide.</p>
+        `,
+      },
+      {
+        id: 'terr-8',
+        title: 'Cas d\'usage : Secteur Santé',
+        content: `
+          <p><strong>Exemple concret d'une organisation de santé au Sénégal :</strong></p>
+          <ol>
+            <li><strong>Étape 1 :</strong> Cliquer sur "Configurer" → Sélectionner <strong>SANTÉ</strong> → Enregistrer</li>
+            <li><strong>Étape 2 :</strong> Créer les zones :
+              <ul>
+                <li>Niveau 0 (Pays) : "Sénégal"</li>
+                <li>Niveau 1 (Région) : "Dakar", "Thiès", "Saint-Louis"</li>
+                <li>Niveau 2 (District sanitaire) : "District Dakar Nord", "District Thiès Sud"</li>
+                <li>Niveau 3 (Structure de santé) : "CS Yoff", "Hôpital Thiaroye", "CS Pikine"</li>
+              </ul>
+            </li>
+            <li><strong>Étape 3 :</strong> Lors de la création d'activités, sélectionner le centre de santé concerné</li>
+          </ol>
+          <p><strong>Avantages :</strong> Le dashboard affichera automatiquement "District sanitaire" et "Structure de santé" au lieu de "Département" et "Commune".</p>
+        `,
+      },
+    ],
+  },
+  {
     page: 'plans',
     articles: [
       {
@@ -505,6 +660,42 @@ export const HELP_CONTENT: HelpPage[] = [
           <p>Les KPIs vous donnent une vue d'ensemble instantanée de votre planification.</p>
         `,
       },
+      {
+        id: 'ppm-4',
+        title: 'Règle : 1 PPM par année et par organisation',
+        content: `
+          <p><strong>⚠️ Contrainte d'unicité :</strong> Chaque organisation ne peut créer qu'<strong>un seul PPM par année</strong>.</p>
+          <p>Si vous tentez de créer un deuxième PPM pour la même année, vous recevrez une erreur :</p>
+          <p class="bg-red-50 border border-red-200 rounded p-2 text-sm text-red-800 my-2">
+            "Un PPM existe déjà pour l'année XXXX dans votre organisation"
+          </p>
+          <p><strong>Solutions :</strong></p>
+          <ul>
+            <li>Si le PPM existant est en <strong>BROUILLON</strong> : vous pouvez le modifier ou le supprimer</li>
+            <li>Si le PPM est <strong>VALIDÉ</strong> : contactez votre administrateur</li>
+            <li>Créez un PPM pour une autre année</li>
+          </ul>
+          <p class="text-xs text-slate-600 mt-2">Cette règle garantit qu'un seul document de planification officiel existe par an, évitant contradictions et confusion.</p>
+        `,
+      },
+      {
+        id: 'ppm-5',
+        title: 'Champs obligatoires et validation',
+        content: `
+          <p>Lors de la création d'un PPM, vous devez obligatoirement renseigner :</p>
+          <ul>
+            <li><strong>Titre</strong> : Nom descriptif du plan (ex: "PPM 2026 - Infrastructure")</li>
+            <li><strong>Année</strong> : Année de planification (ex: 2026)</li>
+          </ul>
+          <p><strong>Optionnel :</strong></p>
+          <ul>
+            <li><strong>Projet</strong> : Vous pouvez rattacher le PPM à un plan d'action existant</li>
+          </ul>
+          <p class="bg-blue-50 border border-blue-200 rounded p-2 text-sm text-blue-800 my-2">
+            💡 <strong>Astuce :</strong> Les PPM en brouillon peuvent être modifiés. L'année ne peut PAS être changée après création (créez un nouveau PPM si nécessaire).
+          </p>
+        `,
+      },
     ],
   },
   {
@@ -642,6 +833,46 @@ export const HELP_CONTENT: HelpPage[] = [
           <p>Le statut passe à <strong>"Attribuée"</strong> après validation.</p>
         `,
       },
+      {
+        id: 'proc-4',
+        title: 'Contrainte : 1 ligne PPM = 1 procédure maximum',
+        content: `
+          <p><strong>⚠️ Règle d'unicité :</strong> Une ligne PPM ne peut être rattachée qu'à <strong>une seule procédure</strong>.</p>
+          <p>Si vous tentez de lier une ligne PPM déjà utilisée, vous recevrez :</p>
+          <p class="bg-red-50 border border-red-200 rounded p-2 text-sm text-red-800 my-2">
+            "Cette ligne PPM est déjà rattachée à la procédure XXX"
+          </p>
+          <p><strong>Vérifications automatiques :</strong></p>
+          <ul>
+            <li>La ligne PPM doit appartenir à votre organisation</li>
+            <li>Elle ne doit pas déjà être liée à une autre procédure</li>
+            <li>Le rattachement est <strong>optionnel</strong> lors de la création</li>
+          </ul>
+          <p class="text-xs text-slate-600 mt-2">Cette contrainte assure la traçabilité entre planification (PPM) et exécution (procédures).</p>
+        `,
+      },
+      {
+        id: 'proc-5',
+        title: 'Champs obligatoires et erreurs fréquentes',
+        content: `
+          <p><strong>Champs obligatoires :</strong></p>
+          <ul>
+            <li><strong>Objet</strong> : Description de la procédure</li>
+            <li><strong>Méthode</strong> : Type de passation (AOO, AOR, DC, etc.)</li>
+            <li><strong>Montant estimé</strong> : Budget prévisionnel (≥ 0, max 2 décimales)</li>
+            <li><strong>Description</strong> : Détails complets</li>
+          </ul>
+          <p><strong>Erreurs fréquentes :</strong></p>
+          <ul>
+            <li>"Ligne PPM introuvable" → La ligne n'existe pas dans votre organisation</li>
+            <li>"Déjà rattachée" → Cette ligne PPM est utilisée par une autre procédure</li>
+            <li>"Montant invalide" → Le montant doit être ≥ 0 avec maximum 2 décimales</li>
+          </ul>
+          <p class="bg-amber-50 border border-amber-200 rounded p-2 text-sm text-amber-800 my-2">
+            ⚠️ <strong>Attention :</strong> Une fois publiée, seul le statut de la procédure peut être modifié. Les autres champs sont verrouillés.
+          </p>
+        `,
+      },
     ],
   },
   {
@@ -685,6 +916,49 @@ export const HELP_CONTENT: HelpPage[] = [
             <li>Modification du scope</li>
           </ul>
           <p>Le <strong>montant révisé</strong> remplace alors le montant initial dans les rapports.</p>
+        `,
+      },
+      {
+        id: 'cont-4',
+        title: 'Contrainte : 1 procédure = 1 contrat maximum',
+        content: `
+          <p><strong>⚠️ Règle d'unicité :</strong> Une procédure ne peut avoir qu'<strong>un seul contrat</strong>.</p>
+          <p>Si vous tentez de créer un deuxième contrat pour la même procédure, vous recevrez :</p>
+          <p class="bg-red-50 border border-red-200 rounded p-2 text-sm text-red-800 my-2">
+            "Un contrat existe déjà pour cette procédure : REF-XXX"
+          </p>
+          <p><strong>Conditions préalables :</strong></p>
+          <ul>
+            <li>La procédure doit exister dans votre organisation</li>
+            <li>La procédure doit être en statut <strong>CLOTUREE_OFFRES</strong> ou <strong>ATTRIBUEE</strong></li>
+            <li>Aucun contrat ne doit déjà exister pour cette procédure</li>
+            <li>Le fournisseur doit exister dans votre base</li>
+          </ul>
+          <p class="text-xs text-slate-600 mt-2">Cette contrainte garantit qu'une procédure aboutit à un contrat unique, évitant les doublons contractuels.</p>
+        `,
+      },
+      {
+        id: 'cont-5',
+        title: 'Validation et erreurs fréquentes',
+        content: `
+          <p><strong>Champs obligatoires :</strong></p>
+          <ul>
+            <li><strong>Procédure</strong> : ID de la procédure attributaire</li>
+            <li><strong>Fournisseur</strong> : Prestataire sélectionné</li>
+            <li><strong>Montant initial</strong> : Montant du contrat (≥ 0, max 2 décimales)</li>
+            <li><strong>Date signature</strong> : Date officielle de signature (format ISO)</li>
+            <li><strong>Date échéance</strong> : Date de fin du contrat (format ISO)</li>
+          </ul>
+          <p><strong>Erreurs fréquentes et solutions :</strong></p>
+          <ul>
+            <li><strong>"Procédure introuvable"</strong> → Vérifiez que la procédure existe dans votre organisation</li>
+            <li><strong>"La procédure doit être clôturée ou attribuée"</strong> → Changez d'abord le statut de la procédure</li>
+            <li><strong>"Un contrat existe déjà"</strong> → Utilisez le contrat existant ou supprimez-le si nécessaire</li>
+            <li><strong>"Fournisseur introuvable"</strong> → Créez d'abord le fournisseur dans votre base</li>
+          </ul>
+          <p class="bg-blue-50 border border-blue-200 rounded p-2 text-sm text-blue-800 my-2">
+            💡 <strong>Bon à savoir :</strong> Toutes les dates doivent être au format ISO (YYYY-MM-DD). Les montants ne peuvent pas être négatifs.
+          </p>
         `,
       },
     ],

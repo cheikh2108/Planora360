@@ -15,10 +15,11 @@ import { StatusBadge } from '@/components/ui/status-badge';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { EmptyState } from '@/components/ui/empty-state';
 import { formatDate, formatCurrency, PRIORITY_LABELS, PRIORITY_COLORS } from '@/lib/utils';
-import { ArrowLeft, Plus, ChevronDown, ChevronRight, Calendar, User, BarChart3, Trash2 } from 'lucide-react';
+import { ArrowLeft, Plus, ChevronDown, ChevronRight, Calendar, User, BarChart3, Trash2, Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/toast';
+import { ImportActivitiesModal } from '@/components/activities/ImportActivitiesModal';
 
 function AxisSection({ axis, planId, planPeriodStart, planPeriodEnd, readonly }: {
   axis: Axis;
@@ -281,6 +282,7 @@ export default function PlanDetailPage() {
   const qc = useQueryClient();
   const toast = useToast();
   const [addAxisOpen, setAddAxisOpen] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const { data: plan, isLoading } = useQuery<ActionPlan>({
@@ -360,6 +362,9 @@ export default function PlanDetailPage() {
                 <option key={s} value={s}>{PLAN_STATUS_META[s].label}</option>
               ))}
             </select>
+            <Button variant="secondary" icon={<Upload size={16} />} onClick={() => setImportModalOpen(true)} disabled={isLocked}>
+              Importer
+            </Button>
             <Button icon={<Plus size={16} />} onClick={() => setAddAxisOpen(true)} disabled={isLocked}>Ajouter un axe</Button>
             <button
               onClick={() => setConfirmDelete(true)}
@@ -419,6 +424,13 @@ export default function PlanDetailPage() {
       </main>
 
       <AddAxisModal open={addAxisOpen} onClose={() => setAddAxisOpen(false)} planId={id} />
+
+      <ImportActivitiesModal
+        open={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        onSuccess={() => qc.invalidateQueries({ queryKey: ['plan', id] })}
+        planId={id}
+      />
 
       <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)} title="Supprimer le plan" size="sm">
         <p className="text-sm text-slate-600 mb-6">Cette action est irréversible. Toutes les activités associées seront également supprimées.</p>

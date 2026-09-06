@@ -7,7 +7,9 @@
 export const ERROR_MESSAGES = {
   // PPM
   PPM: {
-    DUPLICATE_YEAR: (year: number) => `Un PPM existe déjà pour l'année ${year}`,
+    DUPLICATE_YEAR: (year: number) =>
+      `Un PPM existe déjà pour l'année ${year}. Chaque organisation ne peut avoir qu'un seul PPM par année. ` +
+      `Actions possibles : (1) Modifiez le PPM existant, (2) Supprimez le brouillon existant pour en créer un nouveau, ou (3) Choisissez une année différente.`,
     NOT_FOUND: (id: string) => `PPM #${id} introuvable`,
     ALREADY_VALIDATED: 'Ce PPM est déjà validé',
     CANNOT_MODIFY_VALIDATED: 'Impossible de modifier un PPM déjà validé',

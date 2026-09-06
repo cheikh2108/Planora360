@@ -19,6 +19,7 @@ export function FloatingHelpButton() {
 
   const getPageId = () => {
     if (pathname === '/dashboard') return 'dashboard';
+    if (pathname.startsWith('/dashboards/territorial')) return 'territorial';
     if (pathname.startsWith('/plans')) return 'plans';
     if (pathname.startsWith('/activities')) return 'activities';
     if (pathname.startsWith('/validations')) return 'validations';

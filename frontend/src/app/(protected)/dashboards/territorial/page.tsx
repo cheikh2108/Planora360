@@ -1,97 +1,266 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { MapPin, TrendingUp, Activity as ActivityIcon, DollarSign, TrendingDown, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Plus, MapPin, Edit2, Trash2, ChevronRight, ChevronDown, Loader2, Settings } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Header } from '@/components/layout/header';
+import { Button } from '@/components/ui/button';
 import { zonesApi } from '@/lib/api';
+import { ConfigureZonesModal } from '@/components/zones/ConfigureZonesModal';
 import { cn } from '@/lib/utils';
-import Link from 'next/link';
 
-interface ZoneStat {
+interface Zone {
   id: string;
   name: string;
   code?: string;
   level: number;
-  totalActivities: number;
-  completedActivities: number;
-  completionRate: number;
-  budgetPlanned: number;
-  budgetExecuted: number;
-  executionRate: number;
+  description?: string;
+  parentId?: string;
+  parent?: { id: string; name: string; level: number };
+  children?: Zone[];
+  _count: { children: number; activities: number };
 }
 
-export default function TerritorialDashboardPage() {
-  const { data: stats, isLoading } = useQuery<ZoneStat[]>({
-    queryKey: ['zones', 'stats'],
-    queryFn: async () => {
-      const response = await zonesApi.getStats();
-      return response.data;
-    },
+export default function ZonesAdminPage() {
+  const queryClient = useQueryClient();
+  const [zones, setZones] = useState<Zone[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
+  const [editingZone, setEditingZone] = useState<Zone | null>(null);
+  const [expandedZones, setExpandedZones] = useState<Set<string>>(new Set());
+  const [levelLabels, setLevelLabels] = useState<Record<number, string>>({
+    0: 'Pays',
+    1: 'Région',
+    2: 'Département',
+    3: 'Commune',
   });
 
-  const totalActivities = stats?.reduce((sum, z) => sum + z.totalActivities, 0) || 0;
-  const totalCompleted = stats?.reduce((sum, z) => sum + z.completedActivities, 0) || 0;
-  const totalBudgetPlanned = stats?.reduce((sum, z) => sum + z.budgetPlanned, 0) || 0;
-  const totalBudgetExecuted = stats?.reduce((sum, z) => sum + z.budgetExecuted, 0) || 0;
+  const [formData, setFormData] = useState({
+    name: '',
+    code: '',
+    description: '',
+    level: 0,
+    parentId: '',
+  });
 
-  const globalCompletionRate =
-    totalActivities > 0 ? Math.round((totalCompleted / totalActivities) * 100) : 0;
-  const globalExecutionRate =
-    totalBudgetPlanned > 0 ? Math.round((totalBudgetExecuted / totalBudgetPlanned) * 100) : 0;
+  useEffect(() => {
+    loadData();
+  }, []);
 
-  // Zones niveau 0 et 1 seulement (pays + régions)
-  // Protection: s'assurer que stats est bien un tableau avant filter
-  const displayedZones = Array.isArray(stats) ? stats.filter((z) => z.level <= 1) : [];
+  const loadData = async () => {
+    try {
+      // Charger les zones
+      const zonesRes = await zonesApi.getTree();
+      setZones(zonesRes.data);
 
-  const kpiCards = [
-    {
-      label: 'Total Activités',
-      value: totalActivities,
-      sublabel: `${totalCompleted} terminées`,
-      icon: ActivityIcon,
-      color: 'text-blue-600',
-      bg: 'bg-blue-50',
-      trend: '+12%',
-      trendUp: true,
-    },
-    {
-      label: 'Taux Complétion',
-      value: `${globalCompletionRate}%`,
-      sublabel: 'Sur toutes les zones',
-      icon: TrendingUp,
-      color: 'text-green-600',
-      bg: 'bg-green-50',
-      trend: '+8%',
-      trendUp: true,
-    },
-    {
-      label: 'Budget Planifié',
-      value: `${(totalBudgetPlanned / 1_000_000).toFixed(1)}M`,
-      sublabel: 'FCFA',
-      icon: DollarSign,
-      color: 'text-purple-600',
-      bg: 'bg-purple-50',
-      trend: '+15%',
-      trendUp: true,
-    },
-    {
-      label: 'Exécution Budget',
-      value: `${globalExecutionRate}%`,
-      sublabel: `${(totalBudgetExecuted / 1_000_000).toFixed(1)}M FCFA exécutés`,
-      icon: DollarSign,
-      color: 'text-orange-600',
-      bg: 'bg-orange-50',
-      trend: '+10%',
-      trendUp: true,
-    },
-  ];
+      // Charger la config (avec gestion d'erreur si pas encore créée)
+      try {
+        const configRes = await zonesApi.getConfig();
+        const config = configRes.data;
 
-  if (isLoading) {
+        if (config && config.levelLabels) {
+          const labels: Record<number, string> = {};
+          Object.entries(config.levelLabels as Record<string, string>).forEach(([level, label]) => {
+            labels[parseInt(level)] = label;
+          });
+          setLevelLabels(labels);
+        }
+      } catch (configError) {
+        console.log('Config non trouvée, utilisation des labels par défaut');
+        // Utiliser les labels par défaut (STANDARD)
+        setLevelLabels({
+          0: 'Pays',
+          1: 'Région',
+          2: 'Département',
+          3: 'Commune',
+        });
+      }
+    } catch (error) {
+      console.error('Erreur chargement zones:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadZones = loadData; // Alias pour compatibilité
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      // Nettoyer les champs vides (string vide → undefined)
+      const cleanData = {
+        name: formData.name,
+        code: formData.code || undefined,
+        description: formData.description || undefined,
+        level: formData.level,
+        parentId: formData.parentId || undefined,
+      };
+
+      if (editingZone) {
+        await zonesApi.update(editingZone.id, cleanData);
+      } else {
+        await zonesApi.create(cleanData);
+      }
+
+      // Invalider le cache pour forcer le rechargement partout
+      queryClient.invalidateQueries({ queryKey: ['zones'] });
+
+      await loadZones();
+      closeModal();
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Erreur lors de la sauvegarde');
+    }
+  };
+
+  const handleDelete = async (zone: Zone) => {
+    if (!confirm(`Supprimer "${zone.name}" ?`)) return;
+
+    try {
+      await zonesApi.remove(zone.id);
+
+      // Invalider le cache pour forcer le rechargement partout
+      queryClient.invalidateQueries({ queryKey: ['zones'] });
+
+      await loadZones();
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Erreur lors de la suppression');
+    }
+  };
+
+  const openModal = (zone?: Zone) => {
+    if (zone) {
+      setEditingZone(zone);
+      setFormData({
+        name: zone.name,
+        code: zone.code || '',
+        description: zone.description || '',
+        level: zone.level,
+        parentId: zone.parentId || '',
+      });
+    } else {
+      setEditingZone(null);
+      setFormData({ name: '', code: '', description: '', level: 0, parentId: '' });
+    }
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditingZone(null);
+    setFormData({ name: '', code: '', description: '', level: 0, parentId: '' });
+  };
+
+  const toggleExpand = (zoneId: string) => {
+    setExpandedZones((prev) => {
+      const next = new Set(prev);
+      if (next.has(zoneId)) {
+        next.delete(zoneId);
+      } else {
+        next.add(zoneId);
+      }
+      return next;
+    });
+  };
+
+  const countTotalZones = (zones: Zone[]): number => {
+    return zones.reduce((sum, zone) => {
+      return sum + 1 + (zone.children ? countTotalZones(zone.children) : 0);
+    }, 0);
+  };
+
+  const countActivities = (zones: Zone[]): number => {
+    return zones.reduce((sum, zone) => {
+      return sum + zone._count.activities + (zone.children ? countActivities(zone.children) : 0);
+    }, 0);
+  };
+
+  const stats = {
+    total: countTotalZones(zones),
+    activities: countActivities(zones),
+    topLevel: zones.length,
+  };
+
+  const renderZone = (zone: Zone, depth = 0) => {
+    const hasChildren = zone.children && zone.children.length > 0;
+    const isExpanded = expandedZones.has(zone.id);
+
+    return (
+      <div key={zone.id}>
+        <div
+          className={cn(
+            'flex items-center gap-3 py-3 px-4 border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors group',
+          )}
+          style={{ paddingLeft: `${depth * 2 + 1}rem` }}
+        >
+          {hasChildren ? (
+            <button
+              onClick={() => toggleExpand(zone.id)}
+              className="text-slate-400 hover:text-slate-600 transition-colors"
+            >
+              {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            </button>
+          ) : (
+            <div className="w-[16px]" />
+          )}
+
+          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+            <MapPin size={14} className="text-blue-600" />
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-sm font-medium text-slate-900">{zone.name}</span>
+              {zone.code && (
+                <span className="text-[10px] px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded uppercase font-medium tracking-wide">
+                  {zone.code}
+                </span>
+              )}
+              <span className="text-xs text-slate-500">
+                • {zone._count.activities} activité{zone._count.activities > 1 ? 's' : ''}
+              </span>
+              <span className="text-[10px] px-1.5 py-0.5 bg-purple-50 text-purple-600 rounded uppercase font-medium tracking-wide">
+                {levelLabels[zone.level] || `Niveau ${zone.level}`}
+              </span>
+            </div>
+            {zone.description && (
+              <p className="text-xs text-slate-600 mt-1 truncate">{zone.description}</p>
+            )}
+          </div>
+
+          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                openModal(zone);
+              }}
+              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            >
+              <Edit2 size={14} />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete(zone);
+              }}
+              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            >
+              <Trash2 size={14} />
+            </button>
+          </div>
+        </div>
+
+        {hasChildren && isExpanded && zone.children!.map((child) => renderZone(child, depth + 1))}
+      </div>
+    );
+  };
+
+  if (loading) {
     return (
       <div className="flex flex-col flex-1 min-h-0">
         <Header
-          title="Dashboard Territorial"
-          subtitle="Vue d'ensemble des activités par zone géographique"
+          title="Vue Territoriale"
+          subtitle="Gestion et analyse des zones géographiques"
         />
         <div className="flex items-center justify-center flex-1">
           <Loader2 className="h-8 w-8 animate-spin text-[#2563eb]" />
@@ -100,205 +269,183 @@ export default function TerritorialDashboardPage() {
     );
   }
 
-  if (!stats || stats.length === 0) {
-    return (
-      <div className="flex flex-col flex-1 min-h-0">
-        <Header
-          title="Dashboard Territorial"
-          subtitle="Vue d'ensemble des activités par zone géographique"
-        />
-        <main className="flex-1 px-4 md:px-6 py-6">
-          <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center">
-            <MapPin size={48} className="mx-auto text-slate-300 mb-4" />
-            <h3 className="text-lg font-semibold text-slate-900 mb-2">Aucune zone configurée</h3>
-            <p className="text-sm text-slate-600 mb-6">
-              Créez des zones géographiques dans Administration &gt; Zones
-            </p>
-            <Link
-              href="/admin/zones"
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Configurer les zones
-            </Link>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col flex-1 min-h-0 overflow-auto">
       <Header
-        title="Dashboard Territorial"
-        subtitle="Vue d'ensemble des activités par zone géographique"
+        title="Zones Géographiques"
+        subtitle={`${stats.total} zone${stats.total > 1 ? 's' : ''} • ${stats.activities} activités`}
+        actions={
+          <div className="flex gap-3">
+            <Button
+              variant="secondary"
+              icon={<Settings size={16} />}
+              onClick={() => setIsConfigModalOpen(true)}
+            >
+              Configurer
+            </Button>
+            <Button
+              icon={<Plus size={16} />}
+              onClick={() => openModal()}
+            >
+              Nouvelle zone
+            </Button>
+          </div>
+        }
       />
 
-      <main className="flex-1 px-4 md:px-6 py-6 space-y-6">
-        {/* KPI Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {kpiCards.map((kpi, idx) => {
-            const Icon = kpi.icon;
-            return (
-              <div key={idx} className={cn('rounded-2xl border border-slate-200 p-5 bg-white')}>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">
-                      {kpi.label}
-                    </p>
-                    <p className={cn('text-3xl font-bold tabular-nums mt-2', kpi.color)}>
-                      {kpi.value}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-1">{kpi.sublabel}</p>
-                  </div>
-                  <div className={cn('rounded-xl p-3', kpi.bg)}>
-                    <Icon size={20} className={kpi.color} />
-                  </div>
-                </div>
-                <div className="flex items-center gap-1 mt-3">
-                  {kpi.trendUp ? (
-                    <TrendingUp size={14} className="text-green-600" />
-                  ) : (
-                    <TrendingDown size={14} className="text-red-600" />
-                  )}
-                  <span className={cn('text-xs font-medium', kpi.trendUp ? 'text-green-600' : 'text-red-600')}>
-                    {kpi.trend}
-                  </span>
-                  <span className="text-xs text-slate-600">vs mois dernier</span>
-                </div>
+      <main className="flex-1 px-4 md:px-6 py-6 space-y-5">
+        {/* KPI Cards */}
+        {zones.length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {[
+              { label: 'Total Zones', value: stats.total, color: 'text-slate-900', bg: 'bg-white' },
+              { label: 'Niveaux supérieurs', value: stats.topLevel, color: 'text-blue-600', bg: 'bg-blue-50' },
+              { label: 'Activités', value: stats.activities, color: 'text-green-600', bg: 'bg-green-50' },
+            ].map((stat, idx) => (
+              <div key={idx} className={cn('rounded-2xl border border-slate-200 p-4 flex flex-col gap-2', stat.bg)}>
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">{stat.label}</p>
+                <p className={cn('text-2xl md:text-3xl font-bold tabular-nums', stat.color)}>{stat.value}</p>
               </div>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        )}
 
-        {/* Statistiques par zone */}
-        <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
-          <div className="px-5 py-4 border-b border-slate-100">
+        {/* Zones Tree */}
+        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <MapPin size={16} className="text-slate-600" />
               <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">
-                Statistiques par Zone
+                Hiérarchie des zones
               </p>
             </div>
+            {zones.length > 0 && (
+              <span className="text-xs tabular-nums text-slate-600">{stats.total}</span>
+            )}
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-100">
-                  <th className="text-left px-5 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600">
-                    Zone
-                  </th>
-                  <th className="text-center px-5 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600">
-                    Activités
-                  </th>
-                  <th className="text-center px-5 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600">
-                    Terminées
-                  </th>
-                  <th className="text-center px-5 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600">
-                    Complétion
-                  </th>
-                  <th className="text-right px-5 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600">
-                    Budget Planifié
-                  </th>
-                  <th className="text-right px-5 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600">
-                    Budget Exécuté
-                  </th>
-                  <th className="text-center px-5 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600">
-                    Exécution
-                  </th>
-                  <th className="text-center px-5 py-3 text-[10px] font-semibold uppercase tracking-widest text-slate-600">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {displayedZones.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} className="px-5 py-12 text-center">
-                      <p className="text-sm text-slate-600">Aucune activité assignée à des zones</p>
-                    </td>
-                  </tr>
-                ) : (
-                  displayedZones.map((zone) => {
-                    const completionColor =
-                      zone.completionRate >= 80
-                        ? 'bg-green-50 text-green-700'
-                        : zone.completionRate >= 50
-                        ? 'bg-blue-50 text-blue-700'
-                        : 'bg-orange-50 text-orange-700';
-
-                    const executionColor =
-                      zone.executionRate >= 80
-                        ? 'bg-green-50 text-green-700'
-                        : zone.executionRate >= 50
-                        ? 'bg-blue-50 text-blue-700'
-                        : 'bg-red-50 text-red-700';
-
-                    return (
-                      <tr key={zone.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50">
-                        <td className="px-5 py-4">
-                          <div className="flex items-start">
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-slate-900 truncate">{zone.name}</p>
-                              {zone.code && (
-                                <p className="text-xs text-slate-500 truncate mt-0.5">{zone.code}</p>
-                              )}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-5 py-4 text-center">
-                          <span className="text-sm font-semibold text-slate-900 tabular-nums">{zone.totalActivities}</span>
-                        </td>
-                        <td className="px-5 py-4 text-center">
-                          <span className="text-sm text-slate-700 tabular-nums">{zone.completedActivities}</span>
-                        </td>
-                        <td className="px-5 py-4 text-center">
-                          <span
-                            className={cn(
-                              'inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium uppercase tracking-wide',
-                              completionColor
-                            )}
-                          >
-                            {zone.completionRate}%
-                          </span>
-                        </td>
-                        <td className="px-5 py-4 text-right">
-                          <span className="text-sm font-semibold text-slate-900 tabular-nums">
-                            {(zone.budgetPlanned / 1_000_000).toFixed(2)}M
-                          </span>
-                        </td>
-                        <td className="px-5 py-4 text-right">
-                          <span className="text-sm text-slate-700 tabular-nums">
-                            {(zone.budgetExecuted / 1_000_000).toFixed(2)}M
-                          </span>
-                        </td>
-                        <td className="px-5 py-4 text-center">
-                          <span
-                            className={cn(
-                              'inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium uppercase tracking-wide',
-                              executionColor
-                            )}
-                          >
-                            {zone.executionRate}%
-                          </span>
-                        </td>
-                        <td className="px-5 py-4 text-center">
-                          <Link
-                            href={`/activities?zoneId=${zone.id}`}
-                            className="text-xs text-blue-600 hover:text-blue-700 font-medium"
-                          >
-                            Voir activités →
-                          </Link>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
+          {zones.length === 0 ? (
+            <div className="py-16 text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
+                <MapPin className="h-8 w-8 text-slate-600" />
+              </div>
+              <h3 className="mb-2 text-lg font-semibold text-slate-900">Aucune zone géographique</h3>
+              <p className="mb-6 text-sm text-slate-600">
+                Commencez par créer votre première zone géographique.
+              </p>
+              <Button
+                icon={<Plus size={16} />}
+                onClick={() => openModal()}
+              >
+                Créer la première zone
+              </Button>
+            </div>
+          ) : (
+            <div>{zones.map((zone) => renderZone(zone))}</div>
+          )}
         </div>
       </main>
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md" style={{ colorScheme: 'light' }}>
+            <div className="px-6 py-5 border-b border-slate-100">
+              <h2 className="text-lg font-semibold" style={{ color: '#0f172a' }}>
+                {editingZone ? 'Modifier la zone' : 'Nouvelle zone'}
+              </h2>
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: '#0f172a' }}>
+                  Nom <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#2563eb] focus:border-transparent"
+                  style={{ color: '#0f172a', backgroundColor: '#ffffff' }}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: '#0f172a' }}>
+                  Code (ex: DK, TH)
+                </label>
+                <input
+                  type="text"
+                  value={formData.code}
+                  onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#2563eb] focus:border-transparent"
+                  style={{ color: '#0f172a', backgroundColor: '#ffffff' }}
+                  maxLength={5}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: '#0f172a' }}>
+                  Description
+                </label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#2563eb] focus:border-transparent"
+                  style={{ color: '#0f172a', backgroundColor: '#ffffff' }}
+                  rows={3}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: '#0f172a' }}>
+                  Niveau <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={formData.level}
+                  onChange={(e) => setFormData({ ...formData, level: parseInt(e.target.value) })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-[#2563eb] focus:border-transparent"
+                  style={{ color: '#0f172a', backgroundColor: '#ffffff' }}
+                  required
+                >
+                  {Object.entries(levelLabels).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 text-sm font-medium transition-colors"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2 bg-[#2563eb] text-white rounded-lg hover:bg-[#1d4ed8] text-sm font-medium transition-colors"
+                >
+                  {editingZone ? 'Mettre à jour' : 'Créer'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de configuration des zones */}
+      <ConfigureZonesModal
+        open={isConfigModalOpen}
+        onClose={() => setIsConfigModalOpen(false)}
+        onSuccess={() => {
+          setIsConfigModalOpen(false);
+          loadData(); // Recharger pour mettre à jour les labels
+        }}
+      />
     </div>
   );
 }

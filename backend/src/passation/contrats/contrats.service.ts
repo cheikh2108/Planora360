@@ -7,6 +7,52 @@ export class ContratsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(organizationId: string, userId: string, dto: any) {
+    // Vérifier que la procédure existe et appartient à l'organisation
+    const procedure = await this.prisma.procedure.findFirst({
+      where: {
+        id: dto.procedureId,
+        organizationId,
+      },
+    });
+
+    if (!procedure) {
+      throw new NotFoundException(
+        `Procédure #${dto.procedureId} introuvable dans votre organisation`,
+      );
+    }
+
+    // Vérifier que la procédure est dans un statut permettant de créer un contrat
+    if (procedure.status !== 'CLOTUREE_OFFRES' && procedure.status !== 'ATTRIBUEE') {
+      throw new ForbiddenException(
+        `La procédure doit être clôturée ou attribuée pour créer un contrat (statut actuel: ${procedure.status})`,
+      );
+    }
+
+    // Vérifier qu'il n'existe pas déjà un contrat pour cette procédure
+    const existingContrat = await this.prisma.contrat.findFirst({
+      where: { procedureId: dto.procedureId },
+    });
+
+    if (existingContrat) {
+      throw new ForbiddenException(
+        `Un contrat existe déjà pour cette procédure : ${existingContrat.reference}`,
+      );
+    }
+
+    // Vérifier que le fournisseur existe et appartient à l'organisation
+    const fournisseur = await this.prisma.fournisseur.findFirst({
+      where: {
+        id: dto.fournisseurId,
+        organizationId,
+      },
+    });
+
+    if (!fournisseur) {
+      throw new NotFoundException(
+        `Fournisseur #${dto.fournisseurId} introuvable dans votre organisation`,
+      );
+    }
+
     const count = await this.prisma.contrat.count({
       where: { organizationId },
     });

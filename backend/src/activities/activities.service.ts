@@ -2,6 +2,8 @@ import {
   Injectable, NotFoundException, ForbiddenException, BadRequestException,
 } from '@nestjs/common';
 import { ActivityStatus } from '@prisma/client';
+import { Readable } from 'stream';
+import * as Excel from 'exceljs';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { PostHogService } from '../analytics/posthog.service';
 import { CacheInvalidationService } from '../common/cache/cache-invalidation.service';
@@ -283,5 +285,297 @@ export class ActivitiesService {
     await this.cacheInvalidation.invalidateActivities(organizationId);
 
     return deleted;
+  }
+
+  async importFromExcel(
+    file: Express.Multer.File,
+    planId: string,
+    organizationId: string,
+    userId: string,
+  ) {
+    if (!file) {
+      throw new BadRequestException('Aucun fichier fourni');
+    }
+
+    // Vérifier que le plan existe et appartient à l'organisation
+    const plan = await this.prisma.actionPlan.findFirst({
+      where: { id: planId, organizationId },
+      include: { axes: true },
+    });
+
+    if (!plan) {
+      throw new NotFoundException('Plan d\'action introuvable');
+    }
+
+    // Parser le fichier Excel avec exceljs (avec protection contre les fichiers corrompus)
+    let workbook: Excel.Workbook;
+    try {
+      workbook = new Excel.Workbook();
+      const stream = Readable.from(file.buffer);
+      await workbook.xlsx.read(stream);
+    } catch (error) {
+      throw new BadRequestException(
+        'Impossible de lire le fichier. Assurez-vous qu\'il s\'agit d\'un fichier Excel valide (.xlsx, .xls) ou CSV.',
+      );
+    }
+
+    const worksheet = workbook.worksheets[0];
+    if (!worksheet) {
+      throw new BadRequestException('Le fichier Excel est vide');
+    }
+
+    // Limite de sécurité : max 1000 lignes
+    const MAX_ROWS = 1000;
+    if (worksheet.rowCount > MAX_ROWS + 1) { // +1 pour l'entête
+      throw new BadRequestException(
+        `Le fichier contient trop de lignes (max ${MAX_ROWS}). Importez en plusieurs fois.`,
+      );
+    }
+
+    // Extraire les données
+    const data: any[] = [];
+    const headers: string[] = [];
+
+    worksheet.eachRow((row, rowNumber) => {
+      if (rowNumber === 1) {
+        row.eachCell((cell) => {
+          headers.push(String(cell.value).trim());
+        });
+      } else {
+        const rowData: any = {};
+        row.eachCell((cell, colNumber) => {
+          rowData[headers[colNumber - 1]] = cell.value;
+        });
+        data.push(rowData);
+      }
+    });
+
+    if (!data || data.length === 0) {
+      throw new BadRequestException('Le fichier Excel ne contient aucune donnée');
+    }
+
+    // Récupérer tous les utilisateurs et zones de l'organisation pour les lookups
+    const users = await this.prisma.user.findMany({
+      where: { organizationId },
+      select: { id: true, email: true, firstName: true, lastName: true },
+    });
+
+    const zones = await this.prisma.geographicZone.findMany({
+      where: { organizationId },
+      select: { id: true, code: true, name: true },
+    });
+
+    const errors: Array<{ line: number; error: string }> = [];
+    const created: Array<any> = [];
+
+    for (let i = 0; i < data.length; i++) {
+      const row = data[i];
+      const lineNumber = i + 2; // +2 car ligne 1 = headers, et index commence à 0
+
+      try {
+        // Validation des champs obligatoires
+        if (!row['Titre'] || !row['Axe'] || !row['Responsable'] || !row['Date début'] || !row['Date fin']) {
+          errors.push({
+            line: lineNumber,
+            error: 'Colonnes manquantes (Titre, Axe, Responsable, Date début, Date fin sont obligatoires)',
+          });
+          continue;
+        }
+
+        // Trouver l'axe par son nom
+        const axis = plan.axes.find(a => a.title.toLowerCase() === String(row['Axe']).toLowerCase().trim());
+        if (!axis) {
+          errors.push({
+            line: lineNumber,
+            error: `Axe "${row['Axe']}" introuvable dans le plan d'action`,
+          });
+          continue;
+        }
+
+        // Trouver le responsable par email
+        const responsible = users.find(u => u.email.toLowerCase() === String(row['Responsable']).toLowerCase().trim());
+        if (!responsible) {
+          errors.push({
+            line: lineNumber,
+            error: `Responsable "${row['Responsable']}" introuvable (vérifiez l'email)`,
+          });
+          continue;
+        }
+
+        // Parser les dates
+        let startDate: Date;
+        let dueDate: Date;
+
+        try {
+          startDate = this.parseExcelDate(row['Date début']);
+          dueDate = this.parseExcelDate(row['Date fin']);
+
+          if (dueDate < startDate) {
+            errors.push({
+              line: lineNumber,
+              error: 'La date de fin doit être après la date de début',
+            });
+            continue;
+          }
+        } catch (e) {
+          errors.push({
+            line: lineNumber,
+            error: `Dates invalides (format attendu: YYYY-MM-DD ou DD/MM/YYYY)`,
+          });
+          continue;
+        }
+
+        // Valider la priorité si fournie
+        const priority = row['Priorité'] ? String(row['Priorité']).toUpperCase().trim() : 'MOYENNE';
+        if (!['FAIBLE', 'MOYENNE', 'ELEVEE', 'CRITIQUE'].includes(priority)) {
+          errors.push({
+            line: lineNumber,
+            error: `Priorité invalide "${row['Priorité']}" (valeurs acceptées: FAIBLE, MOYENNE, ELEVEE, CRITIQUE)`,
+          });
+          continue;
+        }
+
+        // Parser le budget si fourni
+        let budgetPlanned: number | null = null;
+        if (row['Budget planifié']) {
+          const parsed = parseFloat(String(row['Budget planifié']).replace(/\s/g, '').replace(',', '.'));
+          if (isNaN(parsed) || parsed < 0) {
+            errors.push({
+              line: lineNumber,
+              error: `Budget invalide "${row['Budget planifié']}"`,
+            });
+            continue;
+          }
+          budgetPlanned = parsed;
+        }
+
+        // Parser les zones si fournies
+        const zoneCodes = row['Zones'] ? String(row['Zones']).split(',').map(c => c.trim()) : [];
+        const zoneIds: string[] = [];
+
+        if (zoneCodes.length > 0) {
+          for (const code of zoneCodes) {
+            const zone = zones.find(z => z.code?.toLowerCase() === code.toLowerCase() || z.name.toLowerCase() === code.toLowerCase());
+            if (!zone) {
+              errors.push({
+                line: lineNumber,
+                error: `Zone "${code}" introuvable (utilisez le code ou le nom exact)`,
+              });
+              continue;
+            }
+            zoneIds.push(zone.id);
+          }
+        }
+
+        // Créer l'activité (avec sanitization des strings)
+        const activity = await this.prisma.activity.create({
+          data: {
+            organizationId,
+            axisId: axis.id,
+            responsibleId: responsible.id,
+            title: this.sanitizeString(String(row['Titre']).trim(), 200),
+            description: row['Description'] ? this.sanitizeString(String(row['Description']).trim(), 5000) : null,
+            expectedResults: row['Résultats attendus'] ? this.sanitizeString(String(row['Résultats attendus']).trim(), 2000) : null,
+            startDate,
+            dueDate,
+            priority,
+            budgetPlanned,
+            status: 'NON_DEMARREE',
+            zones: zoneIds.length > 0 ? {
+              create: zoneIds.map((zoneId, idx) => ({
+                zoneId,
+                isPrimary: idx === 0, // La première zone est primaire
+              })),
+            } : undefined,
+          },
+          include: ACTIVITY_INCLUDE,
+        });
+
+        created.push(activity);
+
+        // Analytics
+        this.posthog.capture(userId, 'activity_imported', {
+          activityId: activity.id,
+          planId,
+          source: 'excel',
+        });
+      } catch (error) {
+        errors.push({
+          line: lineNumber,
+          error: error.message || 'Erreur lors de la création',
+        });
+      }
+    }
+
+    // Invalider le cache
+    await this.cacheInvalidation.invalidateDashboard(organizationId);
+    await this.cacheInvalidation.invalidateActivities(organizationId);
+
+    return {
+      success: created.length,
+      errors: errors.length,
+      total: data.length,
+      created,
+      errorDetails: errors,
+    };
+  }
+
+  /**
+   * Sanitize une string pour éviter les injections et limiter la longueur
+   */
+  private sanitizeString(value: string, maxLength: number): string {
+    if (!value) return '';
+
+    let sanitized = value
+      // Enlever les caractères de contrôle dangereux (sauf \n et \t)
+      .replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, '')
+      // Enlever les scripts et tags HTML
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/<[^>]+>/g, '');
+
+    // Limiter la longueur
+    if (sanitized.length > maxLength) {
+      sanitized = sanitized.substring(0, maxLength);
+    }
+
+    return sanitized.trim();
+  }
+
+  /**
+   * Parse une date depuis Excel (supporte format Excel numérique, YYYY-MM-DD, DD/MM/YYYY)
+   */
+  private parseExcelDate(value: any): Date {
+    if (!value) throw new Error('Date vide');
+
+    // Si c'est déjà une date JS
+    if (value instanceof Date) {
+      return value;
+    }
+
+    // Si c'est un nombre Excel (nombre de jours depuis 1900-01-01)
+    if (typeof value === 'number') {
+      // Excel date: nombre de jours depuis le 1er janvier 1900
+      const excelEpoch = new Date(1900, 0, 1);
+      const date = new Date(excelEpoch.getTime() + (value - 2) * 24 * 60 * 60 * 1000); // -2 pour bug Excel 1900
+      return date;
+    }
+
+    // Si c'est une string
+    const str = String(value).trim();
+
+    // Format YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+      const date = new Date(str);
+      if (!isNaN(date.getTime())) return date;
+    }
+
+    // Format DD/MM/YYYY
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(str)) {
+      const [day, month, year] = str.split('/');
+      const date = new Date(`${year}-${month}-${day}`);
+      if (!isNaN(date.getTime())) return date;
+    }
+
+    throw new Error(`Format de date invalide: ${value}`);
   }
 }
