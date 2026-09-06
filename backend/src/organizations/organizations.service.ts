@@ -70,7 +70,13 @@ export class OrganizationsService {
 
   findPending() {
     return this.prisma.organization.findMany({
-      where: { status: 'PENDING', deletedAt: null },
+      where: {
+        OR: [
+          { status: 'PENDING' },
+          { status: 'PENDING_APPROVAL' }
+        ],
+        deletedAt: null
+      },
       orderBy: { createdAt: 'desc' },
       include: {
         _count: { select: { users: true } },
