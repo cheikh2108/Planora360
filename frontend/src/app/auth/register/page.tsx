@@ -7,6 +7,9 @@ import { authApi } from '@/lib/api';
 import { Loader2, CheckCircle2, ChevronLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+// Désactiver le pre-rendering pour permettre useSearchParams()
+export const dynamic = 'force-dynamic';
+
 type Plan = 'INDIVIDUEL' | 'PRO' | 'EQUIPE' | 'ORGANISATION' | 'ENTERPRISE';
 type BillingCycle = 'MONTHLY' | 'YEARLY';
 
