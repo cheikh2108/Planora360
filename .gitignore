@@ -6,13 +6,16 @@ frontend/.next/
 frontend/dist/
 build/
 
-# Environment
+# Environment (seuls les .env.example sont commités)
 .env
-.env.local
-# .env.production - on le commit pour Hostinger
+.env.*
+!.env.example
+# frontend/.env.production est commité pour Hostinger (clés publiques NEXT_PUBLIC_ uniquement)
+!frontend/.env.production
 
 # Logs
 *.log
+*-log*.txt
 npm-debug.log*
 
 # OS
@@ -37,6 +40,9 @@ coverage/
 uploads/
 
 # Debug scripts (contain sensitive data)
+debug-*.ts
+debug-*.js
+backend/create-test-*.js
 check-*.js
 check-*.ts
 backend/check-*.js

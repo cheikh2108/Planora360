@@ -6,6 +6,13 @@ import * as bcrypt from 'bcryptjs';
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
+// Les identifiants des comptes créés par le seed viennent du .env (jamais en dur dans le code)
+function requireEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) throw new Error(`Variable d'environnement manquante : ${name} (voir .env.example)`);
+  return value;
+}
+
 const ROLES = [
   { name: 'Super administrateur', permissions: ['*'] },
   {
@@ -116,12 +123,13 @@ async function main() {
     },
   });
 
-  const existingAdmin = await prisma.user.findUnique({ where: { email: 'admin@ataaba.com' } });
+  const adminEmail = requireEnv('SEED_ADMIN_EMAIL');
+  const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
   if (!existingAdmin) {
-    const passwordHash = await bcrypt.hash('Admin@2108!', 12);
+    const passwordHash = await bcrypt.hash(requireEnv('SEED_ADMIN_PASSWORD'), 12);
     await prisma.user.create({
       data: {
-        email: 'admin@ataaba.com',
+        email: adminEmail,
         firstName: 'Super',
         lastName: 'Admin',
         passwordHash,
@@ -129,7 +137,7 @@ async function main() {
         roleId: superAdminRole!.id,
       },
     });
-    console.log('Super admin créé : admin@ataaba.com / Admin@2108!');
+    console.log(`Super admin créé : ${adminEmail}`);
   } else {
     console.log('Super admin existe déjà.');
   }
@@ -146,12 +154,13 @@ async function main() {
 
   const coordRole = await prisma.role.findFirst({ where: { name: 'Coordinateur', organizationId: null } });
 
-  const existingTest = await prisma.user.findUnique({ where: { email: 'test@ataaba.com' } });
+  const testEmail = requireEnv('SEED_TEST_EMAIL');
+  const existingTest = await prisma.user.findUnique({ where: { email: testEmail } });
   if (!existingTest) {
-    const passwordHash = await bcrypt.hash('Test@2108!', 12);
+    const passwordHash = await bcrypt.hash(requireEnv('SEED_TEST_PASSWORD'), 12);
     await prisma.user.create({
       data: {
-        email: 'test@ataaba.com',
+        email: testEmail,
         firstName: 'Test',
         lastName: 'User',
         passwordHash,
@@ -159,7 +168,7 @@ async function main() {
         roleId: coordRole!.id,
       },
     });
-    console.log('Compte test créé : test@ataaba.com / Test@2108!');
+    console.log(`Compte test créé : ${testEmail}`);
   } else {
     console.log('Compte test existe déjà.');
   }
