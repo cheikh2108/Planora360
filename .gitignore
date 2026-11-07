@@ -50,3 +50,8 @@ backend/check-*.ts
 backend/dist/check-*.js
 backend/dist/check-*.d.ts
 backend/dist/check-*.js.map
+
+# Tests d'écran (Playwright)
+frontend/e2e/.auth/
+frontend/e2e/.results/
+frontend/e2e/.report/
