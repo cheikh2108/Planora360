@@ -1,5 +1,12 @@
 // Utilisé par CommissionsController (POST /passation/commissions et POST /:id/membres)
-import { IsDateString, IsIn, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+import {
+  IsDateString,
+  IsIn,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator';
 
 export class CreateCommissionDto {
   @IsString()
@@ -25,7 +32,13 @@ export class CreateCommissionDto {
   presidentId?: string;
 }
 
-export const MEMBRE_ROLES = ['PRESIDENT', 'RAPPORTEUR', 'MEMBRE', 'OBSERVATEUR', 'EXPERT'];
+export const MEMBRE_ROLES = [
+  'PRESIDENT',
+  'RAPPORTEUR',
+  'MEMBRE',
+  'OBSERVATEUR',
+  'EXPERT',
+];
 
 export class AddMembreDto {
   @IsString()

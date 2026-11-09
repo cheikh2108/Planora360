@@ -1,6 +1,11 @@
 import request from 'supertest';
 import { ApiClient } from './helpers/api-client';
-import { closeTestApp, createTestApp, listRoutes, TestContext } from './helpers/app';
+import {
+  closeTestApp,
+  createTestApp,
+  listRoutes,
+  TestContext,
+} from './helpers/app';
 import { createTenant, login, Tenant } from './helpers/fixtures';
 import { TEST_ENV } from './setup/test-config';
 
@@ -28,7 +33,7 @@ function fill(path: string): string {
   return path.replace(/:[A-Za-z]+/g, FAKE_ID);
 }
 
-describe('Contrôle d\'accès — balayage de toutes les routes', () => {
+describe("Contrôle d'accès — balayage de toutes les routes", () => {
   let ctx: TestContext;
   let routes: { method: string; path: string }[];
   let tenant: Tenant;
@@ -40,11 +45,15 @@ describe('Contrôle d\'accès — balayage de toutes les routes', () => {
     routes = listRoutes(ctx.app).filter((r) => r.path.startsWith('/api/'));
     tenant = await createTenant(ctx.prisma, 'sweep');
     admin = await login(ctx.http, tenant.users.admin);
-    superAdmin = await ApiClient.loggedIn(ctx.http, TEST_ENV.SEED_ADMIN_EMAIL, TEST_ENV.SEED_ADMIN_PASSWORD);
+    superAdmin = await ApiClient.loggedIn(
+      ctx.http,
+      TEST_ENV.SEED_ADMIN_EMAIL,
+      TEST_ENV.SEED_ADMIN_PASSWORD,
+    );
   });
   afterAll(() => closeTestApp(ctx));
 
-  it('détecte bien les routes de l\'application', () => {
+  it("détecte bien les routes de l'application", () => {
     expect(routes.length).toBeGreaterThan(150);
   });
 
@@ -53,9 +62,12 @@ describe('Contrôle d\'accès — balayage de toutes les routes', () => {
     for (const r of routes) {
       const key = `${r.method} ${r.path}`;
       if (PUBLIC_ROUTES.has(key)) continue;
-      const res = await (request(ctx.http) as any)[r.method.toLowerCase()](fill(r.path));
+      const res = await (request(ctx.http) as any)[r.method.toLowerCase()](
+        fill(r.path),
+      );
       // 401 (pas de JWT) ou 403 (CSRF manquant, vérifié avant le JWT sur les mutations)
-      if (![401, 403].includes(res.status)) leaks.push(`${key} → ${res.status}`);
+      if (![401, 403].includes(res.status))
+        leaks.push(`${key} → ${res.status}`);
     }
     expect(leaks).toEqual([]);
   });
@@ -69,7 +81,10 @@ describe('Contrôle d\'accès — balayage de toutes les routes', () => {
     const crashes: string[] = [];
     for (const r of routes.filter((x) => x.method === 'GET')) {
       const res = await admin.get(fill(r.path));
-      if (res.status >= 500) crashes.push(`GET ${r.path} → ${res.status} ${JSON.stringify(res.body).slice(0, 120)}`);
+      if (res.status >= 500)
+        crashes.push(
+          `GET ${r.path} → ${res.status} ${JSON.stringify(res.body).slice(0, 120)}`,
+        );
     }
     expect(crashes).toEqual([]);
   });
@@ -78,7 +93,10 @@ describe('Contrôle d\'accès — balayage de toutes les routes', () => {
     const crashes: string[] = [];
     for (const r of routes.filter((x) => x.method === 'GET')) {
       const res = await superAdmin.get(fill(r.path));
-      if (res.status >= 500) crashes.push(`GET ${r.path} → ${res.status} ${JSON.stringify(res.body).slice(0, 120)}`);
+      if (res.status >= 500)
+        crashes.push(
+          `GET ${r.path} → ${res.status} ${JSON.stringify(res.body).slice(0, 120)}`,
+        );
     }
     expect(crashes).toEqual([]);
   });
@@ -89,14 +107,21 @@ describe('Contrôle d\'accès — balayage de toutes les routes', () => {
     for (const r of routes.filter((x) => x.method !== 'GET')) {
       const key = `${r.method} ${r.path}`;
       if (skip.has(key)) continue;
-      const method = r.method.toLowerCase() as 'post' | 'patch' | 'put' | 'delete';
-      const res = method === 'delete' ? await admin.delete(fill(r.path)) : await admin[method](fill(r.path), {});
-      if (res.status >= 500) crashes.push(`${key} → ${res.status} ${JSON.stringify(res.body).slice(0, 120)}`);
+      const method = r.method.toLowerCase() as
+        'post' | 'patch' | 'put' | 'delete';
+      const res =
+        method === 'delete'
+          ? await admin.delete(fill(r.path))
+          : await admin[method](fill(r.path), {});
+      if (res.status >= 500)
+        crashes.push(
+          `${key} → ${res.status} ${JSON.stringify(res.body).slice(0, 120)}`,
+        );
     }
     expect(crashes).toEqual([]);
   });
 
-  it('en production, les réponses d\'erreur ne divulguent pas de stack trace', async () => {
+  it("en production, les réponses d'erreur ne divulguent pas de stack trace", async () => {
     const previous = process.env.NODE_ENV;
     process.env.NODE_ENV = 'production';
     try {

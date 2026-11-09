@@ -1,6 +1,12 @@
 import { ApiClient, items } from './helpers/api-client';
 import { closeTestApp, createTestApp, TestContext } from './helpers/app';
-import { createPlanWithActivity, createTenant, isoDate, login, Tenant } from './helpers/fixtures';
+import {
+  createPlanWithActivity,
+  createTenant,
+  isoDate,
+  login,
+  Tenant,
+} from './helpers/fixtures';
 
 /**
  * Parcours métier principal : plan d'action → axes → activités → checklist → indicateurs
@@ -26,7 +32,7 @@ describe('Parcours métier — plans, activités, suivi, validation', () => {
   });
   afterAll(() => closeTestApp(ctx));
 
-  describe('plans d\'action et axes', () => {
+  describe("plans d'action et axes", () => {
     let planId: string;
 
     it('crée un plan avec ses axes', async () => {
@@ -58,7 +64,7 @@ describe('Parcours métier — plans, activités, suivi, validation', () => {
       expect(res.status).toBe(400);
     });
 
-    it('liste et lit les plans de l\'organisation', async () => {
+    it("liste et lit les plans de l'organisation", async () => {
       const list = await observateur.get('/api/action-plans');
       expect(list.status).toBe(200);
       expect(items(list.body).map((p: any) => p.id)).toContain(planId);
@@ -69,15 +75,21 @@ describe('Parcours métier — plans, activités, suivi, validation', () => {
     });
 
     it('met à jour un plan', async () => {
-      const res = await coord.patch(`/api/action-plans/${planId}`, { title: 'Plan stratégique 2027 (révisé)' });
+      const res = await coord.patch(`/api/action-plans/${planId}`, {
+        title: 'Plan stratégique 2027 (révisé)',
+      });
       expect(res.status).toBe(200);
       expect(res.body.title).toBe('Plan stratégique 2027 (révisé)');
     });
 
     it('ajoute, renomme et supprime un axe', async () => {
-      const add = await coord.post(`/api/action-plans/${planId}/axes`, { title: 'Partenariats' });
+      const add = await coord.post(`/api/action-plans/${planId}/axes`, {
+        title: 'Partenariats',
+      });
       expect(add.status).toBe(201);
-      const upd = await coord.patch(`/api/action-plans/axes/${add.body.id}`, { title: 'Partenariats & bailleurs' });
+      const upd = await coord.patch(`/api/action-plans/axes/${add.body.id}`, {
+        title: 'Partenariats & bailleurs',
+      });
       expect(upd.status).toBe(200);
       const del = await coord.delete(`/api/action-plans/axes/${add.body.id}`);
       expect([200, 204]).toContain(del.status);
@@ -110,14 +122,17 @@ describe('Parcours métier — plans, activités, suivi, validation', () => {
       planId = created.plan.id;
     });
 
-    it('lit le détail d\'une activité', async () => {
+    it("lit le détail d'une activité", async () => {
       const res = await coord.get(`/api/activities/${activityId}`);
       expect(res.status).toBe(200);
       expect(res.body.axisId ?? res.body.axis?.id).toBe(axisId);
     });
 
     it('refuse une activité rattachée à un axe inexistant', async () => {
-      const res = await coord.post('/api/activities', { title: 'Orpheline', axisId: 'cnotexist000000000000000' });
+      const res = await coord.post('/api/activities', {
+        title: 'Orpheline',
+        axisId: 'cnotexist000000000000000',
+      });
       expect([400, 404]).toContain(res.status);
     });
 
@@ -138,26 +153,39 @@ describe('Parcours métier — plans, activités, suivi, validation', () => {
     });
 
     it('fait avancer le statut selon les transitions autorisées', async () => {
-      const prep = await coord.patch(`/api/activities/${activityId}/status`, { status: 'EN_PREPARATION' });
+      const prep = await coord.patch(`/api/activities/${activityId}/status`, {
+        status: 'EN_PREPARATION',
+      });
       expect(prep.status).toBe(200);
-      const run = await coord.patch(`/api/activities/${activityId}/status`, { status: 'EN_COURS' });
+      const run = await coord.patch(`/api/activities/${activityId}/status`, {
+        status: 'EN_COURS',
+      });
       expect(run.status).toBe(200);
       expect(run.body.status).toBe('EN_COURS');
     });
 
     it('refuse une transition de statut interdite (EN_COURS → VALIDEE réservé au circuit de validation)', async () => {
-      const res = await coord.patch(`/api/activities/${activityId}/status`, { status: 'VALIDEE' });
+      const res = await coord.patch(`/api/activities/${activityId}/status`, {
+        status: 'VALIDEE',
+      });
       expect(res.status).toBe(400);
     });
 
     it('refuse un statut inconnu', async () => {
-      const res = await coord.patch(`/api/activities/${activityId}/status`, { status: 'FINI' });
+      const res = await coord.patch(`/api/activities/${activityId}/status`, {
+        status: 'FINI',
+      });
       expect(res.status).toBe(400);
     });
 
-    it('gère la checklist et recalcule le taux d\'avancement', async () => {
-      const a = await coord.post(`/api/activities/${activityId}/checklist`, { label: 'Rédiger les TDR', isMandatory: true });
-      const b = await coord.post(`/api/activities/${activityId}/checklist`, { label: 'Lancer l\'atelier' });
+    it("gère la checklist et recalcule le taux d'avancement", async () => {
+      const a = await coord.post(`/api/activities/${activityId}/checklist`, {
+        label: 'Rédiger les TDR',
+        isMandatory: true,
+      });
+      const b = await coord.post(`/api/activities/${activityId}/checklist`, {
+        label: "Lancer l'atelier",
+      });
       expect(a.status).toBe(201);
       expect(b.status).toBe(201);
 
@@ -165,13 +193,18 @@ describe('Parcours métier — plans, activités, suivi, validation', () => {
       expect(list.status).toBe(200);
       expect(items(list.body)).toHaveLength(2);
 
-      const done = await coord.patch(`/api/activities/${activityId}/checklist/${a.body.id}`, { progress: 100 });
+      const done = await coord.patch(
+        `/api/activities/${activityId}/checklist/${a.body.id}`,
+        { progress: 100 },
+      );
       expect(done.status).toBe(200);
 
       const act = await coord.get(`/api/activities/${activityId}`);
       expect(Number(act.body.completionRate)).toBeCloseTo(50, 0);
 
-      const del = await coord.delete(`/api/activities/${activityId}/checklist/${b.body.id}`);
+      const del = await coord.delete(
+        `/api/activities/${activityId}/checklist/${b.body.id}`,
+      );
       expect([200, 204]).toContain(del.status);
     });
 
@@ -193,7 +226,10 @@ describe('Parcours métier — plans, activités, suivi, validation', () => {
       expect(upd.status).toBe(200);
       expect(upd.body.achieved).toBe(45);
 
-      const neg = await coord.post('/api/indicators', { title: 'Négatif', target: -5 });
+      const neg = await coord.post('/api/indicators', {
+        title: 'Négatif',
+        target: -5,
+      });
       expect(neg.status).toBe(400);
 
       const del = await coord.delete(`/api/indicators/${id}`);
@@ -209,11 +245,14 @@ describe('Parcours métier — plans, activités, suivi, validation', () => {
       });
       expect(ok.status).toBe(201);
 
-      const incoherent = await financier.post(`/api/activities/${activityId}/budgets`, {
-        planned: 100,
-        committed: 500,
-        executed: 900,
-      });
+      const incoherent = await financier.post(
+        `/api/activities/${activityId}/budgets`,
+        {
+          planned: 100,
+          committed: 500,
+          executed: 900,
+        },
+      );
       expect(incoherent.status).toBe(400);
 
       const list = await financier.get(`/api/activities/${activityId}/budgets`);
@@ -221,18 +260,27 @@ describe('Parcours métier — plans, activités, suivi, validation', () => {
 
       const summary = await financier.get('/api/budgets/summary');
       expect(summary.status).toBe(200);
-      const planSummary = await financier.get(`/api/budgets/summary/plan/${planId}`);
+      const planSummary = await financier.get(
+        `/api/budgets/summary/plan/${planId}`,
+      );
       expect(planSummary.status).toBe(200);
 
-      const upd = await financier.patch(`/api/budgets/${ok.body.id}`, { executed: 500000 });
+      const upd = await financier.patch(`/api/budgets/${ok.body.id}`, {
+        executed: 500000,
+      });
       expect(upd.status).toBe(200);
 
-      const badUpd = await financier.patch(`/api/budgets/${ok.body.id}`, { executed: 5000000 });
+      const badUpd = await financier.patch(`/api/budgets/${ok.body.id}`, {
+        executed: 5000000,
+      });
       expect(badUpd.status).toBe(400);
     });
 
     it('un observateur ne peut pas modifier un budget', async () => {
-      const res = await observateur.post(`/api/activities/${activityId}/budgets`, { planned: 10 });
+      const res = await observateur.post(
+        `/api/activities/${activityId}/budgets`,
+        { planned: 10 },
+      );
       expect(res.status).toBe(403);
     });
   });
@@ -243,23 +291,31 @@ describe('Parcours métier — plans, activités, suivi, validation', () => {
     beforeAll(async () => {
       const created = await createPlanWithActivity(coord, 'Plan validation');
       activityId = created.activity.id;
-      await coord.patch(`/api/activities/${activityId}`, { responsibleId: tenant.users.coordinateur.id });
+      await coord.patch(`/api/activities/${activityId}`, {
+        responsibleId: tenant.users.coordinateur.id,
+      });
     });
 
-    it('seul le responsable peut soumettre l\'activité', async () => {
+    it("seul le responsable peut soumettre l'activité", async () => {
       const res = await validateur.post(`/api/activities/${activityId}/submit`);
       expect(res.status).toBe(403);
     });
 
-    it('bloque la soumission tant qu\'une tâche obligatoire n\'est pas faite', async () => {
-      const item = await coord.post(`/api/activities/${activityId}/checklist`, { label: 'Obligatoire', isMandatory: true });
+    it("bloque la soumission tant qu'une tâche obligatoire n'est pas faite", async () => {
+      const item = await coord.post(`/api/activities/${activityId}/checklist`, {
+        label: 'Obligatoire',
+        isMandatory: true,
+      });
       const blocked = await coord.post(`/api/activities/${activityId}/submit`);
       expect(blocked.status).toBe(400);
-      const done = await coord.patch(`/api/activities/${activityId}/checklist/${item.body.id}`, { progress: 100 });
+      const done = await coord.patch(
+        `/api/activities/${activityId}/checklist/${item.body.id}`,
+        { progress: 100 },
+      );
       expect(done.status).toBe(200);
     });
 
-    it('fait passer l\'activité par toutes les étapes jusqu\'à la clôture', async () => {
+    it("fait passer l'activité par toutes les étapes jusqu'à la clôture", async () => {
       const submit = await coord.post(`/api/activities/${activityId}/submit`);
       expect([200, 201]).toContain(submit.status);
 
@@ -271,51 +327,94 @@ describe('Parcours métier — plans, activités, suivi, validation', () => {
         [financier, 'CLOTURE'], // sort de VALIDATION_ADMINISTRATIVE
       ];
       for (const [actor, toStep] of steps) {
-        const res = await actor.post(`/api/activities/${activityId}/validate`, { toStep, decision: 'APPROUVE', comment: `OK ${toStep}` });
-        expect({ toStep, status: res.status }).toEqual({ toStep, status: expect.any(Number) });
-        if (![200, 201].includes(res.status)) throw new Error(`${toStep} → ${res.status} ${JSON.stringify(res.body)}`);
+        const res = await actor.post(`/api/activities/${activityId}/validate`, {
+          toStep,
+          decision: 'APPROUVE',
+          comment: `OK ${toStep}`,
+        });
+        expect({ toStep, status: res.status }).toEqual({
+          toStep,
+          status: expect.any(Number),
+        });
+        if (![200, 201].includes(res.status))
+          throw new Error(
+            `${toStep} → ${res.status} ${JSON.stringify(res.body)}`,
+          );
       }
 
       const act = await coord.get(`/api/activities/${activityId}`);
       expect(act.body.status).toBe('VALIDEE');
 
-      const history = await coord.get(`/api/activities/${activityId}/validations`);
+      const history = await coord.get(
+        `/api/activities/${activityId}/validations`,
+      );
       expect(items(history.body).length).toBeGreaterThanOrEqual(5);
     });
 
     it('refuse une transition qui saute une étape', async () => {
       const { activity } = await createPlanWithActivity(coord, 'Plan saut');
-      await coord.patch(`/api/activities/${activity.id}`, { responsibleId: tenant.users.coordinateur.id });
+      await coord.patch(`/api/activities/${activity.id}`, {
+        responsibleId: tenant.users.coordinateur.id,
+      });
       await coord.post(`/api/activities/${activity.id}/submit`);
-      const res = await admin.post(`/api/activities/${activity.id}/validate`, { toStep: 'CLOTURE', decision: 'APPROUVE' });
+      const res = await admin.post(`/api/activities/${activity.id}/validate`, {
+        toStep: 'CLOTURE',
+        decision: 'APPROUVE',
+      });
       expect(res.status).toBe(400);
     });
 
-    it('un rejet en vérification technique renvoie l\'activité à la soumission', async () => {
+    it("un rejet en vérification technique renvoie l'activité à la soumission", async () => {
       const { activity } = await createPlanWithActivity(coord, 'Plan rejet');
-      await coord.patch(`/api/activities/${activity.id}`, { responsibleId: tenant.users.coordinateur.id });
+      await coord.patch(`/api/activities/${activity.id}`, {
+        responsibleId: tenant.users.coordinateur.id,
+      });
       await coord.post(`/api/activities/${activity.id}/submit`);
-      await coord.post(`/api/activities/${activity.id}/validate`, { toStep: 'VERIFICATION_HIERARCHIQUE', decision: 'APPROUVE' });
+      await coord.post(`/api/activities/${activity.id}/validate`, {
+        toStep: 'VERIFICATION_HIERARCHIQUE',
+        decision: 'APPROUVE',
+      });
 
-      const bad = await validateur.post(`/api/activities/${activity.id}/validate`, { toStep: 'VALIDATION_ADMINISTRATIVE', decision: 'REJETE' });
+      const bad = await validateur.post(
+        `/api/activities/${activity.id}/validate`,
+        { toStep: 'VALIDATION_ADMINISTRATIVE', decision: 'REJETE' },
+      );
       expect(bad.status).toBe(400); // un rejet doit revenir à SOUMISSION
-      const ok = await coord.post(`/api/activities/${activity.id}/validate`, { toStep: 'SOUMISSION', decision: 'REJETE', comment: 'Pièces manquantes' });
+      const ok = await coord.post(`/api/activities/${activity.id}/validate`, {
+        toStep: 'SOUMISSION',
+        decision: 'REJETE',
+        comment: 'Pièces manquantes',
+      });
       expect([200, 201]).toContain(ok.status);
     });
 
     it('[AUDIT] le vérificateur hiérarchique peut rejeter une activité tout juste soumise', async () => {
-      const { activity } = await createPlanWithActivity(coord, 'Plan rejet direct');
-      await coord.patch(`/api/activities/${activity.id}`, { responsibleId: tenant.users.coordinateur.id });
+      const { activity } = await createPlanWithActivity(
+        coord,
+        'Plan rejet direct',
+      );
+      await coord.patch(`/api/activities/${activity.id}`, {
+        responsibleId: tenant.users.coordinateur.id,
+      });
       await coord.post(`/api/activities/${activity.id}/submit`);
-      const res = await admin.post(`/api/activities/${activity.id}/validate`, { toStep: 'SOUMISSION', decision: 'REJETE', comment: 'Incomplet' });
+      const res = await admin.post(`/api/activities/${activity.id}/validate`, {
+        toStep: 'SOUMISSION',
+        decision: 'REJETE',
+        comment: 'Incomplet',
+      });
       expect([200, 201]).toContain(res.status);
     });
 
     it('un observateur ne peut valider aucune étape', async () => {
       const { activity } = await createPlanWithActivity(coord, 'Plan obs');
-      await coord.patch(`/api/activities/${activity.id}`, { responsibleId: tenant.users.coordinateur.id });
+      await coord.patch(`/api/activities/${activity.id}`, {
+        responsibleId: tenant.users.coordinateur.id,
+      });
       await coord.post(`/api/activities/${activity.id}/submit`);
-      const res = await observateur.post(`/api/activities/${activity.id}/validate`, { toStep: 'VERIFICATION_HIERARCHIQUE', decision: 'APPROUVE' });
+      const res = await observateur.post(
+        `/api/activities/${activity.id}/validate`,
+        { toStep: 'VERIFICATION_HIERARCHIQUE', decision: 'APPROUVE' },
+      );
       expect(res.status).toBe(403);
     });
 
@@ -326,14 +425,14 @@ describe('Parcours métier — plans, activités, suivi, validation', () => {
   });
 
   describe('tableaux de bord et rapports', () => {
-    it('renvoie la vue d\'ensemble et la performance', async () => {
+    it("renvoie la vue d'ensemble et la performance", async () => {
       const overview = await coord.get('/api/dashboards/overview');
       expect(overview.status).toBe(200);
       const perf = await coord.get('/api/dashboards/performance');
       expect(perf.status).toBe(200);
     });
 
-    it('renvoie la progression d\'un plan', async () => {
+    it("renvoie la progression d'un plan", async () => {
       const { plan } = await createPlanWithActivity(coord, 'Plan dashboard');
       const res = await coord.get(`/api/dashboards/plan/${plan.id}/progress`);
       expect(res.status).toBe(200);
@@ -344,32 +443,56 @@ describe('Parcours métier — plans, activités, suivi, validation', () => {
       r.on('data', (c: Buffer) => chunks.push(c));
       r.on('end', () => cb(null, Buffer.concat(chunks)));
     };
-    const reportTypes = ['activites', 'budget', 'performance', 'retards', 'indicateurs'];
+    const reportTypes = [
+      'activites',
+      'budget',
+      'performance',
+      'retards',
+      'indicateurs',
+    ];
     for (const type of reportTypes) {
       it(`génère le rapport "${type}" en Excel`, async () => {
-        const res = await coord.post('/api/reports/generate', { type, format: 'excel' }).buffer(true).parse(binary);
+        const res = await coord
+          .post('/api/reports/generate', { type, format: 'excel' })
+          .buffer(true)
+          .parse(binary);
         expect([200, 201]).toContain(res.status);
         expect((res.body as Buffer).subarray(0, 2).toString()).toBe('PK'); // un .xlsx est une archive zip
       });
 
       it(`génère le rapport "${type}" en PDF`, async () => {
-        const res = await coord.post('/api/reports/generate', { type, format: 'pdf' }).buffer(true).parse(binary);
+        const res = await coord
+          .post('/api/reports/generate', { type, format: 'pdf' })
+          .buffer(true)
+          .parse(binary);
         expect([200, 201]).toContain(res.status);
         expect((res.body as Buffer).subarray(0, 4).toString()).toBe('%PDF');
       });
     }
 
     it('refuse un type de rapport inconnu', async () => {
-      const res = await coord.post('/api/reports/generate', { type: 'secret', format: 'excel' });
+      const res = await coord.post('/api/reports/generate', {
+        type: 'secret',
+        format: 'excel',
+      });
       expect(res.status).toBe(400);
     });
   });
 
   describe('zones géographiques', () => {
-    it('crée une hiérarchie de zones et renvoie l\'arbre', async () => {
-      const pays = await admin.post('/api/zones', { name: 'Sénégal', code: `SN-${Date.now()}`, level: 0 });
+    it("crée une hiérarchie de zones et renvoie l'arbre", async () => {
+      const pays = await admin.post('/api/zones', {
+        name: 'Sénégal',
+        code: `SN-${Date.now()}`,
+        level: 0,
+      });
       expect(pays.status).toBe(201);
-      const region = await admin.post('/api/zones', { name: 'Thiès', code: `TH-${Date.now()}`, level: 1, parentId: pays.body.id });
+      const region = await admin.post('/api/zones', {
+        name: 'Thiès',
+        code: `TH-${Date.now()}`,
+        level: 1,
+        parentId: pays.body.id,
+      });
       expect(region.status).toBe(201);
 
       const tree = await admin.get('/api/zones/tree');
@@ -377,12 +500,18 @@ describe('Parcours métier — plans, activités, suivi, validation', () => {
       const stats = await admin.get('/api/zones/stats');
       expect(stats.status).toBe(200);
 
-      const upd = await admin.patch(`/api/zones/${region.body.id}`, { name: 'Région de Thiès' });
+      const upd = await admin.patch(`/api/zones/${region.body.id}`, {
+        name: 'Région de Thiès',
+      });
       expect(upd.status).toBe(200);
     });
 
     it('rattache des zones à un plan', async () => {
-      const zone = await admin.post('/api/zones', { name: 'Dakar', code: `DK-${Date.now()}`, level: 1 });
+      const zone = await admin.post('/api/zones', {
+        name: 'Dakar',
+        code: `DK-${Date.now()}`,
+        level: 1,
+      });
       const plan = await coord.post('/api/action-plans', {
         title: 'Plan zoné',
         periodStart: isoDate(0),
@@ -407,16 +536,25 @@ describe('Parcours métier — plans, activités, suivi, validation', () => {
       const created = await coord.post('/api/planning/annual-work-plans', {
         year: 2027,
         title: 'PTA 2027',
-        objectives: { general: 'Améliorer le suivi', specifiques: ['Objectif 1'] },
+        objectives: {
+          general: 'Améliorer le suivi',
+          specifiques: ['Objectif 1'],
+        },
       });
       expect(created.status).toBe(201);
-      expect((await coord.get('/api/planning/annual-work-plans')).status).toBe(200);
-      const validated = await admin.patch(`/api/planning/annual-work-plans/${created.body.id}/validate`);
+      expect((await coord.get('/api/planning/annual-work-plans')).status).toBe(
+        200,
+      );
+      const validated = await admin.patch(
+        `/api/planning/annual-work-plans/${created.body.id}/validate`,
+      );
       expect([200, 201]).toContain(validated.status);
     });
 
     it('met à jour la matrice de résultats', async () => {
-      const res = await admin.patch('/api/planning/results-matrix', { data: { impact: ['I1'], outcomes: [] } });
+      const res = await admin.patch('/api/planning/results-matrix', {
+        data: { impact: ['I1'], outcomes: [] },
+      });
       expect([200, 201]).toContain(res.status);
       const read = await admin.get('/api/planning/results-matrix');
       expect(read.status).toBe(200);
@@ -425,21 +563,29 @@ describe('Parcours métier — plans, activités, suivi, validation', () => {
     it('suit une recommandation (création, action, commentaire, statistiques)', async () => {
       const created = await coord.post('/api/recommendations', {
         title: 'Renforcer le contrôle interne',
-        description: 'Suite à la mission d\'audit',
+        description: "Suite à la mission d'audit",
         source: 'AUDIT_INTERNE',
         issuedAt: isoDate(-10),
         dueDate: isoDate(60),
         responsibleId: tenant.users.coordinateur.id,
         priority: 'ELEVEE',
       });
-      if (created.status !== 201) throw new Error(`${created.status} ${JSON.stringify(created.body)}`);
+      if (created.status !== 201)
+        throw new Error(`${created.status} ${JSON.stringify(created.body)}`);
       const id = created.body.id;
 
-      const action = await coord.post(`/api/recommendations/${id}/actions`, { title: 'Former les équipes', dueDate: isoDate(30) });
+      const action = await coord.post(`/api/recommendations/${id}/actions`, {
+        title: 'Former les équipes',
+        dueDate: isoDate(30),
+      });
       expect(action.status).toBe(201);
-      const comment = await coord.post(`/api/recommendations/${id}/comments`, { content: 'Lancement prévu lundi' });
+      const comment = await coord.post(`/api/recommendations/${id}/comments`, {
+        content: 'Lancement prévu lundi',
+      });
       expect(comment.status).toBe(201);
-      expect((await coord.get(`/api/recommendations/${id}/comments`)).status).toBe(200);
+      expect(
+        (await coord.get(`/api/recommendations/${id}/comments`)).status,
+      ).toBe(200);
       expect((await coord.get('/api/recommendations/stats')).status).toBe(200);
     });
 
@@ -477,11 +623,16 @@ describe('Parcours métier — plans, activités, suivi, validation', () => {
       });
       expect(res.status).toBe(201);
       expect((await coord.get('/api/capitalization')).status).toBe(200);
-      expect((await coord.get(`/api/capitalization/${res.body.id}`)).status).toBe(200);
+      expect(
+        (await coord.get(`/api/capitalization/${res.body.id}`)).status,
+      ).toBe(200);
     });
 
     it('enregistre un participant à une activité', async () => {
-      const { activity } = await createPlanWithActivity(coord, 'Plan participants');
+      const { activity } = await createPlanWithActivity(
+        coord,
+        'Plan participants',
+      );
       const res = await coord.post('/api/participants', {
         activityId: activity.id,
         firstName: 'Ibrahima',
@@ -496,11 +647,13 @@ describe('Parcours métier — plans, activités, suivi, validation', () => {
     });
   });
 
-  describe('administration de l\'organisation', () => {
-    it('l\'administrateur crée un utilisateur de son organisation', async () => {
+  describe("administration de l'organisation", () => {
+    it("l'administrateur crée un utilisateur de son organisation", async () => {
       const roles = await admin.get('/api/users/roles');
       expect(roles.status).toBe(200);
-      const coordRole = items(roles.body).find((r: any) => r.name === 'Coordinateur');
+      const coordRole = items(roles.body).find(
+        (r: any) => r.name === 'Coordinateur',
+      );
       const res = await admin.post('/api/users', {
         email: `nouveau.${Date.now()}@planora.test`,
         firstName: 'Nouveau',
@@ -513,9 +666,11 @@ describe('Parcours métier — plans, activités, suivi, validation', () => {
       expect(res.body.passwordHash).toBeUndefined();
     });
 
-    it('un coordinateur ne peut pas créer d\'utilisateur administrateur', async () => {
+    it("un coordinateur ne peut pas créer d'utilisateur administrateur", async () => {
       const roles = await admin.get('/api/users/roles');
-      const adminRole = items(roles.body).find((r: any) => r.name === 'Administrateur');
+      const adminRole = items(roles.body).find(
+        (r: any) => r.name === 'Administrateur',
+      );
       const res = await coord.post('/api/users', {
         email: `escalade.${Date.now()}@planora.test`,
         firstName: 'Esc',
@@ -526,11 +681,13 @@ describe('Parcours métier — plans, activités, suivi, validation', () => {
     });
 
     it('personnalise la couleur de marque', async () => {
-      const res = await admin.patch('/api/organizations/my/brand-color', { brandColor: '#0e7c66' });
+      const res = await admin.patch('/api/organizations/my/brand-color', {
+        brandColor: '#0e7c66',
+      });
       expect(res.status).toBe(200);
     });
 
-    it('consulte le journal d\'audit', async () => {
+    it("consulte le journal d'audit", async () => {
       const res = await admin.get('/api/audit');
       expect(res.status).toBe(200);
     });

@@ -4,7 +4,11 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { Request } from 'express';
-import { assertSessionActive, assertTokenNotRevoked, loadSessionUser } from '../../common/auth/session-policy';
+import {
+  assertSessionActive,
+  assertTokenNotRevoked,
+  loadSessionUser,
+} from '../../common/auth/session-policy';
 
 export interface JwtPayload {
   sub: string;

@@ -1,9 +1,17 @@
 // Utilisé par DemandesController (POST /passation/demandes)
-import { IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength, Min } from 'class-validator';
+import {
+  IsDateString,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  MaxLength,
+  Min,
+} from 'class-validator';
 
 export class CreateDemandeDto {
   @IsString()
-  @IsNotEmpty({ message: 'L\'objet est obligatoire' })
+  @IsNotEmpty({ message: "L'objet est obligatoire" })
   @MaxLength(300)
   objet: string;
 
@@ -15,7 +23,10 @@ export class CreateDemandeDto {
   @IsNotEmpty({ message: 'La justification est obligatoire' })
   justification: string;
 
-  @IsNumber({ maxDecimalPlaces: 2 }, { message: 'Le montant estimatif doit être un nombre' })
+  @IsNumber(
+    { maxDecimalPlaces: 2 },
+    { message: 'Le montant estimatif doit être un nombre' },
+  )
   @Min(0, { message: 'Le montant estimatif ne peut pas être négatif' })
   montantEstimatif: number;
 

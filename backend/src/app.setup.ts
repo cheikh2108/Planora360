@@ -12,11 +12,15 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
  * Les fichiers téléversés ne sont plus servis en statique : ils passent par
  * GET /api/documents/:id/download et GET /api/files/* (authentifiés, filtrés par organisation).
  */
-export function configureApp(app: NestExpressApplication): NestExpressApplication {
+export function configureApp(
+  app: NestExpressApplication,
+): NestExpressApplication {
   // En-têtes de sécurité (nosniff, frameguard, HSTS, etc.). L'API ne sert pas de HTML : CSP stricte.
   app.use(
     helmet({
-      contentSecurityPolicy: { directives: { defaultSrc: ["'none'"], frameAncestors: ["'none'"] } },
+      contentSecurityPolicy: {
+        directives: { defaultSrc: ["'none'"], frameAncestors: ["'none'"] },
+      },
       crossOriginResourcePolicy: { policy: 'same-site' },
     }),
   );
@@ -46,7 +50,9 @@ export function configureApp(app: NestExpressApplication): NestExpressApplicatio
     .map((o) => o.trim())
     .filter((o) => o && o !== '*');
   if ((process.env.FRONTEND_URL ?? '').includes('*')) {
-    new Logger('CORS').warn('FRONTEND_URL contient "*" : ignoré (incompatible avec les cookies de session).');
+    new Logger('CORS').warn(
+      'FRONTEND_URL contient "*" : ignoré (incompatible avec les cookies de session).',
+    );
   }
   app.enableCors({
     origin: (origin, cb) => {

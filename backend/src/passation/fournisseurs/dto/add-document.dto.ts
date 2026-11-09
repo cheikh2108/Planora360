@@ -1,5 +1,14 @@
 // Utilisé par FournisseursController (POST /passation/fournisseurs/:id/documents)
-import { IsDateString, IsInt, IsNotEmpty, IsOptional, IsString, IsUrl, MaxLength, Min } from 'class-validator';
+import {
+  IsDateString,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUrl,
+  MaxLength,
+  Min,
+} from 'class-validator';
 
 export class AddFournisseurDocumentDto {
   @IsString()
@@ -13,7 +22,10 @@ export class AddFournisseurDocumentDto {
   nom: string;
 
   /** Lien http(s) vers le document (pas de javascript:, data:, etc.). */
-  @IsUrl({ protocols: ['http', 'https'], require_protocol: true }, { message: 'URL de document invalide' })
+  @IsUrl(
+    { protocols: ['http', 'https'], require_protocol: true },
+    { message: 'URL de document invalide' },
+  )
   url: string;
 
   @IsOptional()

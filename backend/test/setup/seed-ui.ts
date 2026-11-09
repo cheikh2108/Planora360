@@ -19,14 +19,23 @@ export const UI_USERS = {
 
 const url = process.env.DATABASE_URL ?? '';
 if (/neon\.tech|prod/i.test(url)) {
-  throw new Error('seed-ui refuse de tourner sur une base qui ressemble à la production.');
+  throw new Error(
+    'seed-ui refuse de tourner sur une base qui ressemble à la production.',
+  );
 }
 
-const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: url }) });
+const prisma = new PrismaClient({
+  adapter: new PrismaPg({ connectionString: url }),
+});
 
 async function role(name: string) {
-  const r = await prisma.role.findFirst({ where: { name, organizationId: null } });
-  if (!r) throw new Error(`Rôle système ${name} absent : lancez d'abord prisma/seed.ts`);
+  const r = await prisma.role.findFirst({
+    where: { name, organizationId: null },
+  });
+  if (!r)
+    throw new Error(
+      `Rôle système ${name} absent : lancez d'abord prisma/seed.ts`,
+    );
   return r.id;
 }
 
@@ -40,27 +49,55 @@ async function resetOrg(name: string) {
   for (const org of existing) {
     await prisma.organization.update({
       where: { id: org.id },
-      data: { name: `${name} (archivée ${stamp})`, deletedAt: new Date() } as any,
+      data: {
+        name: `${name} (archivée ${stamp})`,
+        deletedAt: new Date(),
+      } as any,
     });
   }
-  const oldUsers = await prisma.user.findMany({ where: { email: { in: Object.values(UI_USERS) } } });
+  const oldUsers = await prisma.user.findMany({
+    where: { email: { in: Object.values(UI_USERS) } },
+  });
   for (const u of oldUsers) {
     await prisma.user.update({
       where: { id: u.id },
-      data: { email: `archive.${stamp}.${u.email}`, isActive: false, deletedAt: new Date() } as any,
+      data: {
+        email: `archive.${stamp}.${u.email}`,
+        isActive: false,
+        deletedAt: new Date(),
+      } as any,
     });
   }
 }
 
 async function createOrg(name: string) {
   return prisma.organization.create({
-    data: { name, subscriptionPlan: 'ENTERPRISE', status: 'ACTIVE', subscriptionStatus: 'ACTIVE' } as any,
+    data: {
+      name,
+      subscriptionPlan: 'ENTERPRISE',
+      status: 'ACTIVE',
+      subscriptionStatus: 'ACTIVE',
+    } as any,
   });
 }
 
-async function createUser(orgId: string, email: string, roleName: string, firstName: string, lastName: string, passwordHash: string) {
+async function createUser(
+  orgId: string,
+  email: string,
+  roleName: string,
+  firstName: string,
+  lastName: string,
+  passwordHash: string,
+) {
   return prisma.user.create({
-    data: { email, firstName, lastName, passwordHash, organizationId: orgId, roleId: await role(roleName) },
+    data: {
+      email,
+      firstName,
+      lastName,
+      passwordHash,
+      organizationId: orgId,
+      roleId: await role(roleName),
+    },
   });
 }
 
@@ -71,9 +108,30 @@ async function main() {
   await resetOrg('E2E Autre Organisation');
 
   const org = await createOrg('E2E Agence Démo');
-  const admin = await createUser(org.id, UI_USERS.admin, 'Administrateur', 'Aminata', 'Diallo', passwordHash);
-  const coord = await createUser(org.id, UI_USERS.coordinateur, 'Coordinateur', 'Ousmane', 'Faye', passwordHash);
-  await createUser(org.id, UI_USERS.observateur, 'Observateur', 'Khady', 'Mbaye', passwordHash);
+  const admin = await createUser(
+    org.id,
+    UI_USERS.admin,
+    'Administrateur',
+    'Aminata',
+    'Diallo',
+    passwordHash,
+  );
+  const coord = await createUser(
+    org.id,
+    UI_USERS.coordinateur,
+    'Coordinateur',
+    'Ousmane',
+    'Faye',
+    passwordHash,
+  );
+  await createUser(
+    org.id,
+    UI_USERS.observateur,
+    'Observateur',
+    'Khady',
+    'Mbaye',
+    passwordHash,
+  );
 
   const plan = await prisma.actionPlan.create({
     data: {
@@ -81,8 +139,13 @@ async function main() {
       organizationId: org.id,
       periodStart: new Date('2027-01-01'),
       periodEnd: new Date('2027-12-31'),
-      strategicGoals: 'Améliorer l\'accès aux services',
-      axes: { create: [{ title: 'Gouvernance', order: 0 }, { title: 'Services aux usagers', order: 1 }] },
+      strategicGoals: "Améliorer l'accès aux services",
+      axes: {
+        create: [
+          { title: 'Gouvernance', order: 0 },
+          { title: 'Services aux usagers', order: 1 },
+        ],
+      },
     } as any,
     include: { axes: true },
   });
@@ -110,7 +173,14 @@ async function main() {
   });
 
   const other = await createOrg('E2E Autre Organisation');
-  await createUser(other.id, UI_USERS.autreOrgAdmin, 'Administrateur', 'Pape', 'Sarr', passwordHash);
+  await createUser(
+    other.id,
+    UI_USERS.autreOrgAdmin,
+    'Administrateur',
+    'Pape',
+    'Sarr',
+    passwordHash,
+  );
   const otherPlan = await prisma.actionPlan.create({
     data: {
       title: 'Plan secret autre organisation',
@@ -121,7 +191,13 @@ async function main() {
     } as any,
   });
 
-  console.log(JSON.stringify({ orgId: org.id, planId: plan.id, otherPlanId: otherPlan.id }));
+  console.log(
+    JSON.stringify({
+      orgId: org.id,
+      planId: plan.id,
+      otherPlanId: otherPlan.id,
+    }),
+  );
 }
 
 main()

@@ -1,7 +1,19 @@
 // Utilisé par RecommendationsController (PATCH /recommendations/actions/:actionId)
-import { IsDateString, IsIn, IsInt, IsOptional, IsString, MinLength } from 'class-validator';
+import {
+  IsDateString,
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 
-export const ACTION_STATUSES = ['NON_DEMARREE', 'EN_COURS', 'TERMINEE', 'ANNULEE'];
+export const ACTION_STATUSES = [
+  'NON_DEMARREE',
+  'EN_COURS',
+  'TERMINEE',
+  'ANNULEE',
+];
 
 export class UpdateActionDto {
   @IsOptional()

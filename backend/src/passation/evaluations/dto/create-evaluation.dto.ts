@@ -1,5 +1,13 @@
 // Utilisé par EvaluationsController (POST /passation/procedures/:procedureId/evaluations)
-import { IsNotEmpty, IsNumber, IsObject, IsOptional, IsString, Max, Min } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsObject,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
 
 export class CreateEvaluationDto {
   @IsString()

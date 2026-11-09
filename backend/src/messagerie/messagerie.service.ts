@@ -5,7 +5,11 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
-import { ConversationType, ConversationRole, MessageContentType } from '@prisma/client';
+import {
+  ConversationType,
+  ConversationRole,
+  MessageContentType,
+} from '@prisma/client';
 
 @Injectable()
 export class MessagerieService {
@@ -111,15 +115,51 @@ export class MessagerieService {
   /** Vérifie que chaque élément de contexte appartient à l'organisation ; ignore les clés inconnues. */
   private async validateContext(
     organizationId: string,
-    context?: { projectId?: string; activityId?: string; recommendationId?: string; procedureId?: string; contratId?: string },
+    context?: {
+      projectId?: string;
+      activityId?: string;
+      recommendationId?: string;
+      procedureId?: string;
+      contratId?: string;
+    },
   ) {
     if (!context || typeof context !== 'object') return {};
     const checks: [keyof typeof context, () => Promise<number>][] = [
-      ['projectId', () => this.prisma.actionPlan.count({ where: { id: context.projectId, organizationId } })],
-      ['activityId', () => this.prisma.activity.count({ where: { id: context.activityId, organizationId } })],
-      ['recommendationId', () => this.prisma.recommendation.count({ where: { id: context.recommendationId, organizationId } })],
-      ['procedureId', () => this.prisma.procedure.count({ where: { id: context.procedureId, organizationId } })],
-      ['contratId', () => this.prisma.contrat.count({ where: { id: context.contratId, organizationId } })],
+      [
+        'projectId',
+        () =>
+          this.prisma.actionPlan.count({
+            where: { id: context.projectId, organizationId },
+          }),
+      ],
+      [
+        'activityId',
+        () =>
+          this.prisma.activity.count({
+            where: { id: context.activityId, organizationId },
+          }),
+      ],
+      [
+        'recommendationId',
+        () =>
+          this.prisma.recommendation.count({
+            where: { id: context.recommendationId, organizationId },
+          }),
+      ],
+      [
+        'procedureId',
+        () =>
+          this.prisma.procedure.count({
+            where: { id: context.procedureId, organizationId },
+          }),
+      ],
+      [
+        'contratId',
+        () =>
+          this.prisma.contrat.count({
+            where: { id: context.contratId, organizationId },
+          }),
+      ],
     ];
     const safe: Record<string, string> = {};
     for (const [key, count] of checks) {
@@ -134,10 +174,19 @@ export class MessagerieService {
   }
 
   /** Vrai si l'utilisateur participe (toujours) à la conversation de son organisation. */
-  async isParticipant(conversationId: string, userId: string, organizationId: string): Promise<boolean> {
+  async isParticipant(
+    conversationId: string,
+    userId: string,
+    organizationId: string,
+  ): Promise<boolean> {
     if (!conversationId || typeof conversationId !== 'string') return false;
     const participant = await this.prisma.conversationParticipant.findFirst({
-      where: { conversationId, userId, leftAt: null, conversation: { organizationId } },
+      where: {
+        conversationId,
+        userId,
+        leftAt: null,
+        conversation: { organizationId },
+      },
       select: { id: true },
     });
     return !!participant;
@@ -165,13 +214,22 @@ export class MessagerieService {
     }
 
     // Les participants doivent être des utilisateurs actifs de la MÊME organisation
-    const uniqueIds = Array.from(new Set((participantIds ?? []).filter((id) => id && id !== createdById)));
+    const uniqueIds = Array.from(
+      new Set((participantIds ?? []).filter((id) => id && id !== createdById)),
+    );
     if (uniqueIds.length) {
       const count = await this.prisma.user.count({
-        where: { id: { in: uniqueIds }, organizationId, deletedAt: null, isActive: true },
+        where: {
+          id: { in: uniqueIds },
+          organizationId,
+          deletedAt: null,
+          isActive: true,
+        },
       });
       if (count !== uniqueIds.length) {
-        throw new BadRequestException('Un ou plusieurs participants n\'appartiennent pas à votre organisation');
+        throw new BadRequestException(
+          "Un ou plusieurs participants n'appartiennent pas à votre organisation",
+        );
       }
     }
     participantIds = uniqueIds;
@@ -190,9 +248,9 @@ export class MessagerieService {
           create: [
             {
               userId: createdById,
-              role: ConversationRole.ADMIN
+              role: ConversationRole.ADMIN,
             },
-            ...(participantIds || []).map(userId => ({
+            ...(participantIds || []).map((userId) => ({
               userId,
               role: ConversationRole.MEMBER,
             })),
@@ -236,7 +294,9 @@ export class MessagerieService {
     });
 
     if (!participant) {
-      throw new ForbiddenException('Vous n\'êtes pas participant de cette conversation');
+      throw new ForbiddenException(
+        "Vous n'êtes pas participant de cette conversation",
+      );
     }
 
     // Rate limiting simple : max 10 messages par minute
@@ -250,7 +310,9 @@ export class MessagerieService {
     });
 
     if (recentMessages >= 10) {
-      throw new BadRequestException('Limite de 10 messages par minute atteinte');
+      throw new BadRequestException(
+        'Limite de 10 messages par minute atteinte',
+      );
     }
 
     // Créer le message
@@ -322,7 +384,9 @@ export class MessagerieService {
     });
 
     if (!participant) {
-      throw new ForbiddenException('Vous n\'êtes pas participant de cette conversation');
+      throw new ForbiddenException(
+        "Vous n'êtes pas participant de cette conversation",
+      );
     }
 
     // Créer le message avec les attachments en transaction
@@ -386,11 +450,15 @@ export class MessagerieService {
     }
 
     if (message.authorId !== authorId) {
-      throw new ForbiddenException('Vous ne pouvez modifier que vos propres messages');
+      throw new ForbiddenException(
+        'Vous ne pouvez modifier que vos propres messages',
+      );
     }
 
     if (message.isDeleted) {
-      throw new BadRequestException('Impossible de modifier un message supprimé');
+      throw new BadRequestException(
+        'Impossible de modifier un message supprimé',
+      );
     }
 
     return this.prisma.message.update({
@@ -427,7 +495,9 @@ export class MessagerieService {
     }
 
     if (message.authorId !== authorId) {
-      throw new ForbiddenException('Vous ne pouvez supprimer que vos propres messages');
+      throw new ForbiddenException(
+        'Vous ne pouvez supprimer que vos propres messages',
+      );
     }
 
     return this.prisma.message.update({
@@ -482,7 +552,9 @@ export class MessagerieService {
     });
 
     if (!participant) {
-      throw new ForbiddenException('Vous n\'êtes pas participant de cette conversation');
+      throw new ForbiddenException(
+        "Vous n'êtes pas participant de cette conversation",
+      );
     }
 
     const messages = await this.prisma.message.findMany({
@@ -579,7 +651,9 @@ export class MessagerieService {
     }
 
     if (reaction.userId !== userId) {
-      throw new ForbiddenException('Vous ne pouvez supprimer que vos propres réactions');
+      throw new ForbiddenException(
+        'Vous ne pouvez supprimer que vos propres réactions',
+      );
     }
 
     await this.prisma.messageReaction.delete({
@@ -653,7 +727,7 @@ export class MessagerieService {
 
     // Créer les accusés de lecture en batch
     await this.prisma.messageRead.createMany({
-      data: unreadMessages.map(msg => ({
+      data: unreadMessages.map((msg) => ({
         messageId: msg.id,
         userId,
       })),
@@ -688,7 +762,9 @@ export class MessagerieService {
     });
 
     if (!participant) {
-      throw new ForbiddenException('Vous n\'êtes pas participant de cette conversation');
+      throw new ForbiddenException(
+        "Vous n'êtes pas participant de cette conversation",
+      );
     }
 
     // Vérifier que l'utilisateur est ADMIN de la conversation
@@ -701,7 +777,9 @@ export class MessagerieService {
     }
 
     if (conversation.createdById !== userId && participant.role !== 'ADMIN') {
-      throw new ForbiddenException('Seul le créateur ou un admin peut supprimer cette conversation');
+      throw new ForbiddenException(
+        'Seul le créateur ou un admin peut supprimer cette conversation',
+      );
     }
 
     // Supprimer la conversation (cascade sur participants et messages)
@@ -726,7 +804,9 @@ export class MessagerieService {
     });
 
     if (!participant) {
-      throw new ForbiddenException('Vous n\'êtes pas participant de cette conversation');
+      throw new ForbiddenException(
+        "Vous n'êtes pas participant de cette conversation",
+      );
     }
 
     // Marquer la conversation comme archivée
@@ -752,7 +832,9 @@ export class MessagerieService {
     });
 
     if (!participant) {
-      throw new ForbiddenException('Vous n\'êtes pas participant de cette conversation');
+      throw new ForbiddenException(
+        "Vous n'êtes pas participant de cette conversation",
+      );
     }
 
     // Marquer la conversation comme non-archivée

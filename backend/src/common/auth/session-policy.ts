@@ -39,7 +39,10 @@ export function assertSessionAllowed(user: any): void {
 }
 
 /** Charge l'utilisateur d'une session (JWT HTTP ou WebSocket) et applique la politique ci-dessus. */
-export async function loadSessionUser(prisma: PrismaService, userId: string | undefined) {
+export async function loadSessionUser(
+  prisma: PrismaService,
+  userId: string | undefined,
+) {
   if (!userId || typeof userId !== 'string') throw new UnauthorizedException();
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -53,9 +56,15 @@ export async function loadSessionUser(prisma: PrismaService, userId: string | un
  * Un jeton émis avant la dernière déconnexion (ou réinitialisation de mot de passe) est révoqué.
  * `iatMs` (millisecondes) est posé à l'émission ; à défaut, `iat` (secondes) est utilisé.
  */
-export function assertTokenNotRevoked(user: { tokensValidAfter?: Date | null }, payload: any): void {
+export function assertTokenNotRevoked(
+  user: { tokensValidAfter?: Date | null },
+  payload: any,
+): void {
   if (!user.tokensValidAfter) return;
-  const issuedAt = typeof payload?.iatMs === 'number' ? payload.iatMs : (payload?.iat ?? 0) * 1000;
+  const issuedAt =
+    typeof payload?.iatMs === 'number'
+      ? payload.iatMs
+      : (payload?.iat ?? 0) * 1000;
   if (issuedAt < user.tokensValidAfter.getTime()) {
     throw new UnauthorizedException('Session expirée');
   }
@@ -67,8 +76,14 @@ export function assertTokenNotRevoked(user: { tokensValidAfter?: Date | null }, 
  * cette session tombent immédiatement, sans toucher aux autres appareils de l'utilisateur.
  * Les jetons émis avant l'introduction de `sid` restent soumis à `tokensValidAfter` seul.
  */
-export async function assertSessionActive(prisma: PrismaService, payload: any): Promise<void> {
+export async function assertSessionActive(
+  prisma: PrismaService,
+  payload: any,
+): Promise<void> {
   if (!payload?.sid) return;
-  const session = await prisma.refreshToken.findUnique({ where: { id: payload.sid }, select: { id: true } });
+  const session = await prisma.refreshToken.findUnique({
+    where: { id: payload.sid },
+    select: { id: true },
+  });
   if (!session) throw new UnauthorizedException('Session expirée');
 }

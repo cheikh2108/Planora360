@@ -1,6 +1,13 @@
 // Utilisé par ContratsController (PATCH /passation/contrats/:id).
 // Le statut change par les actions dédiées (suspend/terminate/close), le montant payé par les paiements.
-import { IsDateString, IsIn, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import {
+  IsDateString,
+  IsIn,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
 
 export class UpdateContratDto {
   @IsOptional()
