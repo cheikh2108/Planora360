@@ -67,9 +67,9 @@ export declare class DashboardsController {
         })[];
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.PlanStatus;
         title: string;
         expectedResults: string | null;

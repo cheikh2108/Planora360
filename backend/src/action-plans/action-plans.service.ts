@@ -17,6 +17,7 @@ export class ActionPlansService {
 
   async create(dto: CreateActionPlanDto, organizationId: string, userId: string) {
     const { axes, zoneIds, ...planData } = dto;
+    this.assertPeriod(dto.periodStart, dto.periodEnd);
 
     // Vérifier la limite de plans d'action selon le plan tarifaire
     const organization = await this.prisma.organization.findUnique({
@@ -76,6 +77,13 @@ export class ActionPlansService {
     this.posthog.trackActionPlanCreated(userId, plan.id, organizationId);
 
     return plan;
+  }
+
+  /** La période d'un plan doit se terminer après son début. */
+  private assertPeriod(start: string, end: string) {
+    if (new Date(end) <= new Date(start)) {
+      throw new BadRequestException('La date de fin doit être postérieure à la date de début');
+    }
   }
 
   private async validateZones(zoneIds: string[], organizationId: string) {
@@ -192,11 +200,21 @@ export class ActionPlansService {
   }
 
   async update(id: string, dto: UpdateActionPlanDto, organizationId: string) {
-    await this.findOne(id, organizationId);
-    const { axes, ...planData } = dto;
+    const plan = await this.findOne(id, organizationId);
+    // Les axes se gèrent par leurs routes ; les zones sont remplacées en bloc si fournies
+    const { axes, zoneIds, ...planData } = dto;
+    this.assertPeriod(
+      dto.periodStart ?? plan.periodStart.toISOString(),
+      dto.periodEnd ?? plan.periodEnd.toISOString(),
+    );
+    if (zoneIds?.length) await this.validateZones(zoneIds, organizationId);
+
     const data: any = { ...planData };
     if (dto.periodStart) data.periodStart = new Date(dto.periodStart);
     if (dto.periodEnd) data.periodEnd = new Date(dto.periodEnd);
+    if (zoneIds !== undefined) {
+      data.zones = { deleteMany: {}, create: zoneIds.map((zoneId) => ({ zoneId })) };
+    }
 
     return this.prisma.actionPlan.update({
       where: { id },

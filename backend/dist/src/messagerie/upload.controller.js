@@ -16,53 +16,47 @@ exports.UploadController = void 0;
 const common_1 = require("@nestjs/common");
 const platform_express_1 = require("@nestjs/platform-express");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
+const prisma_service_1 = require("../common/prisma/prisma.service");
 const messagerie_service_1 = require("./messagerie.service");
 const storage_service_1 = require("../storage/storage.service");
-const ALLOWED_MIME_TYPES = [
-    'image/jpeg',
-    'image/png',
-    'image/gif',
-    'image/webp',
-    'application/pdf',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'application/vnd.ms-excel',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-];
+const file_validator_1 = require("../documents/file-validator");
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
-function generateFilename(originalName) {
-    const timestamp = Date.now();
-    const random = Math.round(Math.random() * 1e9);
-    const ext = originalName.substring(originalName.lastIndexOf('.'));
-    return `${timestamp}-${random}${ext}`;
-}
+const MAX_FILES = 3;
 let UploadController = class UploadController {
     messagerieService;
     storageService;
-    constructor(messagerieService, storageService) {
+    prisma;
+    constructor(messagerieService, storageService, prisma) {
         this.messagerieService = messagerieService;
         this.storageService = storageService;
+        this.prisma = prisma;
     }
     async uploadFiles(conversationId, files, content, req) {
         if (!files || files.length === 0) {
             throw new common_1.BadRequestException('Aucun fichier fourni');
         }
-        for (const file of files) {
-            if (file.size > MAX_FILE_SIZE) {
-                throw new common_1.BadRequestException(`Fichier trop volumineux: ${file.originalname} (max 10MB)`);
-            }
-            if (!ALLOWED_MIME_TYPES.includes(file.mimetype)) {
-                throw new common_1.BadRequestException(`Type non autorisé: ${file.originalname} (${file.mimetype})`);
-            }
+        const participant = await this.prisma.conversationParticipant.findFirst({
+            where: {
+                conversationId,
+                userId: req.user.id,
+                leftAt: null,
+                conversation: { organizationId: req.user.organizationId },
+            },
+            select: { id: true },
+        });
+        if (!participant) {
+            throw new common_1.ForbiddenException('Vous n\'êtes pas participant de cette conversation');
         }
-        const attachments = await Promise.all(files.map(async (file) => {
-            const filename = generateFilename(file.originalname);
-            const storageKey = `messagerie/${filename}`;
+        const extensions = [];
+        for (const file of files) {
+            extensions.push(await (0, file_validator_1.validateFile)(file, { allowed: file_validator_1.MEDIA_EXTENSIONS, maxSize: MAX_FILE_SIZE }));
+        }
+        const attachments = await Promise.all(files.map(async (file, i) => {
+            const storageKey = this.storageService.buildKey(req.user.organizationId, ['messagerie', conversationId], extensions[i]);
             await this.storageService.upload(storageKey, file);
-            const fileUrl = await this.storageService.getSignedUrl(storageKey, 86400);
             return {
                 fileName: file.originalname,
-                fileUrl,
+                fileUrl: this.storageService.fileUrl(storageKey),
                 fileSize: file.size,
                 mimeType: file.mimetype,
             };
@@ -77,17 +71,8 @@ let UploadController = class UploadController {
 exports.UploadController = UploadController;
 __decorate([
     (0, common_1.Post)('conversations/:conversationId/upload'),
-    (0, common_1.UseInterceptors)((0, platform_express_1.FilesInterceptor)('files', 3, {
-        fileFilter: (req, file, cb) => {
-            if (!ALLOWED_MIME_TYPES.includes(file.mimetype)) {
-                return cb(new common_1.BadRequestException(`Type de fichier non autorisé: ${file.mimetype}`), false);
-            }
-            cb(null, true);
-        },
-        limits: {
-            fileSize: MAX_FILE_SIZE,
-            files: 3,
-        },
+    (0, common_1.UseInterceptors)((0, platform_express_1.FilesInterceptor)('files', MAX_FILES, {
+        limits: { fileSize: MAX_FILE_SIZE, files: MAX_FILES },
     })),
     __param(0, (0, common_1.Param)('conversationId')),
     __param(1, (0, common_1.UploadedFiles)()),
@@ -101,6 +86,7 @@ exports.UploadController = UploadController = __decorate([
     (0, common_1.Controller)('messagerie'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __metadata("design:paramtypes", [messagerie_service_1.MessagerieService,
-        storage_service_1.StorageService])
+        storage_service_1.StorageService,
+        prisma_service_1.PrismaService])
 ], UploadController);
 //# sourceMappingURL=upload.controller.js.map

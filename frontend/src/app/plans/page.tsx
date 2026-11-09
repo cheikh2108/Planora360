@@ -17,6 +17,8 @@ import type { PlanStatus } from '@/lib/types';
 import { FolderKanban, Plus, ChevronRight, Calendar, Target, Wallet, Activity } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/toast';
+import { useAuth } from '@/lib/auth-context';
+import { canAccess } from '@/lib/access';
 
 /* ─── helpers ─────────────────────────────────────────────── */
 
@@ -204,6 +206,9 @@ function CreatePlanModal({ open, onClose, onCreated }: { open: boolean; onClose:
 export default function PlansPage() {
   const toast = useToast();
   const [createOpen, setCreateOpen] = useState(false);
+  const { user } = useAuth();
+  // Création réservée aux rôles autorisés par le backend (sinon 403 après saisie)
+  const canCreate = canAccess(user, 'planWrite');
   const [page, setPage] = useState(1);
   const limit = 15;
   const { data: plansPage, isLoading } = useQuery({
@@ -259,9 +264,11 @@ export default function PlansPage() {
           <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">
             {isLoading ? '' : `${plans.length} plan${plans.length > 1 ? 's' : ''}`}
           </p>
-          <Button icon={<Plus size={16} />} onClick={() => setCreateOpen(true)}>
-            Nouveau plan
-          </Button>
+          {canCreate && (
+            <Button icon={<Plus size={16} />} onClick={() => setCreateOpen(true)}>
+              Nouveau plan
+            </Button>
+          )}
         </div>
 
         {/* Content */}
@@ -273,8 +280,10 @@ export default function PlansPage() {
           <EmptyState
             illustration="inbox"
             title="Aucun plan d'action"
-            description="Créez votre premier plan d'action pour commencer le suivi."
-            action={{ label: 'Créer un plan', onClick: () => setCreateOpen(true), leftIcon: <Plus size={16} /> }}
+            description={canCreate
+              ? "Créez votre premier plan d'action pour commencer le suivi."
+              : "Aucun plan d'action n'a encore été créé dans votre organisation."}
+            action={canCreate ? { label: 'Créer un plan', onClick: () => setCreateOpen(true), leftIcon: <Plus size={16} /> } : undefined}
           />
         ) : (
           <>

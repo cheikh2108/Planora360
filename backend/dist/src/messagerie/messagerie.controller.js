@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MessagerieController = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
+const subscription_guard_1 = require("../common/guards/subscription.guard");
 const messagerie_service_1 = require("./messagerie.service");
 const client_1 = require("@prisma/client");
 let MessagerieController = class MessagerieController {
@@ -132,7 +133,8 @@ __decorate([
 ], MessagerieController.prototype, "unarchiveConversation", null);
 exports.MessagerieController = MessagerieController = __decorate([
     (0, common_1.Controller)('messagerie'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, subscription_guard_1.SubscriptionGuard),
+    (0, subscription_guard_1.RequiresPlan)(client_1.SubscriptionPlan.EQUIPE, client_1.SubscriptionPlan.ORGANISATION, client_1.SubscriptionPlan.ENTERPRISE),
     __metadata("design:paramtypes", [messagerie_service_1.MessagerieService])
 ], MessagerieController);
 //# sourceMappingURL=messagerie.controller.js.map

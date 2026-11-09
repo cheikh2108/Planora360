@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
+var MessagerieGateway_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MessagerieGateway = void 0;
 const websockets_1 = require("@nestjs/websockets");
@@ -18,63 +19,81 @@ const socket_io_1 = require("socket.io");
 const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
 const messagerie_service_1 = require("./messagerie.service");
-let MessagerieGateway = class MessagerieGateway {
+const prisma_service_1 = require("../common/prisma/prisma.service");
+const session_policy_1 = require("../common/auth/session-policy");
+const userOf = (client) => client.user;
+const orgRoom = (organizationId) => `organization:${organizationId}`;
+const convRoom = (conversationId) => `conversation:${conversationId}`;
+let MessagerieGateway = MessagerieGateway_1 = class MessagerieGateway {
     jwtService;
     messagerieService;
+    prisma;
     server;
     connectedUsers = new Map();
-    constructor(jwtService, messagerieService) {
+    logger = new common_1.Logger(MessagerieGateway_1.name);
+    constructor(jwtService, messagerieService, prisma) {
         this.jwtService = jwtService;
         this.messagerieService = messagerieService;
+        this.prisma = prisma;
     }
     async handleConnection(client) {
         try {
-            const token = client.handshake.query.token;
-            if (!token) {
+            const token = (client.handshake.auth?.token ?? client.handshake.query.token);
+            if (!token || typeof token !== 'string') {
                 throw new common_1.UnauthorizedException('Token manquant');
             }
             const payload = await this.jwtService.verifyAsync(token);
-            client.user = payload;
-            const userId = payload.id;
-            if (!this.connectedUsers.has(userId)) {
-                this.connectedUsers.set(userId, new Set());
+            if (payload.scope !== 'websocket')
+                throw new common_1.UnauthorizedException('Jeton invalide');
+            const sessionUser = await (0, session_policy_1.loadSessionUser)(this.prisma, payload.id ?? payload.sub);
+            (0, session_policy_1.assertTokenNotRevoked)(sessionUser, payload);
+            await (0, session_policy_1.assertSessionActive)(this.prisma, payload);
+            if (!sessionUser.organizationId)
+                throw new common_1.UnauthorizedException('Organisation requise');
+            const user = { id: sessionUser.id, organizationId: sessionUser.organizationId };
+            client.user = user;
+            if (!this.connectedUsers.has(user.id)) {
+                this.connectedUsers.set(user.id, new Set());
             }
-            const userSockets = this.connectedUsers.get(userId);
-            if (userSockets) {
-                userSockets.add(client.id);
-            }
-            const conversations = await this.messagerieService.getUserConversations(payload.id, payload.organizationId);
-            conversations.forEach(conv => {
-                client.join(`conversation:${conv.id}`);
-            });
-            this.server.emit('user:online', { userId });
-            console.log(`✅ Client connecté: ${client.id} (User: ${userId})`);
+            this.connectedUsers.get(user.id).add(client.id);
+            client.join(orgRoom(user.organizationId));
+            const conversations = await this.messagerieService.getUserConversations(user.id, user.organizationId);
+            conversations.forEach((conv) => client.join(convRoom(conv.id)));
+            this.server.to(orgRoom(user.organizationId)).emit('user:online', { userId: user.id });
         }
         catch (error) {
-            console.error('❌ Erreur connexion WebSocket:', error.message);
-            client.disconnect();
+            this.logger.warn(`Connexion WebSocket refusée : ${error.message}`);
+            client.disconnect(true);
         }
     }
     handleDisconnect(client) {
-        const user = client.user;
-        if (user) {
-            const userId = user.id;
-            const userSockets = this.connectedUsers.get(userId);
-            if (userSockets) {
-                userSockets.delete(client.id);
-                if (userSockets.size === 0) {
-                    this.connectedUsers.delete(userId);
-                    this.server.emit('user:offline', { userId });
-                }
+        const user = userOf(client);
+        if (!user)
+            return;
+        const userSockets = this.connectedUsers.get(user.id);
+        if (userSockets) {
+            userSockets.delete(client.id);
+            if (userSockets.size === 0) {
+                this.connectedUsers.delete(user.id);
+                this.server.to(orgRoom(user.organizationId)).emit('user:offline', { userId: user.id });
             }
-            console.log(`🔌 Client déconnecté: ${client.id} (User: ${userId})`);
         }
     }
+    async assertParticipant(user, conversationId) {
+        if (!(await this.messagerieService.isParticipant(conversationId, user.id, user.organizationId))) {
+            throw new common_1.ForbiddenException('Vous ne participez pas à cette conversation');
+        }
+    }
+    async messageForParticipant(user, messageId) {
+        const message = await this.messagerieService.getMessage(messageId);
+        await this.assertParticipant(user, message.conversationId);
+        return message;
+    }
     async handleSendMessage(client, data) {
-        const user = client.user;
+        const user = userOf(client);
         try {
             const message = await this.messagerieService.sendMessage(data.conversationId, user.id, data.content, data.contentType || 'TEXT', data.parentId);
-            this.server.to(`conversation:${data.conversationId}`).emit('message:new', message);
+            this.server.to(convRoom(data.conversationId)).emit('message:new', message);
             return { success: true, message };
         }
         catch (error) {
@@ -82,10 +101,10 @@ let MessagerieGateway = class MessagerieGateway {
         }
     }
     async handleEditMessage(client, data) {
-        const user = client.user;
+        const user = userOf(client);
         try {
             const message = await this.messagerieService.editMessage(data.messageId, user.id, data.content);
-            this.server.to(`conversation:${message.conversationId}`).emit('message:edited', message);
+            this.server.to(convRoom(message.conversationId)).emit('message:edited', message);
             return { success: true, message };
         }
         catch (error) {
@@ -93,10 +112,10 @@ let MessagerieGateway = class MessagerieGateway {
         }
     }
     async handleDeleteMessage(client, data) {
-        const user = client.user;
+        const user = userOf(client);
         try {
             const message = await this.messagerieService.deleteMessage(data.messageId, user.id);
-            this.server.to(`conversation:${message.conversationId}`).emit('message:deleted', {
+            this.server.to(convRoom(message.conversationId)).emit('message:deleted', {
                 messageId: data.messageId,
             });
             return { success: true };
@@ -106,11 +125,12 @@ let MessagerieGateway = class MessagerieGateway {
         }
     }
     async handleAddReaction(client, data) {
-        const user = client.user;
+        const user = userOf(client);
         try {
+            await this.messageForParticipant(user, data.messageId);
             const reaction = await this.messagerieService.addReaction(data.messageId, user.id, data.emoji);
             const message = await this.messagerieService.getMessage(data.messageId);
-            this.server.to(`conversation:${message.conversationId}`).emit('reaction:added', reaction);
+            this.server.to(convRoom(message.conversationId)).emit('reaction:added', reaction);
             return { success: true, reaction };
         }
         catch (error) {
@@ -118,10 +138,10 @@ let MessagerieGateway = class MessagerieGateway {
         }
     }
     async handleRemoveReaction(client, data) {
-        const user = client.user;
+        const user = userOf(client);
         try {
             const { messageId, conversationId } = await this.messagerieService.removeReaction(data.reactionId, user.id);
-            this.server.to(`conversation:${conversationId}`).emit('reaction:removed', {
+            this.server.to(convRoom(conversationId)).emit('reaction:removed', {
                 reactionId: data.reactionId,
                 messageId,
             });
@@ -131,46 +151,34 @@ let MessagerieGateway = class MessagerieGateway {
             return { success: false, error: error.message };
         }
     }
+    async broadcastTyping(client, conversationId, event) {
+        const user = userOf(client);
+        try {
+            await this.assertParticipant(user, conversationId);
+            const userInfo = await this.prisma.user.findUnique({
+                where: { id: user.id },
+                select: { id: true, firstName: true, lastName: true },
+            });
+            client.to(convRoom(conversationId)).emit(event, { userId: user.id, conversationId, user: userInfo });
+            return { success: true };
+        }
+        catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
     async handleTypingStart(client, data) {
-        const user = client.user;
-        const userInfo = await this.messagerieService['prisma'].user.findUnique({
-            where: { id: user.id },
-            select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-            },
-        });
-        client.to(`conversation:${data.conversationId}`).emit('typing:start', {
-            userId: user.id,
-            conversationId: data.conversationId,
-            user: userInfo,
-        });
-        return { success: true };
+        return this.broadcastTyping(client, data?.conversationId, 'typing:start');
     }
     async handleTypingStop(client, data) {
-        const user = client.user;
-        const userInfo = await this.messagerieService['prisma'].user.findUnique({
-            where: { id: user.id },
-            select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-            },
-        });
-        client.to(`conversation:${data.conversationId}`).emit('typing:stop', {
-            userId: user.id,
-            conversationId: data.conversationId,
-            user: userInfo,
-        });
-        return { success: true };
+        return this.broadcastTyping(client, data?.conversationId, 'typing:stop');
     }
     async handleMarkRead(client, data) {
-        const user = client.user;
+        const user = userOf(client);
         try {
+            await this.messageForParticipant(user, data.messageId);
             const read = await this.messagerieService.markMessageAsRead(data.messageId, user.id);
             const message = await this.messagerieService.getMessage(data.messageId);
-            this.server.to(`conversation:${message.conversationId}`).emit('message:read', {
+            this.server.to(convRoom(message.conversationId)).emit('message:read', {
                 messageId: data.messageId,
                 userId: user.id,
                 readAt: read.readAt,
@@ -182,11 +190,18 @@ let MessagerieGateway = class MessagerieGateway {
         }
     }
     async handleJoinConversation(client, data) {
-        client.join(`conversation:${data.conversationId}`);
-        return { success: true };
+        try {
+            await this.assertParticipant(userOf(client), data?.conversationId);
+            client.join(convRoom(data.conversationId));
+            return { success: true };
+        }
+        catch (error) {
+            return { success: false, error: error.message };
+        }
     }
     async handleLeaveConversation(client, data) {
-        client.leave(`conversation:${data.conversationId}`);
+        if (typeof data?.conversationId === 'string')
+            client.leave(convRoom(data.conversationId));
         return { success: true };
     }
     isUserOnline(userId) {
@@ -281,15 +296,19 @@ __decorate([
     __metadata("design:paramtypes", [socket_io_1.Socket, Object]),
     __metadata("design:returntype", Promise)
 ], MessagerieGateway.prototype, "handleLeaveConversation", null);
-exports.MessagerieGateway = MessagerieGateway = __decorate([
+exports.MessagerieGateway = MessagerieGateway = MessagerieGateway_1 = __decorate([
     (0, websockets_1.WebSocketGateway)({
         namespace: 'messagerie',
         cors: {
-            origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+            origin: (process.env.CORS_ORIGINS || process.env.FRONTEND_URL || 'http://localhost:3000')
+                .split(',')
+                .map((o) => o.trim())
+                .filter((o) => o && o !== '*'),
             credentials: true,
         },
     }),
     __metadata("design:paramtypes", [jwt_1.JwtService,
-        messagerie_service_1.MessagerieService])
+        messagerie_service_1.MessagerieService,
+        prisma_service_1.PrismaService])
 ], MessagerieGateway);
 //# sourceMappingURL=messagerie.gateway.js.map

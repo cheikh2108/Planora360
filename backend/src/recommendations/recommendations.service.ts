@@ -6,6 +6,8 @@ import { UpdateRecommendationDto } from './dto/update-recommendation.dto';
 import { ChangeStatusDto, SuspendRecommendationDto, ReopenRecommendationDto } from './dto/change-status.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { CreateActionDto } from './dto/create-action.dto';
+import { UpdateActionDto } from './dto/update-action.dto';
+import { createWithReference, nextReferenceFrom } from '../common/utils/reference';
 
 const RECOMMENDATION_INCLUDE = {
   responsible: { select: { id: true, firstName: true, lastName: true, email: true } },
@@ -41,19 +43,13 @@ export class RecommendationsService {
     const year = new Date().getFullYear();
     const prefix = `REC-${year}-`;
 
-    const lastRec = await this.prisma.recommendation.findFirst({
+    // Numéro maximal existant (et non le dernier créé) : deux suppressions ou un import
+    // ne peuvent plus produire de doublon.
+    const existing = await this.prisma.recommendation.findMany({
       where: { organizationId, code: { startsWith: prefix } },
-      orderBy: { createdAt: 'desc' },
       select: { code: true },
     });
-
-    let nextNumber = 1;
-    if (lastRec) {
-      const match = lastRec.code.match(/REC-\d{4}-(\d+)/);
-      if (match) nextNumber = parseInt(match[1], 10) + 1;
-    }
-
-    return `${prefix}${String(nextNumber).padStart(3, '0')}`;
+    return nextReferenceFrom(existing.map((r) => r.code), prefix, 3);
   }
 
   private async logHistory(
@@ -113,9 +109,9 @@ export class RecommendationsService {
       if (!validator) throw new NotFoundException('Validateur introuvable');
     }
 
-    const code = await this.generateCode(organizationId);
-
-    const recommendation = await this.prisma.recommendation.create({
+    const recommendation = await createWithReference(
+      () => this.generateCode(organizationId),
+      (code) => this.prisma.recommendation.create({
       data: {
         code,
         title: dto.title,
@@ -136,7 +132,8 @@ export class RecommendationsService {
         priority: dto.priority as any,
       },
       include: RECOMMENDATION_INCLUDE,
-    });
+    }),
+    );
 
     await this.logHistory(recommendation.id, userId, 'CREATE');
 
@@ -387,6 +384,7 @@ export class RecommendationsService {
   // Actions
   async addAction(recommendationId: string, dto: CreateActionDto, organizationId: string, userId?: string) {
     const recommendation = await this.verifyRecommendation(recommendationId, organizationId);
+    await this.assertResponsible(dto.responsibleId, organizationId);
 
     const action = await this.prisma.recommendationAction.create({
       data: {
@@ -413,7 +411,16 @@ export class RecommendationsService {
     return action;
   }
 
-  async updateAction(actionId: string, organizationId: string, updates: any) {
+  /** Le responsable d'une action doit être un membre actif de l'organisation. */
+  private async assertResponsible(responsibleId: string | undefined, organizationId: string) {
+    if (!responsibleId) return;
+    const user = await this.prisma.user.findFirst({
+      where: { id: responsibleId, organizationId, isActive: true, deletedAt: null },
+    });
+    if (!user) throw new BadRequestException('Responsable introuvable dans votre organisation');
+  }
+
+  async updateAction(actionId: string, organizationId: string, dto: UpdateActionDto) {
     const action = await this.prisma.recommendationAction.findUnique({
       where: { id: actionId },
       include: { recommendation: true },
@@ -423,9 +430,21 @@ export class RecommendationsService {
       throw new NotFoundException('Action introuvable');
     }
 
+    await this.assertResponsible(dto.responsibleId, organizationId);
+
     return this.prisma.recommendationAction.update({
       where: { id: actionId },
-      data: updates,
+      data: {
+        ...(dto.title !== undefined && { title: dto.title }),
+        ...(dto.description !== undefined && { description: dto.description }),
+        ...(dto.dueDate !== undefined && { dueDate: dto.dueDate ? new Date(dto.dueDate) : null }),
+        ...(dto.responsibleId !== undefined && { responsibleId: dto.responsibleId || null }),
+        ...(dto.order !== undefined && { order: dto.order }),
+        ...(dto.status !== undefined && {
+          status: dto.status,
+          completedAt: dto.status === 'TERMINEE' ? (action.completedAt ?? new Date()) : null,
+        }),
+      },
     });
   }
 

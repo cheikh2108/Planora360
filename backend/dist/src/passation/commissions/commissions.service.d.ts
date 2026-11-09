@@ -1,8 +1,9 @@
+import { CreateCommissionDto } from './dto/create-commission.dto';
 import { PrismaService } from '../../common/prisma/prisma.service';
 export declare class CommissionsService {
     private readonly prisma;
     constructor(prisma: PrismaService);
-    create(organizationId: string, userId: string, dto: any): Promise<{
+    create(organizationId: string, userId: string, dto: CreateCommissionDto): Promise<{
         procedure: {
             id: string;
             objet: string;
@@ -13,15 +14,22 @@ export declare class CommissionsService {
             firstName: string;
             lastName: string;
         };
+        membres: {
+            id: string;
+            role: string;
+            userId: string;
+            commissionId: string;
+        }[];
     } & {
         id: string;
         createdAt: Date;
         type: string;
-        nom: string;
         procedureId: string;
+        nom: string;
         dateSeance: Date;
         presidentId: string;
     }>;
+    private assertOrganizationMember;
     findAll(organizationId: string): Promise<({
         _count: {
             evaluations: number;
@@ -52,8 +60,8 @@ export declare class CommissionsService {
         id: string;
         createdAt: Date;
         type: string;
-        nom: string;
         procedureId: string;
+        nom: string;
         dateSeance: Date;
         presidentId: string;
     })[]>;
@@ -67,10 +75,10 @@ export declare class CommissionsService {
             } & {
                 id: string;
                 status: string;
+                procedureId: string;
                 montantTotal: import("@prisma/client-runtime-utils").Decimal;
                 fournisseurId: string;
                 dateDepot: Date;
-                procedureId: string;
                 devise: string;
                 numeroDepot: string;
                 montantTechnique: import("@prisma/client-runtime-utils").Decimal | null;
@@ -102,9 +110,9 @@ export declare class CommissionsService {
         })[];
         procedure: {
             id: string;
-            organizationId: string;
             createdAt: Date;
             updatedAt: Date;
+            organizationId: string;
             status: import(".prisma/client").$Enums.StatusProcedure;
             description: string;
             objet: string;
@@ -121,15 +129,15 @@ export declare class CommissionsService {
             dateClarification: Date | null;
         };
         president: {
-            id: string;
             email: string;
+            id: string;
             firstName: string;
             lastName: string;
         };
         membres: ({
             user: {
-                id: string;
                 email: string;
+                id: string;
                 firstName: string;
                 lastName: string;
             };
@@ -143,15 +151,15 @@ export declare class CommissionsService {
         id: string;
         createdAt: Date;
         type: string;
-        nom: string;
         procedureId: string;
+        nom: string;
         dateSeance: Date;
         presidentId: string;
     }>;
     addMembre(commissionId: string, organizationId: string, userId: string, role: string): Promise<{
         user: {
-            id: string;
             email: string;
+            id: string;
             firstName: string;
             lastName: string;
         };

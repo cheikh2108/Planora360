@@ -2,8 +2,11 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../common/prisma/prisma.service';
 export declare class NotificationsService {
     private prisma;
+    private config;
     private readonly logger;
     private resend;
+    private frontendUrl;
+    private emailTemplates;
     constructor(prisma: PrismaService, config: ConfigService);
     private sendEmail;
     sendWelcomeCredentials(params: {
@@ -28,4 +31,28 @@ export declare class NotificationsService {
     }): Promise<void>;
     notifyOverdueActivities(organizationId: string): Promise<void>;
     notifyUpcomingDeadlines(organizationId: string, daysAhead?: number): Promise<void>;
+    sendEmailVerification(params: {
+        email: string;
+        firstName: string;
+        token: string;
+    }): Promise<void>;
+    sendNewRegistrationToAdmin(params: {
+        organizationName: string;
+        organizationId: string;
+        plan: string;
+        billingCycle: string;
+        userEmail: string;
+        userName: string;
+        tempPassword: string;
+    }): Promise<void>;
+    sendQuoteRequest(params: {
+        organizationName: string;
+        plan: string;
+        billingCycle: string;
+        fullName: string;
+        email: string;
+        phone?: string;
+        estimatedUsers?: number;
+        customMessage?: string;
+    }): Promise<void>;
 }

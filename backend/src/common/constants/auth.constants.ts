@@ -24,6 +24,7 @@ export const ORG_STATUS_ACTIVE = 'ACTIVE';
 export const ERROR_INVALID_CREDENTIALS = 'Identifiants invalides';
 export const ERROR_REGISTRATION_PENDING = 'REGISTRATION_PENDING';
 export const ERROR_REGISTRATION_REJECTED = 'REGISTRATION_REJECTED';
+export const ERROR_ORGANIZATION_SUSPENDED = 'ORGANIZATION_SUSPENDED';
 export const ERROR_INVALID_2FA_CODE = 'Code 2FA invalide';
 export const ERROR_2FA_NOT_INITIALIZED = '2FA non initialisé';
 export const ERROR_INVALID_CODE = 'Code invalide';

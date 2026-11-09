@@ -124,7 +124,7 @@ async function main() {
   });
 
   const adminEmail = requireEnv('SEED_ADMIN_EMAIL');
-  const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
+  const existingAdmin = await prisma.user.findFirst({ where: { email: adminEmail, deletedAt: null } });
   if (!existingAdmin) {
     const passwordHash = await bcrypt.hash(requireEnv('SEED_ADMIN_PASSWORD'), 12);
     await prisma.user.create({
@@ -155,7 +155,7 @@ async function main() {
   const coordRole = await prisma.role.findFirst({ where: { name: 'Coordinateur', organizationId: null } });
 
   const testEmail = requireEnv('SEED_TEST_EMAIL');
-  const existingTest = await prisma.user.findUnique({ where: { email: testEmail } });
+  const existingTest = await prisma.user.findFirst({ where: { email: testEmail, deletedAt: null } });
   if (!existingTest) {
     const passwordHash = await bcrypt.hash(requireEnv('SEED_TEST_PASSWORD'), 12);
     await prisma.user.create({

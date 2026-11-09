@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { toast } from 'sonner';
+import { resolveFileUrl } from '@/lib/files';
 
 export default function FournisseurDetailPage() {
   const params = useParams();
@@ -455,7 +456,7 @@ export default function FournisseurDetailPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => window.open(doc.url, '_blank')}
+                          onClick={() => window.open(resolveFileUrl(doc.url), '_blank', 'noopener')}
                           className="rounded-lg p-2 text-blue-600 hover:bg-blue-50"
                           title="Télécharger"
                         >

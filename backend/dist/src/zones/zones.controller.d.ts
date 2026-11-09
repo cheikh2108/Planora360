@@ -1,6 +1,8 @@
 import { ZonesService } from './zones.service';
 import { CreateZoneDto } from './dto/create-zone.dto';
 import { UpdateZoneDto } from './dto/update-zone.dto';
+import { CreateZoneConfigDto } from './dto/create-zone-config.dto';
+import { UpdateZoneConfigDto } from './dto/update-zone-config.dto';
 export declare class ZonesController {
     private readonly zonesService;
     constructor(zonesService: ZonesService);
@@ -16,9 +18,9 @@ export declare class ZonesController {
         } | null;
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         name: string;
         code: string | null;
         level: number;
@@ -40,9 +42,9 @@ export declare class ZonesController {
         } | null;
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         name: string;
         code: string | null;
         level: number;
@@ -65,6 +67,77 @@ export declare class ZonesController {
         budgetExecuted: number;
         executionRate: number;
     }[]>;
+    getPresets(): Promise<{
+        key: string;
+        name: string;
+        description: string;
+        levelLabels: {
+            '0': string;
+            '1': string;
+            '2': string;
+            '3': string;
+        } | {
+            '0': string;
+            '1': string;
+            '2': string;
+            '3': string;
+        } | {
+            '0': string;
+            '1': string;
+            '2': string;
+            '3': string;
+        } | {
+            '0': string;
+            '1': string;
+            '2': string;
+            '3': string;
+        } | {
+            '0': string;
+            '1': string;
+            '2': string;
+            '3': string;
+        };
+    }[]>;
+    getConfig(user: any): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        organizationId: string;
+        description: string | null;
+        preset: string;
+        levelLabels: import("@prisma/client/runtime/client").JsonValue;
+    } | {
+        id: string;
+        organizationId: string;
+        preset: string;
+        levelLabels: {
+            '0': string;
+            '1': string;
+            '2': string;
+            '3': string;
+        };
+        description: string;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+    createConfig(dto: CreateZoneConfigDto, user: any): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        organizationId: string;
+        description: string | null;
+        preset: string;
+        levelLabels: import("@prisma/client/runtime/client").JsonValue;
+    }>;
+    updateConfig(dto: UpdateZoneConfigDto, user: any): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        organizationId: string;
+        description: string | null;
+        preset: string;
+        levelLabels: import("@prisma/client/runtime/client").JsonValue;
+    }>;
     findOne(id: string, user: any): Promise<{
         _count: {
             children: number;
@@ -98,9 +171,9 @@ export declare class ZonesController {
         })[];
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         name: string;
         code: string | null;
         level: number;
@@ -122,9 +195,9 @@ export declare class ZonesController {
         } | null;
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         name: string;
         code: string | null;
         level: number;
@@ -136,9 +209,9 @@ export declare class ZonesController {
     }>;
     remove(id: string, user: any): Promise<{
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         name: string;
         code: string | null;
         level: number;

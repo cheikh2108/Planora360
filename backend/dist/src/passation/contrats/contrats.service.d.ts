@@ -1,9 +1,11 @@
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { StatusContrat } from '@prisma/client';
+import { CreateContratDto } from './dto/create-contrat.dto';
+import { UpdateContratDto } from './dto/update-contrat.dto';
 export declare class ContratsService {
     private readonly prisma;
     constructor(prisma: PrismaService);
-    create(organizationId: string, userId: string, dto: any): Promise<{
+    create(organizationId: string, userId: string, dto: CreateContratDto): Promise<{
         fournisseur: {
             id: string;
             raisonSociale: string;
@@ -21,14 +23,14 @@ export declare class ContratsService {
         };
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusContrat;
+        procedureId: string;
         reference: string;
         dateSignature: Date;
         fournisseurId: string;
-        procedureId: string;
         soumissionId: string | null;
         montantInitial: import("@prisma/client-runtime-utils").Decimal;
         montantRevise: import("@prisma/client-runtime-utils").Decimal | null;
@@ -44,6 +46,8 @@ export declare class ContratsService {
         garanties: string | null;
         gestionnaire: string;
     }>;
+    private assertDates;
+    private toContratData;
     findAll(organizationId: string, filters?: any): Promise<({
         _count: {
             avenants: number;
@@ -62,14 +66,14 @@ export declare class ContratsService {
         };
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusContrat;
+        procedureId: string;
         reference: string;
         dateSignature: Date;
         fournisseurId: string;
-        procedureId: string;
         soumissionId: string | null;
         montantInitial: import("@prisma/client-runtime-utils").Decimal;
         montantRevise: import("@prisma/client-runtime-utils").Decimal | null;
@@ -87,11 +91,11 @@ export declare class ContratsService {
     })[]>;
     findOne(id: string, organizationId: string): Promise<{
         fournisseur: {
-            id: string;
             email: string | null;
-            organizationId: string;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
+            organizationId: string;
             status: import(".prisma/client").$Enums.StatusFournisseur;
             raisonSociale: string;
             identifiantFiscal: string | null;
@@ -109,12 +113,13 @@ export declare class ContratsService {
             emailContact: string | null;
             categoriesBiens: string[];
             zonesIntervention: string[];
+            motifStatut: string | null;
         };
         procedure: {
             id: string;
-            organizationId: string;
             createdAt: Date;
             updatedAt: Date;
+            organizationId: string;
             status: import(".prisma/client").$Enums.StatusProcedure;
             description: string;
             objet: string;
@@ -131,8 +136,8 @@ export declare class ContratsService {
             dateClarification: Date | null;
         };
         gestionnaireUser: {
-            id: string;
             email: string;
+            id: string;
             firstName: string;
             lastName: string;
         };
@@ -140,10 +145,10 @@ export declare class ContratsService {
             id: string;
             createdAt: Date;
             status: string;
+            contratId: string;
             validatedBy: string | null;
             validatedAt: Date | null;
             dateSignature: Date;
-            contratId: string;
             motif: string;
             numero: number;
             impactMontant: import("@prisma/client-runtime-utils").Decimal | null;
@@ -175,10 +180,10 @@ export declare class ContratsService {
             updatedAt: Date;
             status: string;
             description: string | null;
+            contratId: string;
             responsableId: string | null;
             ordre: number;
             dateEcheance: Date;
-            contratId: string;
             titre: string;
         })[];
         paiements: {
@@ -187,8 +192,8 @@ export declare class ContratsService {
             updatedAt: Date;
             status: string;
             type: string;
-            dateEcheance: Date | null;
             contratId: string;
+            dateEcheance: Date | null;
             montantBrut: import("@prisma/client-runtime-utils").Decimal;
             taxes: import("@prisma/client-runtime-utils").Decimal;
             penalites: import("@prisma/client-runtime-utils").Decimal;
@@ -198,14 +203,14 @@ export declare class ContratsService {
         }[];
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusContrat;
+        procedureId: string;
         reference: string;
         dateSignature: Date;
         fournisseurId: string;
-        procedureId: string;
         soumissionId: string | null;
         montantInitial: import("@prisma/client-runtime-utils").Decimal;
         montantRevise: import("@prisma/client-runtime-utils").Decimal | null;
@@ -221,16 +226,16 @@ export declare class ContratsService {
         garanties: string | null;
         gestionnaire: string;
     }>;
-    update(id: string, organizationId: string, dto: any): Promise<{
+    update(id: string, organizationId: string, dto: UpdateContratDto): Promise<{
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusContrat;
+        procedureId: string;
         reference: string;
         dateSignature: Date;
         fournisseurId: string;
-        procedureId: string;
         soumissionId: string | null;
         montantInitial: import("@prisma/client-runtime-utils").Decimal;
         montantRevise: import("@prisma/client-runtime-utils").Decimal | null;
@@ -248,14 +253,14 @@ export declare class ContratsService {
     }>;
     changeStatus(id: string, organizationId: string, newStatus: StatusContrat, motif?: string): Promise<{
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusContrat;
+        procedureId: string;
         reference: string;
         dateSignature: Date;
         fournisseurId: string;
-        procedureId: string;
         soumissionId: string | null;
         montantInitial: import("@prisma/client-runtime-utils").Decimal;
         montantRevise: import("@prisma/client-runtime-utils").Decimal | null;
@@ -283,11 +288,11 @@ export declare class ContratsService {
             dateEcheance: Date;
         };
         fournisseur: {
-            id: string;
             email: string | null;
-            organizationId: string;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
+            organizationId: string;
             status: import(".prisma/client").$Enums.StatusFournisseur;
             raisonSociale: string;
             identifiantFiscal: string | null;
@@ -305,6 +310,7 @@ export declare class ContratsService {
             emailContact: string | null;
             categoriesBiens: string[];
             zonesIntervention: string[];
+            motifStatut: string | null;
         };
         statistiques: {
             montantTotal: number;

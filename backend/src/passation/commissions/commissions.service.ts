@@ -1,41 +1,46 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import { CreateCommissionDto } from './dto/create-commission.dto';
 import { PrismaService } from '../../common/prisma/prisma.service';
 
 @Injectable()
 export class CommissionsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(organizationId: string, userId: string, dto: any) {
-    const data: any = {
-      ...dto,
-      organizationId,
-      presidentId: userId,
-    };
+  async create(organizationId: string, userId: string, dto: CreateCommissionDto) {
+    // La procédure doit appartenir à l'organisation
+    const procedure = await this.prisma.procedure.findFirst({
+      where: { id: dto.procedureId, organizationId },
+      select: { id: true },
+    });
+    if (!procedure) throw new NotFoundException('Procédure introuvable');
 
-    // Convertir les dates string en DateTime pour Prisma
-    if (data.dateSeance && typeof data.dateSeance === 'string') {
-      data.dateSeance = new Date(data.dateSeance);
-    }
+    const presidentId = dto.presidentId ?? userId;
+    await this.assertOrganizationMember(presidentId, organizationId);
 
     return this.prisma.commission.create({
-      data,
+      data: {
+        procedureId: dto.procedureId,
+        nom: dto.nom,
+        type: dto.type,
+        dateSeance: new Date(dto.dateSeance),
+        presidentId,
+        // Le président est membre de droit (peut évaluer les offres)
+        membres: { create: [{ userId: presidentId, role: 'PRESIDENT' }] },
+      },
       include: {
-        president: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
-        procedure: {
-          select: {
-            id: true,
-            reference: true,
-            objet: true,
-          },
-        },
+        president: { select: { id: true, firstName: true, lastName: true } },
+        procedure: { select: { id: true, reference: true, objet: true } },
+        membres: true,
       },
     });
+  }
+
+  /** L'utilisateur doit être un membre actif de l'organisation. */
+  private async assertOrganizationMember(userId: string, organizationId: string) {
+    const count = await this.prisma.user.count({
+      where: { id: userId, organizationId, deletedAt: null, isActive: true },
+    });
+    if (!count) throw new BadRequestException('Cet utilisateur n\'appartient pas à votre organisation');
   }
 
   async findAll(organizationId: string) {
@@ -140,6 +145,10 @@ export class CommissionsService {
 
   async addMembre(commissionId: string, organizationId: string, userId: string, role: string) {
     await this.findOne(commissionId, organizationId);
+    await this.assertOrganizationMember(userId, organizationId);
+
+    const existing = await this.prisma.membreCommission.findFirst({ where: { commissionId, userId } });
+    if (existing) throw new ConflictException('Cet utilisateur est déjà membre de la commission');
 
     return this.prisma.membreCommission.create({
       data: {
@@ -162,6 +171,10 @@ export class CommissionsService {
 
   async removeMembre(commissionId: string, membreId: string, organizationId: string) {
     await this.findOne(commissionId, organizationId);
+
+    // Le membre doit appartenir à CETTE commission
+    const membre = await this.prisma.membreCommission.findFirst({ where: { id: membreId, commissionId } });
+    if (!membre) throw new NotFoundException('Membre introuvable');
 
     return this.prisma.membreCommission.delete({
       where: { id: membreId },

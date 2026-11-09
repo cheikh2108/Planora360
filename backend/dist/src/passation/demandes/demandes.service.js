@@ -15,6 +15,7 @@ const prisma_service_1 = require("../../common/prisma/prisma.service");
 const client_1 = require("@prisma/client");
 const validation_workflow_service_1 = require("../common/services/validation-workflow.service");
 const error_messages_1 = require("../common/constants/error-messages");
+const reference_1 = require("../../common/utils/reference");
 let DemandesService = class DemandesService {
     prisma;
     workflowService;
@@ -23,32 +24,55 @@ let DemandesService = class DemandesService {
         this.workflowService = workflowService;
     }
     async create(organizationId, userId, dto) {
-        const count = await this.prisma.demandeAchat.count({
-            where: { organizationId },
-        });
-        const reference = `DA-${new Date().getFullYear()}-${String(count + 1).padStart(4, '0')}`;
+        await this.assertLinks(organizationId, dto);
         const data = {
-            ...dto,
-            description: dto.description || dto.justification || '',
-            reference,
+            ...this.toDemandeData(dto),
+            objet: dto.objet,
+            justification: dto.justification,
+            montantEstimatif: dto.montantEstimatif,
+            description: dto.description || dto.justification,
             organizationId,
             demandeurId: userId,
         };
-        if (dto.lignePpmId) {
-            data.lignePPMId = dto.lignePpmId;
-            delete data.lignePpmId;
-        }
-        if (data.echeanceSouhaitee && typeof data.echeanceSouhaitee === 'string') {
-            data.echeanceSouhaitee = new Date(data.echeanceSouhaitee);
-        }
-        return this.prisma.demandeAchat.create({
-            data,
+        const prefix = `DA-${new Date().getFullYear()}-`;
+        return (0, reference_1.createWithReference)(async () => (0, reference_1.nextReferenceFrom)((await this.prisma.demandeAchat.findMany({
+            where: { organizationId, reference: { startsWith: prefix } },
+            select: { reference: true },
+        })).map((d) => d.reference), prefix, 4), (reference) => this.prisma.demandeAchat.create({
+            data: { ...data, reference },
             include: {
                 demandeur: { select: { id: true, firstName: true, lastName: true } },
                 lignePPM: true,
                 activity: { select: { id: true, title: true } },
             },
-        });
+        }));
+    }
+    async assertLinks(organizationId, dto) {
+        if (dto.lignePpmId) {
+            const ligne = await this.prisma.lignePPM.findFirst({ where: { id: dto.lignePpmId, ppm: { organizationId } } });
+            if (!ligne)
+                throw new common_1.BadRequestException('Ligne PPM introuvable dans votre organisation');
+        }
+        if (dto.activityId) {
+            const activity = await this.prisma.activity.findFirst({ where: { id: dto.activityId, organizationId } });
+            if (!activity)
+                throw new common_1.BadRequestException('Activité introuvable dans votre organisation');
+        }
+    }
+    toDemandeData(dto) {
+        return {
+            ...(dto.objet !== undefined && { objet: dto.objet }),
+            ...(dto.description !== undefined && { description: dto.description }),
+            ...(dto.justification !== undefined && { justification: dto.justification }),
+            ...(dto.montantEstimatif !== undefined && { montantEstimatif: dto.montantEstimatif }),
+            ...(dto.quantite !== undefined && { quantite: dto.quantite }),
+            ...(dto.specifications !== undefined && { specifications: dto.specifications }),
+            ...(dto.ligneBudgetaire !== undefined && { ligneBudgetaire: dto.ligneBudgetaire }),
+            ...(dto.sourceFinancement !== undefined && { sourceFinancement: dto.sourceFinancement }),
+            ...(dto.echeanceSouhaitee !== undefined && { echeanceSouhaitee: new Date(dto.echeanceSouhaitee) }),
+            ...(dto.lignePpmId !== undefined && { lignePPMId: dto.lignePpmId || null }),
+            ...(dto.activityId !== undefined && { activityId: dto.activityId || null }),
+        };
     }
     async findAll(organizationId, filters) {
         return this.prisma.demandeAchat.findMany({
@@ -112,18 +136,11 @@ let DemandesService = class DemandesService {
     }
     async update(id, organizationId, dto) {
         const demande = await this.findOne(id, organizationId);
-        if (demande.status === client_1.StatusDemandeAchat.APPROUVEE ||
-            demande.status === client_1.StatusDemandeAchat.REJETEE) {
-            throw new common_1.ForbiddenException('Impossible de modifier une demande approuvée ou rejetée');
+        if (demande.status !== client_1.StatusDemandeAchat.BROUILLON) {
+            throw new common_1.ForbiddenException('Seules les demandes en brouillon peuvent être modifiées');
         }
-        const data = { ...dto };
-        if (dto.lignePpmId) {
-            data.lignePPMId = dto.lignePpmId;
-            delete data.lignePpmId;
-        }
-        if (data.echeanceSouhaitee && typeof data.echeanceSouhaitee === 'string') {
-            data.echeanceSouhaitee = new Date(data.echeanceSouhaitee);
-        }
+        await this.assertLinks(organizationId, dto);
+        const data = this.toDemandeData(dto);
         return this.prisma.demandeAchat.update({
             where: { id },
             data,

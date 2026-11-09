@@ -15,11 +15,11 @@ const client_1 = require("@prisma/client");
 class RegisterOrganizationDto {
     organizationName;
     subscriptionPlan;
+    billingCycle;
     brandColor;
     firstName;
     lastName;
     email;
-    password;
 }
 exports.RegisterOrganizationDto = RegisterOrganizationDto;
 __decorate([
@@ -32,6 +32,11 @@ __decorate([
     (0, class_validator_1.IsEnum)(client_1.SubscriptionPlan),
     __metadata("design:type", String)
 ], RegisterOrganizationDto.prototype, "subscriptionPlan", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsEnum)(client_1.BillingCycle),
+    __metadata("design:type", String)
+], RegisterOrganizationDto.prototype, "billingCycle", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
@@ -52,9 +57,4 @@ __decorate([
     (0, class_validator_1.IsEmail)(),
     __metadata("design:type", String)
 ], RegisterOrganizationDto.prototype, "email", void 0);
-__decorate([
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.MinLength)(8),
-    __metadata("design:type", String)
-], RegisterOrganizationDto.prototype, "password", void 0);
 //# sourceMappingURL=register-organization.dto.js.map

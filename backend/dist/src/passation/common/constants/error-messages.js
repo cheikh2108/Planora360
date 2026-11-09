@@ -3,7 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ERROR_MESSAGES = void 0;
 exports.ERROR_MESSAGES = {
     PPM: {
-        DUPLICATE_YEAR: (year) => `Un PPM existe déjà pour l'année ${year}`,
+        DUPLICATE_YEAR: (year) => `Un PPM existe déjà pour l'année ${year}. Chaque organisation ne peut avoir qu'un seul PPM par année. ` +
+            `Actions possibles : (1) Modifiez le PPM existant, (2) Supprimez le brouillon existant pour en créer un nouveau, ou (3) Choisissez une année différente.`,
         NOT_FOUND: (id) => `PPM #${id} introuvable`,
         ALREADY_VALIDATED: 'Ce PPM est déjà validé',
         CANNOT_MODIFY_VALIDATED: 'Impossible de modifier un PPM déjà validé',
@@ -19,8 +20,9 @@ exports.ERROR_MESSAGES = {
     },
     VALIDATOR: {
         USER_NOT_FOUND: (userId) => `Utilisateur ${userId} introuvable`,
-        NO_TECHNICAL_VALIDATOR: (orgId) => `Aucun validateur technique trouvé pour l'organisation ${orgId}`,
-        NO_ADMINISTRATIVE_VALIDATOR: (orgId) => `Aucun validateur administratif trouvé pour l'organisation ${orgId}`,
+        NO_HIERARCHICAL_VALIDATOR: 'Aucun validateur hiérarchique disponible : ajoutez un membre ayant le droit de valider (autre que le demandeur)',
+        NO_TECHNICAL_VALIDATOR: 'Aucun validateur technique disponible : ajoutez un membre ayant le droit de valider (autre que le demandeur)',
+        NO_ADMINISTRATIVE_VALIDATOR: 'Aucun validateur administratif disponible : ajoutez un membre ayant le droit de valider (autre que le demandeur)',
     },
     PROCEDURE: {
         NOT_FOUND: 'Procédure introuvable',

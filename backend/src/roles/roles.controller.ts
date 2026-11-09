@@ -6,7 +6,7 @@ import { RolesService } from './roles.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { RolesGuard } from '../common/guards/roles.guard';
+import { RolesGuard, systemRoleName } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
@@ -17,7 +17,7 @@ export class RolesController {
 
   @Get()
   findAll(@CurrentUser() user: any) {
-    return this.rolesService.findAll(user.organizationId, user.role?.name);
+    return this.rolesService.findAll(user.organizationId, systemRoleName(user));
   }
 
   @Get(':id')

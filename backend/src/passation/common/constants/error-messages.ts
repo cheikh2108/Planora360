@@ -29,8 +29,9 @@ export const ERROR_MESSAGES = {
   // Validators
   VALIDATOR: {
     USER_NOT_FOUND: (userId: string) => `Utilisateur ${userId} introuvable`,
-    NO_TECHNICAL_VALIDATOR: (orgId: string) => `Aucun validateur technique trouvé pour l'organisation ${orgId}`,
-    NO_ADMINISTRATIVE_VALIDATOR: (orgId: string) => `Aucun validateur administratif trouvé pour l'organisation ${orgId}`,
+    NO_HIERARCHICAL_VALIDATOR: 'Aucun validateur hiérarchique disponible : ajoutez un membre ayant le droit de valider (autre que le demandeur)',
+    NO_TECHNICAL_VALIDATOR: 'Aucun validateur technique disponible : ajoutez un membre ayant le droit de valider (autre que le demandeur)',
+    NO_ADMINISTRATIVE_VALIDATOR: 'Aucun validateur administratif disponible : ajoutez un membre ayant le droit de valider (autre que le demandeur)',
   },
 
   // Procédures et Soumissions

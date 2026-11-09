@@ -44,6 +44,7 @@ const cache_module_1 = require("./common/cache/cache.module");
 const passation_module_1 = require("./passation/passation.module");
 const messagerie_module_1 = require("./messagerie/messagerie.module");
 const zones_module_1 = require("./zones/zones.module");
+const dexpay_module_1 = require("./dexpay/dexpay.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -64,6 +65,7 @@ exports.AppModule = AppModule = __decorate([
             audit_module_1.AuditModule,
             security_events_module_1.SecurityEventsModule,
             notifications_module_1.NotificationsModule,
+            dexpay_module_1.DexpayModule,
             storage_module_1.StorageModule,
             auth_module_1.AuthModule,
             organizations_module_1.OrganizationsModule,

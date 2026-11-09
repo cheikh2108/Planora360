@@ -15,13 +15,20 @@ const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const prisma_service_1 = require("../common/prisma/prisma.service");
 const resend_1 = require("resend");
+const email_templates_1 = require("./email-templates");
 let NotificationsService = NotificationsService_1 = class NotificationsService {
     prisma;
+    config;
     logger = new common_1.Logger(NotificationsService_1.name);
     resend = null;
+    frontendUrl;
+    emailTemplates;
     constructor(prisma, config) {
         this.prisma = prisma;
-        const apiKey = config.get('RESEND_API_KEY');
+        this.config = config;
+        const apiKey = this.config.get('RESEND_API_KEY');
+        this.frontendUrl = this.config.get('FRONTEND_URL') || 'https://planora360.org';
+        this.emailTemplates = new email_templates_1.EmailTemplates(this.frontendUrl);
         if (apiKey) {
             this.resend = new resend_1.Resend(apiKey);
         }
@@ -36,7 +43,7 @@ let NotificationsService = NotificationsService_1 = class NotificationsService {
         }
         try {
             await this.resend.emails.send({
-                from: 'PLANORA 360 <noreply@ataabaentreprise.org>',
+                from: 'PLANORA 360 <contact@planora360.org>',
                 to,
                 subject,
                 html,
@@ -50,26 +57,44 @@ let NotificationsService = NotificationsService_1 = class NotificationsService {
         if (!this.resend) {
             this.logger.log(`\n┌─ CREDENTIALS ──────────────────────────┐\n│ Org      : ${params.orgName}\n│ Email    : ${params.email}\n│ Password : ${params.tempPassword}\n└────────────────────────────────────────┘`);
         }
-        await this.sendEmail(params.email, `[PLANORA 360] Votre accès à ${params.orgName}`, `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 24px">
-        <div style="background:#0b1629;border-radius:12px;padding:24px;text-align:center;margin-bottom:28px">
-          <span style="color:white;font-size:22px;font-weight:800;letter-spacing:-0.5px">PLANORA 360</span>
-        </div>
-        <p style="color:#0f172a;font-size:16px">Bonjour <strong>${params.firstName}</strong>,</p>
-        <p style="color:#475569;font-size:14px;line-height:1.6">
-          Un compte a été créé pour vous sur <strong>PLANORA 360</strong> dans l'organisation <strong>${params.orgName}</strong>.
-          Voici vos identifiants de connexion :
-        </p>
-        <div style="background:#f1f5f9;border-radius:10px;padding:20px 24px;margin:24px 0">
-          <p style="margin:0 0 8px;color:#64748b;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em">Adresse e-mail</p>
-          <p style="margin:0 0 16px;color:#0f172a;font-size:15px;font-weight:600">${params.email}</p>
-          <p style="margin:0 0 8px;color:#64748b;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em">Mot de passe temporaire</p>
-          <p style="margin:0;color:#2563eb;font-size:18px;font-weight:800;letter-spacing:0.08em;font-family:monospace">${params.tempPassword}</p>
-        </div>
-        <p style="color:#ef4444;font-size:13px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px 16px">
-          Vous serez invité à choisir un nouveau mot de passe lors de votre première connexion.
-        </p>
-        <p style="color:#94a3b8;font-size:12px;margin-top:32px">© 2025 PLANORA 360 — Ne pas répondre à cet email.</p>
-      </div>`);
+        const content = `
+      <p style="margin:0 0 24px;color:#0f172a;font-size:16px;line-height:1.6">
+        Bonjour <strong>${params.firstName}</strong>,
+      </p>
+
+      <p style="margin:0 0 32px;color:#475569;font-size:15px;line-height:1.7">
+        Un compte a été créé pour vous sur <strong>PLANORA 360</strong> dans l'organisation <strong>${params.orgName}</strong>. Voici vos identifiants de connexion :
+      </p>
+
+      ${this.emailTemplates.infoCard({
+            rows: [
+                { label: 'Adresse e-mail', value: params.email },
+                { label: 'Mot de passe temporaire', value: `<span style="color:#2563eb;font-size:18px;font-weight:800;letter-spacing:0.1em;font-family:'Courier New',monospace">${params.tempPassword}</span>` },
+            ],
+        })}
+
+      ${this.emailTemplates.alert({
+            type: 'warning',
+            message: 'Vous devrez choisir un nouveau mot de passe lors de votre première connexion.',
+        })}
+
+      <div style="text-align:center;margin:32px 0 24px">
+        ${this.emailTemplates.button({
+            text: 'Se connecter maintenant →',
+            url: `${this.frontendUrl}/auth/login`,
+        })}
+      </div>
+
+      <p style="margin:0;color:#94a3b8;font-size:13px;text-align:center;line-height:1.6">
+        Si le bouton ne fonctionne pas, <a href="${this.frontendUrl}/auth/login" style="color:#2563eb;text-decoration:underline">${this.frontendUrl}/auth/login</a>
+      </p>
+    `;
+        await this.sendEmail(params.email, `[PLANORA 360] Votre accès à ${params.orgName}`, this.emailTemplates.base({
+            title: 'Bienvenue !',
+            preheader: `Votre compte PLANORA 360 est prêt dans l'organisation ${params.orgName}`,
+            content,
+            headerGradient: 'linear-gradient(135deg, #0b1629 0%, #1e3a5f 100%)',
+        }));
     }
     async notifyValidationPending(params) {
         const validator = await this.prisma.user.findUnique({
@@ -78,9 +103,42 @@ let NotificationsService = NotificationsService_1 = class NotificationsService {
         });
         if (!validator)
             return;
-        await this.sendEmail(validator.email, `[PLANORA 360] Validation requise — ${params.activityTitle}`, `<p>Bonjour ${validator.firstName},</p>
-       <p>L'activité <strong>${params.activityTitle}</strong> est en attente de votre validation (étape : ${params.step}).</p>
-       <p>Connectez-vous sur PLANORA 360 pour traiter cette demande.</p>`);
+        const validationUrl = `${this.frontendUrl}/activities/${params.activityId}`;
+        const content = `
+      <p style="margin:0 0 24px;color:#0f172a;font-size:16px">
+        Bonjour <strong>${validator.firstName}</strong>,
+      </p>
+
+      <p style="margin:0 0 24px;color:#475569;font-size:15px;line-height:1.6">
+        L'activité <strong>${params.activityTitle}</strong> est en attente de votre validation.
+      </p>
+
+      ${this.emailTemplates.infoCard({
+            rows: [
+                { label: 'Activité', value: params.activityTitle },
+                { label: 'Étape', value: params.step },
+            ],
+        })}
+
+      ${this.emailTemplates.alert({
+            type: 'warning',
+            message: 'Cette demande de validation nécessite votre attention.',
+        })}
+
+      <div style="text-align:center;margin:32px 0 24px">
+        ${this.emailTemplates.button({
+            text: 'Traiter la validation →',
+            url: validationUrl,
+            color: '#f59e0b',
+        })}
+      </div>
+    `;
+        await this.sendEmail(validator.email, `[PLANORA 360] Validation requise — ${params.activityTitle}`, this.emailTemplates.base({
+            title: 'Validation en attente',
+            preheader: `L'activité ${params.activityTitle} nécessite votre validation`,
+            content,
+            headerGradient: 'linear-gradient(135deg, #0b1629 0%, #1e3a5f 100%)',
+        }));
     }
     async notifyValidationResult(params) {
         const responsible = await this.prisma.user.findUnique({
@@ -89,10 +147,48 @@ let NotificationsService = NotificationsService_1 = class NotificationsService {
         });
         if (!responsible)
             return;
-        const label = params.decision === 'APPROUVE' ? '✅ Approuvée' : '❌ Rejetée';
-        await this.sendEmail(responsible.email, `[PLANORA 360] Activité ${label} — ${params.activityTitle}`, `<p>Bonjour ${responsible.firstName},</p>
-       <p>L'activité <strong>${params.activityTitle}</strong> a été <strong>${label}</strong> à l'étape ${params.step}.</p>
-       ${params.comment ? `<p>Commentaire : ${params.comment}</p>` : ''}`);
+        const isApproved = params.decision === 'APPROUVE';
+        const statusLabel = isApproved ? 'Approuvée' : 'Rejetée';
+        const statusIcon = isApproved ? '✅' : '❌';
+        const content = `
+      <p style="margin:0 0 24px;color:#0f172a;font-size:16px">
+        Bonjour <strong>${responsible.firstName}</strong>,
+      </p>
+
+      <p style="margin:0 0 24px;color:#475569;font-size:15px;line-height:1.6">
+        L'activité <strong>${params.activityTitle}</strong> a été <strong>${statusLabel.toLowerCase()}</strong> à l'étape <strong>${params.step}</strong>.
+      </p>
+
+      ${this.emailTemplates.infoCard({
+            rows: [
+                { label: 'Activité', value: params.activityTitle },
+                { label: 'Étape', value: params.step },
+                { label: 'Décision', value: `<strong style="color:${isApproved ? '#10b981' : '#ef4444'}">${statusIcon} ${statusLabel}</strong>` },
+            ],
+        })}
+
+      ${params.comment
+            ? `
+        <div style="background:#f8fafc;border-radius:12px;padding:20px;margin:24px 0">
+          <h3 style="margin:0 0 12px;color:#64748b;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em">Commentaire du validateur</h3>
+          <p style="margin:0;color:#0f172a;font-size:14px;line-height:1.6;white-space:pre-wrap">${params.comment}</p>
+        </div>
+      `
+            : ''}
+
+      ${this.emailTemplates.alert({
+            type: isApproved ? 'success' : 'error',
+            message: isApproved
+                ? 'Vous pouvez maintenant poursuivre le traitement de cette activité.'
+                : 'Veuillez prendre en compte les remarques du validateur et soumettre à nouveau si nécessaire.',
+        })}
+    `;
+        await this.sendEmail(responsible.email, `[PLANORA 360] Activité ${statusLabel} — ${params.activityTitle}`, this.emailTemplates.base({
+            title: `Activité ${statusLabel}`,
+            preheader: `L'activité ${params.activityTitle} a été ${statusLabel.toLowerCase()}`,
+            content,
+            headerGradient: 'linear-gradient(135deg, #0b1629 0%, #1e3a5f 100%)',
+        }));
     }
     async notifyOverdueActivities(organizationId) {
         const overdue = await this.prisma.activity.findMany({
@@ -102,7 +198,7 @@ let NotificationsService = NotificationsService_1 = class NotificationsService {
                 status: { notIn: ['VALIDEE', 'ANNULEE', 'TERMINEE'] },
             },
             include: {
-                responsible: { select: { email: true, firstName: true } },
+                responsible: { select: { email: true, firstName: true, id: true } },
             },
         });
         for (const activity of overdue) {
@@ -110,8 +206,43 @@ let NotificationsService = NotificationsService_1 = class NotificationsService {
                 where: { id: activity.id },
                 data: { status: 'EN_RETARD' },
             });
-            await this.sendEmail(activity.responsible.email, `[PLANORA 360] Activité en retard — ${activity.title}`, `<p>Bonjour ${activity.responsible.firstName},</p>
-         <p>L'activité <strong>${activity.title}</strong> est en retard (échéance : ${activity.dueDate.toLocaleDateString('fr-FR')}).</p>`);
+            const activityUrl = `${this.frontendUrl}/activities/${activity.id}`;
+            const daysLate = Math.floor((Date.now() - activity.dueDate.getTime()) / (1000 * 60 * 60 * 24));
+            const content = `
+        <p style="margin:0 0 24px;color:#0f172a;font-size:16px">
+          Bonjour <strong>${activity.responsible.firstName}</strong>,
+        </p>
+
+        <p style="margin:0 0 24px;color:#475569;font-size:15px;line-height:1.6">
+          L'activité <strong>${activity.title}</strong> est maintenant <strong>en retard</strong>.
+        </p>
+
+        ${this.emailTemplates.infoCard({
+                rows: [
+                    { label: 'Activité', value: activity.title },
+                    { label: 'Échéance initiale', value: activity.dueDate.toLocaleDateString('fr-FR') },
+                    { label: 'Retard', value: `<strong style="color:#ef4444">${daysLate} jour${daysLate > 1 ? 's' : ''}</strong>` },
+                ],
+            })}
+
+        ${this.emailTemplates.alert({
+                type: 'error',
+                message: 'Cette activité nécessite une attention immédiate. Veuillez mettre à jour son statut ou sa date d\'échéance.',
+            })}
+
+        <div style="text-align:center;margin:32px 0 24px">
+          ${this.emailTemplates.button({
+                text: 'Voir l\'activité →',
+                url: activityUrl,
+            })}
+        </div>
+      `;
+            await this.sendEmail(activity.responsible.email, `[PLANORA 360] Activité en retard — ${activity.title}`, this.emailTemplates.base({
+                title: 'Activité en retard',
+                preheader: `L'activité ${activity.title} a dépassé sa date d'échéance`,
+                content,
+                headerGradient: 'linear-gradient(135deg, #0b1629 0%, #1e3a5f 100%)',
+            }));
         }
         this.logger.log(`Alertes retard : ${overdue.length} activité(s) notifiée(s)`);
     }
@@ -123,13 +254,246 @@ let NotificationsService = NotificationsService_1 = class NotificationsService {
                 dueDate: { gte: new Date(), lte: limit },
                 status: { notIn: ['VALIDEE', 'ANNULEE', 'TERMINEE', 'EN_RETARD'] },
             },
-            include: { responsible: { select: { email: true, firstName: true } } },
+            include: { responsible: { select: { email: true, firstName: true, id: true } } },
         });
         for (const activity of upcoming) {
-            await this.sendEmail(activity.responsible.email, `[PLANORA 360] Échéance proche — ${activity.title}`, `<p>Bonjour ${activity.responsible.firstName},</p>
-         <p>L'activité <strong>${activity.title}</strong> arrive à échéance le ${activity.dueDate.toLocaleDateString('fr-FR')}.</p>`);
+            const activityUrl = `${this.frontendUrl}/activities/${activity.id}`;
+            const daysRemaining = Math.ceil((activity.dueDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+            const urgencyMessage = daysRemaining === 0
+                ? "L'échéance est <strong>aujourd'hui</strong>"
+                : daysRemaining === 1
+                    ? "L'échéance est <strong>demain</strong>"
+                    : `Il reste <strong>${daysRemaining} jours</strong> avant l'échéance`;
+            const content = `
+        <p style="margin:0 0 24px;color:#0f172a;font-size:16px">
+          Bonjour <strong>${activity.responsible.firstName}</strong>,
+        </p>
+
+        <p style="margin:0 0 24px;color:#475569;font-size:15px;line-height:1.6">
+          L'activité <strong>${activity.title}</strong> arrive bientôt à échéance.
+        </p>
+
+        ${this.emailTemplates.infoCard({
+                rows: [
+                    { label: 'Activité', value: activity.title },
+                    { label: 'Date d\'échéance', value: activity.dueDate.toLocaleDateString('fr-FR') },
+                    { label: 'Temps restant', value: `<strong style="color:#f59e0b">${daysRemaining} jour${daysRemaining > 1 ? 's' : ''}</strong>` },
+                ],
+            })}
+
+        ${this.emailTemplates.alert({
+                type: 'warning',
+                message: `${urgencyMessage}. Assurez-vous d'avoir prévu le temps nécessaire pour finaliser cette activité.`,
+            })}
+
+        <div style="text-align:center;margin:32px 0 24px">
+          ${this.emailTemplates.button({
+                text: 'Voir l\'activité →',
+                url: activityUrl,
+            })}
+        </div>
+      `;
+            await this.sendEmail(activity.responsible.email, `[PLANORA 360] Échéance proche — ${activity.title}`, this.emailTemplates.base({
+                title: 'Échéance proche',
+                preheader: `L'activité ${activity.title} arrive à échéance le ${activity.dueDate.toLocaleDateString('fr-FR')}`,
+                content,
+                headerGradient: 'linear-gradient(135deg, #0b1629 0%, #1e3a5f 100%)',
+            }));
         }
         this.logger.log(`Alertes échéance : ${upcoming.length} activité(s) notifiée(s)`);
+    }
+    async sendEmailVerification(params) {
+        const verificationUrl = `${this.frontendUrl}/verify-email/${params.token}`;
+        const content = `
+      <p style="margin:0 0 24px;color:#0f172a;font-size:16px">
+        Bonjour <strong>${params.firstName}</strong>,
+      </p>
+
+      <p style="margin:0 0 24px;color:#475569;font-size:15px;line-height:1.6">
+        Merci d'avoir choisi <strong>PLANORA 360</strong> ! Pour activer votre compte, veuillez vérifier votre adresse email en cliquant sur le bouton ci-dessous :
+      </p>
+
+      <div style="text-align:center;margin:32px 0">
+        ${this.emailTemplates.button({
+            text: 'Vérifier mon email',
+            url: verificationUrl,
+            color: '#2563eb',
+        })}
+      </div>
+
+      ${this.emailTemplates.divider()}
+
+      <p style="margin:24px 0;color:#94a3b8;font-size:13px;text-align:center;line-height:1.6">
+        Si le bouton ne fonctionne pas, copiez ce lien :<br/>
+        <a href="${verificationUrl}" style="color:#2563eb;text-decoration:none;word-break:break-all;font-size:12px">${verificationUrl}</a>
+      </p>
+
+      ${this.emailTemplates.alert({
+            type: 'error',
+            message: 'Ce lien expire dans 24 heures.',
+        })}
+    `;
+        await this.sendEmail(params.email, '[PLANORA 360] Vérifiez votre adresse email', this.emailTemplates.base({
+            title: 'Vérifiez votre email',
+            preheader: 'Activez votre compte PLANORA 360 en vérifiant votre email',
+            content,
+            headerGradient: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+        }));
+    }
+    async sendNewRegistrationToAdmin(params) {
+        const adminEmail = this.config.get('SUPPORT_EMAIL') || 'admin@ataaba.com';
+        const frontendUrl = this.frontendUrl;
+        const planLabels = {
+            INDIVIDUEL: 'Individuel',
+            PRO: 'Pro',
+            EQUIPE: 'Équipe',
+            ORGANISATION: 'Organisation',
+            ENTERPRISE: 'Enterprise',
+        };
+        const cycleLabel = params.billingCycle === 'YEARLY' ? 'Annuel' : 'Mensuel';
+        const content = `
+      <p style="margin:0 0 24px;color:#0f172a;font-size:16px">
+        Une nouvelle inscription est en attente de validation :
+      </p>
+
+      ${this.emailTemplates.infoCard({
+            title: 'Informations organisation',
+            rows: [
+                { label: 'Organisation', value: `<strong>${params.organizationName}</strong>` },
+                { label: 'ID', value: `<code>${params.organizationId}</code>` },
+                { label: 'Plan', value: planLabels[params.plan] || params.plan },
+                { label: 'Cycle', value: cycleLabel },
+            ],
+        })}
+
+      ${this.emailTemplates.infoCard({
+            title: 'Utilisateur principal',
+            rows: [
+                { label: 'Nom', value: params.userName },
+                { label: 'Email', value: `<a href="mailto:${params.userEmail}" style="color:#2563eb;text-decoration:none">${params.userEmail}</a>` },
+                { label: 'Mot de passe temporaire', value: `<code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-family:monospace">${params.tempPassword}</code>` },
+            ],
+        })}
+
+      ${this.emailTemplates.alert({
+            type: 'warning',
+            message: 'Cette organisation est en attente de validation. Connectez-vous à l\'admin pour l\'approuver ou la rejeter.',
+        })}
+
+      <div style="text-align:center;margin:32px 0 24px">
+        ${this.emailTemplates.button({
+            text: 'Se connecter à l\'admin →',
+            url: `${frontendUrl}/auth/login`,
+        })}
+      </div>
+
+      <p style="margin:24px 0 0;color:#64748b;font-size:13px;line-height:1.6">
+        <strong>Instructions :</strong><br/>
+        1. Connectez-vous avec vos identifiants SuperAdmin<br/>
+        2. Allez dans la gestion des organisations<br/>
+        3. Recherchez l'organisation <strong>${params.organizationName}</strong> (ID: ${params.organizationId})<br/>
+        4. Cliquez sur "Approuver" pour activer l'organisation<br/><br/>
+        L'utilisateur recevra automatiquement ses identifiants par email après approbation.
+      </p>
+    `;
+        await this.sendEmail(adminEmail, `[PLANORA 360] Nouvelle inscription - ${params.organizationName}`, this.emailTemplates.base({
+            title: '🆕 Nouvelle inscription',
+            preheader: `${params.organizationName} demande un accès au plan ${planLabels[params.plan]}`,
+            content,
+            showLogo: false,
+        }));
+    }
+    async sendQuoteRequest(params) {
+        const supportEmail = this.config.get('SUPPORT_EMAIL') || 'contact@planora360.org';
+        const planLabels = {
+            PRO: 'Pro',
+            EQUIPE: 'Équipe',
+            ORGANISATION: 'Organisation',
+            ENTERPRISE: 'Enterprise',
+        };
+        const cycleLabel = params.billingCycle === 'YEARLY' ? 'Annuel' : 'Mensuel';
+        const supportRows = [
+            { label: 'Organisation', value: params.organizationName },
+            { label: 'Contact', value: params.fullName },
+            { label: 'Email', value: `<a href="mailto:${params.email}" style="color:#2563eb;text-decoration:none">${params.email}</a>` },
+        ];
+        if (params.phone) {
+            supportRows.push({ label: 'Téléphone', value: params.phone });
+        }
+        const planRows = [
+            { label: 'Plan', value: `<strong>${planLabels[params.plan] || params.plan}</strong>` },
+            { label: 'Facturation', value: cycleLabel },
+        ];
+        if (params.estimatedUsers) {
+            planRows.push({ label: 'Utilisateurs estimés', value: params.estimatedUsers.toString() });
+        }
+        const supportContent = `
+      <p style="margin:0 0 24px;color:#475569;font-size:15px;line-height:1.6">
+        Nouvelle demande de devis reçue. Voici les détails du client :
+      </p>
+
+      ${this.emailTemplates.infoCard({ title: 'Informations client', rows: supportRows })}
+      ${this.emailTemplates.infoCard({ title: 'Formule demandée', rows: planRows })}
+
+      ${params.customMessage
+            ? `
+        <div style="background:#f8fafc;border-radius:12px;padding:20px;margin:24px 0">
+          <h3 style="margin:0 0 12px;color:#64748b;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em">Message personnalisé</h3>
+          <p style="margin:0;color:#0f172a;font-size:14px;line-height:1.6;white-space:pre-wrap">${params.customMessage}</p>
+        </div>
+      `
+            : ''}
+
+      ${this.emailTemplates.alert({
+            type: 'warning',
+            message: '<strong>À traiter rapidement</strong> — Le client attend une réponse sous 48h maximum.',
+        })}
+
+      <p style="margin:24px 0 0;color:#64748b;font-size:13px;line-height:1.6">
+        Pour répondre, contactez directement le client à l'adresse email ci-dessus.
+      </p>
+    `;
+        await this.sendEmail(supportEmail, `[PLANORA 360] Demande de devis - ${planLabels[params.plan] || params.plan}`, this.emailTemplates.base({
+            title: '📋 Demande de devis',
+            preheader: `Nouvelle demande de ${params.organizationName} pour le plan ${planLabels[params.plan]}`,
+            content: supportContent,
+            showLogo: false,
+        }));
+        const clientContent = `
+      <p style="margin:0 0 24px;color:#0f172a;font-size:16px">
+        Bonjour <strong>${params.fullName.split(' ')[0]}</strong>,
+      </p>
+
+      <p style="margin:0 0 24px;color:#475569;font-size:15px;line-height:1.6">
+        Nous avons bien reçu votre demande de devis pour le plan <strong>${planLabels[params.plan] || params.plan}</strong> (facturation ${cycleLabel.toLowerCase()}).
+      </p>
+
+      ${this.emailTemplates.alert({
+            type: 'info',
+            message: 'Notre équipe commerciale vous contactera sous <strong>48 heures</strong> pour vous proposer une offre personnalisée adaptée à vos besoins.',
+        })}
+
+      ${this.emailTemplates.infoCard({
+            title: 'Récapitulatif de votre demande',
+            rows: [
+                { label: 'Organisation', value: params.organizationName },
+                { label: 'Plan', value: planLabels[params.plan] || params.plan },
+                { label: 'Cycle', value: cycleLabel },
+            ],
+        })}
+
+      <p style="margin:24px 0 0;color:#64748b;font-size:13px;line-height:1.6">
+        En attendant, si vous avez des questions, n'hésitez pas à nous contacter à <a href="mailto:contact@planora360.org" style="color:#2563eb;text-decoration:none">contact@planora360.org</a>
+      </p>
+    `;
+        await this.sendEmail(params.email, '[PLANORA 360] Demande de devis reçue', this.emailTemplates.base({
+            title: 'Demande bien reçue !',
+            preheader: `Votre demande de devis pour le plan ${planLabels[params.plan]} a été envoyée`,
+            content: clientContent,
+            headerGradient: 'linear-gradient(135deg, #0b1629 0%, #1e3a5f 100%)',
+            showLogo: true,
+            footerNote: 'Vous avez reçu cet email car vous avez demandé un devis sur planora360.org',
+        }));
     }
 };
 exports.NotificationsService = NotificationsService;

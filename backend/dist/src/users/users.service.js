@@ -44,21 +44,36 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsersService = void 0;
 const common_1 = require("@nestjs/common");
+const crypto_1 = require("crypto");
 const prisma_service_1 = require("../common/prisma/prisma.service");
+const notifications_service_1 = require("../notifications/notifications.service");
 const bcrypt = __importStar(require("bcryptjs"));
 const subscription_guard_1 = require("../common/guards/subscription.guard");
 const auth_constants_1 = require("../common/constants/auth.constants");
 let UsersService = class UsersService {
     prisma;
-    constructor(prisma) {
+    notifications;
+    constructor(prisma, notifications) {
         this.prisma = prisma;
+        this.notifications = notifications;
     }
     async create(dto, actorOrganizationId, actorRole) {
         const orgId = this.resolveOrganizationId(dto.organizationId, actorOrganizationId, actorRole);
         await this.validateEmailUniqueness(dto.email);
-        const role = await this.validateRole(dto.roleId, actorRole);
+        const role = await this.validateRole(dto.roleId, actorRole, orgId);
         await this.validateUserLimit(orgId);
-        const user = await this.createUser(dto, orgId);
+        const tempPassword = dto.password || (0, crypto_1.randomBytes)(6).toString('base64url').slice(0, 10);
+        const user = await this.createUser(dto, tempPassword, orgId);
+        const organization = await this.prisma.organization.findUnique({
+            where: { id: orgId },
+            select: { name: true },
+        });
+        await this.notifications.sendWelcomeCredentials({
+            email: user.email,
+            firstName: user.firstName,
+            orgName: organization?.name || 'votre organisation',
+            tempPassword,
+        });
         return this.sanitizeUserResponse(user);
     }
     resolveOrganizationId(dtoOrganizationId, actorOrganizationId, actorRole) {
@@ -73,12 +88,15 @@ let UsersService = class UsersService {
         if (existing)
             throw new common_1.ConflictException('Cet email est déjà utilisé');
     }
-    async validateRole(roleId, actorRole) {
+    async validateRole(roleId, actorRole, targetOrganizationId) {
         const role = await this.prisma.role.findUnique({ where: { id: roleId } });
         if (!role)
             throw new common_1.NotFoundException('Rôle introuvable');
-        if (actorRole !== auth_constants_1.ROLE_SUPER_ADMIN && role.name === auth_constants_1.ROLE_SUPER_ADMIN) {
-            throw new common_1.ForbiddenException('Vous ne pouvez pas créer un super admin');
+        if (role.organizationId !== null && role.organizationId !== targetOrganizationId) {
+            throw new common_1.NotFoundException('Rôle introuvable');
+        }
+        if (actorRole !== auth_constants_1.ROLE_SUPER_ADMIN && role.organizationId === null && role.name === auth_constants_1.ROLE_SUPER_ADMIN) {
+            throw new common_1.ForbiddenException('Vous ne pouvez pas attribuer le rôle Super administrateur');
         }
         return role;
     }
@@ -99,8 +117,8 @@ let UsersService = class UsersService {
                 `Passez à une formule supérieure pour ajouter plus d'utilisateurs.`);
         }
     }
-    async createUser(dto, organizationId) {
-        const passwordHash = await this.hashPassword(dto.password);
+    async createUser(dto, password, organizationId) {
+        const passwordHash = await this.hashPassword(password);
         return this.prisma.user.create({
             data: {
                 email: dto.email,
@@ -191,8 +209,11 @@ let UsersService = class UsersService {
             throw new common_1.NotFoundException('Utilisateur introuvable');
         return this.sanitizeUserResponse(user);
     }
-    async update(id, dto, organizationId) {
-        await this.findOne(id, organizationId);
+    async update(id, dto, organizationId, actorRole = null) {
+        const target = await this.findOne(id, organizationId);
+        if (dto.roleId) {
+            await this.validateRole(dto.roleId, actorRole, target.organizationId ?? organizationId);
+        }
         const data = { ...dto };
         if (dto.password) {
             data.passwordHash = await this.hashPassword(dto.password);
@@ -284,6 +305,7 @@ let UsersService = class UsersService {
 exports.UsersService = UsersService;
 exports.UsersService = UsersService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        notifications_service_1.NotificationsService])
 ], UsersService);
 //# sourceMappingURL=users.service.js.map

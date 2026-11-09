@@ -1,8 +1,9 @@
 import { SoumissionsService } from './soumissions.service';
+import { CreateSoumissionDto } from './dto/create-soumission.dto';
 export declare class SoumissionsController {
     private readonly soumissionsService;
     constructor(soumissionsService: SoumissionsService);
-    create(procedureId: string, req: any, dto: any): Promise<{
+    create(procedureId: string, req: any, dto: CreateSoumissionDto): Promise<{
         fournisseur: {
             id: string;
             raisonSociale: string;
@@ -20,10 +21,10 @@ export declare class SoumissionsController {
     } & {
         id: string;
         status: string;
+        procedureId: string;
         montantTotal: import("@prisma/client-runtime-utils").Decimal;
         fournisseurId: string;
         dateDepot: Date;
-        procedureId: string;
         devise: string;
         numeroDepot: string;
         montantTechnique: import("@prisma/client-runtime-utils").Decimal | null;
@@ -35,8 +36,8 @@ export declare class SoumissionsController {
     }>;
     findAll(procedureId: string, req: any): Promise<({
         fournisseur: {
-            id: string;
             email: string | null;
+            id: string;
             raisonSociale: string;
             identifiantFiscal: string | null;
         };
@@ -48,10 +49,10 @@ export declare class SoumissionsController {
     } & {
         id: string;
         status: string;
+        procedureId: string;
         montantTotal: import("@prisma/client-runtime-utils").Decimal;
         fournisseurId: string;
         dateDepot: Date;
-        procedureId: string;
         devise: string;
         numeroDepot: string;
         montantTechnique: import("@prisma/client-runtime-utils").Decimal | null;
@@ -63,11 +64,11 @@ export declare class SoumissionsController {
     })[]>;
     findOne(procedureId: string, id: string, req: any): Promise<{
         fournisseur: {
-            id: string;
             email: string | null;
-            organizationId: string;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
+            organizationId: string;
             status: import(".prisma/client").$Enums.StatusFournisseur;
             raisonSociale: string;
             identifiantFiscal: string | null;
@@ -85,6 +86,7 @@ export declare class SoumissionsController {
             emailContact: string | null;
             categoriesBiens: string[];
             zonesIntervention: string[];
+            motifStatut: string | null;
         };
         procedure: {
             id: string;
@@ -104,10 +106,10 @@ export declare class SoumissionsController {
     } & {
         id: string;
         status: string;
+        procedureId: string;
         montantTotal: import("@prisma/client-runtime-utils").Decimal;
         fournisseurId: string;
         dateDepot: Date;
-        procedureId: string;
         devise: string;
         numeroDepot: string;
         montantTechnique: import("@prisma/client-runtime-utils").Decimal | null;

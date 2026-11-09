@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(u);
         applyBrandColor(u?.organization?.brandColor);
       } catch {
-        localStorage.clear();
+        localStorage.removeItem('user');
       }
     }
 
@@ -68,12 +68,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Le backend retourne uniquement { user, csrfToken }
     // On stocke UNIQUEMENT les infos utilisateur en localStorage (pas les tokens)
     localStorage.setItem('user', JSON.stringify(data.user));
-
-    // Rétrocompatibilité: si le backend renvoie encore les tokens (ancien format)
-    if (data.accessToken && data.refreshToken) {
-      localStorage.setItem('accessToken', data.accessToken);
-      localStorage.setItem('refreshToken', data.refreshToken);
-    }
 
     setUser(data.user);
     applyBrandColor(data.user?.organization?.brandColor);
@@ -100,7 +94,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function logout() {
     try { await authApi.logout(); } catch { /* ignore */ }
     try { posthog.reset(); } catch { /* ignore if PostHog blocked */ }
-    localStorage.clear();
+    // Seules les données de session sont effacées (préférences locales conservées)
+    localStorage.removeItem('user');
     setUser(null);
     window.location.href = '/auth/login';
   }
@@ -120,7 +115,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   function hasPermission(permission: string): boolean {
     if (!user) return false;
-    return user.role?.permissions?.includes(permission) ?? false;
+    const perms = user.role?.permissions;
+    if (!Array.isArray(perms)) return false;
+    return perms.includes('*') || perms.includes(permission);
   }
 
   function hasRole(...roles: string[]): boolean {

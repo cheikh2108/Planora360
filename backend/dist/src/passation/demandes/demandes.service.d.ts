@@ -1,11 +1,13 @@
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { ValidationDecision } from '@prisma/client';
 import { ValidationWorkflowService } from '../common/services/validation-workflow.service';
+import { CreateDemandeDto } from './dto/create-demande.dto';
+import { UpdateDemandeDto } from './dto/update-demande.dto';
 export declare class DemandesService {
     private readonly prisma;
     private readonly workflowService;
     constructor(prisma: PrismaService, workflowService: ValidationWorkflowService);
-    create(organizationId: string, userId: string, dto: any): Promise<{
+    create(organizationId: string, userId: string, dto: CreateDemandeDto): Promise<{
         activity: {
             id: string;
             title: string;
@@ -38,9 +40,9 @@ export declare class DemandesService {
         };
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusDemandeAchat;
         description: string;
         activityId: string | null;
@@ -56,6 +58,8 @@ export declare class DemandesService {
         lignePPMId: string | null;
         demandeurId: string;
     }>;
+    private assertLinks;
+    private toDemandeData;
     findAll(organizationId: string, filters?: any): Promise<({
         activity: {
             id: string;
@@ -90,9 +94,9 @@ export declare class DemandesService {
         };
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusDemandeAchat;
         description: string;
         activityId: string | null;
@@ -136,8 +140,8 @@ export declare class DemandesService {
         } | null;
         validations: ({
             validateur: {
-                id: string;
                 email: string;
+                id: string;
                 firstName: string;
                 lastName: string;
             };
@@ -153,16 +157,16 @@ export declare class DemandesService {
             commentaire: string | null;
         })[];
         demandeur: {
-            id: string;
             email: string;
+            id: string;
             firstName: string;
             lastName: string;
         };
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusDemandeAchat;
         description: string;
         activityId: string | null;
@@ -178,7 +182,7 @@ export declare class DemandesService {
         lignePPMId: string | null;
         demandeurId: string;
     }>;
-    update(id: string, organizationId: string, dto: any): Promise<{
+    update(id: string, organizationId: string, dto: UpdateDemandeDto): Promise<{
         validations: {
             id: string;
             createdAt: Date;
@@ -197,9 +201,9 @@ export declare class DemandesService {
         };
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusDemandeAchat;
         description: string;
         activityId: string | null;
@@ -217,9 +221,9 @@ export declare class DemandesService {
     }>;
     remove(id: string, organizationId: string): Promise<{
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusDemandeAchat;
         description: string;
         activityId: string | null;
@@ -255,9 +259,9 @@ export declare class DemandesService {
         })[];
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusDemandeAchat;
         description: string;
         activityId: string | null;
@@ -293,9 +297,9 @@ export declare class DemandesService {
         })[];
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusDemandeAchat;
         description: string;
         activityId: string | null;

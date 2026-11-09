@@ -8,6 +8,9 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 import { StatusDemandeAchat, ValidationDecision } from '@prisma/client';
 import { ValidationWorkflowService } from '../common/services/validation-workflow.service';
 import { ERROR_MESSAGES } from '../common/constants/error-messages';
+import { createWithReference, nextReferenceFrom } from '../../common/utils/reference';
+import { CreateDemandeDto } from './dto/create-demande.dto';
+import { UpdateDemandeDto } from './dto/update-demande.dto';
 
 /**
  * Service de gestion des demandes d'achat
@@ -31,41 +34,69 @@ export class DemandesService {
     private readonly workflowService: ValidationWorkflowService,
   ) {}
 
-  async create(organizationId: string, userId: string, dto: any) {
-    // Générer référence unique
-    const count = await this.prisma.demandeAchat.count({
-      where: { organizationId },
-    });
-    const reference = `DA-${new Date().getFullYear()}-${String(count + 1).padStart(4, '0')}`;
+  async create(organizationId: string, userId: string, dto: CreateDemandeDto) {
+    await this.assertLinks(organizationId, dto);
 
-    // Transformer lignePpmId en lignePPMId pour correspondre au schéma Prisma
-    const data: any = {
-      ...dto,
-      description: dto.description || dto.justification || '',
-      reference,
+    const data = {
+      ...this.toDemandeData(dto),
+      objet: dto.objet,
+      justification: dto.justification,
+      montantEstimatif: dto.montantEstimatif,
+      description: dto.description || dto.justification,
       organizationId,
       demandeurId: userId,
     };
 
-    // Renommer le champ si présent
+    const prefix = `DA-${new Date().getFullYear()}-`;
+    return createWithReference(
+      async () =>
+        nextReferenceFrom(
+          (await this.prisma.demandeAchat.findMany({
+            where: { organizationId, reference: { startsWith: prefix } },
+            select: { reference: true },
+          })).map((d) => d.reference),
+          prefix,
+          4,
+        ),
+      (reference) =>
+        this.prisma.demandeAchat.create({
+          data: { ...data, reference },
+          include: {
+            demandeur: { select: { id: true, firstName: true, lastName: true } },
+            lignePPM: true,
+            activity: { select: { id: true, title: true } },
+          },
+        }),
+    );
+  }
+
+  /** La ligne PPM et l'activité rattachées doivent appartenir à l'organisation. */
+  private async assertLinks(organizationId: string, dto: { lignePpmId?: string; activityId?: string }) {
     if (dto.lignePpmId) {
-      data.lignePPMId = dto.lignePpmId;
-      delete data.lignePpmId;
+      const ligne = await this.prisma.lignePPM.findFirst({ where: { id: dto.lignePpmId, ppm: { organizationId } } });
+      if (!ligne) throw new BadRequestException('Ligne PPM introuvable dans votre organisation');
     }
-
-    // Convertir les dates string en DateTime pour Prisma
-    if (data.echeanceSouhaitee && typeof data.echeanceSouhaitee === 'string') {
-      data.echeanceSouhaitee = new Date(data.echeanceSouhaitee);
+    if (dto.activityId) {
+      const activity = await this.prisma.activity.findFirst({ where: { id: dto.activityId, organizationId } });
+      if (!activity) throw new BadRequestException('Activité introuvable dans votre organisation');
     }
+  }
 
-    return this.prisma.demandeAchat.create({
-      data,
-      include: {
-        demandeur: { select: { id: true, firstName: true, lastName: true } },
-        lignePPM: true,
-        activity: { select: { id: true, title: true } },
-      },
-    });
+  /** Champs modifiables d'une demande (le statut ne change que par le workflow). */
+  private toDemandeData(dto: UpdateDemandeDto) {
+    return {
+      ...(dto.objet !== undefined && { objet: dto.objet }),
+      ...(dto.description !== undefined && { description: dto.description }),
+      ...(dto.justification !== undefined && { justification: dto.justification }),
+      ...(dto.montantEstimatif !== undefined && { montantEstimatif: dto.montantEstimatif }),
+      ...(dto.quantite !== undefined && { quantite: dto.quantite }),
+      ...(dto.specifications !== undefined && { specifications: dto.specifications }),
+      ...(dto.ligneBudgetaire !== undefined && { ligneBudgetaire: dto.ligneBudgetaire }),
+      ...(dto.sourceFinancement !== undefined && { sourceFinancement: dto.sourceFinancement }),
+      ...(dto.echeanceSouhaitee !== undefined && { echeanceSouhaitee: new Date(dto.echeanceSouhaitee) }),
+      ...(dto.lignePpmId !== undefined && { lignePPMId: dto.lignePpmId || null }),
+      ...(dto.activityId !== undefined && { activityId: dto.activityId || null }),
+    };
   }
 
   async findAll(organizationId: string, filters?: any) {
@@ -132,28 +163,15 @@ export class DemandesService {
     return demande;
   }
 
-  async update(id: string, organizationId: string, dto: any) {
+  async update(id: string, organizationId: string, dto: UpdateDemandeDto) {
     const demande = await this.findOne(id, organizationId);
 
-    // Ne pas permettre la modification si approuvée ou rejetée
-    if (
-      demande.status === StatusDemandeAchat.APPROUVEE ||
-      demande.status === StatusDemandeAchat.REJETEE
-    ) {
-      throw new ForbiddenException('Impossible de modifier une demande approuvée ou rejetée');
+    // Une demande n'est modifiable qu'en brouillon (après soumission, elle suit le workflow)
+    if (demande.status !== StatusDemandeAchat.BROUILLON) {
+      throw new ForbiddenException('Seules les demandes en brouillon peuvent être modifiées');
     }
-
-    // Transformer lignePpmId en lignePPMId si présent
-    const data: any = { ...dto };
-    if (dto.lignePpmId) {
-      data.lignePPMId = dto.lignePpmId;
-      delete data.lignePpmId;
-    }
-
-    // Convertir les dates string en DateTime pour Prisma
-    if (data.echeanceSouhaitee && typeof data.echeanceSouhaitee === 'string') {
-      data.echeanceSouhaitee = new Date(data.echeanceSouhaitee);
-    }
+    await this.assertLinks(organizationId, dto);
+    const data = this.toDemandeData(dto);
 
     return this.prisma.demandeAchat.update({
       where: { id },

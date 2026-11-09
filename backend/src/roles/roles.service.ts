@@ -10,7 +10,7 @@ export class RolesService {
   constructor(private prisma: PrismaService) {}
 
   // Rôles visibles par une org: ses rôles custom + les rôles système SAUF Super administrateur
-  async findAll(organizationId: string, callerRole?: string) {
+  async findAll(organizationId: string, callerRole?: string | null) {
     const isSuperAdmin = callerRole === 'Super administrateur';
     return this.prisma.role.findMany({
       where: {
@@ -38,7 +38,18 @@ export class RolesService {
     return role;
   }
 
+  /** Un rôle personnalisé ne peut pas porter le nom d'un rôle système (ex. "Super administrateur"). */
+  private async assertNotSystemName(name: string) {
+    const system = await this.prisma.role.findFirst({
+      where: { organizationId: null, name: { equals: name.trim(), mode: 'insensitive' } },
+    });
+    if (system) {
+      throw new ConflictException(`« ${name} » est un rôle système : choisissez un autre nom`);
+    }
+  }
+
   async create(dto: CreateRoleDto, organizationId: string) {
+    await this.assertNotSystemName(dto.name);
     const existing = await this.prisma.role.findFirst({
       where: { organizationId, name: dto.name },
     });
@@ -66,6 +77,7 @@ export class RolesService {
     }
 
     if (dto.name) {
+      await this.assertNotSystemName(dto.name);
       const conflict = await this.prisma.role.findFirst({
         where: { organizationId, name: dto.name, id: { not: id } },
       });

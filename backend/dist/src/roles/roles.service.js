@@ -43,7 +43,16 @@ let RolesService = class RolesService {
             throw new common_1.NotFoundException('Rôle introuvable');
         return role;
     }
+    async assertNotSystemName(name) {
+        const system = await this.prisma.role.findFirst({
+            where: { organizationId: null, name: { equals: name.trim(), mode: 'insensitive' } },
+        });
+        if (system) {
+            throw new common_1.ConflictException(`« ${name} » est un rôle système : choisissez un autre nom`);
+        }
+    }
     async create(dto, organizationId) {
+        await this.assertNotSystemName(dto.name);
         const existing = await this.prisma.role.findFirst({
             where: { organizationId, name: dto.name },
         });
@@ -68,6 +77,7 @@ let RolesService = class RolesService {
             throw new common_1.ForbiddenException('Ce rôle n\'appartient pas à votre organisation');
         }
         if (dto.name) {
+            await this.assertNotSystemName(dto.name);
             const conflict = await this.prisma.role.findFirst({
                 where: { organizationId, name: dto.name, id: { not: id } },
             });

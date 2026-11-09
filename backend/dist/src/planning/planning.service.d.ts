@@ -7,78 +7,78 @@ export declare class PlanningService {
     constructor(prisma: PrismaService);
     createAnnualWorkPlan(dto: CreateAnnualWorkPlanDto, organizationId: string, userId: string): Promise<{
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: string;
         title: string;
-        year: number;
         createdBy: string;
+        year: number;
         objectives: import("@prisma/client/runtime/client").JsonValue;
         validatedBy: string | null;
         validatedAt: Date | null;
     }>;
     findAllAnnualWorkPlans(organizationId: string): Promise<{
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: string;
         title: string;
-        year: number;
         createdBy: string;
+        year: number;
         objectives: import("@prisma/client/runtime/client").JsonValue;
         validatedBy: string | null;
         validatedAt: Date | null;
     }[]>;
     findOneAnnualWorkPlan(id: string, organizationId: string): Promise<{
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: string;
         title: string;
-        year: number;
         createdBy: string;
+        year: number;
         objectives: import("@prisma/client/runtime/client").JsonValue;
         validatedBy: string | null;
         validatedAt: Date | null;
     }>;
     updateAnnualWorkPlan(id: string, dto: UpdateAnnualWorkPlanDto, organizationId: string): Promise<{
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: string;
         title: string;
-        year: number;
         createdBy: string;
+        year: number;
         objectives: import("@prisma/client/runtime/client").JsonValue;
         validatedBy: string | null;
         validatedAt: Date | null;
     }>;
     validateAnnualWorkPlan(id: string, organizationId: string, userId: string): Promise<{
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: string;
         title: string;
-        year: number;
         createdBy: string;
+        year: number;
         objectives: import("@prisma/client/runtime/client").JsonValue;
         validatedBy: string | null;
         validatedAt: Date | null;
     }>;
     deleteAnnualWorkPlan(id: string, organizationId: string): Promise<{
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: string;
         title: string;
-        year: number;
         createdBy: string;
+        year: number;
         objectives: import("@prisma/client/runtime/client").JsonValue;
         validatedBy: string | null;
         validatedAt: Date | null;
@@ -86,13 +86,13 @@ export declare class PlanningService {
     getResultsMatrix(organizationId: string): Promise<{
         data: import("@prisma/client/runtime/client").JsonValue;
         id: string;
-        organizationId: string;
         updatedAt: Date;
+        organizationId: string;
     }>;
     updateResultsMatrix(dto: UpdateResultsMatrixDto, organizationId: string): Promise<{
         data: import("@prisma/client/runtime/client").JsonValue;
         id: string;
-        organizationId: string;
         updatedAt: Date;
+        organizationId: string;
     }>;
 }

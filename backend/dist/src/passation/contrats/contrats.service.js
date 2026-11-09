@@ -12,39 +12,66 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ContratsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../common/prisma/prisma.service");
+const reference_1 = require("../../common/utils/reference");
 let ContratsService = class ContratsService {
     prisma;
     constructor(prisma) {
         this.prisma = prisma;
     }
     async create(organizationId, userId, dto) {
-        const count = await this.prisma.contrat.count({
-            where: { organizationId },
+        const procedure = await this.prisma.procedure.findFirst({
+            where: {
+                id: dto.procedureId,
+                organizationId,
+            },
         });
-        const reference = `CONT-${new Date().getFullYear()}-${String(count + 1).padStart(4, '0')}`;
-        const data = {
-            ...dto,
-            reference,
+        if (!procedure) {
+            throw new common_1.NotFoundException(`Procédure #${dto.procedureId} introuvable dans votre organisation`);
+        }
+        if (procedure.status !== 'CLOTUREE_OFFRES' && procedure.status !== 'ATTRIBUEE') {
+            throw new common_1.ForbiddenException(`La procédure doit être clôturée ou attribuée pour créer un contrat (statut actuel: ${procedure.status})`);
+        }
+        const existingContrat = await this.prisma.contrat.findFirst({
+            where: { procedureId: dto.procedureId },
+        });
+        if (existingContrat) {
+            throw new common_1.ForbiddenException(`Un contrat existe déjà pour cette procédure : ${existingContrat.reference}`);
+        }
+        const fournisseur = await this.prisma.fournisseur.findFirst({
+            where: {
+                id: dto.fournisseurId,
+                organizationId,
+            },
+        });
+        if (!fournisseur) {
+            throw new common_1.NotFoundException(`Fournisseur #${dto.fournisseurId} introuvable dans votre organisation`);
+        }
+        if (dto.soumissionId) {
+            const soumission = await this.prisma.soumission.findFirst({
+                where: { id: dto.soumissionId, procedureId: dto.procedureId, fournisseurId: dto.fournisseurId },
+            });
+            if (!soumission) {
+                throw new common_1.BadRequestException('Offre introuvable pour cette procédure et ce fournisseur');
+            }
+        }
+        this.assertDates(dto.dateSignature, dto.dateEcheance);
+        const base = {
+            ...this.toContratData(dto),
+            procedureId: dto.procedureId,
+            fournisseurId: dto.fournisseurId,
+            soumissionId: dto.soumissionId ?? null,
+            montantInitial: dto.montantInitial,
+            dateSignature: new Date(dto.dateSignature),
+            dateEcheance: new Date(dto.dateEcheance),
             organizationId,
             gestionnaire: userId,
         };
-        if (data.dateSignature && typeof data.dateSignature === 'string') {
-            data.dateSignature = new Date(data.dateSignature);
-        }
-        if (data.dateDemarrage && typeof data.dateDemarrage === 'string') {
-            data.dateDemarrage = new Date(data.dateDemarrage);
-        }
-        if (data.dateEcheance && typeof data.dateEcheance === 'string') {
-            data.dateEcheance = new Date(data.dateEcheance);
-        }
-        if (data.dateReceptionProv && typeof data.dateReceptionProv === 'string') {
-            data.dateReceptionProv = new Date(data.dateReceptionProv);
-        }
-        if (data.dateReceptionDef && typeof data.dateReceptionDef === 'string') {
-            data.dateReceptionDef = new Date(data.dateReceptionDef);
-        }
-        return this.prisma.contrat.create({
-            data,
+        const prefix = `CONT-${new Date().getFullYear()}-`;
+        return (0, reference_1.createWithReference)(async () => (0, reference_1.nextReferenceFrom)((await this.prisma.contrat.findMany({
+            where: { organizationId, reference: { startsWith: prefix } },
+            select: { reference: true },
+        })).map((c) => c.reference), prefix, 4), (reference) => this.prisma.contrat.create({
+            data: { ...base, reference },
             include: {
                 fournisseur: {
                     select: {
@@ -68,7 +95,26 @@ let ContratsService = class ContratsService {
                     },
                 },
             },
-        });
+        }));
+    }
+    assertDates(debut, fin) {
+        if (debut && fin && new Date(fin) <= new Date(debut)) {
+            throw new common_1.BadRequestException('La date d\'échéance doit être postérieure à la date de signature');
+        }
+    }
+    toContratData(dto) {
+        const date = (v) => (v ? new Date(v) : null);
+        return {
+            ...(dto.montantRevise !== undefined && { montantRevise: dto.montantRevise }),
+            ...(dto.devise !== undefined && { devise: dto.devise }),
+            ...(dto.dateDemarrage !== undefined && { dateDemarrage: date(dto.dateDemarrage) }),
+            ...(dto.dateReceptionProv !== undefined && { dateReceptionProv: date(dto.dateReceptionProv) }),
+            ...(dto.dateReceptionDef !== undefined && { dateReceptionDef: date(dto.dateReceptionDef) }),
+            ...(dto.modalitesAvance !== undefined && { modalitesAvance: dto.modalitesAvance }),
+            ...(dto.modalitesAcompte !== undefined && { modalitesAcompte: dto.modalitesAcompte }),
+            ...(dto.modalitesRetenue !== undefined && { modalitesRetenue: dto.modalitesRetenue }),
+            ...(dto.garanties !== undefined && { garanties: dto.garanties }),
+        };
     }
     async findAll(organizationId, filters) {
         return this.prisma.contrat.findMany({
@@ -147,23 +193,13 @@ let ContratsService = class ContratsService {
         return contrat;
     }
     async update(id, organizationId, dto) {
-        await this.findOne(id, organizationId);
-        const data = { ...dto };
-        if (data.dateSignature && typeof data.dateSignature === 'string') {
-            data.dateSignature = new Date(data.dateSignature);
-        }
-        if (data.dateDemarrage && typeof data.dateDemarrage === 'string') {
-            data.dateDemarrage = new Date(data.dateDemarrage);
-        }
-        if (data.dateEcheance && typeof data.dateEcheance === 'string') {
-            data.dateEcheance = new Date(data.dateEcheance);
-        }
-        if (data.dateReceptionProv && typeof data.dateReceptionProv === 'string') {
-            data.dateReceptionProv = new Date(data.dateReceptionProv);
-        }
-        if (data.dateReceptionDef && typeof data.dateReceptionDef === 'string') {
-            data.dateReceptionDef = new Date(data.dateReceptionDef);
-        }
+        const contrat = await this.findOne(id, organizationId);
+        if (dto.dateEcheance)
+            this.assertDates(contrat.dateSignature.toISOString(), dto.dateEcheance);
+        const data = {
+            ...this.toContratData(dto),
+            ...(dto.dateEcheance !== undefined && { dateEcheance: new Date(dto.dateEcheance) }),
+        };
         return this.prisma.contrat.update({
             where: { id },
             data,

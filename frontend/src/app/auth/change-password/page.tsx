@@ -3,12 +3,14 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
-import { authApi } from '@/lib/api';
+import { authApi, getErrorMessage } from '@/lib/api';
 import { Eye, EyeOff, Loader2, ShieldCheck } from 'lucide-react';
 
 export default function ChangePasswordPage() {
   const { user, logout } = useAuth();
   const router = useRouter();
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [showCurrent, setShowCurrent] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [showNew, setShowNew] = useState(false);
@@ -23,23 +25,34 @@ export default function ChangePasswordPage() {
       setError('Le mot de passe doit contenir au moins 8 caractères.');
       return;
     }
+    if (!/[a-z]/.test(newPassword) || !/[A-Z]/.test(newPassword) || !/\d/.test(newPassword)) {
+      setError('Le mot de passe doit contenir une majuscule, une minuscule et un chiffre.');
+      return;
+    }
+    if (newPassword === currentPassword) {
+      setError('Le nouveau mot de passe doit être différent de l\'actuel.');
+      return;
+    }
     if (newPassword !== confirm) {
       setError('Les mots de passe ne correspondent pas.');
       return;
     }
     setLoading(true);
     try {
-      await authApi.changePassword(newPassword);
+      await authApi.changePassword(currentPassword, newPassword);
       // Mettre à jour l'user en localStorage
-      const stored = localStorage.getItem('user');
-      if (stored) {
-        const u = JSON.parse(stored);
-        localStorage.setItem('user', JSON.stringify({ ...u, mustChangePassword: false }));
+      try {
+        const stored = localStorage.getItem('user');
+        if (stored) {
+          localStorage.setItem('user', JSON.stringify({ ...JSON.parse(stored), mustChangePassword: false }));
+        }
+      } catch {
+        /* stockage indisponible : l'état sera relu depuis /auth/me */
       }
       const dest = user?.role?.name === 'Super administrateur' ? '/super-admin' : '/dashboard';
       router.replace(dest);
-    } catch {
-      setError('Une erreur est survenue. Veuillez réessayer.');
+    } catch (err) {
+      setError(getErrorMessage(err, 'Une erreur est survenue. Veuillez réessayer.'));
     } finally {
       setLoading(false);
     }
@@ -105,7 +118,34 @@ export default function ChangePasswordPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-[12px] font-semibold text-slate-900 mb-1.5">
+                <label htmlFor="current-password" className="block text-[12px] font-semibold text-slate-900 mb-1.5">
+                  Mot de passe actuel (ou provisoire)
+                </label>
+                <div className="relative">
+                  <input
+                    id="current-password"
+                    type={showCurrent ? 'text' : 'password'}
+                    value={currentPassword}
+                    onChange={e => setCurrentPassword(e.target.value)}
+                    required
+                    autoFocus
+                    autoComplete="current-password"
+                    className="w-full h-11 px-4 pr-11 rounded-xl border border-slate-200 bg-white text-[13px] text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20 focus:border-[#2563eb] transition-all"
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrent(v => !v)}
+                    aria-label={showCurrent ? 'Masquer le mot de passe actuel' : 'Afficher le mot de passe actuel'}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors cursor-pointer"
+                  >
+                    {showCurrent ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="new-password" className="block text-[12px] font-semibold text-slate-900 mb-1.5">
                   Nouveau mot de passe
                 </label>
                 <div className="relative">
@@ -115,14 +155,14 @@ export default function ChangePasswordPage() {
                     value={newPassword}
                     onChange={e => setNewPassword(e.target.value)}
                     required
-                    autoFocus
+                    autoComplete="new-password"
                     className="w-full h-11 px-4 pr-11 rounded-xl border border-slate-200 bg-white text-[13px] text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20 focus:border-[#2563eb] transition-all"
                     placeholder="••••••••"
                   />
                   <button
                     type="button"
                     onClick={() => setShowNew(v => !v)}
-                    aria-label={showNew ? 'Masquer' : 'Afficher'}
+                    aria-label={showNew ? 'Masquer le nouveau mot de passe' : 'Afficher le nouveau mot de passe'}
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors cursor-pointer"
                   >
                     {showNew ? <EyeOff size={15} /> : <Eye size={15} />}
@@ -131,7 +171,7 @@ export default function ChangePasswordPage() {
               </div>
 
               <div>
-                <label className="block text-[12px] font-semibold text-slate-900 mb-1.5">
+                <label htmlFor="confirm-password" className="block text-[12px] font-semibold text-slate-900 mb-1.5">
                   Confirmer le mot de passe
                 </label>
                 <div className="relative">
@@ -141,13 +181,14 @@ export default function ChangePasswordPage() {
                     value={confirm}
                     onChange={e => setConfirm(e.target.value)}
                     required
+                    autoComplete="new-password"
                     className="w-full h-11 px-4 pr-11 rounded-xl border border-slate-200 bg-white text-[13px] text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#2563eb]/20 focus:border-[#2563eb] transition-all"
                     placeholder="••••••••"
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirm(v => !v)}
-                    aria-label={showConfirm ? 'Masquer' : 'Afficher'}
+                    aria-label={showConfirm ? 'Masquer la confirmation' : 'Afficher la confirmation'}
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors cursor-pointer"
                   >
                     {showConfirm ? <EyeOff size={15} /> : <Eye size={15} />}

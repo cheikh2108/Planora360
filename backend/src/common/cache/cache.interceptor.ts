@@ -3,19 +3,24 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
+import { CacheInvalidationService } from './cache-invalidation.service';
 
 /**
  * Intercepteur de cache intelligent
  * Usage: @UseInterceptors(CacheInterceptor)
  *
  * Stratégie:
- * - Cache basé sur: userId + organizationId + URL + query params
+ * - Cache basé sur: organizationId + version du cache de l'organisation + userId + URL + query params
+ * - La version change après chaque mutation de l'organisation (CacheVersionInterceptor)
  * - Ignore les mutations (POST, PUT, PATCH, DELETE)
  * - TTL configurable par endpoint
  */
 @Injectable()
 export class HttpCacheInterceptor implements NestInterceptor {
-  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}
+  constructor(
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private readonly cacheInvalidation: CacheInvalidationService,
+  ) {}
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
     const request = context.switchToHttp().getRequest();
@@ -27,16 +32,17 @@ export class HttpCacheInterceptor implements NestInterceptor {
     }
 
     // Construire la clé de cache
-    const cacheKey = this.buildCacheKey(request);
+    const orgId = request.user?.organizationId;
+    // Sans organisation (super admin, anonyme), pas de cache : rien ne pourrait l'invalider
+    if (!orgId) return next.handle();
+    const version = await this.cacheInvalidation.getVersion(orgId);
+    const cacheKey = this.buildCacheKey(request, version);
 
     // Vérifier le cache
     const cachedResponse = await this.cacheManager.get(cacheKey);
-    if (cachedResponse) {
-      console.log(`🎯 Cache HIT: ${cacheKey}`);
+    if (cachedResponse !== undefined && cachedResponse !== null) {
       return of(cachedResponse);
     }
-
-    console.log(`💾 Cache MISS: ${cacheKey}`);
 
     // Exécuter la requête et la mettre en cache
     return next.handle().pipe(
@@ -51,17 +57,17 @@ export class HttpCacheInterceptor implements NestInterceptor {
   /**
    * Construit une clé de cache unique basée sur:
    * - L'utilisateur (userId)
-   * - L'organisation (organizationId)
+   * - L'organisation (organizationId) et sa version de cache
    * - L'URL
    * - Les query params
    */
-  private buildCacheKey(request: any): string {
+  private buildCacheKey(request: any, version: string): string {
     const userId = request.user?.id || 'anonymous';
-    const orgId = request.user?.organizationId || 'no-org';
+    const orgId = request.user?.organizationId;
     const url = request.url.split('?')[0]; // URL sans query params
     const queryParams = JSON.stringify(request.query || {});
 
-    return `cache:${orgId}:${userId}:${url}:${queryParams}`;
+    return `cache:${orgId}:v${version}:${userId}:${url}:${queryParams}`;
   }
 
   /**

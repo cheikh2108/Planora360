@@ -1,5 +1,6 @@
 'use client';
 
+import { sanitizeHtml } from '@/lib/sanitize';
 import { Search, Zap, ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 import { HELP_CONTENT } from '@/lib/help-content';
@@ -174,7 +175,7 @@ export default function HelpCenterPage() {
                             </h3>
                             <div
                               className="prose prose-sm prose-slate max-w-none text-slate-600"
-                              dangerouslySetInnerHTML={{ __html: article.content }}
+                              dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content) }}
                             />
                           </div>
                         </div>

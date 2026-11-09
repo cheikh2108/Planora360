@@ -4,6 +4,7 @@ export declare class ValidationWorkflowService {
     private readonly prisma;
     constructor(prisma: PrismaService);
     createWorkflow(config: WorkflowConfig): Promise<WorkflowResult>;
+    private findValidator;
     private getHierarchicalValidator;
     private getTechnicalValidator;
     private getAdministrativeValidator;

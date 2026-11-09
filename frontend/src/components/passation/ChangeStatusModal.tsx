@@ -27,6 +27,15 @@ const STATUS_OPTIONS: { value: StatusProcedure; label: string }[] = [
   { value: 'ANNULEE', label: 'Annulée' },
 ];
 
+/** Circuit de passation : transitions acceptées par le backend (PROCEDURE_TRANSITIONS). */
+const TRANSITIONS: Partial<Record<StatusProcedure, StatusProcedure[]>> = {
+  BROUILLON: ['PUBLIEE', 'ANNULEE'],
+  PUBLIEE: ['EN_COURS', 'CLOTUREE_OFFRES', 'ANNULEE'],
+  EN_COURS: ['CLOTUREE_OFFRES', 'ANNULEE'],
+  CLOTUREE_OFFRES: ['EVALUATION', 'INFRUCTUEUSE', 'ANNULEE'],
+  EVALUATION: ['ATTRIBUEE', 'INFRUCTUEUSE', 'ANNULEE'],
+};
+
 export function ChangeStatusModal({
   open,
   onClose,
@@ -35,7 +44,9 @@ export function ChangeStatusModal({
 }: ChangeStatusModalProps) {
   const { success, error } = useToast();
   const queryClient = useQueryClient();
-  const [newStatus, setNewStatus] = useState<StatusProcedure>(currentStatus);
+  const nextStatuses = TRANSITIONS[currentStatus] ?? [];
+  const options = STATUS_OPTIONS.filter((o) => nextStatuses.includes(o.value));
+  const [newStatus, setNewStatus] = useState<StatusProcedure | ''>(options[0]?.value ?? '');
 
   const changeMutation = useMutation({
     mutationFn: async (status: StatusProcedure) => {
@@ -54,7 +65,7 @@ export function ChangeStatusModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (newStatus === currentStatus) {
+    if (!newStatus || newStatus === currentStatus) {
       error('Veuillez sélectionner un nouveau statut');
       return;
     }
@@ -77,30 +88,31 @@ export function ChangeStatusModal({
           </div>
         </FormField>
 
-        <FormField label="Nouveau statut" required>
-          <Select
-            value={newStatus}
-            onChange={(e) => setNewStatus(e.target.value as StatusProcedure)}
-            required
-          >
-            {STATUS_OPTIONS.map((status) => (
-              <option
-                key={status.value}
-                value={status.value}
-                disabled={status.value === currentStatus}
-              >
-                {status.label}
-                {status.value === currentStatus && ' (actuel)'}
-              </option>
-            ))}
-          </Select>
-        </FormField>
+        {options.length === 0 ? (
+          <p className="text-sm text-slate-600">
+            Ce statut est final : la procédure ne peut plus changer de statut.
+          </p>
+        ) : (
+          <FormField label="Nouveau statut" required>
+            <Select
+              value={newStatus}
+              onChange={(e) => setNewStatus(e.target.value as StatusProcedure)}
+              required
+            >
+              {options.map((status) => (
+                <option key={status.value} value={status.value}>
+                  {status.label}
+                </option>
+              ))}
+            </Select>
+          </FormField>
+        )}
 
         <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">
           <Button type="button" variant="secondary" onClick={onClose}>
             Annuler
           </Button>
-          <Button type="submit" disabled={changeMutation.isPending}>
+          <Button type="submit" disabled={changeMutation.isPending || options.length === 0}>
             {changeMutation.isPending ? 'Modification...' : 'Changer le statut'}
           </Button>
         </div>

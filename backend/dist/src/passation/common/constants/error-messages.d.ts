@@ -16,8 +16,9 @@ export declare const ERROR_MESSAGES: {
     };
     readonly VALIDATOR: {
         readonly USER_NOT_FOUND: (userId: string) => string;
-        readonly NO_TECHNICAL_VALIDATOR: (orgId: string) => string;
-        readonly NO_ADMINISTRATIVE_VALIDATOR: (orgId: string) => string;
+        readonly NO_HIERARCHICAL_VALIDATOR: "Aucun validateur hiérarchique disponible : ajoutez un membre ayant le droit de valider (autre que le demandeur)";
+        readonly NO_TECHNICAL_VALIDATOR: "Aucun validateur technique disponible : ajoutez un membre ayant le droit de valider (autre que le demandeur)";
+        readonly NO_ADMINISTRATIVE_VALIDATOR: "Aucun validateur administratif disponible : ajoutez un membre ayant le droit de valider (autre que le demandeur)";
     };
     readonly PROCEDURE: {
         readonly NOT_FOUND: "Procédure introuvable";

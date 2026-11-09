@@ -17,6 +17,7 @@ exports.DexpayService = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const axios_1 = __importDefault(require("axios"));
+const crypto_1 = require("crypto");
 let DexpayService = DexpayService_1 = class DexpayService {
     config;
     logger = new common_1.Logger(DexpayService_1.name);
@@ -116,33 +117,24 @@ let DexpayService = DexpayService_1 = class DexpayService {
             throw error;
         }
     }
-    verifyWebhookSignature(signature, payload) {
+    verifyWebhookSignature(signature, rawBody) {
         if (!this.secretKey) {
-            this.logger.warn('⚠️ Secret key non configurée - Signature non vérifiée');
-            return true;
-        }
-        if (!signature) {
-            this.logger.error('❌ Aucune signature fournie dans le header x-dexchange-signature');
+            this.logger.error('❌ DEXPAY_SECRET_KEY non configurée : webhook refusé');
             return false;
         }
-        try {
-            const crypto = require('crypto');
-            const computedSignature = crypto
-                .createHmac('sha256', this.secretKey)
-                .update(JSON.stringify(payload))
-                .digest('hex');
-            const isValid = computedSignature === signature;
-            if (!isValid) {
-                this.logger.error('❌ Signature webhook invalide');
-                this.logger.debug(`Expected: ${computedSignature}`);
-                this.logger.debug(`Received: ${signature}`);
-            }
-            return isValid;
-        }
-        catch (error) {
-            this.logger.error(`❌ Erreur vérification signature: ${error.message}`);
+        if (!signature || !rawBody) {
+            this.logger.error('❌ Webhook sans signature ou sans corps');
             return false;
         }
+        const expected = (0, crypto_1.createHmac)('sha256', this.secretKey).update(rawBody).digest('hex');
+        const received = signature.trim().replace(/^sha256=/i, '');
+        const a = Buffer.from(expected, 'utf8');
+        const b = Buffer.from(received, 'utf8');
+        const isValid = a.length === b.length && (0, crypto_1.timingSafeEqual)(a, b);
+        if (!isValid) {
+            this.logger.error('❌ Signature webhook invalide');
+        }
+        return isValid;
     }
     getPlanPrice(plan, billingCycle = 'MONTHLY') {
         if (plan !== 'INDIVIDUEL') {

@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
+import { ROLE_ADMIN } from '../../../common/constants/auth.constants';
 import { PrismaService } from '../../../common/prisma/prisma.service';
 import {
   ValidationStep,
@@ -47,7 +48,7 @@ export class ValidationWorkflowService {
     const steps: ValidationStep[] = [];
 
     // Toujours commencer par la validation hiérarchique
-    const hierarchicalValidator = await this.getHierarchicalValidator(requesterId);
+    const hierarchicalValidator = await this.getHierarchicalValidator(organizationId, requesterId);
     steps.push({
       etape: VALIDATION_STEPS.HIERARCHICAL,
       ordre: VALIDATION_ORDER.HIERARCHICAL,
@@ -56,7 +57,7 @@ export class ValidationWorkflowService {
 
     // Ajouter validation technique si montant >= 5000
     if (amount >= VALIDATION_THRESHOLDS.TECHNICAL_VALIDATION) {
-      const technicalValidator = await this.getTechnicalValidator(organizationId);
+      const technicalValidator = await this.getTechnicalValidator(organizationId, requesterId);
       steps.push({
         etape: VALIDATION_STEPS.TECHNICAL,
         ordre: VALIDATION_ORDER.TECHNICAL,
@@ -66,7 +67,7 @@ export class ValidationWorkflowService {
 
     // Ajouter validation administrative si montant >= 50000
     if (amount >= VALIDATION_THRESHOLDS.ADMINISTRATIVE_VALIDATION) {
-      const administrativeValidator = await this.getAdministrativeValidator(organizationId);
+      const administrativeValidator = await this.getAdministrativeValidator(organizationId, requesterId);
       steps.push({
         etape: VALIDATION_STEPS.ADMINISTRATIVE,
         ordre: VALIDATION_ORDER.ADMINISTRATIVE,
@@ -88,86 +89,65 @@ export class ValidationWorkflowService {
   }
 
   /**
-   * Récupère le validateur hiérarchique d'un utilisateur
-   *
-   * @param userId ID de l'utilisateur demandeur
-   * @returns ID du supérieur hiérarchique
-   *
-   * @todo Implémenter la vraie logique hiérarchique via un champ managerId
+   * Choisit le validateur d'une étape : membre actif de l'organisation, différent du demandeur
+   * (pas d'auto-validation), dont le rôle accorde `validation.approve`. Les rôles sont essayés
+   * dans l'ordre de préférence de l'étape.
    */
-  private async getHierarchicalValidator(userId: string): Promise<string> {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { organizationId: true },
+  private async findValidator(
+    organizationId: string,
+    requesterId: string,
+    preferredRoles: string[],
+    notFoundMessage: string,
+  ): Promise<string> {
+    const candidates = await this.prisma.user.findMany({
+      where: { organizationId, isActive: true, deletedAt: null, id: { not: requesterId } },
+      select: { id: true, role: { select: { name: true, organizationId: true, permissions: true } } },
+      orderBy: { createdAt: 'asc' },
     });
 
-    if (!user) {
-      throw new NotFoundException(ERROR_MESSAGES.VALIDATOR.USER_NOT_FOUND(userId));
+    const canApprove = (c: (typeof candidates)[number]) => {
+      const perms = Array.isArray(c.role?.permissions) ? (c.role.permissions as string[]) : [];
+      return perms.includes('validation.approve') || perms.includes('*');
+    };
+    const eligible = candidates.filter(canApprove);
+
+    for (const roleName of preferredRoles) {
+      const match = eligible.find((c) => c.role?.organizationId === null && c.role.name === roleName);
+      if (match) return match.id;
     }
+    if (eligible[0]) return eligible[0].id;
 
-    // TODO: Récupérer le vrai supérieur hiérarchique via user.managerId
-    // Pour l'instant, retourner un admin de l'organisation
-    const admin = await this.prisma.user.findFirst({
-      where: {
-        organizationId: user.organizationId,
-        role: { name: 'Admin' },
-      },
-    });
-
-    // Si aucun admin, retourner l'utilisateur lui-même (cas edge)
-    return admin?.id || userId;
+    throw new BadRequestException(notFoundMessage);
   }
 
-  /**
-   * Récupère le validateur technique de l'organisation
-   *
-   * @param organizationId ID de l'organisation
-   * @returns ID du validateur technique
-   *
-   * @todo Implémenter recherche par permission spécifique
-   */
-  private async getTechnicalValidator(organizationId: string): Promise<string> {
-    // TODO: Rechercher utilisateur avec permission 'passation:demandes:validate:technique'
-    const validator = await this.prisma.user.findFirst({
-      where: {
-        organizationId,
-        role: { name: 'Admin' },
-      },
-    });
-
-    if (!validator) {
-      throw new NotFoundException(
-        ERROR_MESSAGES.VALIDATOR.NO_TECHNICAL_VALIDATOR(organizationId)
-      );
-    }
-
-    return validator.id;
+  /** Validateur hiérarchique : chef de service, à défaut coordinateur ou administrateur. */
+  private async getHierarchicalValidator(organizationId: string, requesterId: string): Promise<string> {
+    return this.findValidator(
+      organizationId,
+      requesterId,
+      ['Chef de service', 'Coordinateur', ROLE_ADMIN],
+      ERROR_MESSAGES.VALIDATOR.NO_HIERARCHICAL_VALIDATOR,
+    );
   }
 
-  /**
-   * Récupère le validateur administratif de l'organisation
-   *
-   * @param organizationId ID de l'organisation
-   * @returns ID du validateur administratif
-   *
-   * @todo Implémenter recherche par permission spécifique
-   */
-  private async getAdministrativeValidator(organizationId: string): Promise<string> {
-    // TODO: Rechercher utilisateur avec permission 'passation:demandes:validate:admin'
-    const validator = await this.prisma.user.findFirst({
-      where: {
-        organizationId,
-        role: { name: 'Admin' },
-      },
-    });
+  /** Validateur technique : responsable de projet ou validateur. */
+  private async getTechnicalValidator(organizationId: string, requesterId: string): Promise<string> {
+    return this.findValidator(
+      organizationId,
+      requesterId,
+      ['Responsable de projet', 'Validateur', 'Coordinateur', ROLE_ADMIN],
+      ERROR_MESSAGES.VALIDATOR.NO_TECHNICAL_VALIDATOR,
+    );
+  }
 
-    if (!validator) {
-      throw new NotFoundException(
-        ERROR_MESSAGES.VALIDATOR.NO_ADMINISTRATIVE_VALIDATOR(organizationId)
-      );
-    }
-
-    return validator.id;
+  /** Validateur administratif : responsable financier, à défaut administrateur. */
+  private async getAdministrativeValidator(organizationId: string, requesterId: string): Promise<string> {
+    return this.findValidator(
+      organizationId,
+      requesterId,
+      ['Responsable financier', ROLE_ADMIN],
+      ERROR_MESSAGES.VALIDATOR.NO_ADMINISTRATIVE_VALIDATOR,
+    );
   }
 
   /**

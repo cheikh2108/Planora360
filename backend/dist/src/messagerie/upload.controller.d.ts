@@ -1,28 +1,30 @@
+import { PrismaService } from '../common/prisma/prisma.service';
 import { MessagerieService } from './messagerie.service';
 import { StorageService } from '../storage/storage.service';
 export declare class UploadController {
     private readonly messagerieService;
     private readonly storageService;
-    constructor(messagerieService: MessagerieService, storageService: StorageService);
+    private readonly prisma;
+    constructor(messagerieService: MessagerieService, storageService: StorageService, prisma: PrismaService);
     uploadFiles(conversationId: string, files: Express.Multer.File[], content: string, req: any): Promise<{
         success: boolean;
         message: {
             attachments: {
                 id: string;
                 fileSize: number;
+                messageId: string;
                 fileName: string;
-                mimeType: string;
-                width: number | null;
-                uploadedAt: Date;
                 fileUrl: string;
+                mimeType: string;
                 thumbnailUrl: string | null;
+                width: number | null;
                 height: number | null;
                 duration: number | null;
-                messageId: string;
+                uploadedAt: Date;
             }[];
             author: {
-                id: string;
                 email: string;
+                id: string;
                 firstName: string;
                 lastName: string;
             };
@@ -44,15 +46,15 @@ export declare class UploadController {
                 notified: boolean;
             }[];
         } & {
+            deletedAt: Date | null;
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            deletedAt: Date | null;
             parentId: string | null;
             metadata: import("@prisma/client/runtime/client").JsonValue | null;
-            authorId: string;
             content: string;
             conversationId: string;
+            authorId: string;
             contentType: import(".prisma/client").$Enums.MessageContentType;
             isEdited: boolean;
             editedAt: Date | null;

@@ -1,5 +1,6 @@
 'use client';
 
+import { sanitizeHtml } from '@/lib/sanitize';
 import { X, Loader2, AlertCircle, Zap } from 'lucide-react';
 import { useHelp } from '@/contexts/help-context';
 import { getHelpForPage } from '@/lib/help-content';
@@ -290,7 +291,7 @@ function ArticlesList({ articles }: { articles: any[] }) {
 
             <div
               className="prose-help-custom text-white/60 text-sm leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: article.content }}
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content) }}
             />
           </div>
         </motion.article>

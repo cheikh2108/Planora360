@@ -33,6 +33,7 @@ import {
 import { cn } from '@/lib/utils';
 import axios from 'axios';
 import api from '@/lib/api';
+import { resolveFileUrl } from '@/lib/files';
 
 export default function ConversationPage() {
   const params = useParams();
@@ -412,7 +413,7 @@ export default function ConversationPage() {
                           {message.attachments.map((attachment) => {
                             const isImage = attachment.mimeType.startsWith('image/');
                             // Utiliser URL relative pour que le proxy Next.js redirige vers le backend
-                            const fileUrl = attachment.fileUrl;
+                            const fileUrl = resolveFileUrl(attachment.fileUrl);
 
                             return (
                               <div key={attachment.id} className="rounded-lg overflow-hidden bg-slate-50 dark:bg-slate-800">

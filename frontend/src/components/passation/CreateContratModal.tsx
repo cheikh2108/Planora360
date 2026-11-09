@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { contratsApi, proceduresApi, fournisseursApi } from '@/lib/api';
+import { contratsApi, proceduresApi, fournisseursApi, soumissionsApi } from '@/lib/api';
 import { Modal } from '@/components/ui/modal';
 import { Button } from '@/components/ui/button';
 import { FormField, Input, Select } from '@/components/ui/form-field';
@@ -32,10 +32,8 @@ export function CreateContratModal({ open, onClose, onSuccess }: CreateContratMo
       // Récupérer toutes les procédures qui peuvent avoir un contrat
       const res = await proceduresApi.getAll();
       const allProcedures = Array.isArray(res.data) ? res.data : [];
-      // Filtrer pour garder seulement celles qui sont éligibles pour un contrat
-      return allProcedures.filter((p: any) =>
-        ['EN_COURS', 'CLOTUREE_OFFRES', 'EVALUATION', 'ATTRIBUEE'].includes(p.status)
-      );
+      // Mêmes statuts que ceux acceptés par le backend pour créer un contrat
+      return allProcedures.filter((p: any) => ['CLOTUREE_OFFRES', 'ATTRIBUEE'].includes(p.status));
     },
     enabled: open,
   });
@@ -49,29 +47,39 @@ export function CreateContratModal({ open, onClose, onSuccess }: CreateContratMo
     enabled: open,
   });
 
-  const createMutation = useMutation({
-    mutationFn: (data: any) => {
-      // Trouver la soumission gagnante de la procédure (optionnel)
-      const procedure = procedures?.find((p: any) => p.id === data.procedureId);
-      const soumissionId = procedure?.contrat?.soumissionId || procedure?.soumissions?.[0]?.id;
+  // Offres déposées pour la procédure choisie : le contrat est rattaché à l'offre du fournisseur
+  const { data: soumissions } = useQuery({
+    queryKey: ['soumissions', formData.procedureId],
+    queryFn: async () => {
+      const res = await soumissionsApi.getAll(formData.procedureId);
+      return Array.isArray(res.data) ? res.data : [];
+    },
+    enabled: open && !!formData.procedureId,
+  });
 
-      const payload: any = {
+  // S'il y a des offres, seuls leurs fournisseurs sont proposés
+  const soumissionnaires = new Set((soumissions ?? []).map((s: any) => s.fournisseurId));
+  const fournisseurOptions = soumissionnaires.size
+    ? (fournisseurs ?? []).filter((f: any) => soumissionnaires.has(f.id))
+    : (fournisseurs ?? []);
+
+  const [dateError, setDateError] = useState('');
+
+  const createMutation = useMutation({
+    mutationFn: (data: typeof formData) => {
+      const offres = (soumissions ?? []).filter((s: any) => s.fournisseurId === data.fournisseurId);
+      const offre = offres.find((s: any) => ['RETENUE', 'ATTRIBUEE'].includes(s.status)) ?? offres[0];
+
+      // Le montant payé et le statut ne se fixent pas ici : ils suivent la vie du contrat
+      return contratsApi.create({
         procedureId: data.procedureId,
         fournisseurId: data.fournisseurId,
         montantInitial: parseFloat(data.montantInitial),
-        montantPaye: 0,
         devise: data.devise,
         dateSignature: data.dateSignature,
         dateEcheance: data.dateEcheance,
-        status: 'SIGNE',
-      };
-
-      // Ajouter soumissionId seulement s'il existe
-      if (soumissionId) {
-        payload.soumissionId = soumissionId;
-      }
-
-      return contratsApi.create(payload);
+        ...(offre && { soumissionId: offre.id }),
+      });
     },
     onSuccess: (res) => {
       success('Contrat créé avec succès');
@@ -94,6 +102,11 @@ export function CreateContratModal({ open, onClose, onSuccess }: CreateContratMo
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (formData.dateEcheance <= formData.dateSignature) {
+      setDateError('La date d\'échéance doit être postérieure à la date de signature.');
+      return;
+    }
+    setDateError('');
     createMutation.mutate(formData);
   };
 
@@ -106,7 +119,7 @@ export function CreateContratModal({ open, onClose, onSuccess }: CreateContratMo
         >
           <Select
             value={formData.procedureId}
-            onChange={(e) => setFormData({ ...formData, procedureId: e.target.value })}
+            onChange={(e) => setFormData({ ...formData, procedureId: e.target.value, fournisseurId: '' })}
             required
             disabled={loadingProcedures}
           >
@@ -120,9 +133,7 @@ export function CreateContratModal({ open, onClose, onSuccess }: CreateContratMo
             {procedures?.map((proc: any) => {
               const statusLabel =
                 proc.status === 'ATTRIBUEE' ? 'Attribuée' :
-                proc.status === 'CLOTUREE_OFFRES' ? 'Clôturée' :
-                proc.status === 'EVALUATION' ? 'Évaluation' :
-                proc.status === 'EN_COURS' ? 'En cours' : proc.status;
+                proc.status === 'CLOTUREE_OFFRES' ? 'Clôturée' : proc.status;
 
               return (
                 <option key={proc.id} value={proc.id}>
@@ -138,7 +149,7 @@ export function CreateContratModal({ open, onClose, onSuccess }: CreateContratMo
             <p className="text-sm text-amber-900">
               ℹ️ <strong>Aucune procédure éligible :</strong> Pour créer un contrat, vous devez d'abord :
               <br />
-              1. Avoir une procédure avec le statut <strong>En cours</strong>, <strong>Clôturée</strong>, <strong>Évaluation</strong> ou <strong>Attribuée</strong>
+              1. Avoir une procédure au statut <strong>Clôturée</strong> (offres closes) ou <strong>Attribuée</strong>
               <br />
               2. Vous pouvez changer le statut d'une procédure depuis sa page de détail
             </p>
@@ -152,7 +163,7 @@ export function CreateContratModal({ open, onClose, onSuccess }: CreateContratMo
             required
           >
             <option value="">-- Sélectionner un fournisseur --</option>
-            {fournisseurs?.map((f: any) => (
+            {fournisseurOptions.map((f: any) => (
               <option key={f.id} value={f.id}>
                 {f.raisonSociale}
               </option>
@@ -203,6 +214,10 @@ export function CreateContratModal({ open, onClose, onSuccess }: CreateContratMo
             />
           </FormField>
         </div>
+
+        {dateError && (
+          <p role="alert" className="text-sm text-red-600">{dateError}</p>
+        )}
 
         <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">
           <Button type="button" variant="secondary" onClick={onClose}>

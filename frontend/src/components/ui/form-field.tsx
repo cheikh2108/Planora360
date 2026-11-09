@@ -1,3 +1,4 @@
+import { cloneElement, isValidElement, useId } from 'react';
 import { cn } from '@/lib/utils';
 
 interface FieldProps {
@@ -9,16 +10,34 @@ interface FieldProps {
   className?: string;
 }
 
+/**
+ * Champ de formulaire : le libellé est relié au contrôle (htmlFor/id) et le message d'erreur ou
+ * d'aide lui est associé (aria-describedby), pour les lecteurs d'écran et les clics sur le libellé.
+ */
 export function FormField({ label, error, required, hint, children, className }: FieldProps) {
+  const autoId = useId();
+  const single = isValidElement<Record<string, unknown>>(children) ? children : null;
+  const controlId = (single?.props.id as string | undefined) ?? autoId;
+  const messageId = `${controlId}-message`;
+  const message = error ?? hint;
+
+  const control = single
+    ? cloneElement(single, {
+        id: controlId,
+        ...(message && { 'aria-describedby': messageId }),
+        ...(error && { 'aria-invalid': true }),
+      })
+    : children;
+
   return (
     <div className={cn('space-y-1.5', className)}>
-      <label className="block text-sm font-medium text-slate-700">
+      <label htmlFor={single ? controlId : undefined} className="block text-sm font-medium text-slate-700">
         {label}
-        {required && <span className="text-red-500 ml-0.5">*</span>}
+        {required && <span className="text-red-500 ml-0.5" aria-hidden="true">*</span>}
       </label>
-      {children}
-      {hint && !error && <p className="text-xs text-slate-500">{hint}</p>}
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {control}
+      {hint && !error && <p id={messageId} className="text-xs text-slate-500">{hint}</p>}
+      {error && <p id={messageId} role="alert" className="text-xs text-red-600">{error}</p>}
     </div>
   );
 }

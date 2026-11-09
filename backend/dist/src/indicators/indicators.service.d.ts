@@ -11,9 +11,9 @@ export declare class IndicatorsService {
         } | null;
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         activityId: string | null;
         title: string;
         dueDate: Date | null;
@@ -30,9 +30,9 @@ export declare class IndicatorsService {
             } | null;
         } & {
             id: string;
-            organizationId: string;
             createdAt: Date;
             updatedAt: Date;
+            organizationId: string;
             activityId: string | null;
             title: string;
             dueDate: Date | null;
@@ -52,9 +52,9 @@ export declare class IndicatorsService {
         } | null;
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         activityId: string | null;
         title: string;
         dueDate: Date | null;
@@ -70,9 +70,9 @@ export declare class IndicatorsService {
         } | null;
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         activityId: string | null;
         title: string;
         dueDate: Date | null;
@@ -83,9 +83,9 @@ export declare class IndicatorsService {
     }>;
     remove(id: string, organizationId: string): Promise<{
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         activityId: string | null;
         title: string;
         dueDate: Date | null;

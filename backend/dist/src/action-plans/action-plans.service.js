@@ -23,6 +23,7 @@ let ActionPlansService = class ActionPlansService {
     }
     async create(dto, organizationId, userId) {
         const { axes, zoneIds, ...planData } = dto;
+        this.assertPeriod(dto.periodStart, dto.periodEnd);
         const organization = await this.prisma.organization.findUnique({
             where: { id: organizationId },
             select: { subscriptionPlan: true },
@@ -69,6 +70,11 @@ let ActionPlansService = class ActionPlansService {
         this.posthog.trackActionPlanCreated(userId, plan.id, organizationId);
         return plan;
     }
+    assertPeriod(start, end) {
+        if (new Date(end) <= new Date(start)) {
+            throw new common_1.BadRequestException('La date de fin doit être postérieure à la date de début');
+        }
+    }
     async validateZones(zoneIds, organizationId) {
         const zones = await this.prisma.geographicZone.findMany({
             where: { id: { in: zoneIds }, organizationId },
@@ -79,65 +85,121 @@ let ActionPlansService = class ActionPlansService {
     }
     async findAll(organizationId, page = 1, limit = 10) {
         const where = { organizationId };
-        const [data, total] = await Promise.all([
-            this.prisma.actionPlan.findMany({
-                where,
-                orderBy: { createdAt: 'desc' },
-                skip: (page - 1) * limit,
-                take: limit,
+        try {
+            const [data, total] = await Promise.all([
+                this.prisma.actionPlan.findMany({
+                    where,
+                    orderBy: { createdAt: 'desc' },
+                    skip: (page - 1) * limit,
+                    take: limit,
+                    include: {
+                        axes: {
+                            orderBy: { order: 'asc' },
+                            include: { _count: { select: { activities: true } } },
+                        },
+                        zones: {
+                            include: {
+                                zone: { select: { id: true, name: true, code: true, level: true } },
+                            },
+                        },
+                        _count: { select: { axes: true } },
+                    },
+                }),
+                this.prisma.actionPlan.count({ where }),
+            ]);
+            return { data, total, page, limit };
+        }
+        catch (error) {
+            console.warn('Zones table not available, falling back to basic query:', error.message);
+            const [data, total] = await Promise.all([
+                this.prisma.actionPlan.findMany({
+                    where,
+                    orderBy: { createdAt: 'desc' },
+                    skip: (page - 1) * limit,
+                    take: limit,
+                    include: {
+                        axes: {
+                            orderBy: { order: 'asc' },
+                            include: { _count: { select: { activities: true } } },
+                        },
+                        _count: { select: { axes: true } },
+                    },
+                }),
+                this.prisma.actionPlan.count({ where }),
+            ]);
+            return { data, total, page, limit };
+        }
+    }
+    async findOne(id, organizationId) {
+        try {
+            const plan = await this.prisma.actionPlan.findFirst({
+                where: { id, organizationId },
                 include: {
                     axes: {
                         orderBy: { order: 'asc' },
-                        include: { _count: { select: { activities: true } } },
+                        include: {
+                            activities: {
+                                where: { parentActivityId: null },
+                                orderBy: { createdAt: 'asc' },
+                                include: {
+                                    responsible: { select: { id: true, firstName: true, lastName: true, email: true } },
+                                    _count: { select: { checklistItems: true, subActivities: true } },
+                                },
+                            },
+                        },
                     },
                     zones: {
                         include: {
                             zone: { select: { id: true, name: true, code: true, level: true } },
                         },
                     },
-                    _count: { select: { axes: true } },
                 },
-            }),
-            this.prisma.actionPlan.count({ where }),
-        ]);
-        return { data, total, page, limit };
-    }
-    async findOne(id, organizationId) {
-        const plan = await this.prisma.actionPlan.findFirst({
-            where: { id, organizationId },
-            include: {
-                axes: {
-                    orderBy: { order: 'asc' },
-                    include: {
-                        activities: {
-                            where: { parentActivityId: null },
-                            orderBy: { createdAt: 'asc' },
-                            include: {
-                                responsible: { select: { id: true, firstName: true, lastName: true, email: true } },
-                                _count: { select: { checklistItems: true, subActivities: true } },
+            });
+            if (!plan)
+                throw new common_1.NotFoundException('Plan d\'action introuvable');
+            return plan;
+        }
+        catch (error) {
+            if (error instanceof common_1.NotFoundException)
+                throw error;
+            console.warn('Zones table not available in findOne, falling back:', error.message);
+            const plan = await this.prisma.actionPlan.findFirst({
+                where: { id, organizationId },
+                include: {
+                    axes: {
+                        orderBy: { order: 'asc' },
+                        include: {
+                            activities: {
+                                where: { parentActivityId: null },
+                                orderBy: { createdAt: 'asc' },
+                                include: {
+                                    responsible: { select: { id: true, firstName: true, lastName: true, email: true } },
+                                    _count: { select: { checklistItems: true, subActivities: true } },
+                                },
                             },
                         },
                     },
                 },
-                zones: {
-                    include: {
-                        zone: { select: { id: true, name: true, code: true, level: true } },
-                    },
-                },
-            },
-        });
-        if (!plan)
-            throw new common_1.NotFoundException('Plan d\'action introuvable');
-        return plan;
+            });
+            if (!plan)
+                throw new common_1.NotFoundException('Plan d\'action introuvable');
+            return plan;
+        }
     }
     async update(id, dto, organizationId) {
-        await this.findOne(id, organizationId);
-        const { axes, ...planData } = dto;
+        const plan = await this.findOne(id, organizationId);
+        const { axes, zoneIds, ...planData } = dto;
+        this.assertPeriod(dto.periodStart ?? plan.periodStart.toISOString(), dto.periodEnd ?? plan.periodEnd.toISOString());
+        if (zoneIds?.length)
+            await this.validateZones(zoneIds, organizationId);
         const data = { ...planData };
         if (dto.periodStart)
             data.periodStart = new Date(dto.periodStart);
         if (dto.periodEnd)
             data.periodEnd = new Date(dto.periodEnd);
+        if (zoneIds !== undefined) {
+            data.zones = { deleteMany: {}, create: zoneIds.map((zoneId) => ({ zoneId })) };
+        }
         return this.prisma.actionPlan.update({
             where: { id },
             data,

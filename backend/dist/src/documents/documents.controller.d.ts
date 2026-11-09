@@ -8,10 +8,10 @@ export declare class DocumentsController {
         activityId: string | null;
         fileSize: number | null;
         type: string;
-        checklistItemId: string | null;
-        storageKey: string;
         fileName: string;
         mimeType: string | null;
+        checklistItemId: string | null;
+        storageKey: string;
         uploadedById: string;
     }>;
     findByActivity(activityId: string, user: any): Promise<{
@@ -20,10 +20,10 @@ export declare class DocumentsController {
         activityId: string | null;
         fileSize: number | null;
         type: string;
-        checklistItemId: string | null;
-        storageKey: string;
         fileName: string;
         mimeType: string | null;
+        checklistItemId: string | null;
+        storageKey: string;
         uploadedById: string;
     }[]>;
     uploadToChecklist(itemId: string, file: Express.Multer.File, type: string, user: any): Promise<{
@@ -32,10 +32,10 @@ export declare class DocumentsController {
         activityId: string | null;
         fileSize: number | null;
         type: string;
-        checklistItemId: string | null;
-        storageKey: string;
         fileName: string;
         mimeType: string | null;
+        checklistItemId: string | null;
+        storageKey: string;
         uploadedById: string;
     }>;
     findByChecklistItem(itemId: string, user: any): Promise<{
@@ -44,10 +44,10 @@ export declare class DocumentsController {
         activityId: string | null;
         fileSize: number | null;
         type: string;
-        checklistItemId: string | null;
-        storageKey: string;
         fileName: string;
         mimeType: string | null;
+        checklistItemId: string | null;
+        storageKey: string;
         uploadedById: string;
     }[]>;
     getDownloadUrl(id: string, user: any): Promise<{
@@ -61,10 +61,10 @@ export declare class DocumentsController {
         activityId: string | null;
         fileSize: number | null;
         type: string;
-        checklistItemId: string | null;
-        storageKey: string;
         fileName: string;
         mimeType: string | null;
+        checklistItemId: string | null;
+        storageKey: string;
         uploadedById: string;
     }>;
 }

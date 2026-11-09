@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DocumentsService = void 0;
 const common_1 = require("@nestjs/common");
+const path_1 = require("path");
 const prisma_service_1 = require("../common/prisma/prisma.service");
 const storage_service_1 = require("../storage/storage.service");
 const posthog_service_1 = require("../analytics/posthog.service");
@@ -29,7 +30,7 @@ let DocumentsService = class DocumentsService {
         });
         if (!activity)
             throw new common_1.NotFoundException('Activité introuvable');
-        const storageKey = `${organizationId}/${activityId}/${Date.now()}-${file.originalname}`;
+        const storageKey = this.storage.buildKey(organizationId, [activityId], (0, path_1.extname)(file.originalname).slice(1));
         await this.storage.upload(storageKey, file);
         const document = await this.prisma.document.create({
             data: {
@@ -51,7 +52,7 @@ let DocumentsService = class DocumentsService {
         });
         if (!item)
             throw new common_1.NotFoundException('Tâche introuvable');
-        const storageKey = `${organizationId}/checklist/${checklistItemId}/${Date.now()}-${file.originalname}`;
+        const storageKey = this.storage.buildKey(organizationId, ['checklist', checklistItemId], (0, path_1.extname)(file.originalname).slice(1));
         await this.storage.upload(storageKey, file);
         return this.prisma.document.create({
             data: {

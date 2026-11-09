@@ -31,6 +31,7 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
     <header className="sticky top-0 z-30 h-16 bg-white border-b border-slate-200 flex items-center px-4 md:px-6 gap-3 shrink-0">
       <button
         onClick={toggle}
+        aria-label="Ouvrir le menu de navigation"
         className="lg:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors shrink-0"
       >
         <Menu size={20} />

@@ -108,6 +108,41 @@ export class MessagerieService {
     return conversation;
   }
 
+  /** Vérifie que chaque élément de contexte appartient à l'organisation ; ignore les clés inconnues. */
+  private async validateContext(
+    organizationId: string,
+    context?: { projectId?: string; activityId?: string; recommendationId?: string; procedureId?: string; contratId?: string },
+  ) {
+    if (!context || typeof context !== 'object') return {};
+    const checks: [keyof typeof context, () => Promise<number>][] = [
+      ['projectId', () => this.prisma.actionPlan.count({ where: { id: context.projectId, organizationId } })],
+      ['activityId', () => this.prisma.activity.count({ where: { id: context.activityId, organizationId } })],
+      ['recommendationId', () => this.prisma.recommendation.count({ where: { id: context.recommendationId, organizationId } })],
+      ['procedureId', () => this.prisma.procedure.count({ where: { id: context.procedureId, organizationId } })],
+      ['contratId', () => this.prisma.contrat.count({ where: { id: context.contratId, organizationId } })],
+    ];
+    const safe: Record<string, string> = {};
+    for (const [key, count] of checks) {
+      const value = context[key];
+      if (!value) continue;
+      if (typeof value !== 'string' || (await count()) === 0) {
+        throw new BadRequestException(`Contexte invalide : ${key}`);
+      }
+      safe[key] = value;
+    }
+    return safe;
+  }
+
+  /** Vrai si l'utilisateur participe (toujours) à la conversation de son organisation. */
+  async isParticipant(conversationId: string, userId: string, organizationId: string): Promise<boolean> {
+    if (!conversationId || typeof conversationId !== 'string') return false;
+    const participant = await this.prisma.conversationParticipant.findFirst({
+      where: { conversationId, userId, leftAt: null, conversation: { organizationId } },
+      select: { id: true },
+    });
+    return !!participant;
+  }
+
   /**
    * Créer une conversation
    */
@@ -125,13 +160,32 @@ export class MessagerieService {
       contratId?: string;
     },
   ) {
+    if (!Object.values(ConversationType).includes(type)) {
+      throw new BadRequestException('Type de conversation invalide');
+    }
+
+    // Les participants doivent être des utilisateurs actifs de la MÊME organisation
+    const uniqueIds = Array.from(new Set((participantIds ?? []).filter((id) => id && id !== createdById)));
+    if (uniqueIds.length) {
+      const count = await this.prisma.user.count({
+        where: { id: { in: uniqueIds }, organizationId, deletedAt: null, isActive: true },
+      });
+      if (count !== uniqueIds.length) {
+        throw new BadRequestException('Un ou plusieurs participants n\'appartiennent pas à votre organisation');
+      }
+    }
+    participantIds = uniqueIds;
+
+    // Le contexte (projet, activité, procédure...) ne peut référencer que des éléments de l'organisation
+    const safeContext = await this.validateContext(organizationId, context);
+
     return this.prisma.conversation.create({
       data: {
         organizationId,
         createdById,
         type,
         name,
-        ...context,
+        ...safeContext,
         participants: {
           create: [
             {

@@ -23,6 +23,7 @@ const filter_capitalization_dto_1 = require("./dto/filter-capitalization.dto");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
 const subscription_guard_1 = require("../common/guards/subscription.guard");
 const client_1 = require("@prisma/client");
+const write_roles_guard_1 = require("../common/guards/write-roles.guard");
 const upload = {
     storage: (0, multer_1.memoryStorage)(),
     limits: { fileSize: 10 * 1024 * 1024 }
@@ -118,6 +119,7 @@ __decorate([
 ], CapitalizationController.prototype, "deleteMedia", null);
 exports.CapitalizationController = CapitalizationController = __decorate([
     (0, common_1.Controller)('capitalization'),
+    (0, write_roles_guard_1.WriteRoles)({ roles: write_roles_guard_1.FIELD_WRITERS, permission: 'activity.update' }),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, subscription_guard_1.SubscriptionGuard),
     (0, subscription_guard_1.RequiresPlan)(client_1.SubscriptionPlan.PRO, client_1.SubscriptionPlan.EQUIPE, client_1.SubscriptionPlan.ORGANISATION, client_1.SubscriptionPlan.ENTERPRISE),
     __metadata("design:paramtypes", [capitalization_service_1.CapitalizationService])

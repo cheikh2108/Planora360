@@ -14,11 +14,14 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PlanningController = void 0;
 const common_1 = require("@nestjs/common");
+const client_1 = require("@prisma/client");
 const planning_service_1 = require("./planning.service");
 const create_annual_work_plan_dto_1 = require("./dto/create-annual-work-plan.dto");
 const update_annual_work_plan_dto_1 = require("./dto/update-annual-work-plan.dto");
 const update_results_matrix_dto_1 = require("./dto/update-results-matrix.dto");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
+const subscription_guard_1 = require("../common/guards/subscription.guard");
+const write_roles_guard_1 = require("../common/guards/write-roles.guard");
 let PlanningController = class PlanningController {
     planningService;
     constructor(planningService) {
@@ -115,7 +118,9 @@ __decorate([
 ], PlanningController.prototype, "updateResultsMatrix", null);
 exports.PlanningController = PlanningController = __decorate([
     (0, common_1.Controller)('planning'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, write_roles_guard_1.WriteRoles)({ roles: write_roles_guard_1.PLANNING_WRITERS, permission: 'plan.update' }),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, subscription_guard_1.SubscriptionGuard),
+    (0, subscription_guard_1.RequiresPlan)(client_1.SubscriptionPlan.PRO, client_1.SubscriptionPlan.EQUIPE, client_1.SubscriptionPlan.ORGANISATION, client_1.SubscriptionPlan.ENTERPRISE),
     __metadata("design:paramtypes", [planning_service_1.PlanningService])
 ], PlanningController);
 //# sourceMappingURL=planning.controller.js.map

@@ -1,12 +1,15 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { StatusContrat } from '@prisma/client';
+import { createWithReference, nextReferenceFrom } from '../../common/utils/reference';
+import { CreateContratDto } from './dto/create-contrat.dto';
+import { UpdateContratDto } from './dto/update-contrat.dto';
 
 @Injectable()
 export class ContratsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(organizationId: string, userId: string, dto: any) {
+  async create(organizationId: string, userId: string, dto: CreateContratDto) {
     // Vérifier que la procédure existe et appartient à l'organisation
     const procedure = await this.prisma.procedure.findFirst({
       where: {
@@ -53,37 +56,44 @@ export class ContratsService {
       );
     }
 
-    const count = await this.prisma.contrat.count({
-      where: { organizationId },
-    });
-    const reference = `CONT-${new Date().getFullYear()}-${String(count + 1).padStart(4, '0')}`;
+    // L'offre retenue doit appartenir à cette procédure et à ce fournisseur
+    if (dto.soumissionId) {
+      const soumission = await this.prisma.soumission.findFirst({
+        where: { id: dto.soumissionId, procedureId: dto.procedureId, fournisseurId: dto.fournisseurId },
+      });
+      if (!soumission) {
+        throw new BadRequestException('Offre introuvable pour cette procédure et ce fournisseur');
+      }
+    }
+    this.assertDates(dto.dateSignature, dto.dateEcheance);
 
-    const data: any = {
-      ...dto,
-      reference,
+    // Le montant payé et le statut ne se fixent pas à la création : ils suivent les paiements
+    // et POST /contrats/:id/status.
+    const base = {
+      ...this.toContratData(dto),
+      procedureId: dto.procedureId,
+      fournisseurId: dto.fournisseurId,
+      soumissionId: dto.soumissionId ?? null,
+      montantInitial: dto.montantInitial,
+      dateSignature: new Date(dto.dateSignature),
+      dateEcheance: new Date(dto.dateEcheance),
       organizationId,
       gestionnaire: userId,
     };
+    const prefix = `CONT-${new Date().getFullYear()}-`;
 
-    // Convertir les dates string en DateTime pour Prisma
-    if (data.dateSignature && typeof data.dateSignature === 'string') {
-      data.dateSignature = new Date(data.dateSignature);
-    }
-    if (data.dateDemarrage && typeof data.dateDemarrage === 'string') {
-      data.dateDemarrage = new Date(data.dateDemarrage);
-    }
-    if (data.dateEcheance && typeof data.dateEcheance === 'string') {
-      data.dateEcheance = new Date(data.dateEcheance);
-    }
-    if (data.dateReceptionProv && typeof data.dateReceptionProv === 'string') {
-      data.dateReceptionProv = new Date(data.dateReceptionProv);
-    }
-    if (data.dateReceptionDef && typeof data.dateReceptionDef === 'string') {
-      data.dateReceptionDef = new Date(data.dateReceptionDef);
-    }
-
-    return this.prisma.contrat.create({
-      data,
+    return createWithReference(
+      async () =>
+        nextReferenceFrom(
+          (await this.prisma.contrat.findMany({
+            where: { organizationId, reference: { startsWith: prefix } },
+            select: { reference: true },
+          })).map((c) => c.reference),
+          prefix,
+          4,
+        ),
+      (reference) => this.prisma.contrat.create({
+      data: { ...base, reference },
       include: {
         fournisseur: {
           select: {
@@ -107,7 +117,30 @@ export class ContratsService {
           },
         },
       },
-    });
+    }),
+    );
+  }
+
+  private assertDates(debut?: string, fin?: string) {
+    if (debut && fin && new Date(fin) <= new Date(debut)) {
+      throw new BadRequestException('La date d\'échéance doit être postérieure à la date de signature');
+    }
+  }
+
+  /** Champs facultatifs modifiables d'un contrat. */
+  private toContratData(dto: UpdateContratDto) {
+    const date = (v?: string) => (v ? new Date(v) : null);
+    return {
+      ...(dto.montantRevise !== undefined && { montantRevise: dto.montantRevise }),
+      ...(dto.devise !== undefined && { devise: dto.devise }),
+      ...(dto.dateDemarrage !== undefined && { dateDemarrage: date(dto.dateDemarrage) }),
+      ...(dto.dateReceptionProv !== undefined && { dateReceptionProv: date(dto.dateReceptionProv) }),
+      ...(dto.dateReceptionDef !== undefined && { dateReceptionDef: date(dto.dateReceptionDef) }),
+      ...(dto.modalitesAvance !== undefined && { modalitesAvance: dto.modalitesAvance }),
+      ...(dto.modalitesAcompte !== undefined && { modalitesAcompte: dto.modalitesAcompte }),
+      ...(dto.modalitesRetenue !== undefined && { modalitesRetenue: dto.modalitesRetenue }),
+      ...(dto.garanties !== undefined && { garanties: dto.garanties }),
+    };
   }
 
   async findAll(organizationId: string, filters?: any) {
@@ -190,27 +223,14 @@ export class ContratsService {
     return contrat;
   }
 
-  async update(id: string, organizationId: string, dto: any) {
-    await this.findOne(id, organizationId);
+  async update(id: string, organizationId: string, dto: UpdateContratDto) {
+    const contrat = await this.findOne(id, organizationId);
+    if (dto.dateEcheance) this.assertDates(contrat.dateSignature.toISOString(), dto.dateEcheance);
 
-    const data: any = { ...dto };
-
-    // Convertir les dates string en DateTime pour Prisma
-    if (data.dateSignature && typeof data.dateSignature === 'string') {
-      data.dateSignature = new Date(data.dateSignature);
-    }
-    if (data.dateDemarrage && typeof data.dateDemarrage === 'string') {
-      data.dateDemarrage = new Date(data.dateDemarrage);
-    }
-    if (data.dateEcheance && typeof data.dateEcheance === 'string') {
-      data.dateEcheance = new Date(data.dateEcheance);
-    }
-    if (data.dateReceptionProv && typeof data.dateReceptionProv === 'string') {
-      data.dateReceptionProv = new Date(data.dateReceptionProv);
-    }
-    if (data.dateReceptionDef && typeof data.dateReceptionDef === 'string') {
-      data.dateReceptionDef = new Date(data.dateReceptionDef);
-    }
+    const data = {
+      ...this.toContratData(dto),
+      ...(dto.dateEcheance !== undefined && { dateEcheance: new Date(dto.dateEcheance) }),
+    };
 
     return this.prisma.contrat.update({
       where: { id },

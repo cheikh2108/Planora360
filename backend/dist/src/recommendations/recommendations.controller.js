@@ -26,6 +26,7 @@ const subscription_guard_1 = require("../common/guards/subscription.guard");
 const client_1 = require("@prisma/client");
 const roles_decorator_1 = require("../common/decorators/roles.decorator");
 const current_user_decorator_1 = require("../common/decorators/current-user.decorator");
+const update_action_dto_1 = require("./dto/update-action.dto");
 let RecommendationsController = class RecommendationsController {
     recommendationsService;
     constructor(recommendationsService) {
@@ -174,7 +175,7 @@ __decorate([
     __param(1, (0, common_1.Body)()),
     __param(2, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object, Object]),
+    __metadata("design:paramtypes", [String, update_action_dto_1.UpdateActionDto, Object]),
     __metadata("design:returntype", void 0)
 ], RecommendationsController.prototype, "updateAction", null);
 __decorate([

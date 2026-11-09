@@ -16,8 +16,8 @@ export declare class AuditService {
         newValues?: Record<string, any> | null;
     }): import(".prisma/client").Prisma.Prisma__AuditLogClient<{
         id: string;
-        organizationId: string;
         createdAt: Date;
+        organizationId: string;
         action: string;
         entityType: string;
         entityId: string;
@@ -32,15 +32,15 @@ export declare class AuditService {
     findByOrganization(organizationId: string, limit?: number, page?: number): Promise<{
         entries: ({
             user: {
-                id: string;
                 email: string;
+                id: string;
                 firstName: string;
                 lastName: string;
             };
         } & {
             id: string;
-            organizationId: string;
             createdAt: Date;
+            organizationId: string;
             action: string;
             entityType: string;
             entityId: string;
@@ -58,8 +58,8 @@ export declare class AuditService {
     }>;
     findByEntity(entityType: string, entityId: string, organizationId: string): import(".prisma/client").Prisma.PrismaPromise<{
         id: string;
-        organizationId: string;
         createdAt: Date;
+        organizationId: string;
         action: string;
         entityType: string;
         entityId: string;
@@ -86,15 +86,15 @@ export declare class AuditService {
     }): Promise<{
         entries: ({
             user: {
-                id: string;
                 email: string;
+                id: string;
                 firstName: string;
                 lastName: string;
             };
         } & {
             id: string;
-            organizationId: string;
             createdAt: Date;
+            organizationId: string;
             action: string;
             entityType: string;
             entityId: string;

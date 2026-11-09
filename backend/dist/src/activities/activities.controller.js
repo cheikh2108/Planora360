@@ -14,14 +14,35 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ActivitiesController = void 0;
 const common_1 = require("@nestjs/common");
+const platform_express_1 = require("@nestjs/platform-express");
+const multer_1 = require("multer");
 const activities_service_1 = require("./activities.service");
 const create_activity_dto_1 = require("./dto/create-activity.dto");
 const update_activity_dto_1 = require("./dto/update-activity.dto");
 const update_status_dto_1 = require("./dto/update-status.dto");
+const import_activities_dto_1 = require("./dto/import-activities.dto");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../common/guards/roles.guard");
 const roles_decorator_1 = require("../common/decorators/roles.decorator");
 const current_user_decorator_1 = require("../common/decorators/current-user.decorator");
+const upload = {
+    storage: (0, multer_1.memoryStorage)(),
+    limits: { fileSize: 10 * 1024 * 1024 },
+    fileFilter: (_req, file, callback) => {
+        const allowedMimes = [
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/vnd.ms-excel',
+            'text/csv',
+            'application/csv',
+        ];
+        if (allowedMimes.includes(file.mimetype)) {
+            callback(null, true);
+        }
+        else {
+            callback(new Error('Format de fichier non supporté. Utilisez Excel (.xlsx, .xls) ou CSV.'), false);
+        }
+    },
+};
 let ActivitiesController = class ActivitiesController {
     activitiesService;
     constructor(activitiesService) {
@@ -29,6 +50,12 @@ let ActivitiesController = class ActivitiesController {
     }
     create(dto, user) {
         return this.activitiesService.create(dto, user.organizationId, user.id);
+    }
+    importFromExcel(file, dto, user) {
+        if (!file) {
+            throw new common_1.BadRequestException('Aucun fichier fourni');
+        }
+        return this.activitiesService.importFromExcel(file, dto.planId, user.organizationId, user.id);
     }
     findAll(user, planId, zoneId, page, limit) {
         return this.activitiesService.findAll(user.organizationId, planId, zoneId, page ? parseInt(page) : 1, limit ? parseInt(limit) : 20);
@@ -56,6 +83,17 @@ __decorate([
     __metadata("design:paramtypes", [create_activity_dto_1.CreateActivityDto, Object]),
     __metadata("design:returntype", void 0)
 ], ActivitiesController.prototype, "create", null);
+__decorate([
+    (0, common_1.Post)('import'),
+    (0, roles_decorator_1.Roles)('Administrateur', 'Coordinateur', 'Responsable de projet'),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file', upload)),
+    __param(0, (0, common_1.UploadedFile)()),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, import_activities_dto_1.ImportActivitiesDto, Object]),
+    __metadata("design:returntype", void 0)
+], ActivitiesController.prototype, "importFromExcel", null);
 __decorate([
     (0, common_1.Get)(),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),

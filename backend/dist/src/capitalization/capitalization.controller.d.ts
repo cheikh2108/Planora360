@@ -10,137 +10,137 @@ export declare class CapitalizationController {
             url: string;
             id: string;
             type: string;
+            uploadedAt: Date;
             size: number;
             capitalizationId: string;
             filename: string;
-            uploadedAt: Date;
         }[];
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: string;
         type: string;
-        tags: string[];
         title: string;
+        tags: string[];
+        authorId: string;
         context: string;
         challenges: string;
         solutions: string;
         results: string;
         lessons: string;
-        authorId: string;
     }>;
     findAll(filters: FilterCapitalizationDto, req: any): Promise<({
         media: {
             url: string;
             id: string;
             type: string;
+            uploadedAt: Date;
             size: number;
             capitalizationId: string;
             filename: string;
-            uploadedAt: Date;
         }[];
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: string;
         type: string;
-        tags: string[];
         title: string;
+        tags: string[];
+        authorId: string;
         context: string;
         challenges: string;
         solutions: string;
         results: string;
         lessons: string;
-        authorId: string;
     })[]>;
     findOne(id: string, req: any): Promise<{
         media: {
             url: string;
             id: string;
             type: string;
+            uploadedAt: Date;
             size: number;
             capitalizationId: string;
             filename: string;
-            uploadedAt: Date;
         }[];
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: string;
         type: string;
-        tags: string[];
         title: string;
+        tags: string[];
+        authorId: string;
         context: string;
         challenges: string;
         solutions: string;
         results: string;
         lessons: string;
-        authorId: string;
     }>;
     update(id: string, dto: UpdateCapitalizationDto, req: any): Promise<{
         media: {
             url: string;
             id: string;
             type: string;
+            uploadedAt: Date;
             size: number;
             capitalizationId: string;
             filename: string;
-            uploadedAt: Date;
         }[];
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: string;
         type: string;
-        tags: string[];
         title: string;
+        tags: string[];
+        authorId: string;
         context: string;
         challenges: string;
         solutions: string;
         results: string;
         lessons: string;
-        authorId: string;
     }>;
     remove(id: string, req: any): Promise<{
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: string;
         type: string;
-        tags: string[];
         title: string;
+        tags: string[];
+        authorId: string;
         context: string;
         challenges: string;
         solutions: string;
         results: string;
         lessons: string;
-        authorId: string;
     }>;
     uploadMedia(id: string, file: Express.Multer.File, type: string, req: any): Promise<{
         url: string;
         id: string;
         type: string;
+        uploadedAt: Date;
         size: number;
         capitalizationId: string;
         filename: string;
-        uploadedAt: Date;
     }>;
     deleteMedia(id: string, mediaId: string, req: any): Promise<{
         url: string;
         id: string;
         type: string;
+        uploadedAt: Date;
         size: number;
         capitalizationId: string;
         filename: string;
-        uploadedAt: Date;
     }>;
 }

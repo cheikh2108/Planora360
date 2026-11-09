@@ -2,7 +2,8 @@
 
 import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api, { plansApi, activitiesApi } from '@/lib/api';
+import api, { plansApi, activitiesApi, getErrorMessage } from '@/lib/api';
+import { useToast } from '@/components/ui/toast';
 import type { ActionPlan, Activity } from '@/lib/types';
 import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,7 @@ import {
   FileSpreadsheet, Image, Archive, File, FolderOpen,
   ChevronDown, ExternalLink, AlertCircle,
 } from 'lucide-react';
+import { resolveFileUrl } from '@/lib/files';
 
 /* ─── Types ─────────────────────────────────────────────────── */
 
@@ -156,6 +158,7 @@ function UploadZone({
 /* ─── Main page ───────────────────────────────────────────────── */
 
 export default function DocumentsPage() {
+  const toast = useToast();
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState('');
@@ -231,10 +234,10 @@ export default function DocumentsPage() {
   async function downloadDoc(doc: Document) {
     try {
       const r = await api.get(`/documents/${doc.id}/download`);
-      const url = r.data?.url ?? r.data?.signedUrl;
-      if (url) window.open(url, '_blank');
-    } catch {
-      // fallback
+      const url = resolveFileUrl(r.data?.url ?? r.data?.signedUrl);
+      if (url) window.open(url, '_blank', 'noopener');
+    } catch (err) {
+      toast.error('Téléchargement impossible', getErrorMessage(err, 'Le document n\'a pas pu être ouvert.'));
     }
   }
 

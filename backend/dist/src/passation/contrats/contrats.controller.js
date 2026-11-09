@@ -19,6 +19,9 @@ const subscription_guard_1 = require("../../common/guards/subscription.guard");
 const client_1 = require("@prisma/client");
 const contrats_service_1 = require("./contrats.service");
 const client_2 = require("@prisma/client");
+const create_contrat_dto_1 = require("./dto/create-contrat.dto");
+const write_roles_guard_1 = require("../../common/guards/write-roles.guard");
+const update_contrat_dto_1 = require("./dto/update-contrat.dto");
 let ContratsController = class ContratsController {
     contratsService;
     constructor(contratsService) {
@@ -55,7 +58,7 @@ __decorate([
     __param(0, (0, common_1.Req)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [Object, create_contrat_dto_1.CreateContratDto]),
     __metadata("design:returntype", void 0)
 ], ContratsController.prototype, "create", null);
 __decorate([
@@ -80,7 +83,7 @@ __decorate([
     __param(1, (0, common_1.Req)()),
     __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object, Object]),
+    __metadata("design:paramtypes", [String, Object, update_contrat_dto_1.UpdateContratDto]),
     __metadata("design:returntype", void 0)
 ], ContratsController.prototype, "update", null);
 __decorate([
@@ -119,6 +122,7 @@ __decorate([
 ], ContratsController.prototype, "getDashboard", null);
 exports.ContratsController = ContratsController = __decorate([
     (0, common_1.Controller)('passation/contrats'),
+    (0, write_roles_guard_1.WriteRoles)({ roles: write_roles_guard_1.PASSATION_WRITERS, permission: 'plan.update' }),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, subscription_guard_1.SubscriptionGuard),
     (0, subscription_guard_1.RequiresPlan)(client_1.SubscriptionPlan.ORGANISATION, client_1.SubscriptionPlan.ENTERPRISE),
     __metadata("design:paramtypes", [contrats_service_1.ContratsService])

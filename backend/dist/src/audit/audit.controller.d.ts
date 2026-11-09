@@ -7,15 +7,15 @@ export declare class AuditController {
     findAll(user: any, limit?: string, page?: string): Promise<{
         entries: ({
             user: {
-                id: string;
                 email: string;
+                id: string;
                 firstName: string;
                 lastName: string;
             };
         } & {
             id: string;
-            organizationId: string;
             createdAt: Date;
+            organizationId: string;
             action: string;
             entityType: string;
             entityId: string;
@@ -33,8 +33,8 @@ export declare class AuditController {
     }>;
     findByActivity(id: string, user: any): import(".prisma/client").Prisma.PrismaPromise<{
         id: string;
-        organizationId: string;
         createdAt: Date;
+        organizationId: string;
         action: string;
         entityType: string;
         entityId: string;
@@ -49,15 +49,15 @@ export declare class AuditController {
     searchWithFilters(filters: AuditFiltersDto, user: any): Promise<{
         entries: ({
             user: {
-                id: string;
                 email: string;
+                id: string;
                 firstName: string;
                 lastName: string;
             };
         } & {
             id: string;
-            organizationId: string;
             createdAt: Date;
+            organizationId: string;
             action: string;
             entityType: string;
             entityId: string;

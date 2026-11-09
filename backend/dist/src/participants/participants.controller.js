@@ -16,10 +16,13 @@ exports.ParticipantsController = void 0;
 const common_1 = require("@nestjs/common");
 const platform_express_1 = require("@nestjs/platform-express");
 const multer_1 = require("multer");
+const client_1 = require("@prisma/client");
 const participants_service_1 = require("./participants.service");
 const import_participants_dto_1 = require("./dto/import-participants.dto");
 const create_participant_dto_1 = require("./dto/create-participant.dto");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
+const subscription_guard_1 = require("../common/guards/subscription.guard");
+const write_roles_guard_1 = require("../common/guards/write-roles.guard");
 const upload = {
     storage: (0, multer_1.memoryStorage)(),
     limits: { fileSize: 5 * 1024 * 1024 }
@@ -79,7 +82,9 @@ __decorate([
 ], ParticipantsController.prototype, "remove", null);
 exports.ParticipantsController = ParticipantsController = __decorate([
     (0, common_1.Controller)('participants'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, write_roles_guard_1.WriteRoles)({ roles: write_roles_guard_1.FIELD_WRITERS, permission: 'activity.update' }),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, subscription_guard_1.SubscriptionGuard),
+    (0, subscription_guard_1.RequiresPlan)(client_1.SubscriptionPlan.PRO, client_1.SubscriptionPlan.EQUIPE, client_1.SubscriptionPlan.ORGANISATION, client_1.SubscriptionPlan.ENTERPRISE),
     __metadata("design:paramtypes", [participants_service_1.ParticipantsService])
 ], ParticipantsController);
 //# sourceMappingURL=participants.controller.js.map

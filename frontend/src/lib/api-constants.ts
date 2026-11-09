@@ -6,11 +6,6 @@
 // En prod : URL absolue du backend
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? '/api';
 
-export const TOKEN_KEYS = {
-  ACCESS: 'accessToken',
-  REFRESH: 'refreshToken',
-} as const;
-
 export const ERROR_MESSAGES: Record<number, string> = {
   400: 'Les informations fournies sont incorrectes. Veuillez vérifier et réessayer.',
   401: 'Votre session a expiré. Veuillez vous reconnecter.',
@@ -22,6 +17,16 @@ export const ERROR_MESSAGES: Record<number, string> = {
   500: 'Une erreur est survenue sur le serveur. Veuillez réessayer plus tard.',
   502: 'Le serveur est temporairement indisponible. Veuillez réessayer dans quelques instants.',
   503: 'Le service est temporairement indisponible. Veuillez réessayer plus tard.',
+};
+
+/** Codes d'erreur métier renvoyés par le backend, traduits pour l'utilisateur. */
+export const ERROR_CODE_MESSAGES: Record<string, string> = {
+  REGISTRATION_PENDING: 'Votre inscription est en cours de validation. Vous recevrez un email dès que votre compte sera activé.',
+  REGISTRATION_REJECTED: 'Votre demande d\'inscription a été refusée. Contactez le support pour plus d\'informations.',
+  ORGANIZATION_SUSPENDED: 'L\'accès de votre organisation est suspendu. Contactez votre administrateur ou le support.',
+  TOTP_REQUIRED: 'Entrez votre code d\'authentification à deux facteurs.',
+  'Identifiants invalides': 'Email ou mot de passe incorrect.',
+  'ThrottlerException: Too Many Requests': 'Trop de tentatives. Patientez une minute avant de réessayer.',
 };
 
 export const NETWORK_ERROR_MESSAGE = 'Impossible de contacter le serveur. Vérifiez votre connexion internet.';

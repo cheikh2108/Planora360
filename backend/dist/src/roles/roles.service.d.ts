@@ -4,7 +4,7 @@ import { UpdateRoleDto } from './dto/update-role.dto';
 export declare class RolesService {
     private prisma;
     constructor(prisma: PrismaService);
-    findAll(organizationId: string, callerRole?: string): Promise<({
+    findAll(organizationId: string, callerRole?: string | null): Promise<({
         _count: {
             users: number;
         };
@@ -24,6 +24,7 @@ export declare class RolesService {
         name: string;
         permissions: import("@prisma/client/runtime/client").JsonValue;
     }>;
+    private assertNotSystemName;
     create(dto: CreateRoleDto, organizationId: string): Promise<{
         id: string;
         organizationId: string | null;

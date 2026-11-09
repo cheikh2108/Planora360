@@ -1,4 +1,3 @@
-import { join } from 'path';
 import { INestApplication } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
@@ -28,10 +27,8 @@ export async function createTestApp(opts: { realThrottler?: boolean } = {}): Pro
     builder = builder.overrideProvider(ThrottlerStorage).useValue(noThrottleStorage);
   }
   const moduleRef = await builder.compile();
-  const app = moduleRef.createNestApplication<NestExpressApplication>({ logger: ['error'] });
-  // En prod, dist/src/../../uploads = backend/uploads = dossier où StorageService écrit (process.cwd()/uploads).
-  // Sous ts-jest, __dirname vaut src/ : on force donc le même dossier que la prod.
-  configureApp(app, { uploadsDir: join(process.cwd(), 'uploads') });
+  const app = moduleRef.createNestApplication<NestExpressApplication>({ logger: ['error'], rawBody: true });
+  configureApp(app);
   await app.init();
   return { app, prisma: app.get(PrismaService), http: app.getHttpServer() };
 }

@@ -19,21 +19,16 @@ test.describe('Profil Observateur (lecture seule)', () => {
     await expect(page.getByRole('button', { name: /Nouveau plan/ })).toHaveCount(0);
   });
 
-  test('[AUDIT] un refus de l\'API à la création d\'un plan est signalé à l\'utilisateur', async ({ page }) => {
-    await page.goto('/plans');
-    await page.waitForLoadState('networkidle');
-    const button = page.getByRole('button', { name: /Nouveau plan/ });
-    test.skip((await button.count()) === 0, 'bouton masqué pour ce profil');
-    await button.click();
-    const modal = page.locator('form').filter({ hasText: 'Titre du plan' });
-    await modal.getByPlaceholder('Plan d\'action annuel 2025').fill('Plan non autorisé');
-    const dates = modal.locator('input[type="date"]');
-    await dates.nth(0).fill('2027-01-01');
-    await dates.nth(1).fill('2027-06-30');
-    await modal.getByRole('button', { name: 'Créer le plan' }).click();
+  test('[AUDIT] un refus de l\'API est signalé à l\'utilisateur (création de procédure)', async ({ page }) => {
+    // Bouton encore proposé à ce profil : le refus 403 du backend doit s'afficher, pas échouer en silence
+    await page.goto('/passation/procedures');
+    await page.getByRole('button', { name: /Nouvelle procédure/ }).first().click();
+    await page.getByLabel('Objet de la procédure').fill('Procédure non autorisée');
+    await page.getByLabel('Montant estimé (XOF)').fill('1000000');
+    await page.getByRole('button', { name: 'Créer la procédure' }).click();
     await expect(page.getByText(/réservée|autorisation|refusé|interdit/i).first()).toBeVisible();
-    await page.goto('/plans');
-    await expect(page.getByText('Plan non autorisé')).toHaveCount(0);
+    await page.goto('/passation/procedures');
+    await expect(page.getByText('Procédure non autorisée')).toHaveCount(0);
   });
 
   test('[AUDIT] n\'accède pas à la gestion des utilisateurs', async ({ page }) => {

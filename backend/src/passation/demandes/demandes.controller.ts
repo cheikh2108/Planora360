@@ -15,15 +15,19 @@ import { SubscriptionGuard, RequiresPlan } from '../../common/guards/subscriptio
 import { SubscriptionPlan } from '@prisma/client';
 import { DemandesService } from './demandes.service';
 import { ValidationDecision } from '@prisma/client';
+import { WriteRoles, PASSATION_WRITERS } from '../../common/guards/write-roles.guard';
+import { CreateDemandeDto } from './dto/create-demande.dto';
+import { UpdateDemandeDto } from './dto/update-demande.dto';
 
 @Controller('passation/demandes')
+@WriteRoles({ roles: PASSATION_WRITERS, permission: 'plan.update' })
 @UseGuards(JwtAuthGuard, SubscriptionGuard)
 @RequiresPlan(SubscriptionPlan.ORGANISATION, SubscriptionPlan.ENTERPRISE)
 export class DemandesController {
   constructor(private readonly demandesService: DemandesService) {}
 
   @Post()
-  create(@Req() req, @Body() dto: any) {
+  create(@Req() req, @Body() dto: CreateDemandeDto) {
     return this.demandesService.create(req.user.organizationId, req.user.id, dto);
   }
 
@@ -38,7 +42,7 @@ export class DemandesController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Req() req, @Body() dto: any) {
+  update(@Param('id') id: string, @Req() req, @Body() dto: UpdateDemandeDto) {
     return this.demandesService.update(id, req.user.organizationId, dto);
   }
 

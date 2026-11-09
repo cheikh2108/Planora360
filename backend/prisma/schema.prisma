@@ -207,7 +207,8 @@ model User {
   organization       Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   roleId             String
   role               Role         @relation(fields: [roleId], references: [id])
-  email              String       @unique
+  // Unicité garantie par l'index partiel users_email_active_key (comptes non supprimés uniquement)
+  email              String
   firstName          String
   lastName           String
   passwordHash       String
@@ -261,6 +262,8 @@ model User {
 
   @@index([organizationId])
   @@map("users")
+  // Jetons d'accès émis avant cette date refusés (déconnexion = révocation immédiate)
+  tokensValidAfter   DateTime?
 }
 
 model RefreshToken {
@@ -638,7 +641,7 @@ model Media {
 // MODULE RECOMMANDATIONS
 model Recommendation {
   id   String @id @default(cuid())
-  code String @unique
+  code String // unique par organisation (voir @@unique)
 
   // Identification
   title       String
@@ -721,6 +724,8 @@ model Recommendation {
   @@index([dueDate])
   @@index([source])
   @@map("recommendations")
+
+  @@unique([organizationId, code])
 }
 
 model RecommendationContributor {
@@ -955,7 +960,7 @@ model PlanPassationMarche {
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  reference String  @unique
+  reference String  // unique par organisation (voir @@unique)
   year      Int
   title     String
   projectId String?
@@ -978,6 +983,8 @@ model PlanPassationMarche {
   @@index([year])
   @@index([projectId])
   @@map("plan_passation_marches")
+
+  @@unique([organizationId, reference])
 }
 
 model LignePPM {
@@ -1026,7 +1033,7 @@ model LignePPM {
 model DemandeAchat {
   id             String @id @default(cuid())
   organizationId String
-  reference      String @unique
+  reference      String  // unique par organisation (voir @@unique)
 
   lignePPMId String?   @unique
   lignePPM   LignePPM? @relation(fields: [lignePPMId], references: [id])
@@ -1061,6 +1068,8 @@ model DemandeAchat {
   @@index([demandeurId])
   @@index([status])
   @@map("demandes_achat")
+
+  @@unique([organizationId, reference])
 }
 
 model ValidationDemande {
@@ -1112,6 +1121,8 @@ model Fournisseur {
   zonesIntervention String[]
 
   status StatusFournisseur @default(A_VALIDER)
+  // Motif de la dernière suspension / mise sur liste noire
+  motifStatut String? @db.Text
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1149,7 +1160,7 @@ model FournisseurDocument {
 model Procedure {
   id             String @id @default(cuid())
   organizationId String
-  reference      String @unique
+  reference      String  // unique par organisation (voir @@unique)
 
   demandeAchatId String?       @unique
   demandeAchat   DemandeAchat? @relation(fields: [demandeAchatId], references: [id])
@@ -1186,6 +1197,8 @@ model Procedure {
   @@index([responsableId])
   @@index([status])
   @@map("procedures")
+
+  @@unique([organizationId, reference])
 }
 
 model DossierConsultation {
@@ -1214,7 +1227,7 @@ model Soumission {
   procedureId String
   procedure   Procedure @relation(fields: [procedureId], references: [id], onDelete: Cascade)
 
-  numeroDepot String @unique
+  numeroDepot String  // unique par procédure (voir @@unique)
 
   fournisseurId String
   fournisseur   Fournisseur @relation(fields: [fournisseurId], references: [id])
@@ -1241,6 +1254,8 @@ model Soumission {
   @@index([fournisseurId])
   @@index([status])
   @@map("soumissions")
+
+  @@unique([procedureId, numeroDepot])
 }
 
 model SoumissionDocument {
@@ -1328,7 +1343,7 @@ model Evaluation {
 model Contrat {
   id             String @id @default(cuid())
   organizationId String
-  reference      String @unique
+  reference      String  // unique par organisation (voir @@unique)
 
   procedureId String    @unique
   procedure   Procedure @relation(fields: [procedureId], references: [id])
@@ -1373,6 +1388,8 @@ model Contrat {
   @@index([gestionnaire])
   @@index([status])
   @@map("contrats")
+
+  @@unique([organizationId, reference])
 }
 
 model Avenant {

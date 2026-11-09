@@ -17,10 +17,12 @@ async function main() {
 
   const passwordHash = await bcrypt.hash(password, 12);
 
-  await prisma.user.update({
-    where: { email },
-    data: { passwordHash },
+  // L'email n'est unique que parmi les comptes non supprimés (index partiel)
+  const { count } = await prisma.user.updateMany({
+    where: { email, deletedAt: null },
+    data: { passwordHash, tokensValidAfter: new Date() },
   });
+  if (count === 0) throw new Error(`Aucun compte actif pour ${email}`);
 
   console.log(`✅ Mot de passe réinitialisé pour ${email}`);
 }

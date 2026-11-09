@@ -195,16 +195,31 @@ describe('Auth (login, session, CSRF, inscription)', () => {
     it('refuse un mot de passe trop faible', async () => {
       const user = await createUser(ctx.prisma, tenant.org.id, 'Coordinateur', 'weakpwd');
       const api = await login(ctx.http, user);
-      const res = await api.patch('/api/auth/change-password', { newPassword: '123' });
+      const res = await api.patch('/api/auth/change-password', { currentPassword: user.password, newPassword: '123' });
       expect(res.status).toBe(400);
     });
 
     it('change le mot de passe et permet de se reconnecter avec', async () => {
       const user = await createUser(ctx.prisma, tenant.org.id, 'Coordinateur', 'chgpwd');
       const api = await login(ctx.http, user);
-      const res = await api.patch('/api/auth/change-password', { newPassword: 'Nouveau#Mdp2026!' });
+      const res = await api.patch('/api/auth/change-password', {
+        currentPassword: user.password,
+        newPassword: 'Nouveau#Mdp2026!',
+      });
       expect(res.status).toBe(200);
       await expect(ApiClient.loggedIn(ctx.http, user.email, 'Nouveau#Mdp2026!')).resolves.toBeDefined();
+    });
+
+    it('refuse le changement si le mot de passe actuel est faux', async () => {
+      const user = await createUser(ctx.prisma, tenant.org.id, 'Coordinateur', 'badcur');
+      const api = await login(ctx.http, user);
+      const res = await api.patch('/api/auth/change-password', {
+        currentPassword: 'Pas-le-bon#2026',
+        newPassword: 'Autre#Mdp2026!',
+      });
+      expect([400, 401]).toContain(res.status);
+      // L'ancien mot de passe reste valable
+      await expect(ApiClient.loggedIn(ctx.http, user.email, user.password)).resolves.toBeDefined();
     });
 
     it('[AUDIT] exige le mot de passe actuel pour en définir un nouveau', async () => {

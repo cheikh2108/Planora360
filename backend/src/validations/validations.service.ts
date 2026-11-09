@@ -3,6 +3,7 @@ import {
 } from '@nestjs/common';
 import { ValidationStep, ValidationDecision, ActivityStatus } from '@prisma/client';
 import { PrismaService } from '../common/prisma/prisma.service';
+import { systemRoleName } from '../common/guards/roles.guard';
 import { AuditService } from '../audit/audit.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PostHogService } from '../analytics/posthog.service';
@@ -11,7 +12,8 @@ import { MIN_COMPLETION_FOR_SUBMIT } from '../common/constants/validation.consta
 
 // Machine à états finis — transitions autorisées
 const ALLOWED_TRANSITIONS: Record<ValidationStep, ValidationStep[]> = {
-  SOUMISSION: ['VERIFICATION_HIERARCHIQUE'],
+  // SOUMISSION → SOUMISSION = rejet direct par le vérificateur hiérarchique
+  SOUMISSION: ['VERIFICATION_HIERARCHIQUE', 'SOUMISSION'],
   VERIFICATION_HIERARCHIQUE: ['VALIDATION_TECHNIQUE', 'SOUMISSION'],
   VALIDATION_TECHNIQUE: ['VALIDATION_ADMINISTRATIVE', 'SOUMISSION'],
   VALIDATION_ADMINISTRATIVE: ['CLOTURE', 'SOUMISSION'],
@@ -168,7 +170,7 @@ export class ValidationsService {
     const currentStep = await this.getCurrentValidationStep(activityId);
 
     this.validateTransitionAllowed(currentStep, dto.toStep);
-    this.validateUserRole(user!.role.name, currentStep);
+    this.validateUserRole(systemRoleName(user) ?? '', currentStep);
     this.validateRejectionTransition(dto.decision, dto.toStep);
 
     const validation = await this.createTransitionValidation(activityId, dto, userId);
@@ -224,6 +226,9 @@ export class ValidationsService {
     const isRejection = decision === 'REJETE';
     if (isRejection && toStep !== 'SOUMISSION') {
       throw new BadRequestException('Un rejet doit retourner à l\'étape SOUMISSION');
+    }
+    if (!isRejection && toStep === 'SOUMISSION') {
+      throw new BadRequestException('Le retour à l\'étape SOUMISSION n\'est possible que par un rejet');
     }
   }
 

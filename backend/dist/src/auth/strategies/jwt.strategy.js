@@ -15,6 +15,7 @@ const passport_1 = require("@nestjs/passport");
 const passport_jwt_1 = require("passport-jwt");
 const config_1 = require("@nestjs/config");
 const prisma_service_1 = require("../../common/prisma/prisma.service");
+const session_policy_1 = require("../../common/auth/session-policy");
 let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(passport_jwt_1.Strategy) {
     prisma;
     constructor(config, prisma) {
@@ -34,13 +35,12 @@ let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(pas
         this.prisma = prisma;
     }
     async validate(payload) {
-        const user = await this.prisma.user.findUnique({
-            where: { id: payload.sub },
-            include: { role: true, organization: true },
-        });
-        if (!user || !user.isActive)
+        if (payload.scope === 'websocket')
             throw new common_1.UnauthorizedException();
-        return user;
+        const user = await (0, session_policy_1.loadSessionUser)(this.prisma, payload.sub);
+        (0, session_policy_1.assertTokenNotRevoked)(user, payload);
+        await (0, session_policy_1.assertSessionActive)(this.prisma, payload);
+        return { ...user, sessionId: payload.sid ?? null };
     }
 };
 exports.JwtStrategy = JwtStrategy;

@@ -2,14 +2,19 @@ import { OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { MessagerieService } from './messagerie.service';
+import { PrismaService } from '../common/prisma/prisma.service';
 export declare class MessagerieGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private jwtService;
     private messagerieService;
+    private prisma;
     server: Server;
     private connectedUsers;
-    constructor(jwtService: JwtService, messagerieService: MessagerieService);
+    private readonly logger;
+    constructor(jwtService: JwtService, messagerieService: MessagerieService, prisma: PrismaService);
     handleConnection(client: Socket): Promise<void>;
     handleDisconnect(client: Socket): void;
+    private assertParticipant;
+    private messageForParticipant;
     handleSendMessage(client: Socket, data: {
         conversationId: string;
         content: string;
@@ -21,19 +26,19 @@ export declare class MessagerieGateway implements OnGatewayConnection, OnGateway
             attachments: {
                 id: string;
                 fileSize: number;
+                messageId: string;
                 fileName: string;
-                mimeType: string;
-                width: number | null;
-                uploadedAt: Date;
                 fileUrl: string;
+                mimeType: string;
                 thumbnailUrl: string | null;
+                width: number | null;
                 height: number | null;
                 duration: number | null;
-                messageId: string;
+                uploadedAt: Date;
             }[];
             author: {
-                id: string;
                 email: string;
+                id: string;
                 firstName: string;
                 lastName: string;
             };
@@ -55,15 +60,15 @@ export declare class MessagerieGateway implements OnGatewayConnection, OnGateway
                 notified: boolean;
             }[];
         } & {
+            deletedAt: Date | null;
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            deletedAt: Date | null;
             parentId: string | null;
             metadata: import("@prisma/client/runtime/client").JsonValue | null;
-            authorId: string;
             content: string;
             conversationId: string;
+            authorId: string;
             contentType: import(".prisma/client").$Enums.MessageContentType;
             isEdited: boolean;
             editedAt: Date | null;
@@ -85,15 +90,15 @@ export declare class MessagerieGateway implements OnGatewayConnection, OnGateway
             attachments: {
                 id: string;
                 fileSize: number;
+                messageId: string;
                 fileName: string;
-                mimeType: string;
-                width: number | null;
-                uploadedAt: Date;
                 fileUrl: string;
+                mimeType: string;
                 thumbnailUrl: string | null;
+                width: number | null;
                 height: number | null;
                 duration: number | null;
-                messageId: string;
+                uploadedAt: Date;
             }[];
             author: {
                 id: string;
@@ -108,15 +113,15 @@ export declare class MessagerieGateway implements OnGatewayConnection, OnGateway
                 emoji: string;
             }[];
         } & {
+            deletedAt: Date | null;
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            deletedAt: Date | null;
             parentId: string | null;
             metadata: import("@prisma/client/runtime/client").JsonValue | null;
-            authorId: string;
             content: string;
             conversationId: string;
+            authorId: string;
             contentType: import(".prisma/client").$Enums.MessageContentType;
             isEdited: boolean;
             editedAt: Date | null;
@@ -165,15 +170,24 @@ export declare class MessagerieGateway implements OnGatewayConnection, OnGateway
         success: boolean;
         error: any;
     }>;
+    private broadcastTyping;
     handleTypingStart(client: Socket, data: {
         conversationId: string;
     }): Promise<{
         success: boolean;
+        error?: undefined;
+    } | {
+        success: boolean;
+        error: any;
     }>;
     handleTypingStop(client: Socket, data: {
         conversationId: string;
     }): Promise<{
         success: boolean;
+        error?: undefined;
+    } | {
+        success: boolean;
+        error: any;
     }>;
     handleMarkRead(client: Socket, data: {
         messageId: string;
@@ -188,6 +202,10 @@ export declare class MessagerieGateway implements OnGatewayConnection, OnGateway
         conversationId: string;
     }): Promise<{
         success: boolean;
+        error?: undefined;
+    } | {
+        success: boolean;
+        error: any;
     }>;
     handleLeaveConversation(client: Socket, data: {
         conversationId: string;

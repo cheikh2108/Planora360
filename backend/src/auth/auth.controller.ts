@@ -1,4 +1,6 @@
-import { Controller, Get, Post, Patch, Body, Param, UseGuards, HttpCode, HttpStatus, Req, Res, ServiceUnavailableException } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Param, UseGuards, HttpCode, HttpStatus, Req, Res, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { RequestQuoteDto } from './dto/request-quote.dto';
 import { Request, Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
@@ -50,7 +52,7 @@ export class AuthController {
   @Post('request-quote')
   @Throttle({ default: { limit: 3, ttl: 60000 } })
   @HttpCode(HttpStatus.OK)
-  requestQuote(@Body() dto: any) {
+  requestQuote(@Body() dto: RequestQuoteDto) {
     return this.authService.requestQuote(dto);
   }
 
@@ -172,7 +174,7 @@ export class AuthController {
     const refreshToken = request.cookies?.['refreshToken'] || dto.refreshToken;
 
     if (!refreshToken) {
-      throw new Error('Refresh token manquant');
+      throw new UnauthorizedException('Refresh token manquant');
     }
 
     const result = await this.authService.refresh(refreshToken, ipAddress, userAgent);
@@ -196,7 +198,7 @@ export class AuthController {
     // Définir le cookie CSRF
     response.cookie('csrf-token', csrfToken, {
       httpOnly: false, // Frontend doit le lire
-      secure: false, // En dev, pas de HTTPS
+      secure: process.env.NODE_ENV === 'production', // HTTPS seulement en production
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: '/',
@@ -219,28 +221,18 @@ export class AuthController {
     });
 
     if (!freshUser) {
-      throw new Error('Utilisateur introuvable');
+      throw new UnauthorizedException();
     }
 
-    return {
-      user: {
-        id: freshUser.id,
-        email: freshUser.email,
-        firstName: freshUser.firstName,
-        lastName: freshUser.lastName,
-        organizationId: freshUser.organizationId,
-        isActive: freshUser.isActive,
-        role: freshUser.role,
-        organization: freshUser.organization,
-      },
-    };
+    // Même représentation qu'au login : pas de champ interne de l'organisation ni secret
+    return { user: this.authService.serializeUserResponse(freshUser) };
   }
 
   @Post('logout')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
-  async logout(@CurrentUser() user: any, @Res({ passthrough: true }) response: Response) {
-    await this.authService.logout(user.id);
+  async logout(@CurrentUser() user: any, @Req() request: Request, @Res({ passthrough: true }) response: Response) {
+    await this.authService.logout(user.id, user.sessionId, request.cookies?.['refreshToken']);
 
     // Supprimer tous les cookies
     response.clearCookie('accessToken', { path: '/' });
@@ -271,8 +263,8 @@ export class AuthController {
   @Patch('change-password')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
-  changePassword(@CurrentUser() user: any, @Body() dto: { newPassword: string }) {
-    return this.authService.changePassword(user.id, dto.newPassword);
+  changePassword(@CurrentUser() user: any, @Body() dto: ChangePasswordDto) {
+    return this.authService.changePassword(user.id, dto.currentPassword, dto.newPassword, user.sessionId);
   }
 
   /**

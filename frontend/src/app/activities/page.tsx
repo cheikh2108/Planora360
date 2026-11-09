@@ -69,13 +69,9 @@ function ActivitiesContent() {
   const { data: zonesData } = useQuery({
     queryKey: ['zones'],
     queryFn: async () => {
+      // Client API : base URL configurée, cookies, rafraîchissement de session
       try {
-        const response = await fetch('/api/zones', {
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-        });
-        if (!response.ok) return [];
-        const data = await response.json();
+        const { data } = await zonesApi.getAll();
         return Array.isArray(data) ? data : [];
       } catch {
         return [];
@@ -388,13 +384,9 @@ function CreateActivityModal({ open, onClose }: { open: boolean; onClose: () => 
   const { data: zonesData } = useQuery({
     queryKey: ['zones'],
     queryFn: async () => {
+      // Client API : base URL configurée, cookies, rafraîchissement de session
       try {
-        const response = await fetch('/api/zones', {
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-        });
-        if (!response.ok) return [];
-        const data = await response.json();
+        const { data } = await zonesApi.getAll();
         return Array.isArray(data) ? data : [];
       } catch {
         return [];

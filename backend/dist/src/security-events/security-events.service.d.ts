@@ -16,11 +16,11 @@ export declare class SecurityEventsService {
     private loginAttempts;
     constructor(prisma: PrismaService);
     create(data: CreateSecurityEventDto): Promise<{
-        id: string;
         email: string | null;
-        organizationId: string | null;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string | null;
         status: import(".prisma/client").$Enums.SecurityEventStatus;
         description: string;
         metadata: import("@prisma/client/runtime/client").JsonValue | null;
@@ -67,11 +67,11 @@ export declare class SecurityEventsService {
                 name: string;
             } | null;
         } & {
-            id: string;
             email: string | null;
-            organizationId: string | null;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
+            organizationId: string | null;
             status: import(".prisma/client").$Enums.SecurityEventStatus;
             description: string;
             metadata: import("@prisma/client/runtime/client").JsonValue | null;
@@ -92,11 +92,11 @@ export declare class SecurityEventsService {
         resolvedBy: string;
         resolution: string;
     }): Promise<{
-        id: string;
         email: string | null;
-        organizationId: string | null;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string | null;
         status: import(".prisma/client").$Enums.SecurityEventStatus;
         description: string;
         metadata: import("@prisma/client/runtime/client").JsonValue | null;
@@ -113,11 +113,11 @@ export declare class SecurityEventsService {
         resolvedBy: string;
         reason: string;
     }): Promise<{
-        id: string;
         email: string | null;
-        organizationId: string | null;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string | null;
         status: import(".prisma/client").$Enums.SecurityEventStatus;
         description: string;
         metadata: import("@prisma/client/runtime/client").JsonValue | null;

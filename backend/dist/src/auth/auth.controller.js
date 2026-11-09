@@ -14,6 +14,8 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthController = void 0;
 const common_1 = require("@nestjs/common");
+const change_password_dto_1 = require("./dto/change-password.dto");
+const request_quote_dto_1 = require("./dto/request-quote.dto");
 const throttler_1 = require("@nestjs/throttler");
 const auth_service_1 = require("./auth.service");
 const login_dto_1 = require("./dto/login.dto");
@@ -41,6 +43,12 @@ let AuthController = class AuthController {
     }
     register(dto) {
         return this.authService.register(dto);
+    }
+    verifyEmail(token) {
+        return this.authService.verifyEmail(token);
+    }
+    requestQuote(dto) {
+        return this.authService.requestQuote(dto);
     }
     async login(dto, request, response) {
         const ipAddress = this.extractIpAddress(request);
@@ -80,7 +88,7 @@ let AuthController = class AuthController {
             httpOnly: true,
             secure: isProduction,
             sameSite: 'lax',
-            maxAge: 15 * 60 * 1000,
+            maxAge: 7 * 24 * 60 * 60 * 1000,
             path: '/',
         });
         response.cookie('refreshToken', refreshToken, {
@@ -118,7 +126,7 @@ let AuthController = class AuthController {
         const userAgent = request.headers['user-agent'];
         const refreshToken = request.cookies?.['refreshToken'] || dto.refreshToken;
         if (!refreshToken) {
-            throw new Error('Refresh token manquant');
+            throw new common_1.UnauthorizedException('Refresh token manquant');
         }
         const result = await this.authService.refresh(refreshToken, ipAddress, userAgent);
         const csrfToken = this.csrfService.generateToken();
@@ -132,15 +140,28 @@ let AuthController = class AuthController {
         const csrfToken = this.csrfService.generateToken();
         response.cookie('csrf-token', csrfToken, {
             httpOnly: false,
-            secure: false,
+            secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
             maxAge: 7 * 24 * 60 * 60 * 1000,
             path: '/',
         });
         return { csrfToken };
     }
-    async logout(user, response) {
-        await this.authService.logout(user.id);
+    async getMe(user) {
+        const freshUser = await this.prisma.user.findUnique({
+            where: { id: user.id },
+            include: {
+                role: true,
+                organization: true,
+            },
+        });
+        if (!freshUser) {
+            throw new common_1.UnauthorizedException();
+        }
+        return { user: this.authService.serializeUserResponse(freshUser) };
+    }
+    async logout(user, request, response) {
+        await this.authService.logout(user.id, user.sessionId, request.cookies?.['refreshToken']);
         response.clearCookie('accessToken', { path: '/' });
         response.clearCookie('refreshToken', { path: '/' });
         response.clearCookie('csrf-token', { path: '/' });
@@ -156,7 +177,7 @@ let AuthController = class AuthController {
         return this.authService.disable2fa(user.id, dto.token);
     }
     changePassword(user, dto) {
-        return this.authService.changePassword(user.id, dto.newPassword);
+        return this.authService.changePassword(user.id, dto.currentPassword, dto.newPassword, user.sessionId);
     }
     async checkMaintenanceMode(user) {
         const settings = await this.prisma.systemSettings.findFirst({
@@ -198,6 +219,24 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "register", null);
 __decorate([
+    (0, common_1.Get)('verify-email/:token'),
+    (0, throttler_1.Throttle)({ default: { limit: 5, ttl: 60000 } }),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    __param(0, (0, common_1.Param)('token')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "verifyEmail", null);
+__decorate([
+    (0, common_1.Post)('request-quote'),
+    (0, throttler_1.Throttle)({ default: { limit: 3, ttl: 60000 } }),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [request_quote_dto_1.RequestQuoteDto]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "requestQuote", null);
+__decorate([
     (0, common_1.Post)('login'),
     (0, throttler_1.Throttle)({ default: { limit: 5, ttl: 60000 } }),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
@@ -226,13 +265,23 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "getCsrfToken", null);
 __decorate([
+    (0, common_1.Get)('me'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "getMe", null);
+__decorate([
     (0, common_1.Post)('logout'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
-    __param(1, (0, common_1.Res)({ passthrough: true })),
+    __param(1, (0, common_1.Req)()),
+    __param(2, (0, common_1.Res)({ passthrough: true })),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [Object, Object, Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "logout", null);
 __decorate([
@@ -268,7 +317,7 @@ __decorate([
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [Object, change_password_dto_1.ChangePasswordDto]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "changePassword", null);
 exports.AuthController = AuthController = __decorate([

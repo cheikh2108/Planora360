@@ -12,12 +12,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ValidationsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../common/prisma/prisma.service");
+const roles_guard_1 = require("../common/guards/roles.guard");
 const audit_service_1 = require("../audit/audit.service");
 const notifications_service_1 = require("../notifications/notifications.service");
 const posthog_service_1 = require("../analytics/posthog.service");
 const validation_constants_1 = require("../common/constants/validation.constants");
 const ALLOWED_TRANSITIONS = {
-    SOUMISSION: ['VERIFICATION_HIERARCHIQUE'],
+    SOUMISSION: ['VERIFICATION_HIERARCHIQUE', 'SOUMISSION'],
     VERIFICATION_HIERARCHIQUE: ['VALIDATION_TECHNIQUE', 'SOUMISSION'],
     VALIDATION_TECHNIQUE: ['VALIDATION_ADMINISTRATIVE', 'SOUMISSION'],
     VALIDATION_ADMINISTRATIVE: ['CLOTURE', 'SOUMISSION'],
@@ -152,7 +153,7 @@ let ValidationsService = class ValidationsService {
         const user = await this.findUserWithRole(userId);
         const currentStep = await this.getCurrentValidationStep(activityId);
         this.validateTransitionAllowed(currentStep, dto.toStep);
-        this.validateUserRole(user.role.name, currentStep);
+        this.validateUserRole((0, roles_guard_1.systemRoleName)(user) ?? '', currentStep);
         this.validateRejectionTransition(dto.decision, dto.toStep);
         const validation = await this.createTransitionValidation(activityId, dto, userId);
         await this.applyStatusChange(activityId, dto.toStep);
@@ -195,6 +196,9 @@ let ValidationsService = class ValidationsService {
         const isRejection = decision === 'REJETE';
         if (isRejection && toStep !== 'SOUMISSION') {
             throw new common_1.BadRequestException('Un rejet doit retourner à l\'étape SOUMISSION');
+        }
+        if (!isRejection && toStep === 'SOUMISSION') {
+            throw new common_1.BadRequestException('Le retour à l\'étape SOUMISSION n\'est possible que par un rejet');
         }
     }
     async createTransitionValidation(activityId, dto, userId) {

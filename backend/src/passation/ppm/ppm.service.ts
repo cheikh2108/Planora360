@@ -10,6 +10,7 @@ import { UpdatePpmDto } from './dto/update-ppm.dto';
 import { CreateLignePpmDto } from './dto/create-ligne-ppm.dto';
 import { StatusPPM } from '@prisma/client';
 import { ERROR_MESSAGES } from '../common/constants/error-messages';
+import { createWithReference, nextReferenceFrom } from '../../common/utils/reference';
 
 /**
  * Service de gestion des Plans de Passation des Marchés (PPM)
@@ -42,29 +43,41 @@ export class PpmService {
       throw new BadRequestException(ERROR_MESSAGES.PPM.DUPLICATE_YEAR(dto.year));
     }
 
-    // Générer référence unique: PPM-YYYY-NNN
-    const count = await this.prisma.planPassationMarche.count({
-      where: { organizationId },
-    });
-    const reference = `PPM-${dto.year}-${String(count + 1).padStart(3, '0')}`;
+    // Le projet (plan d'action) rattaché doit appartenir à l'organisation
+    if (dto.projectId) {
+      const project = await this.prisma.actionPlan.findFirst({ where: { id: dto.projectId, organizationId } });
+      if (!project) throw new BadRequestException('Plan d\'action introuvable dans votre organisation');
+    }
 
-    return this.prisma.planPassationMarche.create({
-      data: {
-        ...dto,
-        reference,
-        organizationId,
-        createdBy: userId,
-      },
-      include: {
-        lignes: true,
-        project: {
-          select: {
-            id: true,
-            title: true,
+    // Référence PPM-<année>-<n°>, propre à l'organisation. Un PPM démarre toujours en brouillon :
+    // la validation passe par POST /ppm/:id/validate.
+    const prefix = `PPM-${dto.year}-`;
+    return createWithReference(
+      async () =>
+        nextReferenceFrom(
+          (await this.prisma.planPassationMarche.findMany({
+            where: { organizationId, reference: { startsWith: prefix } },
+            select: { reference: true },
+          })).map((p) => p.reference),
+          prefix,
+          3,
+        ),
+      (reference) =>
+        this.prisma.planPassationMarche.create({
+          data: {
+            year: dto.year,
+            title: dto.title,
+            projectId: dto.projectId ?? null,
+            reference,
+            organizationId,
+            createdBy: userId,
           },
-        },
-      },
-    });
+          include: {
+            lignes: true,
+            project: { select: { id: true, title: true } },
+          },
+        }),
+    );
   }
 
   async findAll(organizationId: string, filters?: {

@@ -16,6 +16,7 @@ export declare const ORG_STATUS_ACTIVE = "ACTIVE";
 export declare const ERROR_INVALID_CREDENTIALS = "Identifiants invalides";
 export declare const ERROR_REGISTRATION_PENDING = "REGISTRATION_PENDING";
 export declare const ERROR_REGISTRATION_REJECTED = "REGISTRATION_REJECTED";
+export declare const ERROR_ORGANIZATION_SUSPENDED = "ORGANIZATION_SUSPENDED";
 export declare const ERROR_INVALID_2FA_CODE = "Code 2FA invalide";
 export declare const ERROR_2FA_NOT_INITIALIZED = "2FA non initialis\u00E9";
 export declare const ERROR_INVALID_CODE = "Code invalide";

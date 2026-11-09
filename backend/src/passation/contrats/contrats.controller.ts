@@ -5,8 +5,11 @@ import { SubscriptionPlan } from '@prisma/client';
 import { ContratsService } from './contrats.service';
 import { StatusContrat } from '@prisma/client';
 import { CreateContratDto } from './dto/create-contrat.dto';
+import { WriteRoles, PASSATION_WRITERS } from '../../common/guards/write-roles.guard';
+import { UpdateContratDto } from './dto/update-contrat.dto';
 
 @Controller('passation/contrats')
+@WriteRoles({ roles: PASSATION_WRITERS, permission: 'plan.update' })
 @UseGuards(JwtAuthGuard, SubscriptionGuard)
 @RequiresPlan(SubscriptionPlan.ORGANISATION, SubscriptionPlan.ENTERPRISE)
 export class ContratsController {
@@ -28,7 +31,7 @@ export class ContratsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Req() req, @Body() dto: any) {
+  update(@Param('id') id: string, @Req() req, @Body() dto: UpdateContratDto) {
     return this.contratsService.update(id, req.user.organizationId, dto);
   }
 

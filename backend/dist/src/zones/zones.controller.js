@@ -14,12 +14,17 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ZonesController = void 0;
 const common_1 = require("@nestjs/common");
+const client_1 = require("@prisma/client");
 const zones_service_1 = require("./zones.service");
 const create_zone_dto_1 = require("./dto/create-zone.dto");
 const update_zone_dto_1 = require("./dto/update-zone.dto");
+const create_zone_config_dto_1 = require("./dto/create-zone-config.dto");
+const update_zone_config_dto_1 = require("./dto/update-zone-config.dto");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
+const subscription_guard_1 = require("../common/guards/subscription.guard");
 const current_user_decorator_1 = require("../common/decorators/current-user.decorator");
 const cache_interceptor_1 = require("../common/cache/cache.interceptor");
+const write_roles_guard_1 = require("../common/guards/write-roles.guard");
 let ZonesController = class ZonesController {
     zonesService;
     constructor(zonesService) {
@@ -36,6 +41,18 @@ let ZonesController = class ZonesController {
     }
     getStats(user) {
         return this.zonesService.getZoneStats(user.organizationId);
+    }
+    getPresets() {
+        return this.zonesService.getAvailablePresets();
+    }
+    getConfig(user) {
+        return this.zonesService.getZoneConfig(user.organizationId);
+    }
+    createConfig(dto, user) {
+        return this.zonesService.createOrUpdateZoneConfig(dto, user.organizationId);
+    }
+    updateConfig(dto, user) {
+        return this.zonesService.createOrUpdateZoneConfig(dto, user.organizationId);
     }
     findOne(id, user) {
         return this.zonesService.findOne(id, user.organizationId);
@@ -78,6 +95,35 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], ZonesController.prototype, "getStats", null);
 __decorate([
+    (0, common_1.Get)('config/presets'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], ZonesController.prototype, "getPresets", null);
+__decorate([
+    (0, common_1.Get)('config'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], ZonesController.prototype, "getConfig", null);
+__decorate([
+    (0, common_1.Post)('config'),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [create_zone_config_dto_1.CreateZoneConfigDto, Object]),
+    __metadata("design:returntype", void 0)
+], ZonesController.prototype, "createConfig", null);
+__decorate([
+    (0, common_1.Patch)('config'),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [update_zone_config_dto_1.UpdateZoneConfigDto, Object]),
+    __metadata("design:returntype", void 0)
+], ZonesController.prototype, "updateConfig", null);
+__decorate([
     (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, current_user_decorator_1.CurrentUser)()),
@@ -104,7 +150,9 @@ __decorate([
 ], ZonesController.prototype, "remove", null);
 exports.ZonesController = ZonesController = __decorate([
     (0, common_1.Controller)('zones'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, write_roles_guard_1.WriteRoles)({ roles: write_roles_guard_1.ZONE_WRITERS, permission: 'plan.update' }),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, subscription_guard_1.SubscriptionGuard),
+    (0, subscription_guard_1.RequiresPlan)(client_1.SubscriptionPlan.ORGANISATION, client_1.SubscriptionPlan.ENTERPRISE),
     (0, common_1.UseInterceptors)(cache_interceptor_1.HttpCacheInterceptor),
     __metadata("design:paramtypes", [zones_service_1.ZonesService])
 ], ZonesController);

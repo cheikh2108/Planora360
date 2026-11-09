@@ -5,16 +5,16 @@ export declare class ParticipantsService {
     constructor(prisma: PrismaService);
     create(dto: CreateParticipantDto, organizationId: string, userId: string): Promise<{
         id: string;
-        organizationId: string;
         firstName: string;
         lastName: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         activityId: string;
+        createdBy: string;
         phone: string;
         paymentMode: string;
         amount: number;
-        createdBy: string;
     }>;
     importFromExcel(file: Express.Multer.File, activityId: string, organizationId: string, userId: string): Promise<{
         success: boolean;
@@ -27,28 +27,28 @@ export declare class ParticipantsService {
     }>;
     findByActivity(activityId: string, organizationId: string): Promise<{
         id: string;
-        organizationId: string;
         firstName: string;
         lastName: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         activityId: string;
+        createdBy: string;
         phone: string;
         paymentMode: string;
         amount: number;
-        createdBy: string;
     }[]>;
     remove(id: string, organizationId: string): Promise<{
         id: string;
-        organizationId: string;
         firstName: string;
         lastName: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         activityId: string;
+        createdBy: string;
         phone: string;
         paymentMode: string;
         amount: number;
-        createdBy: string;
     }>;
 }

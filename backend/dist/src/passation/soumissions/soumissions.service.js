@@ -11,41 +11,65 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SoumissionsService = void 0;
 const common_1 = require("@nestjs/common");
+const client_1 = require("@prisma/client");
+const reference_1 = require("../../common/utils/reference");
 const prisma_service_1 = require("../../common/prisma/prisma.service");
 let SoumissionsService = class SoumissionsService {
     prisma;
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async create(procedureId, fournisseurId, userId, dto) {
-        const procedure = await this.prisma.procedure.findUnique({
-            where: { id: procedureId },
+    async create(procedureId, organizationId, dto) {
+        const procedure = await this.prisma.procedure.findFirst({
+            where: { id: procedureId, organizationId },
         });
         if (!procedure) {
             throw new common_1.NotFoundException('Procédure introuvable');
         }
-        const now = new Date();
-        if (procedure.dateLimite && now > procedure.dateLimite) {
+        if (procedure.status !== client_1.StatusProcedure.PUBLIEE && procedure.status !== client_1.StatusProcedure.EN_COURS) {
+            throw new common_1.BadRequestException('La procédure n\'accepte pas d\'offres (elle doit être publiée ou en cours)');
+        }
+        if (procedure.dateLimite && new Date() > procedure.dateLimite) {
             throw new common_1.ForbiddenException('La date limite de soumission est dépassée');
         }
-        return this.prisma.soumission.create({
-            data: {
-                ...dto,
-                procedureId,
-                fournisseurId,
-                dateDepot: new Date(),
-            },
-            include: {
-                fournisseur: {
-                    select: {
-                        id: true,
-                        raisonSociale: true,
-                        identifiantFiscal: true,
-                    },
-                },
-                documents: true,
-            },
+        const fournisseur = await this.prisma.fournisseur.findFirst({
+            where: { id: dto.fournisseurId, organizationId },
         });
+        if (!fournisseur) {
+            throw new common_1.NotFoundException('Fournisseur introuvable dans votre organisation');
+        }
+        if (fournisseur.status === 'SUSPENDU' || fournisseur.status === 'BLACKLISTE') {
+            throw new common_1.BadRequestException('Ce fournisseur est suspendu ou sur liste noire');
+        }
+        try {
+            return await this.prisma.soumission.create({
+                data: {
+                    procedureId,
+                    fournisseurId: fournisseur.id,
+                    numeroDepot: dto.numeroDepot,
+                    montantTechnique: dto.montantTechnique,
+                    montantFinancier: dto.montantFinancier,
+                    montantTotal: dto.montantTotal,
+                    devise: dto.devise ?? 'XOF',
+                    conformeAdmin: dto.conformeAdmin,
+                    conformeTechnique: dto.conformeTechnique,
+                    conformeFinancier: dto.conformeFinancier,
+                    horsDelai: dto.horsDelai ?? false,
+                    status: 'DEPOSEE',
+                    dateDepot: new Date(),
+                },
+                include: {
+                    fournisseur: { select: { id: true, raisonSociale: true, identifiantFiscal: true } },
+                    documents: true,
+                },
+            });
+        }
+        catch (error) {
+            if ((0, reference_1.isUniqueViolation)(error)) {
+                throw new common_1.ConflictException(`Le numéro de dépôt ${dto.numeroDepot} est déjà utilisé pour cette procédure`);
+            }
+            throw error;
+        }
     }
     async findAll(procedureId, organizationId) {
         const procedure = await this.prisma.procedure.findFirst({

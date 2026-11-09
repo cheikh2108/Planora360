@@ -1,60 +1,37 @@
-import { Module, Global } from '@nestjs/common';
+import { Module, Global, Logger } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { CacheModule as NestCacheModule } from '@nestjs/cache-manager';
-import { redisStore } from 'cache-manager-redis-yet';
-import type { RedisClientOptions } from 'redis';
+import { createKeyv } from '@keyv/redis';
 import { CacheInvalidationService } from './cache-invalidation.service';
+import { CacheVersionInterceptor } from './cache-version.interceptor';
+
+/** TTL par défaut des entrées (cache-manager 7 : millisecondes). */
+const DEFAULT_TTL_MS = 5 * 60 * 1000;
 
 @Global()
 @Module({
   imports: [
-    NestCacheModule.registerAsync<RedisClientOptions>({
+    NestCacheModule.registerAsync({
       useFactory: async () => {
+        const logger = new Logger('CacheModule');
         const redisUrl = process.env.REDIS_URL;
 
-        // Si pas de Redis configuré, utiliser le cache mémoire (dev)
+        // Sans Redis : cache mémoire du processus (dev, instance unique)
         if (!redisUrl) {
-          console.warn('⚠️  REDIS_URL not configured. Using in-memory cache (not recommended for production)');
-          return {
-            ttl: 300, // 5 minutes par défaut
-            max: 100, // Max 100 entrées en mémoire
-          };
+          logger.warn('REDIS_URL non défini : cache en mémoire (déconseillé avec plusieurs instances)');
+          return { ttl: DEFAULT_TTL_MS };
         }
 
-        try {
-          const store = await redisStore({
-            url: redisUrl,
-            // Options de connexion
-            socket: {
-              connectTimeout: 5000,
-              reconnectStrategy: (retries) => {
-                if (retries > 3) {
-                  console.error('❌ Redis connection failed after 3 retries');
-                  return new Error('Redis unavailable');
-                }
-                return Math.min(retries * 100, 3000);
-              },
-            },
-          });
-
-          console.log('✅ Redis cache connected');
-
-          return {
-            store: store as any,
-            ttl: 300, // 5 minutes par défaut
-            max: 1000, // Max 1000 entrées
-          };
-        } catch (error) {
-          console.error('❌ Redis connection error:', error.message);
-          console.warn('⚠️  Falling back to in-memory cache');
-          return {
-            ttl: 300,
-            max: 100,
-          };
-        }
+        // cache-manager 7 attend des stores Keyv (`stores`) : l'ancienne option `store`
+        // (cache-manager-redis-yet) était ignorée et le cache restait en mémoire.
+        const keyv = createKeyv(redisUrl, { namespace: 'planora' });
+        keyv.on('error', (error) => logger.error(`Redis : ${error?.message ?? error}`));
+        logger.log('Cache Redis configuré');
+        return { stores: [keyv], ttl: DEFAULT_TTL_MS };
       },
     }),
   ],
-  providers: [CacheInvalidationService],
+  providers: [CacheInvalidationService, { provide: APP_INTERCEPTOR, useClass: CacheVersionInterceptor }],
   exports: [NestCacheModule, CacheInvalidationService],
 })
 export class CacheModule {}

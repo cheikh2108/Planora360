@@ -27,7 +27,7 @@ let UsersController = class UsersController {
         this.usersService = usersService;
     }
     findRoles(user) {
-        return this.usersService.findRoles(user.organizationId, user.role?.name);
+        return this.usersService.findRoles(user.organizationId, (0, roles_guard_1.systemRoleName)(user));
     }
     getStats(user) {
         return this.usersService.getStats(user.organizationId);
@@ -36,7 +36,7 @@ let UsersController = class UsersController {
         return this.usersService.findUsersForAssignment(user.organizationId);
     }
     create(dto, user) {
-        return this.usersService.create(dto, user.organizationId, user.role.name);
+        return this.usersService.create(dto, user.organizationId, (0, roles_guard_1.systemRoleName)(user));
     }
     findAll(user, page, limit) {
         return this.usersService.findAll(user.organizationId, page ? parseInt(page) : 1, limit ? parseInt(limit) : 10);
@@ -51,7 +51,7 @@ let UsersController = class UsersController {
         return this.usersService.restore(id, user.organizationId);
     }
     update(id, dto, user) {
-        return this.usersService.update(id, dto, user.organizationId);
+        return this.usersService.update(id, dto, user.organizationId, (0, roles_guard_1.systemRoleName)(user));
     }
     remove(id, user) {
         return this.usersService.remove(id, user.organizationId);

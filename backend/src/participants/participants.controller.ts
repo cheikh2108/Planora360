@@ -18,6 +18,7 @@ import { ImportParticipantsDto } from './dto/import-participants.dto';
 import { CreateParticipantDto } from './dto/create-participant.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { SubscriptionGuard, RequiresPlan } from '../common/guards/subscription.guard';
+import { WriteRoles, FIELD_WRITERS } from '../common/guards/write-roles.guard';
 
 const upload = {
   storage: memoryStorage(),
@@ -25,6 +26,7 @@ const upload = {
 };
 
 @Controller('participants')
+@WriteRoles({ roles: FIELD_WRITERS, permission: 'activity.update' })
 @UseGuards(JwtAuthGuard, SubscriptionGuard)
 @RequiresPlan(SubscriptionPlan.PRO, SubscriptionPlan.EQUIPE, SubscriptionPlan.ORGANISATION, SubscriptionPlan.ENTERPRISE)
 export class ParticipantsController {

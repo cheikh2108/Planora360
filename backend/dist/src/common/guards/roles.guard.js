@@ -10,9 +10,26 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RolesGuard = void 0;
+exports.isSuperAdmin = isSuperAdmin;
+exports.systemRoleName = systemRoleName;
 const common_1 = require("@nestjs/common");
 const core_1 = require("@nestjs/core");
 const roles_decorator_1 = require("../decorators/roles.decorator");
+const auth_constants_1 = require("../constants/auth.constants");
+const permissions_constants_1 = require("../constants/permissions.constants");
+function isSuperAdmin(user) {
+    const role = user?.role;
+    return (!!role &&
+        role.organizationId === null &&
+        role.name === auth_constants_1.ROLE_SUPER_ADMIN &&
+        Array.isArray(role.permissions) &&
+        role.permissions.includes(permissions_constants_1.WILDCARD_PERMISSION));
+}
+function systemRoleName(user) {
+    if (isSuperAdmin(user))
+        return auth_constants_1.ROLE_SUPER_ADMIN;
+    return user?.role?.organizationId === null ? user.role.name : null;
+}
 let RolesGuard = class RolesGuard {
     reflector;
     constructor(reflector) {
@@ -29,11 +46,12 @@ let RolesGuard = class RolesGuard {
         const { user } = context.switchToHttp().getRequest();
         if (!user)
             throw new common_1.ForbiddenException('Accès refusé. Veuillez vous reconnecter.');
-        const userPermissions = user.role?.permissions ?? [];
-        if (userPermissions.includes('*'))
+        if (isSuperAdmin(user))
             return true;
+        const userPermissions = Array.isArray(user.role?.permissions) ? user.role.permissions : [];
         if (requiredRoles?.length) {
-            const hasRole = requiredRoles.includes(user.role?.name);
+            const isSystemRole = user.role?.organizationId === null;
+            const hasRole = isSystemRole && requiredRoles.includes(user.role?.name);
             if (!hasRole) {
                 throw new common_1.ForbiddenException(`Cette action est réservée aux rôles suivants : ${requiredRoles.join(', ')}. ` +
                     `Contactez votre administrateur pour obtenir les autorisations nécessaires.`);

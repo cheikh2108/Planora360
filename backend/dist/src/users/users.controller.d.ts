@@ -17,8 +17,8 @@ export declare class UsersController {
         with2FA: number;
     }>;
     listForAssignment(user: any): Promise<{
-        id: string;
         email: string;
+        id: string;
         firstName: string;
         lastName: string;
         role: {
@@ -41,10 +41,9 @@ export declare class UsersController {
             permissions: import("@prisma/client/runtime/client").JsonValue;
         };
     } & {
-        id: string;
         email: string;
-        organizationId: string;
-        roleId: string;
+        deletedAt: Date | null;
+        id: string;
         firstName: string;
         lastName: string;
         passwordHash: string;
@@ -55,7 +54,9 @@ export declare class UsersController {
         lastLoginAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
-        deletedAt: Date | null;
+        tokensValidAfter: Date | null;
+        organizationId: string;
+        roleId: string;
     })[]>;
     findOne(id: string, user: any): Promise<any>;
     restore(id: string, user: any): Promise<{
@@ -66,10 +67,9 @@ export declare class UsersController {
             permissions: import("@prisma/client/runtime/client").JsonValue;
         };
     } & {
-        id: string;
         email: string;
-        organizationId: string;
-        roleId: string;
+        deletedAt: Date | null;
+        id: string;
         firstName: string;
         lastName: string;
         passwordHash: string;
@@ -80,7 +80,9 @@ export declare class UsersController {
         lastLoginAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
-        deletedAt: Date | null;
+        tokensValidAfter: Date | null;
+        organizationId: string;
+        roleId: string;
     }>;
     update(id: string, dto: UpdateUserDto, user: any): Promise<any>;
     remove(id: string, user: any): Promise<void>;

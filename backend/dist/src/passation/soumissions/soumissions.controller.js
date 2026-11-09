@@ -19,13 +19,15 @@ const subscription_guard_1 = require("../../common/guards/subscription.guard");
 const client_1 = require("@prisma/client");
 const soumission_confidentiality_guard_1 = require("../common/guards/soumission-confidentiality.guard");
 const soumissions_service_1 = require("./soumissions.service");
+const write_roles_guard_1 = require("../../common/guards/write-roles.guard");
+const create_soumission_dto_1 = require("./dto/create-soumission.dto");
 let SoumissionsController = class SoumissionsController {
     soumissionsService;
     constructor(soumissionsService) {
         this.soumissionsService = soumissionsService;
     }
     create(procedureId, req, dto) {
-        return this.soumissionsService.create(procedureId, dto.fournisseurId, req.user.id, dto);
+        return this.soumissionsService.create(procedureId, req.user.organizationId, dto);
     }
     findAll(procedureId, req) {
         return this.soumissionsService.findAll(procedureId, req.user.organizationId);
@@ -41,7 +43,7 @@ __decorate([
     __param(1, (0, common_1.Req)()),
     __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object, Object]),
+    __metadata("design:paramtypes", [String, Object, create_soumission_dto_1.CreateSoumissionDto]),
     __metadata("design:returntype", void 0)
 ], SoumissionsController.prototype, "create", null);
 __decorate([
@@ -65,6 +67,7 @@ __decorate([
 ], SoumissionsController.prototype, "findOne", null);
 exports.SoumissionsController = SoumissionsController = __decorate([
     (0, common_1.Controller)('passation/procedures/:procedureId/soumissions'),
+    (0, write_roles_guard_1.WriteRoles)({ roles: write_roles_guard_1.PASSATION_WRITERS, permission: 'plan.update' }),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, subscription_guard_1.SubscriptionGuard),
     (0, subscription_guard_1.RequiresPlan)(client_1.SubscriptionPlan.ORGANISATION, client_1.SubscriptionPlan.ENTERPRISE),
     __metadata("design:paramtypes", [soumissions_service_1.SoumissionsService])

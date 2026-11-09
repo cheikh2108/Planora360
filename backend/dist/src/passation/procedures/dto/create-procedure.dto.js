@@ -16,6 +16,7 @@ class CreateProcedureDto {
     methode;
     objet;
     description;
+    cahierCharges;
     montantEstimatif;
     lignePpmId;
     datePublication;
@@ -37,10 +38,15 @@ __decorate([
     __metadata("design:type", String)
 ], CreateProcedureDto.prototype, "objet", void 0);
 __decorate([
+    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsNotEmpty)({ message: 'La description est obligatoire' }),
     __metadata("design:type", String)
 ], CreateProcedureDto.prototype, "description", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateProcedureDto.prototype, "cahierCharges", void 0);
 __decorate([
     (0, class_validator_1.IsNumber)({ maxDecimalPlaces: 2 }, { message: 'Le montant estimatif doit être un nombre avec maximum 2 décimales' }),
     (0, class_validator_1.Min)(0, { message: 'Le montant estimatif doit être positif' }),

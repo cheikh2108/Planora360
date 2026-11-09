@@ -84,6 +84,10 @@ export function CreateProcedureModal({ open, onClose, onSuccess }: CreateProcedu
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (formData.datePublication && formData.dateLimite && formData.dateLimite < formData.datePublication) {
+      error('La date limite de dépôt ne peut pas précéder la date de publication.');
+      return;
+    }
     createMutation.mutate(formData);
   };
 

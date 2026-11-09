@@ -81,7 +81,6 @@ export function AddLignePPMModal({ open, onClose, ppmId, onSuccess }: AddLignePP
         payload.activityId = data.activityId;
       }
 
-      console.log('[AddLignePPM] Payload envoyé:', payload);
       return ppmApi.addLigne(ppmId, payload);
     },
     onSuccess: () => {

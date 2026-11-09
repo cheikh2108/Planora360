@@ -6,7 +6,7 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { RolesGuard } from '../common/guards/roles.guard';
+import { RolesGuard, systemRoleName } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
@@ -17,7 +17,7 @@ export class UsersController {
 
   @Get('roles')
   findRoles(@CurrentUser() user: any) {
-    return this.usersService.findRoles(user.organizationId, user.role?.name);
+    return this.usersService.findRoles(user.organizationId, systemRoleName(user));
   }
 
   @Get('stats')
@@ -34,7 +34,7 @@ export class UsersController {
   @Post()
   @Roles('Super administrateur', 'Administrateur')
   create(@Body() dto: CreateUserDto, @CurrentUser() user: any) {
-    return this.usersService.create(dto, user.organizationId, user.role.name);
+    return this.usersService.create(dto, user.organizationId, systemRoleName(user));
   }
 
   @Get()
@@ -73,7 +73,7 @@ export class UsersController {
   @Patch(':id')
   @Roles('Super administrateur', 'Administrateur')
   update(@Param('id') id: string, @Body() dto: UpdateUserDto, @CurrentUser() user: any) {
-    return this.usersService.update(id, dto, user.organizationId);
+    return this.usersService.update(id, dto, user.organizationId, systemRoleName(user));
   }
 
   @Delete(':id')

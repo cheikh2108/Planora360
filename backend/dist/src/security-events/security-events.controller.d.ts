@@ -10,11 +10,11 @@ export declare class SecurityEventsController {
                 name: string;
             } | null;
         } & {
-            id: string;
             email: string | null;
-            organizationId: string | null;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
+            organizationId: string | null;
             status: import(".prisma/client").$Enums.SecurityEventStatus;
             description: string;
             metadata: import("@prisma/client/runtime/client").JsonValue | null;
@@ -45,11 +45,11 @@ export declare class SecurityEventsController {
         recentCritical: number;
     }>;
     resolve(id: string, dto: ResolveSecurityEventDto, user: any): Promise<{
-        id: string;
         email: string | null;
-        organizationId: string | null;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string | null;
         status: import(".prisma/client").$Enums.SecurityEventStatus;
         description: string;
         metadata: import("@prisma/client/runtime/client").JsonValue | null;
@@ -65,11 +65,11 @@ export declare class SecurityEventsController {
     markAsFalsePositive(id: string, dto: {
         reason: string;
     }, user: any): Promise<{
-        id: string;
         email: string | null;
-        organizationId: string | null;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string | null;
         status: import(".prisma/client").$Enums.SecurityEventStatus;
         description: string;
         metadata: import("@prisma/client/runtime/client").JsonValue | null;

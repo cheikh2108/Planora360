@@ -27,6 +27,7 @@ import { SubscriptionGuard, RequiresPlan } from '../common/guards/subscription.g
 import { SubscriptionPlan } from '@prisma/client';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { UpdateActionDto } from './dto/update-action.dto';
 
 @Controller('recommendations')
 @UseGuards(JwtAuthGuard, RolesGuard, SubscriptionGuard)
@@ -117,7 +118,7 @@ export class RecommendationsController {
   @Roles('Administrateur', 'Coordinateur', 'Responsable de projet', 'Chef de service')
   updateAction(
     @Param('actionId') actionId: string,
-    @Body() updates: any,
+    @Body() updates: UpdateActionDto,
     @CurrentUser() user: any,
   ) {
     return this.recommendationsService.updateAction(actionId, user.organizationId, updates);

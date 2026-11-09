@@ -13,6 +13,7 @@ exports.RecommendationsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../common/prisma/prisma.service");
 const audit_service_1 = require("../audit/audit.service");
+const reference_1 = require("../common/utils/reference");
 const RECOMMENDATION_INCLUDE = {
     responsible: { select: { id: true, firstName: true, lastName: true, email: true } },
     issuer: { select: { id: true, firstName: true, lastName: true, email: true } },
@@ -45,18 +46,11 @@ let RecommendationsService = class RecommendationsService {
     async generateCode(organizationId) {
         const year = new Date().getFullYear();
         const prefix = `REC-${year}-`;
-        const lastRec = await this.prisma.recommendation.findFirst({
+        const existing = await this.prisma.recommendation.findMany({
             where: { organizationId, code: { startsWith: prefix } },
-            orderBy: { createdAt: 'desc' },
             select: { code: true },
         });
-        let nextNumber = 1;
-        if (lastRec) {
-            const match = lastRec.code.match(/REC-\d{4}-(\d+)/);
-            if (match)
-                nextNumber = parseInt(match[1], 10) + 1;
-        }
-        return `${prefix}${String(nextNumber).padStart(3, '0')}`;
+        return (0, reference_1.nextReferenceFrom)(existing.map((r) => r.code), prefix, 3);
     }
     async logHistory(recommendationId, userId, action, field, oldValue, newValue, comment) {
         await this.prisma.recommendationHistory.create({
@@ -105,8 +99,7 @@ let RecommendationsService = class RecommendationsService {
             if (!validator)
                 throw new common_1.NotFoundException('Validateur introuvable');
         }
-        const code = await this.generateCode(organizationId);
-        const recommendation = await this.prisma.recommendation.create({
+        const recommendation = await (0, reference_1.createWithReference)(() => this.generateCode(organizationId), (code) => this.prisma.recommendation.create({
             data: {
                 code,
                 title: dto.title,
@@ -127,7 +120,7 @@ let RecommendationsService = class RecommendationsService {
                 priority: dto.priority,
             },
             include: RECOMMENDATION_INCLUDE,
-        });
+        }));
         await this.logHistory(recommendation.id, userId, 'CREATE');
         await this.auditService.log({
             organizationId,
@@ -342,6 +335,7 @@ let RecommendationsService = class RecommendationsService {
     }
     async addAction(recommendationId, dto, organizationId, userId) {
         const recommendation = await this.verifyRecommendation(recommendationId, organizationId);
+        await this.assertResponsible(dto.responsibleId, organizationId);
         const action = await this.prisma.recommendationAction.create({
             data: {
                 recommendationId,
@@ -363,7 +357,16 @@ let RecommendationsService = class RecommendationsService {
         }
         return action;
     }
-    async updateAction(actionId, organizationId, updates) {
+    async assertResponsible(responsibleId, organizationId) {
+        if (!responsibleId)
+            return;
+        const user = await this.prisma.user.findFirst({
+            where: { id: responsibleId, organizationId, isActive: true, deletedAt: null },
+        });
+        if (!user)
+            throw new common_1.BadRequestException('Responsable introuvable dans votre organisation');
+    }
+    async updateAction(actionId, organizationId, dto) {
         const action = await this.prisma.recommendationAction.findUnique({
             where: { id: actionId },
             include: { recommendation: true },
@@ -371,9 +374,20 @@ let RecommendationsService = class RecommendationsService {
         if (!action || action.recommendation.organizationId !== organizationId) {
             throw new common_1.NotFoundException('Action introuvable');
         }
+        await this.assertResponsible(dto.responsibleId, organizationId);
         return this.prisma.recommendationAction.update({
             where: { id: actionId },
-            data: updates,
+            data: {
+                ...(dto.title !== undefined && { title: dto.title }),
+                ...(dto.description !== undefined && { description: dto.description }),
+                ...(dto.dueDate !== undefined && { dueDate: dto.dueDate ? new Date(dto.dueDate) : null }),
+                ...(dto.responsibleId !== undefined && { responsibleId: dto.responsibleId || null }),
+                ...(dto.order !== undefined && { order: dto.order }),
+                ...(dto.status !== undefined && {
+                    status: dto.status,
+                    completedAt: dto.status === 'TERMINEE' ? (action.completedAt ?? new Date()) : null,
+                }),
+            },
         });
     }
     async deleteAction(actionId, organizationId, userId) {

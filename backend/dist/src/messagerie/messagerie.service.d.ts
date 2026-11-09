@@ -10,8 +10,8 @@ export declare class MessagerieService {
         };
         participants: ({
             user: {
-                id: string;
                 email: string;
+                id: string;
                 firstName: string;
                 lastName: string;
             };
@@ -19,13 +19,13 @@ export declare class MessagerieService {
             id: string;
             role: import(".prisma/client").$Enums.ConversationRole;
             userId: string;
-            leftAt: Date | null;
+            conversationId: string;
             isMuted: boolean;
             isPinned: boolean;
             lastReadAt: Date | null;
             unreadCount: number;
             joinedAt: Date;
-            conversationId: string;
+            leftAt: Date | null;
         })[];
         messages: ({
             author: {
@@ -34,15 +34,15 @@ export declare class MessagerieService {
                 lastName: string;
             };
         } & {
+            deletedAt: Date | null;
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            deletedAt: Date | null;
             parentId: string | null;
             metadata: import("@prisma/client/runtime/client").JsonValue | null;
-            authorId: string;
             content: string;
             conversationId: string;
+            authorId: string;
             contentType: import(".prisma/client").$Enums.MessageContentType;
             isEdited: boolean;
             editedAt: Date | null;
@@ -51,21 +51,21 @@ export declare class MessagerieService {
         })[];
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         name: string | null;
         description: string | null;
         activityId: string | null;
         type: import(".prisma/client").$Enums.ConversationType;
-        createdById: string;
-        recommendationId: string | null;
+        avatarUrl: string | null;
         projectId: string | null;
+        recommendationId: string | null;
         procedureId: string | null;
         contratId: string | null;
-        avatarUrl: string | null;
         isArchived: boolean;
         lastMessageAt: Date | null;
+        createdById: string;
     })[]>;
     getConversation(conversationId: string, userId: string): Promise<{
         _count: {
@@ -74,8 +74,8 @@ export declare class MessagerieService {
         };
         participants: ({
             user: {
-                id: string;
                 email: string;
+                id: string;
                 firstName: string;
                 lastName: string;
             };
@@ -83,32 +83,34 @@ export declare class MessagerieService {
             id: string;
             role: import(".prisma/client").$Enums.ConversationRole;
             userId: string;
-            leftAt: Date | null;
+            conversationId: string;
             isMuted: boolean;
             isPinned: boolean;
             lastReadAt: Date | null;
             unreadCount: number;
             joinedAt: Date;
-            conversationId: string;
+            leftAt: Date | null;
         })[];
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         name: string | null;
         description: string | null;
         activityId: string | null;
         type: import(".prisma/client").$Enums.ConversationType;
-        createdById: string;
-        recommendationId: string | null;
+        avatarUrl: string | null;
         projectId: string | null;
+        recommendationId: string | null;
         procedureId: string | null;
         contratId: string | null;
-        avatarUrl: string | null;
         isArchived: boolean;
         lastMessageAt: Date | null;
+        createdById: string;
     }>;
+    private validateContext;
+    isParticipant(conversationId: string, userId: string, organizationId: string): Promise<boolean>;
     createConversation(organizationId: string, createdById: string, type: ConversationType, name?: string, participantIds?: string[], context?: {
         projectId?: string;
         activityId?: string;
@@ -118,8 +120,8 @@ export declare class MessagerieService {
     }): Promise<{
         participants: ({
             user: {
-                id: string;
                 email: string;
+                id: string;
                 firstName: string;
                 lastName: string;
             };
@@ -127,49 +129,49 @@ export declare class MessagerieService {
             id: string;
             role: import(".prisma/client").$Enums.ConversationRole;
             userId: string;
-            leftAt: Date | null;
+            conversationId: string;
             isMuted: boolean;
             isPinned: boolean;
             lastReadAt: Date | null;
             unreadCount: number;
             joinedAt: Date;
-            conversationId: string;
+            leftAt: Date | null;
         })[];
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         name: string | null;
         description: string | null;
         activityId: string | null;
         type: import(".prisma/client").$Enums.ConversationType;
-        createdById: string;
-        recommendationId: string | null;
+        avatarUrl: string | null;
         projectId: string | null;
+        recommendationId: string | null;
         procedureId: string | null;
         contratId: string | null;
-        avatarUrl: string | null;
         isArchived: boolean;
         lastMessageAt: Date | null;
+        createdById: string;
     }>;
     sendMessage(conversationId: string, authorId: string, content: string, contentType?: string, parentId?: string): Promise<{
         attachments: {
             id: string;
             fileSize: number;
+            messageId: string;
             fileName: string;
-            mimeType: string;
-            width: number | null;
-            uploadedAt: Date;
             fileUrl: string;
+            mimeType: string;
             thumbnailUrl: string | null;
+            width: number | null;
             height: number | null;
             duration: number | null;
-            messageId: string;
+            uploadedAt: Date;
         }[];
         author: {
-            id: string;
             email: string;
+            id: string;
             firstName: string;
             lastName: string;
         };
@@ -191,15 +193,15 @@ export declare class MessagerieService {
             notified: boolean;
         }[];
     } & {
+        deletedAt: Date | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        deletedAt: Date | null;
         parentId: string | null;
         metadata: import("@prisma/client/runtime/client").JsonValue | null;
-        authorId: string;
         content: string;
         conversationId: string;
+        authorId: string;
         contentType: import(".prisma/client").$Enums.MessageContentType;
         isEdited: boolean;
         editedAt: Date | null;
@@ -215,19 +217,19 @@ export declare class MessagerieService {
         attachments: {
             id: string;
             fileSize: number;
+            messageId: string;
             fileName: string;
-            mimeType: string;
-            width: number | null;
-            uploadedAt: Date;
             fileUrl: string;
+            mimeType: string;
             thumbnailUrl: string | null;
+            width: number | null;
             height: number | null;
             duration: number | null;
-            messageId: string;
+            uploadedAt: Date;
         }[];
         author: {
-            id: string;
             email: string;
+            id: string;
             firstName: string;
             lastName: string;
         };
@@ -249,15 +251,15 @@ export declare class MessagerieService {
             notified: boolean;
         }[];
     } & {
+        deletedAt: Date | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        deletedAt: Date | null;
         parentId: string | null;
         metadata: import("@prisma/client/runtime/client").JsonValue | null;
-        authorId: string;
         content: string;
         conversationId: string;
+        authorId: string;
         contentType: import(".prisma/client").$Enums.MessageContentType;
         isEdited: boolean;
         editedAt: Date | null;
@@ -268,15 +270,15 @@ export declare class MessagerieService {
         attachments: {
             id: string;
             fileSize: number;
+            messageId: string;
             fileName: string;
-            mimeType: string;
-            width: number | null;
-            uploadedAt: Date;
             fileUrl: string;
+            mimeType: string;
             thumbnailUrl: string | null;
+            width: number | null;
             height: number | null;
             duration: number | null;
-            messageId: string;
+            uploadedAt: Date;
         }[];
         author: {
             id: string;
@@ -291,15 +293,15 @@ export declare class MessagerieService {
             emoji: string;
         }[];
     } & {
+        deletedAt: Date | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        deletedAt: Date | null;
         parentId: string | null;
         metadata: import("@prisma/client/runtime/client").JsonValue | null;
-        authorId: string;
         content: string;
         conversationId: string;
+        authorId: string;
         contentType: import(".prisma/client").$Enums.MessageContentType;
         isEdited: boolean;
         editedAt: Date | null;
@@ -307,15 +309,15 @@ export declare class MessagerieService {
         isSystem: boolean;
     }>;
     deleteMessage(messageId: string, authorId: string): Promise<{
+        deletedAt: Date | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        deletedAt: Date | null;
         parentId: string | null;
         metadata: import("@prisma/client/runtime/client").JsonValue | null;
-        authorId: string;
         content: string;
         conversationId: string;
+        authorId: string;
         contentType: import(".prisma/client").$Enums.MessageContentType;
         isEdited: boolean;
         editedAt: Date | null;
@@ -329,15 +331,15 @@ export declare class MessagerieService {
             lastName: string;
         };
     } & {
+        deletedAt: Date | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        deletedAt: Date | null;
         parentId: string | null;
         metadata: import("@prisma/client/runtime/client").JsonValue | null;
-        authorId: string;
         content: string;
         conversationId: string;
+        authorId: string;
         contentType: import(".prisma/client").$Enums.MessageContentType;
         isEdited: boolean;
         editedAt: Date | null;
@@ -349,19 +351,19 @@ export declare class MessagerieService {
             attachments: {
                 id: string;
                 fileSize: number;
+                messageId: string;
                 fileName: string;
-                mimeType: string;
-                width: number | null;
-                uploadedAt: Date;
                 fileUrl: string;
+                mimeType: string;
                 thumbnailUrl: string | null;
+                width: number | null;
                 height: number | null;
                 duration: number | null;
-                messageId: string;
+                uploadedAt: Date;
             }[];
             author: {
-                id: string;
                 email: string;
+                id: string;
                 firstName: string;
                 lastName: string;
             };
@@ -389,15 +391,15 @@ export declare class MessagerieService {
                 notified: boolean;
             }[];
         } & {
+            deletedAt: Date | null;
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            deletedAt: Date | null;
             parentId: string | null;
             metadata: import("@prisma/client/runtime/client").JsonValue | null;
-            authorId: string;
             content: string;
             conversationId: string;
+            authorId: string;
             contentType: import(".prisma/client").$Enums.MessageContentType;
             isEdited: boolean;
             editedAt: Date | null;
@@ -437,21 +439,21 @@ export declare class MessagerieService {
         message: string;
         conversation: {
             id: string;
-            organizationId: string;
             createdAt: Date;
             updatedAt: Date;
+            organizationId: string;
             name: string | null;
             description: string | null;
             activityId: string | null;
             type: import(".prisma/client").$Enums.ConversationType;
-            createdById: string;
-            recommendationId: string | null;
+            avatarUrl: string | null;
             projectId: string | null;
+            recommendationId: string | null;
             procedureId: string | null;
             contratId: string | null;
-            avatarUrl: string | null;
             isArchived: boolean;
             lastMessageAt: Date | null;
+            createdById: string;
         };
     }>;
     unarchiveConversation(conversationId: string, userId: string): Promise<{
@@ -459,21 +461,21 @@ export declare class MessagerieService {
         message: string;
         conversation: {
             id: string;
-            organizationId: string;
             createdAt: Date;
             updatedAt: Date;
+            organizationId: string;
             name: string | null;
             description: string | null;
             activityId: string | null;
             type: import(".prisma/client").$Enums.ConversationType;
-            createdById: string;
-            recommendationId: string | null;
+            avatarUrl: string | null;
             projectId: string | null;
+            recommendationId: string | null;
             procedureId: string | null;
             contratId: string | null;
-            avatarUrl: string | null;
             isArchived: boolean;
             lastMessageAt: Date | null;
+            createdById: string;
         };
     }>;
 }

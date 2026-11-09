@@ -17,10 +17,13 @@ const common_1 = require("@nestjs/common");
 const cache_manager_1 = require("@nestjs/cache-manager");
 const rxjs_1 = require("rxjs");
 const operators_1 = require("rxjs/operators");
+const cache_invalidation_service_1 = require("./cache-invalidation.service");
 let HttpCacheInterceptor = class HttpCacheInterceptor {
     cacheManager;
-    constructor(cacheManager) {
+    cacheInvalidation;
+    constructor(cacheManager, cacheInvalidation) {
         this.cacheManager = cacheManager;
+        this.cacheInvalidation = cacheInvalidation;
     }
     async intercept(context, next) {
         const request = context.switchToHttp().getRequest();
@@ -28,24 +31,26 @@ let HttpCacheInterceptor = class HttpCacheInterceptor {
         if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
             return next.handle();
         }
-        const cacheKey = this.buildCacheKey(request);
+        const orgId = request.user?.organizationId;
+        if (!orgId)
+            return next.handle();
+        const version = await this.cacheInvalidation.getVersion(orgId);
+        const cacheKey = this.buildCacheKey(request, version);
         const cachedResponse = await this.cacheManager.get(cacheKey);
-        if (cachedResponse) {
-            console.log(`🎯 Cache HIT: ${cacheKey}`);
+        if (cachedResponse !== undefined && cachedResponse !== null) {
             return (0, rxjs_1.of)(cachedResponse);
         }
-        console.log(`💾 Cache MISS: ${cacheKey}`);
         return next.handle().pipe((0, operators_1.tap)(async (response) => {
             const ttl = this.getTTL(request.url);
             await this.cacheManager.set(cacheKey, response, ttl * 1000);
         }));
     }
-    buildCacheKey(request) {
+    buildCacheKey(request, version) {
         const userId = request.user?.id || 'anonymous';
-        const orgId = request.user?.organizationId || 'no-org';
+        const orgId = request.user?.organizationId;
         const url = request.url.split('?')[0];
         const queryParams = JSON.stringify(request.query || {});
-        return `cache:${orgId}:${userId}:${url}:${queryParams}`;
+        return `cache:${orgId}:v${version}:${userId}:${url}:${queryParams}`;
     }
     getTTL(url) {
         if (url.includes('/roles') || url.includes('/permissions')) {
@@ -70,6 +75,6 @@ exports.HttpCacheInterceptor = HttpCacheInterceptor;
 exports.HttpCacheInterceptor = HttpCacheInterceptor = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, common_1.Inject)(cache_manager_1.CACHE_MANAGER)),
-    __metadata("design:paramtypes", [Object])
+    __metadata("design:paramtypes", [Object, cache_invalidation_service_1.CacheInvalidationService])
 ], HttpCacheInterceptor);
 //# sourceMappingURL=cache.interceptor.js.map

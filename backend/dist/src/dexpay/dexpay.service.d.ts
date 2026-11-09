@@ -25,6 +25,6 @@ export declare class DexpayService {
     constructor(config: ConfigService);
     createCheckoutSession(params: CreateCheckoutParams): Promise<CheckoutSession>;
     getCheckoutSession(reference: string): Promise<any>;
-    verifyWebhookSignature(signature: string, payload: any): boolean;
+    verifyWebhookSignature(signature: string | undefined, rawBody: Buffer | string | undefined): boolean;
     getPlanPrice(plan: string, billingCycle?: 'MONTHLY' | 'YEARLY'): number;
 }

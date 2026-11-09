@@ -13,6 +13,7 @@ exports.ZonesService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../common/prisma/prisma.service");
 const cache_invalidation_service_1 = require("../common/cache/cache-invalidation.service");
+const zone_presets_1 = require("./constants/zone-presets");
 let ZonesService = class ZonesService {
     prisma;
     cacheInvalidation;
@@ -199,6 +200,75 @@ let ZonesService = class ZonesService {
                     : 0,
             };
         });
+    }
+    async getZoneConfig(organizationId) {
+        let config = await this.prisma.organizationZoneConfig.findUnique({
+            where: { organizationId },
+        });
+        if (!config) {
+            try {
+                config = await this.prisma.organizationZoneConfig.create({
+                    data: {
+                        organizationId,
+                        preset: 'STANDARD',
+                        levelLabels: zone_presets_1.ZONE_PRESETS.STANDARD.levelLabels,
+                        description: zone_presets_1.ZONE_PRESETS.STANDARD.description,
+                    },
+                });
+            }
+            catch (error) {
+                console.error('Erreur création config zone:', error);
+                return {
+                    id: 'virtual',
+                    organizationId,
+                    preset: 'STANDARD',
+                    levelLabels: zone_presets_1.ZONE_PRESETS.STANDARD.levelLabels,
+                    description: zone_presets_1.ZONE_PRESETS.STANDARD.description,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                };
+            }
+        }
+        return config;
+    }
+    async createOrUpdateZoneConfig(dto, organizationId) {
+        try {
+            const levelLabels = dto.levelLabels || (dto.preset ? zone_presets_1.ZONE_PRESETS[dto.preset].levelLabels : zone_presets_1.ZONE_PRESETS.STANDARD.levelLabels);
+            const description = dto.description || (dto.preset ? zone_presets_1.ZONE_PRESETS[dto.preset].description : zone_presets_1.ZONE_PRESETS.STANDARD.description);
+            const config = await this.prisma.organizationZoneConfig.upsert({
+                where: { organizationId },
+                create: {
+                    organizationId,
+                    preset: dto.preset || 'STANDARD',
+                    levelLabels,
+                    description,
+                },
+                update: {
+                    ...(dto.preset && { preset: dto.preset }),
+                    ...(levelLabels && { levelLabels }),
+                    ...(description !== undefined && { description }),
+                },
+            });
+            await this.cacheInvalidation.invalidateDashboard(organizationId);
+            return config;
+        }
+        catch (error) {
+            console.error('Erreur upsert config zone:', error);
+            throw new common_1.BadRequestException('Impossible de sauvegarder la configuration des zones');
+        }
+    }
+    async getAvailablePresets() {
+        return Object.entries(zone_presets_1.ZONE_PRESETS).map(([key, value]) => ({
+            key,
+            name: value.name,
+            description: value.description,
+            levelLabels: value.levelLabels,
+        }));
+    }
+    async getLevelLabel(level, organizationId) {
+        const config = await this.getZoneConfig(organizationId);
+        const labels = config.levelLabels;
+        return labels[level.toString()] || `Niveau ${level}`;
     }
 };
 exports.ZonesService = ZonesService;

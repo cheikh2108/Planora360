@@ -3,15 +3,18 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { SubscriptionGuard, RequiresPlan } from '../../common/guards/subscription.guard';
 import { SubscriptionPlan } from '@prisma/client';
 import { CommissionsService } from './commissions.service';
+import { WriteRoles, PASSATION_WRITERS } from '../../common/guards/write-roles.guard';
+import { CreateCommissionDto, AddMembreDto } from './dto/create-commission.dto';
 
 @Controller('passation/commissions')
+@WriteRoles({ roles: PASSATION_WRITERS, permission: 'plan.update' })
 @UseGuards(JwtAuthGuard, SubscriptionGuard)
 @RequiresPlan(SubscriptionPlan.ORGANISATION, SubscriptionPlan.ENTERPRISE)
 export class CommissionsController {
   constructor(private readonly commissionsService: CommissionsService) {}
 
   @Post()
-  create(@Req() req, @Body() dto: any) {
+  create(@Req() req, @Body() dto: CreateCommissionDto) {
     return this.commissionsService.create(req.user.organizationId, req.user.id, dto);
   }
 
@@ -29,10 +32,9 @@ export class CommissionsController {
   addMembre(
     @Param('id') id: string,
     @Req() req,
-    @Body('userId') userId: string,
-    @Body('role') role: string
+    @Body() dto: AddMembreDto,
   ) {
-    return this.commissionsService.addMembre(id, req.user.organizationId, userId, role);
+    return this.commissionsService.addMembre(id, req.user.organizationId, dto.userId, dto.role);
   }
 
   @Delete(':id/membres/:membreId')

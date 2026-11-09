@@ -1,9 +1,12 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { validateFile, MEDIA_EXTENSIONS } from '../documents/file-validator';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
 import { CreateCapitalizationDto } from './dto/create-capitalization.dto';
 import { UpdateCapitalizationDto } from './dto/update-capitalization.dto';
 import { FilterCapitalizationDto } from './dto/filter-capitalization.dto';
+
+const MEDIA_TYPES = ['PHOTO', 'VIDEO', 'DOCUMENT'];
 
 @Injectable()
 export class CapitalizationService {
@@ -54,7 +57,7 @@ export class CapitalizationService {
       ];
     }
 
-    return this.prisma.capitalizationRecord.findMany({
+    const records = await this.prisma.capitalizationRecord.findMany({
       where,
       include: {
         media: true,
@@ -63,6 +66,16 @@ export class CapitalizationService {
         createdAt: 'desc',
       },
     });
+    return records.map((r) => this.withMediaUrls(r));
+  }
+
+  /** Remplace la clé de stockage de chaque média par son URL servie par l'API (GET /api/files/...). */
+  private withMediaUrls<T extends { media?: { url: string }[] }>(record: T): T {
+    if (!record.media) return record;
+    return {
+      ...record,
+      media: record.media.map((m) => ({ ...m, url: this.storage.fileUrl(this.storage.keyFromStored(m.url)) })),
+    };
   }
 
   async findOne(id: string, organizationId: string) {
@@ -77,7 +90,7 @@ export class CapitalizationService {
       throw new NotFoundException('Fiche de capitalisation non trouvée');
     }
 
-    return record;
+    return this.withMediaUrls(record);
   }
 
   async update(
@@ -133,19 +146,28 @@ export class CapitalizationService {
   ) {
     await this.findOne(capitalizationId, organizationId);
 
-    const storageKey = `capitalization/${organizationId}/${capitalizationId}/${Date.now()}-${file.originalname}`;
-    const uploadedKey = await this.storage.upload(storageKey, file);
-    const url = await this.storage.getSignedUrl(uploadedKey);
+    if (!file) throw new BadRequestException('Fichier manquant');
+    const ext = await validateFile(file, { allowed: MEDIA_EXTENSIONS, maxSize: 10 * 1024 * 1024 });
 
-    return this.prisma.media.create({
+    // On stocke la clé (stable), jamais une URL signée qui expirerait
+    const storageKey = this.storage.buildKey(organizationId, ['capitalization', capitalizationId], ext);
+    await this.storage.upload(storageKey, file);
+
+    // Type déduit du fichier vérifié si le client ne l'envoie pas (ou envoie une valeur inconnue)
+    const mediaType = MEDIA_TYPES.includes(type)
+      ? type
+      : ['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(ext) ? 'PHOTO' : 'DOCUMENT';
+
+    const media = await this.prisma.media.create({
       data: {
         capitalizationId,
-        type,
+        type: mediaType,
         filename: file.originalname,
-        url: uploadedKey,
+        url: storageKey,
         size: file.size,
       },
     });
+    return { ...media, url: this.storage.fileUrl(storageKey) };
   }
 
   async deleteMedia(
@@ -155,8 +177,9 @@ export class CapitalizationService {
   ) {
     await this.findOne(capitalizationId, organizationId);
 
-    const media = await this.prisma.media.findUnique({
-      where: { id: mediaId },
+    // Le média doit appartenir à CETTE fiche (sinon on pourrait supprimer le média d'une autre organisation)
+    const media = await this.prisma.media.findFirst({
+      where: { id: mediaId, capitalizationId },
     });
 
     if (!media) {

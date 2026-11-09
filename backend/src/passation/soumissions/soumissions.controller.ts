@@ -4,8 +4,11 @@ import { SubscriptionGuard, RequiresPlan } from '../../common/guards/subscriptio
 import { SubscriptionPlan } from '@prisma/client';
 import { SoumissionConfidentialityGuard } from '../common/guards/soumission-confidentiality.guard';
 import { SoumissionsService } from './soumissions.service';
+import { WriteRoles, PASSATION_WRITERS } from '../../common/guards/write-roles.guard';
+import { CreateSoumissionDto } from './dto/create-soumission.dto';
 
 @Controller('passation/procedures/:procedureId/soumissions')
+@WriteRoles({ roles: PASSATION_WRITERS, permission: 'plan.update' })
 @UseGuards(JwtAuthGuard, SubscriptionGuard)
 @RequiresPlan(SubscriptionPlan.ORGANISATION, SubscriptionPlan.ENTERPRISE)
 export class SoumissionsController {
@@ -15,14 +18,9 @@ export class SoumissionsController {
   create(
     @Param('procedureId') procedureId: string,
     @Req() req,
-    @Body() dto: any
+    @Body() dto: CreateSoumissionDto
   ) {
-    return this.soumissionsService.create(
-      procedureId,
-      dto.fournisseurId,
-      req.user.id,
-      dto
-    );
+    return this.soumissionsService.create(procedureId, req.user.organizationId, dto);
   }
 
   @Get()

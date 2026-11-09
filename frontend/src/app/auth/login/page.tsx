@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
+import api, { getErrorCode, getErrorMessage } from '@/lib/api';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
@@ -25,9 +26,8 @@ export default function LoginPage() {
     }));
 
     // Vérifier le mode maintenance
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/maintenance/status`)
-      .then((res) => res.json())
-      .then((data) => setMaintenanceMode(data.maintenanceMode))
+    api.get('/maintenance/status')
+      .then(({ data }) => setMaintenanceMode(!!data?.maintenanceMode))
       .catch(() => {});
   }, []);
 
@@ -54,17 +54,10 @@ export default function LoginPage() {
       const dest = user.role?.name === 'Super administrateur' ? '/super-admin' : '/dashboard';
       router.replace(dest);
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-      if (msg === 'TOTP_REQUIRED') {
-        setShow2fa(true);
-        setError("Entrez votre code d'authentification 2FA.");
-      } else if (msg === 'REGISTRATION_PENDING') {
-        setError('Votre inscription est en cours de validation. Vous recevrez un email dès que votre compte sera activé.');
-      } else if (msg === 'REGISTRATION_REJECTED') {
-        setError('Votre demande d\'inscription a été refusée. Contactez le support pour plus d\'informations.');
-      } else {
-        setError(typeof msg === 'string' ? msg : 'Email ou mot de passe incorrect.');
-      }
+      // Codes métier (REGISTRATION_PENDING, ORGANIZATION_SUSPENDED, limitation…) déjà traduits
+      // par le client API ; seul le 2FA demande une action particulière.
+      if (getErrorCode(err) === 'TOTP_REQUIRED') setShow2fa(true);
+      setError(getErrorMessage(err, 'Email ou mot de passe incorrect.'));
     } finally {
       setLoading(false);
     }
@@ -170,7 +163,7 @@ export default function LoginPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-[12px] font-semibold text-slate-900 mb-1.5">
+                <label htmlFor="email" className="block text-[12px] font-semibold text-slate-900 mb-1.5">
                   Adresse e-mail
                 </label>
                 <input
@@ -186,7 +179,7 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label className="block text-[12px] font-semibold text-slate-900 mb-1.5">
+                <label htmlFor="password" className="block text-[12px] font-semibold text-slate-900 mb-1.5">
                   Mot de passe
                 </label>
                 <div className="relative">

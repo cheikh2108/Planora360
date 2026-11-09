@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { extname } from 'path';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
 import { PostHogService } from '../analytics/posthog.service';
@@ -23,7 +24,8 @@ export class DocumentsService {
     });
     if (!activity) throw new NotFoundException('Activité introuvable');
 
-    const storageKey = `${organizationId}/${activityId}/${Date.now()}-${file.originalname}`;
+    // Clé aléatoire (le nom d'origine est conservé en base dans fileName)
+    const storageKey = this.storage.buildKey(organizationId, [activityId], extname(file.originalname).slice(1));
     await this.storage.upload(storageKey, file);
 
     const document = await this.prisma.document.create({
@@ -56,7 +58,11 @@ export class DocumentsService {
     });
     if (!item) throw new NotFoundException('Tâche introuvable');
 
-    const storageKey = `${organizationId}/checklist/${checklistItemId}/${Date.now()}-${file.originalname}`;
+    const storageKey = this.storage.buildKey(
+      organizationId,
+      ['checklist', checklistItemId],
+      extname(file.originalname).slice(1),
+    );
     await this.storage.upload(storageKey, file);
 
     return this.prisma.document.create({

@@ -1,9 +1,11 @@
 import { DemandesService } from './demandes.service';
 import { ValidationDecision } from '@prisma/client';
+import { CreateDemandeDto } from './dto/create-demande.dto';
+import { UpdateDemandeDto } from './dto/update-demande.dto';
 export declare class DemandesController {
     private readonly demandesService;
     constructor(demandesService: DemandesService);
-    create(req: any, dto: any): Promise<{
+    create(req: any, dto: CreateDemandeDto): Promise<{
         activity: {
             id: string;
             title: string;
@@ -36,9 +38,9 @@ export declare class DemandesController {
         };
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusDemandeAchat;
         description: string;
         activityId: string | null;
@@ -88,9 +90,9 @@ export declare class DemandesController {
         };
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusDemandeAchat;
         description: string;
         activityId: string | null;
@@ -134,8 +136,8 @@ export declare class DemandesController {
         } | null;
         validations: ({
             validateur: {
-                id: string;
                 email: string;
+                id: string;
                 firstName: string;
                 lastName: string;
             };
@@ -151,16 +153,16 @@ export declare class DemandesController {
             commentaire: string | null;
         })[];
         demandeur: {
-            id: string;
             email: string;
+            id: string;
             firstName: string;
             lastName: string;
         };
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusDemandeAchat;
         description: string;
         activityId: string | null;
@@ -176,7 +178,7 @@ export declare class DemandesController {
         lignePPMId: string | null;
         demandeurId: string;
     }>;
-    update(id: string, req: any, dto: any): Promise<{
+    update(id: string, req: any, dto: UpdateDemandeDto): Promise<{
         validations: {
             id: string;
             createdAt: Date;
@@ -195,9 +197,9 @@ export declare class DemandesController {
         };
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusDemandeAchat;
         description: string;
         activityId: string | null;
@@ -215,9 +217,9 @@ export declare class DemandesController {
     }>;
     remove(id: string, req: any): Promise<{
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusDemandeAchat;
         description: string;
         activityId: string | null;
@@ -253,9 +255,9 @@ export declare class DemandesController {
         })[];
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusDemandeAchat;
         description: string;
         activityId: string | null;
@@ -291,9 +293,9 @@ export declare class DemandesController {
         })[];
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusDemandeAchat;
         description: string;
         activityId: string | null;
@@ -337,8 +339,8 @@ export declare class DemandesController {
         } | null;
         validations: ({
             validateur: {
-                id: string;
                 email: string;
+                id: string;
                 firstName: string;
                 lastName: string;
             };
@@ -354,16 +356,16 @@ export declare class DemandesController {
             commentaire: string | null;
         })[];
         demandeur: {
-            id: string;
             email: string;
+            id: string;
             firstName: string;
             lastName: string;
         };
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusDemandeAchat;
         description: string;
         activityId: string | null;

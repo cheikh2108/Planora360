@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SoumissionConfidentialityGuard = void 0;
 const common_1 = require("@nestjs/common");
+const roles_guard_1 = require("../../../common/guards/roles.guard");
 const prisma_service_1 = require("../../../common/prisma/prisma.service");
 const error_messages_1 = require("../constants/error-messages");
 let SoumissionConfidentialityGuard = class SoumissionConfidentialityGuard {
@@ -21,7 +22,7 @@ let SoumissionConfidentialityGuard = class SoumissionConfidentialityGuard {
     async canActivate(context) {
         const request = context.switchToHttp().getRequest();
         const user = request.user;
-        if (user.role?.name === 'Super Admin') {
+        if ((0, roles_guard_1.isSuperAdmin)(user)) {
             return true;
         }
         const procedureId = request.params.procedureId || request.body?.procedureId;

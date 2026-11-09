@@ -157,21 +157,22 @@ let FournisseursService = class FournisseursService {
             where: { id },
             data: {
                 status: newStatus,
-                ...(motif && { remarques: motif }),
+                motifStatut: newStatus === client_1.StatusFournisseur.ACTIF ? null : (motif ?? null),
             },
         });
     }
-    async addDocument(fournisseurId, organizationId, documentData) {
+    async addDocument(fournisseurId, organizationId, dto) {
         await this.findOne(fournisseurId, organizationId);
-        const data = {
-            ...documentData,
-            fournisseurId,
-        };
-        if (data.dateExpiration && typeof data.dateExpiration === 'string') {
-            data.dateExpiration = new Date(data.dateExpiration);
-        }
         return this.prisma.fournisseurDocument.create({
-            data,
+            data: {
+                fournisseurId,
+                type: dto.type,
+                nom: dto.nom,
+                url: dto.url,
+                ...(dto.fileSize !== undefined && { fileSize: dto.fileSize }),
+                ...(dto.mimeType !== undefined && { mimeType: dto.mimeType }),
+                ...(dto.dateExpiration && { dateExpiration: new Date(dto.dateExpiration) }),
+            },
         });
     }
     async removeDocument(fournisseurId, documentId, organizationId) {

@@ -17,44 +17,42 @@ let EvaluationsService = class EvaluationsService {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async create(procedureId, userId, dto) {
+    async create(procedureId, userId, organizationId, dto) {
+        const procedure = await this.prisma.procedure.findFirst({
+            where: { id: procedureId, organizationId },
+            select: { id: true },
+        });
+        if (!procedure)
+            throw new common_1.NotFoundException('Procédure introuvable');
         const commission = await this.prisma.commission.findFirst({
-            where: {
-                procedureId,
-                membres: {
-                    some: {
-                        userId,
-                    },
-                },
-            },
+            where: { procedureId, membres: { some: { userId } } },
         });
         if (!commission) {
             throw new common_1.ForbiddenException('Vous ne faites pas partie de la commission d\'évaluation');
         }
+        const soumission = await this.prisma.soumission.findFirst({
+            where: { id: dto.soumissionId, procedureId },
+            select: { id: true },
+        });
+        if (!soumission)
+            throw new common_1.NotFoundException('Offre introuvable pour cette procédure');
+        const scores = [dto.scoreAdmin, dto.scoreTechnique, dto.scoreFinancier].filter((v) => typeof v === 'number');
+        const scoreGlobal = dto.scoreGlobal ?? (scores.length ? Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 100) / 100 : null);
         return this.prisma.evaluation.create({
             data: {
-                ...dto,
-                evaluateurId: userId,
+                soumissionId: soumission.id,
                 commissionId: commission.id,
+                evaluateurId: userId,
+                scoreAdmin: dto.scoreAdmin,
+                scoreTechnique: dto.scoreTechnique,
+                scoreFinancier: dto.scoreFinancier,
+                scoreGlobal,
+                criteres: dto.criteres,
+                commentaires: dto.commentaires,
             },
             include: {
-                soumission: {
-                    include: {
-                        fournisseur: {
-                            select: {
-                                id: true,
-                                raisonSociale: true,
-                            },
-                        },
-                    },
-                },
-                evaluateur: {
-                    select: {
-                        id: true,
-                        firstName: true,
-                        lastName: true,
-                    },
-                },
+                soumission: { include: { fournisseur: { select: { id: true, raisonSociale: true } } } },
+                evaluateur: { select: { id: true, firstName: true, lastName: true } },
             },
         });
     }

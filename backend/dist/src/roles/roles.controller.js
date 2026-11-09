@@ -27,7 +27,7 @@ let RolesController = class RolesController {
         this.rolesService = rolesService;
     }
     findAll(user) {
-        return this.rolesService.findAll(user.organizationId, user.role?.name);
+        return this.rolesService.findAll(user.organizationId, (0, roles_guard_1.systemRoleName)(user));
     }
     findOne(id, user) {
         return this.rolesService.findOne(id, user.organizationId);

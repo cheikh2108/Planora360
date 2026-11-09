@@ -18,11 +18,12 @@ import { CreatePpmDto } from './dto/create-ppm.dto';
 import { UpdatePpmDto } from './dto/update-ppm.dto';
 import { CreateLignePpmDto } from './dto/create-ligne-ppm.dto';
 import { StatusPPM } from '@prisma/client';
+import { WriteRoles, PASSATION_WRITERS } from '../../common/guards/write-roles.guard';
 
 @Controller('passation/ppm')
+@WriteRoles({ roles: PASSATION_WRITERS, permission: 'plan.update' })
 @UseGuards(JwtAuthGuard, SubscriptionGuard)
 @RequiresPlan(SubscriptionPlan.ORGANISATION, SubscriptionPlan.ENTERPRISE)
-@UseGuards(JwtAuthGuard)
 export class PpmController {
   constructor(private readonly ppmService: PpmService) {}
 

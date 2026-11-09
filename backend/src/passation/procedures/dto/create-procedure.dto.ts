@@ -20,9 +20,15 @@ export class CreateProcedureDto {
   @IsNotEmpty({ message: 'L\'objet de la procédure est obligatoire' })
   objet: string;
 
+  /** Description détaillée ; à défaut, le cahier des charges puis l'objet sont repris. */
+  @IsOptional()
   @IsString()
-  @IsNotEmpty({ message: 'La description est obligatoire' })
-  description: string;
+  description?: string;
+
+  /** Cahier des charges saisi à l'écran (stocké dans la description). */
+  @IsOptional()
+  @IsString()
+  cahierCharges?: string;
 
   @IsNumber(
     { maxDecimalPlaces: 2 },

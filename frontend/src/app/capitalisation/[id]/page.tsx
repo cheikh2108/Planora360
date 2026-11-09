@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { BookOpen, Lightbulb, FileText, Trash2, Image as ImageIcon, Loader2, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import api from '@/lib/api';
+import { resolveFileUrl } from '@/lib/files';
 
 const TYPE_META: Record<string, { label: string; icon: typeof Lightbulb; color: string; bg: string }> = {
   BONNE_PRATIQUE: { label: 'Bonne pratique', icon: Lightbulb, color: 'text-amber-600', bg: 'bg-amber-50' },
@@ -247,7 +248,7 @@ export default function CapitalisationDetailPage() {
                 {record.media.map((media: any) => (
                   <div key={media.id} className="aspect-video rounded-lg bg-slate-100 overflow-hidden border border-slate-200 hover:border-slate-300 transition-colors">
                     {media.type === 'PHOTO' ? (
-                      <img src={media.url} alt={media.filename} className="w-full h-full object-cover" />
+                      <img src={resolveFileUrl(media.url)} alt={media.filename} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <FileText size={32} className="text-slate-400" />

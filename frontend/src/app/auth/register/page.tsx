@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { authApi } from '@/lib/api';
+import api, { authApi } from '@/lib/api';
 import { Loader2, CheckCircle2, ChevronLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -49,11 +49,11 @@ function RegisterForm() {
     }
   }, [searchParams]);
 
-  // Récupérer le CSRF token au chargement de la page
+  // Obtenir le cookie CSRF avant l'envoi du formulaire (requête mutante)
   useEffect(() => {
-    fetch('/api/auth/csrf', { credentials: 'include' })
-      .then(res => res.json())
-      .catch(err => console.error('Failed to fetch CSRF token:', err));
+    api.get('/auth/csrf').catch(() => {
+      /* sans cookie, l'inscription renverra une erreur explicite */
+    });
   }, []);
 
   const selectedPlan = PLANS.find((p) => p.id === plan);

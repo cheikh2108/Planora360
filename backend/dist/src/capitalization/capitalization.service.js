@@ -11,8 +11,10 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CapitalizationService = void 0;
 const common_1 = require("@nestjs/common");
+const file_validator_1 = require("../documents/file-validator");
 const prisma_service_1 = require("../common/prisma/prisma.service");
 const storage_service_1 = require("../storage/storage.service");
+const MEDIA_TYPES = ['PHOTO', 'VIDEO', 'DOCUMENT'];
 let CapitalizationService = class CapitalizationService {
     prisma;
     storage;
@@ -52,7 +54,7 @@ let CapitalizationService = class CapitalizationService {
                 { solutions: { contains: filters.search, mode: 'insensitive' } },
             ];
         }
-        return this.prisma.capitalizationRecord.findMany({
+        const records = await this.prisma.capitalizationRecord.findMany({
             where,
             include: {
                 media: true,
@@ -61,6 +63,15 @@ let CapitalizationService = class CapitalizationService {
                 createdAt: 'desc',
             },
         });
+        return records.map((r) => this.withMediaUrls(r));
+    }
+    withMediaUrls(record) {
+        if (!record.media)
+            return record;
+        return {
+            ...record,
+            media: record.media.map((m) => ({ ...m, url: this.storage.fileUrl(this.storage.keyFromStored(m.url)) })),
+        };
     }
     async findOne(id, organizationId) {
         const record = await this.prisma.capitalizationRecord.findFirst({
@@ -72,7 +83,7 @@ let CapitalizationService = class CapitalizationService {
         if (!record) {
             throw new common_1.NotFoundException('Fiche de capitalisation non trouvée');
         }
-        return record;
+        return this.withMediaUrls(record);
     }
     async update(id, dto, organizationId, userId) {
         const record = await this.findOne(id, organizationId);
@@ -109,23 +120,29 @@ let CapitalizationService = class CapitalizationService {
     }
     async uploadMedia(capitalizationId, file, type, organizationId) {
         await this.findOne(capitalizationId, organizationId);
-        const storageKey = `capitalization/${organizationId}/${capitalizationId}/${Date.now()}-${file.originalname}`;
-        const uploadedKey = await this.storage.upload(storageKey, file);
-        const url = await this.storage.getSignedUrl(uploadedKey);
-        return this.prisma.media.create({
+        if (!file)
+            throw new common_1.BadRequestException('Fichier manquant');
+        const ext = await (0, file_validator_1.validateFile)(file, { allowed: file_validator_1.MEDIA_EXTENSIONS, maxSize: 10 * 1024 * 1024 });
+        const storageKey = this.storage.buildKey(organizationId, ['capitalization', capitalizationId], ext);
+        await this.storage.upload(storageKey, file);
+        const mediaType = MEDIA_TYPES.includes(type)
+            ? type
+            : ['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(ext) ? 'PHOTO' : 'DOCUMENT';
+        const media = await this.prisma.media.create({
             data: {
                 capitalizationId,
-                type,
+                type: mediaType,
                 filename: file.originalname,
-                url: uploadedKey,
+                url: storageKey,
                 size: file.size,
             },
         });
+        return { ...media, url: this.storage.fileUrl(storageKey) };
     }
     async deleteMedia(mediaId, capitalizationId, organizationId) {
         await this.findOne(capitalizationId, organizationId);
-        const media = await this.prisma.media.findUnique({
-            where: { id: mediaId },
+        const media = await this.prisma.media.findFirst({
+            where: { id: mediaId, capitalizationId },
         });
         if (!media) {
             throw new common_1.NotFoundException('Média non trouvé');

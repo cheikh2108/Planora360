@@ -1,134 +1,129 @@
-import axios from 'axios';
+import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import {
   API_BASE_URL,
   ERROR_MESSAGES,
+  ERROR_CODE_MESSAGES,
   NETWORK_ERROR_MESSAGE,
   LOGIN_REDIRECT_URL,
 } from './api-constants';
-import { TokenStorage } from './token-storage';
 
+/**
+ * Client HTTP de l'application.
+ *
+ * Authentification : jetons dans des cookies httpOnly posés par le backend (jamais lisibles ni
+ * stockés côté client). Les requêtes mutantes portent l'en-tête X-CSRF-Token (double-submit).
+ * Sur un 401, une seule demande de rafraîchissement est faite pour toutes les requêtes en attente,
+ * puis elles sont rejouées ; si le rafraîchissement échoue, retour à la page de connexion.
+ */
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
-  withCredentials: true, // CRITICAL: Envoie les cookies httpOnly avec chaque requête
+  withCredentials: true,
 });
 
-/**
- * Récupère le token CSRF depuis les cookies
- */
+/** Routes d'authentification : un 401 y est une réponse métier, pas une session expirée. */
+const AUTH_ROUTES = /\/auth\/(login|register|refresh|logout|request-quote|forgot-password|reset-password)\b/;
+
 function getCsrfToken(): string | null {
   if (typeof document === 'undefined') return null;
-  const match = document.cookie.match(/csrf-token=([^;]+)/);
-  return match ? match[1] : null;
+  const match = document.cookie.match(/(?:^|;\s*)csrf-token=([^;]+)/);
+  return match ? decodeURIComponent(match[1]) : null;
 }
 
 api.interceptors.request.use((config) => {
-  // Ajouter token CSRF pour les requêtes mutantes (protection CSRF)
-  const method = config.method?.toUpperCase();
-  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method || '')) {
+  const method = config.method?.toUpperCase() ?? 'GET';
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
     const csrfToken = getCsrfToken();
-    console.log('[API Interceptor] CSRF Token:', {
-      method,
-      url: config.url,
-      csrfToken: csrfToken ? `${csrfToken.substring(0, 20)}...` : 'MISSING',
-      allCookies: typeof document !== 'undefined' ? document.cookie : 'SSR'
-    });
-    if (csrfToken) {
-      config.headers['X-CSRF-Token'] = csrfToken;
-    } else {
-      console.warn('[API Interceptor] No CSRF token found for mutating request!');
-    }
+    if (csrfToken) config.headers['X-CSRF-Token'] = csrfToken;
   }
-
-  // Rétrocompatibilité: fallback sur localStorage si cookies pas encore disponibles
-  const token = TokenStorage.getAccessToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
   return config;
 });
 
+type RetriableConfig = InternalAxiosRequestConfig & { _retry?: boolean };
+
 api.interceptors.response.use(
   (res) => res,
-  async (err) => {
-    if (err.response?.status === 401) {
-      return handleUnauthorizedError(err);
+  async (err: AxiosError) => {
+    const original = err.config as RetriableConfig | undefined;
+    const isAuthRoute = AUTH_ROUTES.test(original?.url ?? '');
+
+    if (err.response?.status === 401 && original && !original._retry && !isAuthRoute) {
+      original._retry = true;
+      try {
+        await refreshSession();
+        return api(original);
+      } catch {
+        redirectToLogin();
+      }
     }
 
-    transformErrorMessage(err);
+    transformErrorMessage(err as AxiosError<{ message?: string | string[] }>);
     return Promise.reject(err);
   },
 );
 
-async function handleUnauthorizedError(err: any) {
-  const original = err.config;
+/** Rafraîchissement partagé : plusieurs 401 simultanés ne déclenchent qu'un seul appel. */
+let refreshing: Promise<void> | null = null;
 
-  if (original._retry) {
-    return Promise.reject(err);
+function refreshSession(): Promise<void> {
+  if (!refreshing) {
+    refreshing = axios
+      .post(`${API_BASE_URL}/auth/refresh`, {}, { withCredentials: true })
+      .then(() => undefined)
+      .finally(() => {
+        refreshing = null;
+      });
   }
-
-  original._retry = true;
-
-  // Vérifier si on a un refresh token (cookie ou localStorage)
-  const hasRefreshToken = hasCookie('refreshToken') || TokenStorage.hasRefreshToken();
-  if (!hasRefreshToken) {
-    redirectToLogin();
-    return Promise.reject(err);
-  }
-
-  try {
-    await refreshAccessToken();
-    // Plus besoin de modifier Authorization header - le cookie est automatiquement envoyé
-    return api(original);
-  } catch {
-    redirectToLogin();
-    return Promise.reject(err);
-  }
-}
-
-/**
- * Vérifie si un cookie existe
- */
-function hasCookie(name: string): boolean {
-  if (typeof document === 'undefined') return false;
-  return document.cookie.includes(`${name}=`);
-}
-
-async function refreshAccessToken(): Promise<void> {
-  // Le refresh token est automatiquement envoyé via le cookie httpOnly
-  // Backend retourne les nouveaux tokens dans des cookies
-  const refreshToken = TokenStorage.getRefreshToken(); // Fallback localStorage
-  await axios.post(
-    `${API_BASE_URL}/auth/refresh`,
-    refreshToken ? { refreshToken } : {}, // Body vide si cookie présent
-    { withCredentials: true }
-  );
-  // Les nouveaux cookies sont automatiquement définis par le navigateur
+  return refreshing;
 }
 
 function redirectToLogin() {
-  TokenStorage.clearTokens();
-  // Note: on ne fait PAS localStorage.clear() ici pour préserver d'autres données
-  // L'utilisateur sera redirigé vers login qui nettoiera si nécessaire
-  if (typeof window !== 'undefined') {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.removeItem('user');
+  } catch {
+    /* stockage indisponible */
+  }
+  if (!window.location.pathname.startsWith(LOGIN_REDIRECT_URL)) {
     window.location.href = LOGIN_REDIRECT_URL;
   }
 }
 
-function transformErrorMessage(err: any) {
-  if (err.response?.status) {
-    const status = err.response.status;
-    const backendMessage = err.response.data?.message;
-
-    if (backendMessage && typeof backendMessage === 'string') {
-      err.message = backendMessage;
-    } else if (ERROR_MESSAGES[status]) {
-      err.message = ERROR_MESSAGES[status];
-    }
-  } else if (!err.response) {
+/** Remplace le message technique par un message lisible (français) dans err.message. */
+function transformErrorMessage(err: AxiosError<{ message?: string | string[] }>) {
+  if (!err.response) {
     err.message = NETWORK_ERROR_MESSAGE;
+    return;
   }
+  const status: number = err.response.status;
+  const raw = err.response.data?.message;
+  const backendMessage = Array.isArray(raw) ? raw.join(' ') : raw;
+
+  if (status === 429) {
+    // Le message du limiteur est en anglais (« ThrottlerException: Too Many Requests »)
+    err.message = ERROR_MESSAGES[429];
+  } else if (typeof backendMessage === 'string' && ERROR_CODE_MESSAGES[backendMessage]) {
+    err.message = ERROR_CODE_MESSAGES[backendMessage];
+  } else if (typeof backendMessage === 'string' && backendMessage.trim() && status < 500) {
+    err.message = backendMessage;
+  } else if (ERROR_MESSAGES[status]) {
+    err.message = ERROR_MESSAGES[status];
+  }
+}
+
+/** Message d'erreur affichable à partir de n'importe quelle erreur (axios ou autre). */
+export function getErrorMessage(err: unknown, fallback = 'Une erreur est survenue.'): string {
+  const message = err instanceof Error ? err.message : (err as { message?: unknown } | null)?.message;
+  if (typeof message === 'string' && message && !/^Request failed with status code/.test(message)) {
+    return message;
+  }
+  return fallback;
+}
+
+/** Code d'erreur brut renvoyé par le backend (ex. REGISTRATION_PENDING), s'il y en a un. */
+export function getErrorCode(err: unknown): string | undefined {
+  const raw = (err as AxiosError<{ message?: unknown }> | null)?.response?.data?.message;
+  return typeof raw === 'string' ? raw : undefined;
 }
 
 export default api;
@@ -150,7 +145,8 @@ export const authApi = {
   setup2fa: () => api.post('/auth/2fa/setup'),
   enable2fa: (token: string) => api.post('/auth/2fa/enable', { token }),
   disable2fa: (token: string) => api.post('/auth/2fa/disable', { token }),
-  changePassword: (newPassword: string) => api.patch('/auth/change-password', { newPassword }),
+  changePassword: (currentPassword: string, newPassword: string) =>
+    api.patch('/auth/change-password', { currentPassword, newPassword }),
   getWebSocketToken: () => api.get('/auth/ws-token'), // Token temporaire sécurisé pour WebSocket
 };
 
@@ -381,7 +377,7 @@ export const demandesApi = {
   submit: (id: string) => api.post(`/passation/demandes/${id}/submit`),
   validate: (id: string, data: { decision: 'APPROUVE' | 'REJETE'; commentaire?: string }) =>
     api.post(`/passation/demandes/${id}/validate`, data),
-  getValidations: (id: string) => api.get(`/passation/demandes/${id}/validations`),
+  getWorkflow: (id: string) => api.get(`/passation/demandes/${id}/workflow`),
 };
 
 // Fournisseurs
@@ -413,8 +409,7 @@ export const proceduresApi = {
   remove: (id: string) => api.delete(`/passation/procedures/${id}`),
   publish: (id: string) => api.post(`/passation/procedures/${id}/publish`),
   close: (id: string) => api.post(`/passation/procedures/${id}/close`),
-  attribuer: (id: string, data: { soumissionId: string }) =>
-    api.post(`/passation/procedures/${id}/attribuer`, data),
+  cancel: (id: string, motif: string) => api.post(`/passation/procedures/${id}/cancel`, { motif }),
 };
 
 // Soumissions
@@ -455,8 +450,9 @@ export const contratsApi = {
   getOne: (id: string) => api.get(`/passation/contrats/${id}`),
   create: (data: any) => api.post('/passation/contrats', data),
   update: (id: string, data: any) => api.patch(`/passation/contrats/${id}`, data),
-  changeStatus: (id: string, status: string, motif?: string) =>
-    api.post(`/passation/contrats/${id}/status`, { status, motif }),
+  suspend: (id: string, motif?: string) => api.post(`/passation/contrats/${id}/suspend`, { motif }),
+  terminate: (id: string, motif?: string) => api.post(`/passation/contrats/${id}/terminate`, { motif }),
+  close: (id: string) => api.post(`/passation/contrats/${id}/close`),
   getDashboard: (id: string) => api.get(`/passation/contrats/${id}/dashboard`),
 };
 
@@ -474,16 +470,13 @@ export const conversationsApi = {
     contextId?: string;
     participantIds: string[];
   }) => api.post('/messagerie/conversations', data),
-  addParticipant: (id: string, data: { userId: string; role?: string }) =>
-    api.post(`/messagerie/conversations/${id}/participants`, data),
-  removeParticipant: (id: string, userId: string) =>
-    api.delete(`/messagerie/conversations/${id}/participants/${userId}`),
   archive: (id: string) => api.post(`/messagerie/conversations/${id}/archive`),
   unarchive: (id: string) => api.post(`/messagerie/conversations/${id}/unarchive`),
   delete: (id: string) => api.delete(`/messagerie/conversations/${id}`),
 };
 
-// Messages (REST API pour historique, WebSocket pour temps réel)
+// Messages : historique et envoi en REST ; modification, suppression, réactions et accusés de
+// lecture passent par le WebSocket (voir useMessagerie).
 export const messagesApi = {
   getAll: (conversationId: string, params?: { limit?: number; before?: string }) =>
     api.get(`/messagerie/conversations/${conversationId}/messages`, { params }),
@@ -493,20 +486,6 @@ export const messagesApi = {
     parentId?: string;
     mentionedUserIds?: string[];
   }) => api.post(`/messagerie/conversations/${conversationId}/messages`, data),
-  edit: (conversationId: string, messageId: string, content: string) =>
-    api.patch(`/messagerie/conversations/${conversationId}/messages/${messageId}`, { content }),
-  remove: (conversationId: string, messageId: string) =>
-    api.delete(`/messagerie/conversations/${conversationId}/messages/${messageId}`),
-  markAsRead: (conversationId: string, messageId: string) =>
-    api.post(`/messagerie/conversations/${conversationId}/messages/${messageId}/read`),
-  addReaction: (conversationId: string, messageId: string, emoji: string) =>
-    api.post(`/messagerie/conversations/${conversationId}/messages/${messageId}/reactions`, {
-      emoji,
-    }),
-  removeReaction: (conversationId: string, messageId: string, reactionId: string) =>
-    api.delete(
-      `/messagerie/conversations/${conversationId}/messages/${messageId}/reactions/${reactionId}`,
-    ),
 };
 
 // ============================================================================

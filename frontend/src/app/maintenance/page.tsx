@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import api from '@/lib/api';
 
 export default function MaintenancePage() {
   const [message, setMessage] = useState<string>('');
@@ -11,7 +12,7 @@ export default function MaintenancePage() {
   useEffect(() => {
     // Check if user is super admin
     const userStr = localStorage.getItem('user');
-    const isLoggedIn = userStr && localStorage.getItem('accessToken');
+    const isLoggedIn = !!userStr;
 
     if (userStr) {
       try {
@@ -24,9 +25,8 @@ export default function MaintenancePage() {
     }
 
     // Fetch maintenance info
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/maintenance/status`)
-      .then((res) => res.json())
-      .then((data) => {
+    api.get('/maintenance/status')
+      .then(({ data }) => {
         if (!data.maintenanceMode) {
           // Si la maintenance est désactivée, rediriger intelligemment
           if (isLoggedIn) {

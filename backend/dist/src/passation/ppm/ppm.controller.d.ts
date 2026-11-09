@@ -34,16 +34,16 @@ export declare class PpmController {
         }[];
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusPPM;
         title: string;
-        year: number;
+        projectId: string | null;
         createdBy: string;
+        year: number;
         validatedBy: string | null;
         validatedAt: Date | null;
-        projectId: string | null;
         reference: string;
         montantTotal: import("@prisma/client-runtime-utils").Decimal;
         nombreLignes: number;
@@ -76,16 +76,16 @@ export declare class PpmController {
         }[];
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusPPM;
         title: string;
-        year: number;
+        projectId: string | null;
         createdBy: string;
+        year: number;
         validatedBy: string | null;
         validatedAt: Date | null;
-        projectId: string | null;
         reference: string;
         montantTotal: import("@prisma/client-runtime-utils").Decimal;
         nombreLignes: number;
@@ -101,8 +101,8 @@ export declare class PpmController {
                 title: string;
             } | null;
             responsable: {
-                id: string;
                 email: string;
+                id: string;
                 firstName: string;
                 lastName: string;
             };
@@ -129,16 +129,16 @@ export declare class PpmController {
         })[];
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusPPM;
         title: string;
-        year: number;
+        projectId: string | null;
         createdBy: string;
+        year: number;
         validatedBy: string | null;
         validatedAt: Date | null;
-        projectId: string | null;
         reference: string;
         montantTotal: import("@prisma/client-runtime-utils").Decimal;
         nombreLignes: number;
@@ -171,32 +171,32 @@ export declare class PpmController {
         }[];
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusPPM;
         title: string;
-        year: number;
+        projectId: string | null;
         createdBy: string;
+        year: number;
         validatedBy: string | null;
         validatedAt: Date | null;
-        projectId: string | null;
         reference: string;
         montantTotal: import("@prisma/client-runtime-utils").Decimal;
         nombreLignes: number;
     }>;
     remove(id: string, req: any): Promise<{
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusPPM;
         title: string;
-        year: number;
+        projectId: string | null;
         createdBy: string;
+        year: number;
         validatedBy: string | null;
         validatedAt: Date | null;
-        projectId: string | null;
         reference: string;
         montantTotal: import("@prisma/client-runtime-utils").Decimal;
         nombreLignes: number;
@@ -225,16 +225,16 @@ export declare class PpmController {
         }[];
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusPPM;
         title: string;
-        year: number;
+        projectId: string | null;
         createdBy: string;
+        year: number;
         validatedBy: string | null;
         validatedAt: Date | null;
-        projectId: string | null;
         reference: string;
         montantTotal: import("@prisma/client-runtime-utils").Decimal;
         nombreLignes: number;
@@ -267,16 +267,16 @@ export declare class PpmController {
         }[];
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusPPM;
         title: string;
-        year: number;
+        projectId: string | null;
         createdBy: string;
+        year: number;
         validatedBy: string | null;
         validatedAt: Date | null;
-        projectId: string | null;
         reference: string;
         montantTotal: import("@prisma/client-runtime-utils").Decimal;
         nombreLignes: number;
@@ -287,8 +287,8 @@ export declare class PpmController {
             title: string;
         } | null;
         responsable: {
-            id: string;
             email: string;
+            id: string;
             firstName: string;
             lastName: string;
         };
@@ -314,7 +314,7 @@ export declare class PpmController {
         responsableId: string;
     }>;
     export(id: string, req: any, format?: 'pdf' | 'excel'): Promise<{
-        format: "pdf" | "excel";
+        format: "excel" | "pdf";
         data: {
             project: {
                 id: string;
@@ -326,8 +326,8 @@ export declare class PpmController {
                     title: string;
                 } | null;
                 responsable: {
-                    id: string;
                     email: string;
+                    id: string;
                     firstName: string;
                     lastName: string;
                 };
@@ -354,16 +354,16 @@ export declare class PpmController {
             })[];
         } & {
             id: string;
-            organizationId: string;
             createdAt: Date;
             updatedAt: Date;
+            organizationId: string;
             status: import(".prisma/client").$Enums.StatusPPM;
             title: string;
-            year: number;
+            projectId: string | null;
             createdBy: string;
+            year: number;
             validatedBy: string | null;
             validatedAt: Date | null;
-            projectId: string | null;
             reference: string;
             montantTotal: import("@prisma/client-runtime-utils").Decimal;
             nombreLignes: number;

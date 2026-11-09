@@ -23,8 +23,11 @@ let CsrfGuard = class CsrfGuard {
         if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
             return true;
         }
-        const url = request.url;
-        if (url.match(/^\/(api\/)?auth\/(login|register|refresh)/)) {
+        const path = request.path ?? request.url.split('?')[0];
+        if (/^\/(api\/)?auth\/(login|register|refresh|request-quote)$/.test(path)) {
+            return true;
+        }
+        if (/^\/(api\/)?dexpay\/webhook$/.test(path)) {
             return true;
         }
         const csrfCookie = request.cookies?.['csrf-token'];

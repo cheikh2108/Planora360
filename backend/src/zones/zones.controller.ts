@@ -19,8 +19,10 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { SubscriptionGuard, RequiresPlan } from '../common/guards/subscription.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { HttpCacheInterceptor } from '../common/cache/cache.interceptor';
+import { WriteRoles, ZONE_WRITERS } from '../common/guards/write-roles.guard';
 
 @Controller('zones')
+@WriteRoles({ roles: ZONE_WRITERS, permission: 'plan.update' })
 @UseGuards(JwtAuthGuard, SubscriptionGuard)
 @RequiresPlan(SubscriptionPlan.ORGANISATION, SubscriptionPlan.ENTERPRISE)
 @UseInterceptors(HttpCacheInterceptor)
@@ -47,26 +49,8 @@ export class ZonesController {
     return this.zonesService.getZoneStats(user.organizationId);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.zonesService.findOne(id, user.organizationId);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateZoneDto: UpdateZoneDto,
-    @CurrentUser() user: any,
-  ) {
-    return this.zonesService.update(id, updateZoneDto, user.organizationId);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.zonesService.remove(id, user.organizationId);
-  }
-
   // ========== Configuration des zones géographiques ==========
+  // Déclarées avant les routes « :id » : sinon GET /zones/config est capturé par findOne.
 
   @Get('config/presets')
   getPresets() {
@@ -86,5 +70,26 @@ export class ZonesController {
   @Patch('config')
   updateConfig(@Body() dto: UpdateZoneConfigDto, @CurrentUser() user: any) {
     return this.zonesService.createOrUpdateZoneConfig(dto, user.organizationId);
+  }
+
+  // ========== Zones ==========
+
+  @Get(':id')
+  findOne(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.zonesService.findOne(id, user.organizationId);
+  }
+
+  @Patch(':id')
+  update(
+    @Param('id') id: string,
+    @Body() updateZoneDto: UpdateZoneDto,
+    @CurrentUser() user: any,
+  ) {
+    return this.zonesService.update(id, updateZoneDto, user.organizationId);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.zonesService.remove(id, user.organizationId);
   }
 }

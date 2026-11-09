@@ -63,10 +63,10 @@ export declare class ChecklistService {
             activityId: string | null;
             fileSize: number | null;
             type: string;
-            checklistItemId: string | null;
-            storageKey: string;
             fileName: string;
             mimeType: string | null;
+            checklistItemId: string | null;
+            storageKey: string;
             uploadedById: string;
         }[];
     } & {

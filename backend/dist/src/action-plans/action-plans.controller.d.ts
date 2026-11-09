@@ -27,9 +27,9 @@ export declare class ActionPlansController {
         }[];
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.PlanStatus;
         title: string;
         expectedResults: string | null;
@@ -43,19 +43,6 @@ export declare class ActionPlansController {
             _count: {
                 axes: number;
             };
-            zones: ({
-                zone: {
-                    id: string;
-                    name: string;
-                    code: string | null;
-                    level: number;
-                };
-            } & {
-                id: string;
-                createdAt: Date;
-                zoneId: string;
-                actionPlanId: string;
-            })[];
             axes: ({
                 _count: {
                     activities: number;
@@ -68,9 +55,9 @@ export declare class ActionPlansController {
             })[];
         } & {
             id: string;
-            organizationId: string;
             createdAt: Date;
             updatedAt: Date;
+            organizationId: string;
             status: import(".prisma/client").$Enums.PlanStatus;
             title: string;
             expectedResults: string | null;
@@ -84,19 +71,6 @@ export declare class ActionPlansController {
         limit: number;
     }>;
     findOne(id: string, user: any): Promise<{
-        zones: ({
-            zone: {
-                id: string;
-                name: string;
-                code: string | null;
-                level: number;
-            };
-        } & {
-            id: string;
-            createdAt: Date;
-            zoneId: string;
-            actionPlanId: string;
-        })[];
         axes: ({
             activities: ({
                 _count: {
@@ -104,22 +78,22 @@ export declare class ActionPlansController {
                     subActivities: number;
                 };
                 responsible: {
-                    id: string;
                     email: string;
+                    id: string;
                     firstName: string;
                     lastName: string;
                 };
             } & {
                 id: string;
-                organizationId: string;
                 createdAt: Date;
                 updatedAt: Date;
+                organizationId: string;
                 status: import(".prisma/client").$Enums.ActivityStatus;
                 description: string | null;
                 startDate: Date;
+                title: string;
                 axisId: string;
                 parentActivityId: string | null;
-                title: string;
                 expectedResults: string | null;
                 responsibleId: string;
                 dueDate: Date;
@@ -137,9 +111,9 @@ export declare class ActionPlansController {
         })[];
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.PlanStatus;
         title: string;
         expectedResults: string | null;
@@ -157,9 +131,9 @@ export declare class ActionPlansController {
         }[];
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.PlanStatus;
         title: string;
         expectedResults: string | null;
@@ -170,9 +144,9 @@ export declare class ActionPlansController {
     }>;
     remove(id: string, user: any): Promise<{
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.PlanStatus;
         title: string;
         expectedResults: string | null;

@@ -17,8 +17,11 @@ import { FournisseursService } from './fournisseurs.service';
 import { CreateFournisseurDto } from './dto/create-fournisseur.dto';
 import { UpdateFournisseurDto } from './dto/update-fournisseur.dto';
 import { StatusFournisseur } from '@prisma/client';
+import { WriteRoles, PASSATION_WRITERS } from '../../common/guards/write-roles.guard';
+import { AddFournisseurDocumentDto } from './dto/add-document.dto';
 
 @Controller('passation/fournisseurs')
+@WriteRoles({ roles: PASSATION_WRITERS, permission: 'plan.update' })
 @UseGuards(JwtAuthGuard, SubscriptionGuard)
 @RequiresPlan(SubscriptionPlan.ORGANISATION, SubscriptionPlan.ENTERPRISE)
 export class FournisseursController {
@@ -105,7 +108,7 @@ export class FournisseursController {
   addDocument(
     @Param('id') id: string,
     @Req() req,
-    @Body() documentData: any
+    @Body() documentData: AddFournisseurDocumentDto
   ) {
     return this.fournisseursService.addDocument(
       id,

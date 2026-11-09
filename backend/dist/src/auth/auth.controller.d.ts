@@ -1,3 +1,5 @@
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { RequestQuoteDto } from './dto/request-quote.dto';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -18,6 +20,29 @@ export declare class AuthController {
         expiresIn: number;
     }>;
     register(dto: RegisterOrganizationDto): Promise<{
+        requiresQuote: boolean;
+        plan: "PRO" | "EQUIPE" | "ORGANISATION" | "ENTERPRISE";
+        message: string;
+        success?: undefined;
+        organizationId?: undefined;
+        userId?: undefined;
+        status?: undefined;
+    } | {
+        success: boolean;
+        organizationId: string;
+        userId: string;
+        status: string;
+        message: string;
+        requiresQuote?: undefined;
+        plan?: undefined;
+    }>;
+    verifyEmail(token: string): Promise<{
+        success: boolean;
+        message: string;
+        email: string;
+    }>;
+    requestQuote(dto: RequestQuoteDto): Promise<{
+        success: boolean;
         message: string;
     }>;
     login(dto: LoginDto, request: Request, response: Response): Promise<{
@@ -35,12 +60,14 @@ export declare class AuthController {
             role: {
                 id: any;
                 name: any;
+                organizationId: any;
                 permissions: any;
             };
             organization: {
                 id: any;
                 name: any;
                 brandColor: any;
+                subscriptionPlan: any;
             } | undefined;
         };
         csrfToken: string;
@@ -60,12 +87,14 @@ export declare class AuthController {
             role: {
                 id: any;
                 name: any;
+                organizationId: any;
                 permissions: any;
             };
             organization: {
                 id: any;
                 name: any;
                 brandColor: any;
+                subscriptionPlan: any;
             } | undefined;
         };
         csrfToken: string;
@@ -73,7 +102,31 @@ export declare class AuthController {
     getCsrfToken(response: Response): {
         csrfToken: string;
     };
-    logout(user: any, response: Response): Promise<{
+    getMe(user: any): Promise<{
+        user: {
+            id: any;
+            email: any;
+            firstName: any;
+            lastName: any;
+            organizationId: any;
+            isActive: any;
+            mustChangePassword: any;
+            twoFactorEnabled: any;
+            role: {
+                id: any;
+                name: any;
+                organizationId: any;
+                permissions: any;
+            };
+            organization: {
+                id: any;
+                name: any;
+                brandColor: any;
+                subscriptionPlan: any;
+            } | undefined;
+        };
+    }>;
+    logout(user: any, request: Request, response: Response): Promise<{
         message: string;
     }>;
     setup2fa(user: any): Promise<{
@@ -86,9 +139,7 @@ export declare class AuthController {
     disable2fa(user: any, dto: Verify2faDto): Promise<{
         message: string;
     }>;
-    changePassword(user: any, dto: {
-        newPassword: string;
-    }): Promise<{
+    changePassword(user: any, dto: ChangePasswordDto): Promise<{
         message: string;
     }>;
     private checkMaintenanceMode;

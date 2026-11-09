@@ -48,6 +48,7 @@ const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const client_s3_1 = require("@aws-sdk/client-s3");
 const s3_request_presigner_1 = require("@aws-sdk/s3-request-presigner");
+const crypto_1 = require("crypto");
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 let StorageService = StorageService_1 = class StorageService {
@@ -56,6 +57,7 @@ let StorageService = StorageService_1 = class StorageService {
     s3 = null;
     bucket;
     useLocal;
+    localRoot = path.resolve(process.cwd(), 'uploads');
     constructor(config) {
         this.config = config;
         const keyId = config.get('B2_KEY_ID');
@@ -74,9 +76,40 @@ let StorageService = StorageService_1 = class StorageService {
             this.logger.warn('Stockage : local (uploads/) — configurer B2_KEY_ID et B2_APP_KEY pour la production');
         }
     }
+    get isLocal() {
+        return this.useLocal;
+    }
+    buildKey(organizationId, segments, extension) {
+        const clean = (s) => s.replace(/[^A-Za-z0-9_-]/g, '');
+        const ext = clean(extension.toLowerCase());
+        return [clean(organizationId), ...segments.map(clean), `${(0, crypto_1.randomUUID)()}${ext ? `.${ext}` : ''}`].join('/');
+    }
+    fileUrl(storageKey) {
+        return `/api/files/${storageKey.split('/').map(encodeURIComponent).join('/')}`;
+    }
+    keyFromStored(value) {
+        if (!value)
+            return value;
+        for (const prefix of ['/api/files/', '/uploads/']) {
+            if (value.startsWith(prefix))
+                return decodeURIComponent(value.slice(prefix.length).split('?')[0]);
+        }
+        const b2 = value.match(/\/file\/[^/]+\/(.+?)(\?|$)/);
+        if (b2)
+            return decodeURIComponent(b2[1]);
+        return value;
+    }
+    localPath(storageKey) {
+        const resolved = path.resolve(this.localRoot, storageKey);
+        if (!resolved.startsWith(this.localRoot + path.sep))
+            return null;
+        return resolved;
+    }
     async upload(storageKey, file) {
         if (this.useLocal) {
-            const dest = path.join(process.cwd(), 'uploads', storageKey);
+            const dest = this.localPath(storageKey);
+            if (!dest)
+                throw new Error('Clé de stockage invalide');
             fs.mkdirSync(path.dirname(dest), { recursive: true });
             fs.writeFileSync(dest, file.buffer ?? fs.readFileSync(file.path));
             return storageKey;
@@ -90,28 +123,21 @@ let StorageService = StorageService_1 = class StorageService {
         }));
         return storageKey;
     }
-    async getSignedUrl(storageKey, expiresInSeconds = 3600) {
+    async getSignedUrl(storageKey, expiresInSeconds = 300) {
         if (this.useLocal) {
-            return `/api/files/${encodeURIComponent(storageKey)}`;
+            return this.fileUrl(storageKey);
         }
         return (0, s3_request_presigner_1.getSignedUrl)(this.s3, new client_s3_1.GetObjectCommand({ Bucket: this.bucket, Key: storageKey }), { expiresIn: expiresInSeconds });
     }
-    getPublicUrl(storageKey) {
-        if (this.useLocal) {
-            return `/uploads/${storageKey}`;
-        }
-        const endpoint = this.config.get('B2_ENDPOINT') ?? 'https://s3.us-east-005.backblazeb2.com';
-        const regionCode = endpoint.match(/us-east-(\d+)/)?.[1] || '005';
-        return `https://f${regionCode}.backblazeb2.com/file/${this.bucket}/${storageKey}`;
-    }
     async delete(storageKey) {
+        const key = this.keyFromStored(storageKey);
         if (this.useLocal) {
-            const filePath = path.join(process.cwd(), 'uploads', storageKey);
-            if (fs.existsSync(filePath))
+            const filePath = this.localPath(key);
+            if (filePath && fs.existsSync(filePath))
                 fs.unlinkSync(filePath);
             return;
         }
-        await this.s3.send(new client_s3_1.DeleteObjectCommand({ Bucket: this.bucket, Key: storageKey }));
+        await this.s3.send(new client_s3_1.DeleteObjectCommand({ Bucket: this.bucket, Key: key }));
     }
 };
 exports.StorageService = StorageService;

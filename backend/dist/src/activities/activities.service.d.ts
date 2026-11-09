@@ -41,15 +41,15 @@ export declare class ActivitiesService {
                 };
             } & {
                 id: string;
-                organizationId: string;
                 createdAt: Date;
                 updatedAt: Date;
+                organizationId: string;
                 status: import(".prisma/client").$Enums.ActivityStatus;
                 description: string | null;
                 startDate: Date;
+                title: string;
                 axisId: string;
                 parentActivityId: string | null;
-                title: string;
                 expectedResults: string | null;
                 responsibleId: string;
                 dueDate: Date;
@@ -60,15 +60,15 @@ export declare class ActivitiesService {
                 risks: string | null;
             })[];
             responsible: {
-                id: string;
                 email: string;
+                id: string;
                 firstName: string;
                 lastName: string;
             };
             collaborators: ({
                 user: {
-                    id: string;
                     email: string;
+                    id: string;
                     firstName: string;
                     lastName: string;
                 };
@@ -94,15 +94,15 @@ export declare class ActivitiesService {
             })[];
         } & {
             id: string;
-            organizationId: string;
             createdAt: Date;
             updatedAt: Date;
+            organizationId: string;
             status: import(".prisma/client").$Enums.ActivityStatus;
             description: string | null;
             startDate: Date;
+            title: string;
             axisId: string;
             parentActivityId: string | null;
-            title: string;
             expectedResults: string | null;
             responsibleId: string;
             dueDate: Date;
@@ -117,6 +117,11 @@ export declare class ActivitiesService {
         limit: number;
     }>;
     findOne(id: string, organizationId: string): Promise<{
+        _count: {
+            checklistItems: number;
+            validations: number;
+            documents: number;
+        };
         checklistItems: ({
             responsible: {
                 id: string;
@@ -137,11 +142,6 @@ export declare class ActivitiesService {
             observations: string | null;
             isValidated: boolean;
         })[];
-        _count: {
-            checklistItems: number;
-            validations: number;
-            documents: number;
-        };
         axis: {
             id: string;
             title: string;
@@ -158,15 +158,15 @@ export declare class ActivitiesService {
             };
         } & {
             id: string;
-            organizationId: string;
             createdAt: Date;
             updatedAt: Date;
+            organizationId: string;
             status: import(".prisma/client").$Enums.ActivityStatus;
             description: string | null;
             startDate: Date;
+            title: string;
             axisId: string;
             parentActivityId: string | null;
-            title: string;
             expectedResults: string | null;
             responsibleId: string;
             dueDate: Date;
@@ -177,8 +177,8 @@ export declare class ActivitiesService {
             risks: string | null;
         })[];
         responsible: {
-            id: string;
             email: string;
+            id: string;
             firstName: string;
             lastName: string;
         };
@@ -193,8 +193,8 @@ export declare class ActivitiesService {
         }[];
         collaborators: ({
             user: {
-                id: string;
                 email: string;
+                id: string;
                 firstName: string;
                 lastName: string;
             };
@@ -220,15 +220,15 @@ export declare class ActivitiesService {
         })[];
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.ActivityStatus;
         description: string | null;
         startDate: Date;
+        title: string;
         axisId: string;
         parentActivityId: string | null;
-        title: string;
         expectedResults: string | null;
         responsibleId: string;
         dueDate: Date;
@@ -261,15 +261,15 @@ export declare class ActivitiesService {
             };
         } & {
             id: string;
-            organizationId: string;
             createdAt: Date;
             updatedAt: Date;
+            organizationId: string;
             status: import(".prisma/client").$Enums.ActivityStatus;
             description: string | null;
             startDate: Date;
+            title: string;
             axisId: string;
             parentActivityId: string | null;
-            title: string;
             expectedResults: string | null;
             responsibleId: string;
             dueDate: Date;
@@ -280,15 +280,15 @@ export declare class ActivitiesService {
             risks: string | null;
         })[];
         responsible: {
-            id: string;
             email: string;
+            id: string;
             firstName: string;
             lastName: string;
         };
         collaborators: ({
             user: {
-                id: string;
                 email: string;
+                id: string;
                 firstName: string;
                 lastName: string;
             };
@@ -314,15 +314,15 @@ export declare class ActivitiesService {
         })[];
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.ActivityStatus;
         description: string | null;
         startDate: Date;
+        title: string;
         axisId: string;
         parentActivityId: string | null;
-        title: string;
         expectedResults: string | null;
         responsibleId: string;
         dueDate: Date;
@@ -334,15 +334,15 @@ export declare class ActivitiesService {
     }>;
     remove(id: string, organizationId: string): Promise<{
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.ActivityStatus;
         description: string | null;
         startDate: Date;
+        title: string;
         axisId: string;
         parentActivityId: string | null;
-        title: string;
         expectedResults: string | null;
         responsibleId: string;
         dueDate: Date;
@@ -352,4 +352,16 @@ export declare class ActivitiesService {
         completionRate: number;
         risks: string | null;
     }>;
+    importFromExcel(file: Express.Multer.File, planId: string, organizationId: string, userId: string): Promise<{
+        success: number;
+        errors: number;
+        total: number;
+        created: any[];
+        errorDetails: {
+            line: number;
+            error: string;
+        }[];
+    }>;
+    private sanitizeString;
+    private parseExcelDate;
 }

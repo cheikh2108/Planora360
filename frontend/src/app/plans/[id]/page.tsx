@@ -20,6 +20,8 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/toast';
 import { ImportActivitiesModal } from '@/components/activities/ImportActivitiesModal';
+import { useAuth } from '@/lib/auth-context';
+import { canAccess } from '@/lib/access';
 
 function AxisSection({ axis, planId, planPeriodStart, planPeriodEnd, readonly }: {
   axis: Axis;
@@ -284,6 +286,9 @@ export default function PlanDetailPage() {
   const [addAxisOpen, setAddAxisOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const { user } = useAuth();
+  const canWrite = canAccess(user, 'planWrite');
+  const canDelete = canAccess(user, 'planDelete');
 
   const { data: plan, isLoading } = useQuery<ActionPlan>({
     queryKey: ['plan', id],
@@ -351,7 +356,8 @@ export default function PlanDetailPage() {
           <div className="flex items-center gap-2 flex-wrap justify-end">
             <select
               value={plan.status}
-              disabled={changingStatus}
+              aria-label="Statut du plan"
+              disabled={changingStatus || !canWrite}
               onChange={e => changeStatus(e.target.value as PlanStatus)}
               className={cn(
                 'text-xs font-semibold rounded-full px-3 py-1.5 border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30 disabled:opacity-50',
@@ -362,17 +368,24 @@ export default function PlanDetailPage() {
                 <option key={s} value={s}>{PLAN_STATUS_META[s].label}</option>
               ))}
             </select>
-            <Button variant="secondary" icon={<Upload size={16} />} onClick={() => setImportModalOpen(true)} disabled={isLocked}>
-              Importer
-            </Button>
-            <Button icon={<Plus size={16} />} onClick={() => setAddAxisOpen(true)} disabled={isLocked}>Ajouter un axe</Button>
-            <button
-              onClick={() => setConfirmDelete(true)}
-              className="p-2 rounded-xl text-slate-600 hover:text-red-500 hover:bg-red-50 transition-colors"
-              title="Supprimer le plan"
-            >
-              <Trash2 size={16} />
-            </button>
+            {canWrite && (
+              <>
+                <Button variant="secondary" icon={<Upload size={16} />} onClick={() => setImportModalOpen(true)} disabled={isLocked}>
+                  Importer
+                </Button>
+                <Button icon={<Plus size={16} />} onClick={() => setAddAxisOpen(true)} disabled={isLocked}>Ajouter un axe</Button>
+              </>
+            )}
+            {canDelete && (
+              <button
+                onClick={() => setConfirmDelete(true)}
+                className="p-2 rounded-xl text-slate-600 hover:text-red-500 hover:bg-red-50 transition-colors"
+                title="Supprimer le plan"
+                aria-label="Supprimer le plan"
+              >
+                <Trash2 size={16} />
+              </button>
+            )}
           </div>
         </div>
 

@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
+import { createHmac, timingSafeEqual } from 'crypto';
 
 export interface CreateCheckoutParams {
   amount: number;          // en centimes (ex: 1000000 = 10 000 XOF)
@@ -150,37 +151,30 @@ export class DexpayService {
    * Vérifier la signature HMAC-SHA256 d'un webhook DexPay
    * Header: x-dexchange-signature
    */
-  verifyWebhookSignature(signature: string, payload: any): boolean {
+  verifyWebhookSignature(signature: string | undefined, rawBody: Buffer | string | undefined): boolean {
+    // Sans secret configuré, aucun webhook n'est accepté (fail closed)
     if (!this.secretKey) {
-      this.logger.warn('⚠️ Secret key non configurée - Signature non vérifiée');
-      return true; // Développement uniquement
-    }
-
-    if (!signature) {
-      this.logger.error('❌ Aucune signature fournie dans le header x-dexchange-signature');
+      this.logger.error('❌ DEXPAY_SECRET_KEY non configurée : webhook refusé');
       return false;
     }
 
-    try {
-      const crypto = require('crypto');
-      const computedSignature = crypto
-        .createHmac('sha256', this.secretKey)
-        .update(JSON.stringify(payload))
-        .digest('hex');
-
-      const isValid = computedSignature === signature;
-
-      if (!isValid) {
-        this.logger.error('❌ Signature webhook invalide');
-        this.logger.debug(`Expected: ${computedSignature}`);
-        this.logger.debug(`Received: ${signature}`);
-      }
-
-      return isValid;
-    } catch (error: any) {
-      this.logger.error(`❌ Erreur vérification signature: ${error.message}`);
+    if (!signature || !rawBody) {
+      this.logger.error('❌ Webhook sans signature ou sans corps');
       return false;
     }
+
+    // HMAC calculé sur le corps BRUT reçu (et non sur un JSON re-sérialisé)
+    const expected = createHmac('sha256', this.secretKey).update(rawBody).digest('hex');
+    const received = signature.trim().replace(/^sha256=/i, '');
+
+    const a = Buffer.from(expected, 'utf8');
+    const b = Buffer.from(received, 'utf8');
+    const isValid = a.length === b.length && timingSafeEqual(a, b);
+
+    if (!isValid) {
+      this.logger.error('❌ Signature webhook invalide');
+    }
+    return isValid;
   }
 
   /**

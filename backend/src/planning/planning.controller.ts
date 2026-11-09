@@ -16,8 +16,10 @@ import { UpdateAnnualWorkPlanDto } from './dto/update-annual-work-plan.dto';
 import { UpdateResultsMatrixDto } from './dto/update-results-matrix.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { SubscriptionGuard, RequiresPlan } from '../common/guards/subscription.guard';
+import { WriteRoles, PLANNING_WRITERS } from '../common/guards/write-roles.guard';
 
 @Controller('planning')
+@WriteRoles({ roles: PLANNING_WRITERS, permission: 'plan.update' })
 @UseGuards(JwtAuthGuard, SubscriptionGuard)
 @RequiresPlan(SubscriptionPlan.PRO, SubscriptionPlan.EQUIPE, SubscriptionPlan.ORGANISATION, SubscriptionPlan.ENTERPRISE)
 export class PlanningController {

@@ -4,6 +4,7 @@ import {
   ExecutionContext,
   ForbiddenException,
 } from '@nestjs/common';
+import { isSuperAdmin } from '../../../common/guards/roles.guard';
 import { PrismaService } from '../../../common/prisma/prisma.service';
 import { ERROR_MESSAGES } from '../constants/error-messages';
 
@@ -34,7 +35,7 @@ export class SoumissionConfidentialityGuard implements CanActivate {
     const user = request.user;
 
     // Super Admin a toujours accès (pour audit)
-    if (user.role?.name === 'Super Admin') {
+    if (isSuperAdmin(user)) {
       return true;
     }
 

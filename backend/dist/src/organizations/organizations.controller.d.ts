@@ -9,9 +9,9 @@ export declare class OrganizationsController {
         brandColor: string | null;
     }>;
     create(dto: CreateOrganizationDto): Promise<{
+        deletedAt: Date | null;
         id: string;
         createdAt: Date;
-        deletedAt: Date | null;
         name: string;
         logoUrl: string | null;
         brandColor: string | null;
@@ -19,6 +19,16 @@ export declare class OrganizationsController {
         status: import(".prisma/client").$Enums.OrganizationStatus;
         rejectionReason: string | null;
         trialEndsAt: Date | null;
+        dexpayCustomerId: string | null;
+        dexpaySubscriptionId: string | null;
+        subscriptionStatus: import(".prisma/client").$Enums.SubscriptionStatus;
+        subscriptionCurrency: string | null;
+        billingCycle: import(".prisma/client").$Enums.BillingCycle;
+        currentPeriodEnd: Date | null;
+        nextPaymentDate: Date | null;
+        emailVerified: boolean;
+        emailVerificationToken: string | null;
+        emailVerificationExpiry: Date | null;
     }>;
     findAll(): import(".prisma/client").Prisma.PrismaPromise<({
         _count: {
@@ -26,9 +36,9 @@ export declare class OrganizationsController {
             actionPlans: number;
         };
     } & {
+        deletedAt: Date | null;
         id: string;
         createdAt: Date;
-        deletedAt: Date | null;
         name: string;
         logoUrl: string | null;
         brandColor: string | null;
@@ -36,6 +46,16 @@ export declare class OrganizationsController {
         status: import(".prisma/client").$Enums.OrganizationStatus;
         rejectionReason: string | null;
         trialEndsAt: Date | null;
+        dexpayCustomerId: string | null;
+        dexpaySubscriptionId: string | null;
+        subscriptionStatus: import(".prisma/client").$Enums.SubscriptionStatus;
+        subscriptionCurrency: string | null;
+        billingCycle: import(".prisma/client").$Enums.BillingCycle;
+        currentPeriodEnd: Date | null;
+        nextPaymentDate: Date | null;
+        emailVerified: boolean;
+        emailVerificationToken: string | null;
+        emailVerificationExpiry: Date | null;
     })[]>;
     findPending(): import(".prisma/client").Prisma.PrismaPromise<({
         users: {
@@ -47,9 +67,9 @@ export declare class OrganizationsController {
             users: number;
         };
     } & {
+        deletedAt: Date | null;
         id: string;
         createdAt: Date;
-        deletedAt: Date | null;
         name: string;
         logoUrl: string | null;
         brandColor: string | null;
@@ -57,6 +77,16 @@ export declare class OrganizationsController {
         status: import(".prisma/client").$Enums.OrganizationStatus;
         rejectionReason: string | null;
         trialEndsAt: Date | null;
+        dexpayCustomerId: string | null;
+        dexpaySubscriptionId: string | null;
+        subscriptionStatus: import(".prisma/client").$Enums.SubscriptionStatus;
+        subscriptionCurrency: string | null;
+        billingCycle: import(".prisma/client").$Enums.BillingCycle;
+        currentPeriodEnd: Date | null;
+        nextPaymentDate: Date | null;
+        emailVerified: boolean;
+        emailVerificationToken: string | null;
+        emailVerificationExpiry: Date | null;
     })[]>;
     findDeleted(): import(".prisma/client").Prisma.PrismaPromise<({
         _count: {
@@ -64,9 +94,9 @@ export declare class OrganizationsController {
             actionPlans: number;
         };
     } & {
+        deletedAt: Date | null;
         id: string;
         createdAt: Date;
-        deletedAt: Date | null;
         name: string;
         logoUrl: string | null;
         brandColor: string | null;
@@ -74,6 +104,16 @@ export declare class OrganizationsController {
         status: import(".prisma/client").$Enums.OrganizationStatus;
         rejectionReason: string | null;
         trialEndsAt: Date | null;
+        dexpayCustomerId: string | null;
+        dexpaySubscriptionId: string | null;
+        subscriptionStatus: import(".prisma/client").$Enums.SubscriptionStatus;
+        subscriptionCurrency: string | null;
+        billingCycle: import(".prisma/client").$Enums.BillingCycle;
+        currentPeriodEnd: Date | null;
+        nextPaymentDate: Date | null;
+        emailVerified: boolean;
+        emailVerificationToken: string | null;
+        emailVerificationExpiry: Date | null;
     })[]>;
     findOne(id: string): Promise<{
         _count: {
@@ -81,9 +121,9 @@ export declare class OrganizationsController {
             actionPlans: number;
         };
     } & {
+        deletedAt: Date | null;
         id: string;
         createdAt: Date;
-        deletedAt: Date | null;
         name: string;
         logoUrl: string | null;
         brandColor: string | null;
@@ -91,11 +131,21 @@ export declare class OrganizationsController {
         status: import(".prisma/client").$Enums.OrganizationStatus;
         rejectionReason: string | null;
         trialEndsAt: Date | null;
+        dexpayCustomerId: string | null;
+        dexpaySubscriptionId: string | null;
+        subscriptionStatus: import(".prisma/client").$Enums.SubscriptionStatus;
+        subscriptionCurrency: string | null;
+        billingCycle: import(".prisma/client").$Enums.BillingCycle;
+        currentPeriodEnd: Date | null;
+        nextPaymentDate: Date | null;
+        emailVerified: boolean;
+        emailVerificationToken: string | null;
+        emailVerificationExpiry: Date | null;
     }>;
     update(id: string, dto: UpdateOrganizationDto): Promise<{
+        deletedAt: Date | null;
         id: string;
         createdAt: Date;
-        deletedAt: Date | null;
         name: string;
         logoUrl: string | null;
         brandColor: string | null;
@@ -103,6 +153,16 @@ export declare class OrganizationsController {
         status: import(".prisma/client").$Enums.OrganizationStatus;
         rejectionReason: string | null;
         trialEndsAt: Date | null;
+        dexpayCustomerId: string | null;
+        dexpaySubscriptionId: string | null;
+        subscriptionStatus: import(".prisma/client").$Enums.SubscriptionStatus;
+        subscriptionCurrency: string | null;
+        billingCycle: import(".prisma/client").$Enums.BillingCycle;
+        currentPeriodEnd: Date | null;
+        nextPaymentDate: Date | null;
+        emailVerified: boolean;
+        emailVerificationToken: string | null;
+        emailVerificationExpiry: Date | null;
     }>;
     approve(id: string): Promise<{
         message: string;

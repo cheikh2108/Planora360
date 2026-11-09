@@ -1,10 +1,12 @@
 import { PrismaService } from '../common/prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 export declare class UsersService {
     private prisma;
-    constructor(prisma: PrismaService);
-    create(dto: CreateUserDto, actorOrganizationId: string, actorRole: string): Promise<any>;
+    private notifications;
+    constructor(prisma: PrismaService, notifications: NotificationsService);
+    create(dto: CreateUserDto, actorOrganizationId: string, actorRole: string | null): Promise<any>;
     private resolveOrganizationId;
     private validateEmailUniqueness;
     private validateRole;
@@ -13,8 +15,8 @@ export declare class UsersService {
     private hashPassword;
     private sanitizeUserResponse;
     findUsersForAssignment(organizationId: string): Promise<{
-        id: string;
         email: string;
+        id: string;
         firstName: string;
         lastName: string;
         role: {
@@ -35,7 +37,7 @@ export declare class UsersService {
         with2FA: number;
     }>;
     findOne(id: string, organizationId: string): Promise<any>;
-    update(id: string, dto: UpdateUserDto, organizationId: string): Promise<any>;
+    update(id: string, dto: UpdateUserDto, organizationId: string, actorRole?: string | null): Promise<any>;
     remove(id: string, organizationId: string): Promise<void>;
     findDeleted(organizationId: string): Promise<({
         role: {
@@ -45,10 +47,9 @@ export declare class UsersService {
             permissions: import("@prisma/client/runtime/client").JsonValue;
         };
     } & {
-        id: string;
         email: string;
-        organizationId: string;
-        roleId: string;
+        deletedAt: Date | null;
+        id: string;
         firstName: string;
         lastName: string;
         passwordHash: string;
@@ -59,7 +60,9 @@ export declare class UsersService {
         lastLoginAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
-        deletedAt: Date | null;
+        tokensValidAfter: Date | null;
+        organizationId: string;
+        roleId: string;
     })[]>;
     restore(id: string, organizationId: string): Promise<{
         role: {
@@ -69,10 +72,9 @@ export declare class UsersService {
             permissions: import("@prisma/client/runtime/client").JsonValue;
         };
     } & {
-        id: string;
         email: string;
-        organizationId: string;
-        roleId: string;
+        deletedAt: Date | null;
+        id: string;
         firstName: string;
         lastName: string;
         passwordHash: string;
@@ -83,13 +85,15 @@ export declare class UsersService {
         lastLoginAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
-        deletedAt: Date | null;
+        tokensValidAfter: Date | null;
+        organizationId: string;
+        roleId: string;
     }>;
     hardDelete(id: string, organizationId: string): Promise<void>;
     cleanupOldDeletedUsers(): Promise<{
         count: number;
     }>;
-    findRoles(organizationId?: string, callerRole?: string): import(".prisma/client").Prisma.PrismaPromise<{
+    findRoles(organizationId?: string, callerRole?: string | null): import(".prisma/client").Prisma.PrismaPromise<{
         id: string;
         organizationId: string | null;
         name: string;

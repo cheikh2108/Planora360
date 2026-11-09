@@ -1,4 +1,5 @@
 import { PrismaService } from '../../common/prisma/prisma.service';
+import { UpdateProcedureDto } from './dto/update-procedure.dto';
 export declare class ProceduresService {
     private readonly prisma;
     constructor(prisma: PrismaService);
@@ -31,9 +32,9 @@ export declare class ProceduresService {
         };
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusProcedure;
         description: string;
         objet: string;
@@ -49,6 +50,9 @@ export declare class ProceduresService {
         dateOuverture: Date | null;
         dateClarification: Date | null;
     }>;
+    private nextReference;
+    private assertDateOrder;
+    private toProcedureData;
     findAll(organizationId: string, filters?: any): Promise<({
         _count: {
             soumissions: number;
@@ -65,9 +69,9 @@ export declare class ProceduresService {
         };
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusProcedure;
         description: string;
         objet: string;
@@ -106,8 +110,8 @@ export declare class ProceduresService {
             responsableId: string;
         } | null;
         responsable: {
-            id: string;
             email: string;
+            id: string;
             firstName: string;
             lastName: string;
         };
@@ -120,10 +124,10 @@ export declare class ProceduresService {
         } & {
             id: string;
             status: string;
+            procedureId: string;
             montantTotal: import("@prisma/client-runtime-utils").Decimal;
             fournisseurId: string;
             dateDepot: Date;
-            procedureId: string;
             devise: string;
             numeroDepot: string;
             montantTechnique: import("@prisma/client-runtime-utils").Decimal | null;
@@ -150,16 +154,16 @@ export declare class ProceduresService {
             id: string;
             createdAt: Date;
             type: string;
-            nom: string;
             procedureId: string;
+            nom: string;
             dateSeance: Date;
             presidentId: string;
         })[];
     } & {
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusProcedure;
         description: string;
         objet: string;
@@ -175,11 +179,11 @@ export declare class ProceduresService {
         dateOuverture: Date | null;
         dateClarification: Date | null;
     }>;
-    update(id: string, organizationId: string, dto: any): Promise<{
+    update(id: string, organizationId: string, dto: UpdateProcedureDto): Promise<{
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusProcedure;
         description: string;
         objet: string;
@@ -197,9 +201,9 @@ export declare class ProceduresService {
     }>;
     remove(id: string, organizationId: string): Promise<{
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusProcedure;
         description: string;
         objet: string;
@@ -217,9 +221,9 @@ export declare class ProceduresService {
     }>;
     publish(id: string, organizationId: string): Promise<{
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusProcedure;
         description: string;
         objet: string;
@@ -237,9 +241,9 @@ export declare class ProceduresService {
     }>;
     close(id: string, organizationId: string): Promise<{
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusProcedure;
         description: string;
         objet: string;
@@ -257,9 +261,9 @@ export declare class ProceduresService {
     }>;
     cancel(id: string, organizationId: string, motif: string): Promise<{
         id: string;
-        organizationId: string;
         createdAt: Date;
         updatedAt: Date;
+        organizationId: string;
         status: import(".prisma/client").$Enums.StatusProcedure;
         description: string;
         objet: string;

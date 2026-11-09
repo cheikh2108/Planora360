@@ -1,4 +1,5 @@
-import { IsString, IsArray, MinLength, ArrayUnique } from 'class-validator';
+import { IsString, IsArray, MinLength, ArrayUnique, IsIn } from 'class-validator';
+import { PERMISSIONS } from '../../common/constants/permissions.constants';
 
 export class CreateRoleDto {
   @IsString()
@@ -7,5 +8,6 @@ export class CreateRoleDto {
 
   @IsArray()
   @ArrayUnique()
+  @IsIn(PERMISSIONS as unknown as string[], { each: true, message: 'Permission inconnue : $value' })
   permissions: string[];
 }

@@ -3,11 +3,19 @@ import { io, Socket } from 'socket.io-client';
 import type { Message, TypingIndicator, UserPresence } from '@/lib/types-messagerie';
 import { authApi } from '@/lib/api';
 
-// WebSocket doit pointer directement vers le backend (le proxy Next.js ne fonctionne pas pour WS)
-const SOCKET_URL =
-  typeof window !== 'undefined' && process.env.NODE_ENV === 'development'
-    ? 'http://localhost:3000'
-    : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000');
+/**
+ * Origine du backend pour le WebSocket : le proxy Next.js (/api) ne relaie pas les WebSockets.
+ * Ordre : NEXT_PUBLIC_SOCKET_URL, puis l'origine de NEXT_PUBLIC_API_URL si elle est absolue,
+ * puis le backend local par défaut.
+ */
+function socketOrigin(): string {
+  const explicit = process.env.NEXT_PUBLIC_SOCKET_URL;
+  if (explicit) return explicit.replace(/\/+$/, '');
+  const api = process.env.NEXT_PUBLIC_API_URL;
+  if (api && /^https?:/i.test(api)) return new URL(api).origin;
+  return 'http://localhost:3000';
+}
+const SOCKET_URL = socketOrigin();
 
 interface UseMessagerieSocketOptions {
   conversationId?: string;
@@ -52,9 +60,8 @@ export function useMessagerieSocket(options: UseMessagerieSocketOptions = {}) {
         const socket = io(`${SOCKET_URL}/messagerie`, {
           withCredentials: true,
           transports: ['websocket', 'polling'],
-          query: {
-            token, // Token temporaire de 1h, scope limité au WebSocket
-          },
+          // Jeton dédié (1 h, scope « websocket ») transmis dans le handshake, pas dans l'URL
+          auth: { token },
         });
 
         socketRef.current = socket;

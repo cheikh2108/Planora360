@@ -21,11 +21,11 @@ export class UsersService {
     private notifications: NotificationsService,
   ) {}
 
-  async create(dto: CreateUserDto, actorOrganizationId: string, actorRole: string) {
+  async create(dto: CreateUserDto, actorOrganizationId: string, actorRole: string | null) {
     const orgId = this.resolveOrganizationId(dto.organizationId, actorOrganizationId, actorRole);
 
     await this.validateEmailUniqueness(dto.email);
-    const role = await this.validateRole(dto.roleId, actorRole);
+    const role = await this.validateRole(dto.roleId, actorRole, orgId);
     await this.validateUserLimit(orgId);
 
     // Générer un mot de passe temporaire si non fourni
@@ -52,7 +52,7 @@ export class UsersService {
   private resolveOrganizationId(
     dtoOrganizationId: string | undefined,
     actorOrganizationId: string,
-    actorRole: string,
+    actorRole: string | null,
   ): string {
     return actorRole === ROLE_SUPER_ADMIN && dtoOrganizationId
       ? dtoOrganizationId
@@ -66,12 +66,20 @@ export class UsersService {
     if (existing) throw new ConflictException('Cet email est déjà utilisé');
   }
 
-  private async validateRole(roleId: string, actorRole: string) {
+  /**
+   * Un rôle attribuable est soit un rôle système, soit un rôle personnalisé de l'organisation cible.
+   * Seul le super administrateur peut attribuer le rôle Super administrateur.
+   */
+  private async validateRole(roleId: string, actorRole: string | null, targetOrganizationId: string) {
     const role = await this.prisma.role.findUnique({ where: { id: roleId } });
     if (!role) throw new NotFoundException('Rôle introuvable');
 
-    if (actorRole !== ROLE_SUPER_ADMIN && role.name === ROLE_SUPER_ADMIN) {
-      throw new ForbiddenException('Vous ne pouvez pas créer un super admin');
+    if (role.organizationId !== null && role.organizationId !== targetOrganizationId) {
+      throw new NotFoundException('Rôle introuvable');
+    }
+
+    if (actorRole !== ROLE_SUPER_ADMIN && role.organizationId === null && role.name === ROLE_SUPER_ADMIN) {
+      throw new ForbiddenException('Vous ne pouvez pas attribuer le rôle Super administrateur');
     }
 
     return role;
@@ -201,8 +209,12 @@ export class UsersService {
     return this.sanitizeUserResponse(user);
   }
 
-  async update(id: string, dto: UpdateUserDto, organizationId: string) {
-    await this.findOne(id, organizationId);
+  async update(id: string, dto: UpdateUserDto, organizationId: string, actorRole: string | null = null) {
+    const target: any = await this.findOne(id, organizationId);
+
+    if (dto.roleId) {
+      await this.validateRole(dto.roleId, actorRole, target.organizationId ?? organizationId);
+    }
 
     const data: any = { ...dto };
     if (dto.password) {
@@ -305,7 +317,7 @@ export class UsersService {
     return { count: deleted.count };
   }
 
-  findRoles(organizationId?: string, callerRole?: string) {
+  findRoles(organizationId?: string, callerRole?: string | null) {
     const isSuperAdmin = callerRole === ROLE_SUPER_ADMIN;
     return this.prisma.role.findMany({
       where: {

@@ -6,11 +6,11 @@ export declare class SessionsController {
     findActiveSessions(filters: SessionFiltersDto): Promise<{
         sessions: ({
             user: {
-                id: string;
                 email: string;
-                organizationId: string;
+                id: string;
                 firstName: string;
                 lastName: string;
+                organizationId: string;
                 organization: {
                     id: string;
                     name: string;

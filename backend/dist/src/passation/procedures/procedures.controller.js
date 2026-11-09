@@ -18,6 +18,9 @@ const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 const subscription_guard_1 = require("../../common/guards/subscription.guard");
 const client_1 = require("@prisma/client");
 const procedures_service_1 = require("./procedures.service");
+const create_procedure_dto_1 = require("./dto/create-procedure.dto");
+const write_roles_guard_1 = require("../../common/guards/write-roles.guard");
+const update_procedure_dto_1 = require("./dto/update-procedure.dto");
 let ProceduresController = class ProceduresController {
     proceduresService;
     constructor(proceduresService) {
@@ -54,7 +57,7 @@ __decorate([
     __param(0, (0, common_1.Req)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [Object, create_procedure_dto_1.CreateProcedureDto]),
     __metadata("design:returntype", void 0)
 ], ProceduresController.prototype, "create", null);
 __decorate([
@@ -79,7 +82,7 @@ __decorate([
     __param(1, (0, common_1.Req)()),
     __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object, Object]),
+    __metadata("design:paramtypes", [String, Object, update_procedure_dto_1.UpdateProcedureDto]),
     __metadata("design:returntype", void 0)
 ], ProceduresController.prototype, "update", null);
 __decorate([
@@ -117,6 +120,7 @@ __decorate([
 ], ProceduresController.prototype, "cancel", null);
 exports.ProceduresController = ProceduresController = __decorate([
     (0, common_1.Controller)('passation/procedures'),
+    (0, write_roles_guard_1.WriteRoles)({ roles: write_roles_guard_1.PASSATION_WRITERS, permission: 'plan.update' }),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, subscription_guard_1.SubscriptionGuard),
     (0, subscription_guard_1.RequiresPlan)(client_1.SubscriptionPlan.ORGANISATION, client_1.SubscriptionPlan.ENTERPRISE),
     __metadata("design:paramtypes", [procedures_service_1.ProceduresService])

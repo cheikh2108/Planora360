@@ -14,6 +14,7 @@ const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../common/prisma/prisma.service");
 const client_1 = require("@prisma/client");
 const error_messages_1 = require("../common/constants/error-messages");
+const reference_1 = require("../../common/utils/reference");
 let PpmService = class PpmService {
     prisma;
     constructor(prisma) {
@@ -29,27 +30,29 @@ let PpmService = class PpmService {
         if (existing) {
             throw new common_1.BadRequestException(error_messages_1.ERROR_MESSAGES.PPM.DUPLICATE_YEAR(dto.year));
         }
-        const count = await this.prisma.planPassationMarche.count({
-            where: { organizationId },
-        });
-        const reference = `PPM-${dto.year}-${String(count + 1).padStart(3, '0')}`;
-        return this.prisma.planPassationMarche.create({
+        if (dto.projectId) {
+            const project = await this.prisma.actionPlan.findFirst({ where: { id: dto.projectId, organizationId } });
+            if (!project)
+                throw new common_1.BadRequestException('Plan d\'action introuvable dans votre organisation');
+        }
+        const prefix = `PPM-${dto.year}-`;
+        return (0, reference_1.createWithReference)(async () => (0, reference_1.nextReferenceFrom)((await this.prisma.planPassationMarche.findMany({
+            where: { organizationId, reference: { startsWith: prefix } },
+            select: { reference: true },
+        })).map((p) => p.reference), prefix, 3), (reference) => this.prisma.planPassationMarche.create({
             data: {
-                ...dto,
+                year: dto.year,
+                title: dto.title,
+                projectId: dto.projectId ?? null,
                 reference,
                 organizationId,
                 createdBy: userId,
             },
             include: {
                 lignes: true,
-                project: {
-                    select: {
-                        id: true,
-                        title: true,
-                    },
-                },
+                project: { select: { id: true, title: true } },
             },
-        });
+        }));
     }
     async findAll(organizationId, filters) {
         return this.prisma.planPassationMarche.findMany({

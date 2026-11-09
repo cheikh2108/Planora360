@@ -2,7 +2,8 @@ import { MethodeProcedure } from '@prisma/client';
 export declare class CreateProcedureDto {
     methode: MethodeProcedure;
     objet: string;
-    description: string;
+    description?: string;
+    cahierCharges?: string;
     montantEstimatif: number;
     lignePpmId?: string;
     datePublication?: string;

@@ -105,7 +105,13 @@ let OrganizationsService = class OrganizationsService {
     }
     findPending() {
         return this.prisma.organization.findMany({
-            where: { status: 'PENDING', deletedAt: null },
+            where: {
+                OR: [
+                    { status: 'PENDING' },
+                    { status: 'PENDING_APPROVAL' }
+                ],
+                deletedAt: null
+            },
             orderBy: { createdAt: 'desc' },
             include: {
                 _count: { select: { users: true } },
@@ -130,23 +136,55 @@ let OrganizationsService = class OrganizationsService {
         });
     }
     async approve(id) {
-        const org = await this.findOne(id);
-        if (org.status !== 'PENDING')
-            throw new common_1.BadRequestException('Organisation non en attente');
-        await this.prisma.organization.update({
+        const org = await this.prisma.organization.findUnique({
             where: { id },
-            data: { status: 'ACTIVE' },
+            include: {
+                users: {
+                    where: { deletedAt: null },
+                    orderBy: { createdAt: 'asc' },
+                    take: 1,
+                },
+            },
         });
-        await this.prisma.user.updateMany({
-            where: { organizationId: id },
-            data: { isActive: true },
+        if (!org)
+            throw new common_1.NotFoundException('Organisation introuvable');
+        if (org.status !== 'PENDING' && org.status !== 'PENDING_APPROVAL') {
+            throw new common_1.BadRequestException('Organisation non en attente de validation');
+        }
+        const tempPassword = (0, crypto_1.randomBytes)(4).toString('hex');
+        const passwordHash = await bcrypt.hash(tempPassword, 12);
+        await this.prisma.$transaction(async (tx) => {
+            await tx.organization.update({
+                where: { id },
+                data: {
+                    status: 'ACTIVE',
+                    subscriptionStatus: 'ACTIVE',
+                },
+            });
+            await tx.user.updateMany({
+                where: { organizationId: id, deletedAt: null },
+                data: {
+                    isActive: true,
+                    passwordHash,
+                },
+            });
         });
-        return { message: 'Organisation approuvée' };
+        if (org.users.length > 0) {
+            const admin = org.users[0];
+            await this.notifications.sendWelcomeCredentials({
+                email: admin.email,
+                firstName: admin.firstName,
+                orgName: org.name,
+                tempPassword,
+            });
+        }
+        return { message: 'Organisation approuvée et credentials envoyés' };
     }
     async reject(id, reason) {
         const org = await this.findOne(id);
-        if (org.status !== 'PENDING')
-            throw new common_1.BadRequestException('Organisation non en attente');
+        if (org.status !== 'PENDING' && org.status !== 'PENDING_APPROVAL') {
+            throw new common_1.BadRequestException('Organisation non en attente de validation');
+        }
         await this.prisma.organization.update({
             where: { id },
             data: { status: 'REJECTED', rejectionReason: reason ?? null },
@@ -181,6 +219,7 @@ let OrganizationsService = class OrganizationsService {
         this.validateCurrentUserId(currentUserId);
         const currentUser = await this.getCurrentUser(currentUserId);
         this.preventSelfDeletion(currentUser.organizationId, id);
+        await this.preventSuperAdminDeletion(id);
         await this.softDeleteOrganizationWithUsers(id);
         return { message: 'Organisation et utilisateurs désactivés' };
     }
@@ -194,6 +233,7 @@ let OrganizationsService = class OrganizationsService {
     }
     async hardDelete(id) {
         const organization = await this.findDeletedOrganization(id);
+        await this.preventSuperAdminDeletion(id, true);
         await this.prisma.$transaction([
             this.prisma.user.deleteMany({
                 where: { organizationId: id },
@@ -226,6 +266,21 @@ let OrganizationsService = class OrganizationsService {
         if (userOrganizationId === targetOrganizationId) {
             throw new common_1.BadRequestException('Vous ne pouvez pas supprimer votre propre organisation. ' +
                 'Cela vous déconnecterait et supprimerait votre compte.');
+        }
+    }
+    async preventSuperAdminDeletion(organizationId, includeDeleted = false) {
+        const superAdminCount = await this.prisma.user.count({
+            where: {
+                organizationId,
+                ...(includeDeleted ? {} : { deletedAt: null }),
+                role: {
+                    name: 'Super administrateur',
+                },
+            },
+        });
+        if (superAdminCount > 0) {
+            throw new common_1.BadRequestException(`Cette organisation contient ${superAdminCount} Super Administrateur(s) et ne peut pas être supprimée. ` +
+                'Transférez d\'abord les Super Administrateurs vers une autre organisation.');
         }
     }
     async findDeletedOrganization(id) {

@@ -1,7 +1,19 @@
-import { Controller, Post, Get, Body, Param, Headers, Logger, BadRequestException } from '@nestjs/common';
+import {
+  Controller, Post, Get, Param, Headers, Logger, BadRequestException, NotFoundException,
+  Req, UseGuards, HttpCode, HttpStatus, BadGatewayException,
+} from '@nestjs/common';
+import { Request } from 'express';
+import { randomBytes } from 'crypto';
+import { SubscriptionPlan } from '@prisma/client';
 import { DexpayService } from './dexpay.service';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+
+type RawBodyRequest = Request & { rawBody?: Buffer };
+
+const PLANS = Object.values(SubscriptionPlan) as string[];
 
 @Controller('dexpay')
 export class DexpayController {
@@ -14,188 +26,151 @@ export class DexpayController {
   ) {}
 
   /**
-   * Webhook DexPay - Recevoir les notifications de paiement
-   * POST /dexpay/webhook
+   * Webhook DexPay (appel serveur à serveur, exempté de CSRF).
+   * POST /dexpay/webhook — signature HMAC-SHA256 du corps brut obligatoire.
    */
   @Post('webhook')
+  @HttpCode(HttpStatus.OK)
   async handleWebhook(
-    @Headers('X-Webhook-Signature') signature: string,
-    @Body() payload: any,
+    @Req() req: RawBodyRequest,
+    @Headers('x-webhook-signature') webhookSignature?: string,
+    @Headers('x-dexchange-signature') dexchangeSignature?: string,
   ) {
-    this.logger.log(`📥 Webhook reçu: ${payload.event}`);
-
-    // Vérifier la signature (sécurité)
-    const isValid = this.dexpay.verifyWebhookSignature(signature, payload);
-    if (!isValid) {
-      this.logger.error('❌ Signature webhook invalide');
-      throw new BadRequestException('Invalid signature');
+    const signature = webhookSignature ?? dexchangeSignature;
+    if (!this.dexpay.verifyWebhookSignature(signature, req.rawBody)) {
+      throw new BadRequestException('Signature invalide');
     }
 
+    const payload: any = req.body ?? {};
     const { event, data } = payload;
+    if (!event || !data?.reference) {
+      throw new BadRequestException('Événement incomplet');
+    }
 
-    try {
-      switch (event) {
-        case 'checkout.completed':
-          await this.handleCheckoutCompleted(data);
-          break;
+    this.logger.log(`📥 Webhook DexPay : ${event} (${data.reference})`);
 
-        case 'checkout.failed':
-          await this.handleCheckoutFailed(data);
-          break;
-
-        case 'checkout.cancelled':
-          await this.handleCheckoutCancelled(data);
-          break;
-
-        default:
-          this.logger.log(`ℹ️ Événement non géré: ${event}`);
-      }
-    } catch (error) {
-      this.logger.error(`❌ Erreur traitement webhook: ${error.message}`);
-      throw error;
+    switch (event) {
+      case 'checkout.completed':
+        await this.handleCheckoutCompleted(data);
+        break;
+      case 'checkout.failed':
+        await this.recordPayment(data, 'failed');
+        break;
+      case 'checkout.cancelled':
+        await this.recordPayment(data, 'cancelled');
+        break;
+      default:
+        this.logger.log(`ℹ️ Événement non géré : ${event}`);
     }
 
     return { received: true };
   }
 
   /**
-   * Vérifier le statut d'un paiement
+   * Statut d'un paiement de l'organisation de l'utilisateur.
    * GET /dexpay/status/:reference
    */
   @Get('status/:reference')
-  async checkPaymentStatus(@Param('reference') reference: string) {
-    const session = await this.dexpay.getCheckoutSession(reference);
-    return { status: session.status, data: session };
+  @UseGuards(JwtAuthGuard)
+  async checkPaymentStatus(@Param('reference') reference: string, @CurrentUser() user: any) {
+    const payment = await this.prisma.payment.findFirst({
+      where: { dexpayReference: reference, organizationId: user.organizationId },
+    });
+    if (!payment) throw new NotFoundException('Paiement introuvable');
+
+    try {
+      const session = await this.dexpay.getCheckoutSession(reference);
+      return { status: session?.status ?? payment.status, payment };
+    } catch {
+      // DexPay injoignable : on renvoie l'état connu localement plutôt qu'une erreur 500
+      if (payment.status) return { status: payment.status, payment };
+      throw new BadGatewayException('Service de paiement indisponible');
+    }
   }
 
-  /**
-   * Gérer un paiement réussi
-   */
+  /** Paiement réussi : enregistre le paiement (idempotent) puis active l'abonnement. */
   private async handleCheckoutCompleted(data: any) {
-    this.logger.log(`✅ Paiement réussi: ${data.reference}`);
+    const organizationId: string | undefined = data.metadata?.organization_id;
+    const plan: string | undefined = data.metadata?.plan;
 
-    const { reference, amount, currency, customer, metadata, payment_method } = data;
-    const organizationId = metadata?.organization_id;
-    const plan = metadata?.plan;
+    if (!organizationId || !plan || !PLANS.includes(plan)) {
+      throw new BadRequestException('Métadonnées de paiement invalides');
+    }
+    const organization = await this.prisma.organization.findUnique({ where: { id: organizationId } });
+    if (!organization) throw new BadRequestException('Organisation inconnue');
 
-    if (!organizationId) {
-      this.logger.error('❌ organization_id manquant dans metadata');
+    const already = await this.prisma.payment.findUnique({ where: { dexpayReference: data.reference } });
+    if (already?.status === 'completed') {
+      this.logger.log(`↩️ Paiement ${data.reference} déjà traité`);
       return;
     }
 
-    // 1. Enregistrer le paiement
-    await this.prisma.payment.create({
-      data: {
-        organizationId,
-        dexpayReference: reference,
-        dexpayCheckoutId: data.id,
-        amount,
-        currency,
-        status: 'completed',
-        paymentMethod: payment_method,
-        plan,
-        paidAt: new Date(),
-      },
-    });
+    await this.recordPayment(data, 'completed');
 
-    // 2. Mettre à jour l'organisation
     const periodEnd = new Date();
-    periodEnd.setMonth(periodEnd.getMonth() + 1); // +1 mois
+    if (organization.billingCycle === 'YEARLY') periodEnd.setFullYear(periodEnd.getFullYear() + 1);
+    else periodEnd.setMonth(periodEnd.getMonth() + 1);
+
+    const token = randomBytes(32).toString('hex');
+    const tokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
     await this.prisma.organization.update({
       where: { id: organizationId },
       data: {
-        subscriptionPlan: plan,
+        subscriptionPlan: plan as SubscriptionPlan,
         subscriptionStatus: 'ACTIVE',
-        subscriptionCurrency: currency,
+        subscriptionCurrency: data.currency ?? organization.subscriptionCurrency,
         currentPeriodEnd: periodEnd,
         nextPaymentDate: periodEnd,
-        status: 'PENDING_VERIFICATION', // Attente vérification email
-      },
-    });
-
-    // 3. Générer token de vérification email
-    const token = this.generateToken();
-    const tokenExpiry = new Date();
-    tokenExpiry.setHours(tokenExpiry.getHours() + 24); // Expire dans 24h
-
-    await this.prisma.organization.update({
-      where: { id: organizationId },
-      data: {
+        status: 'PENDING_VERIFICATION', // attente vérification email
         emailVerificationToken: token,
         emailVerificationExpiry: tokenExpiry,
       },
     });
 
-    // 4. Récupérer l'admin de l'organisation
     const admin = await this.prisma.user.findFirst({
       where: { organizationId, deletedAt: null },
       orderBy: { createdAt: 'asc' },
     });
-
     if (admin) {
-      // 5. Envoyer l'email de vérification
-      await this.notifications.sendEmailVerification({
-        email: admin.email,
-        firstName: admin.firstName,
-        token,
-      });
+      await this.notifications.sendEmailVerification({ email: admin.email, firstName: admin.firstName, token });
     }
 
-    this.logger.log(`✅ Organisation ${organizationId} mise à jour, email envoyé`);
+    this.logger.log(`✅ Organisation ${organizationId} : abonnement ${plan} activé`);
   }
 
-  /**
-   * Gérer un paiement échoué
-   */
-  private async handleCheckoutFailed(data: any) {
-    this.logger.warn(`⚠️ Paiement échoué: ${data.reference}`);
+  /** Enregistre ou met à jour un paiement par sa référence (événements rejoués sans erreur). */
+  private async recordPayment(data: any, status: 'completed' | 'failed' | 'cancelled') {
+    const organizationId: string | undefined = data.metadata?.organization_id;
+    if (!organizationId) return;
+    const exists = await this.prisma.organization.count({ where: { id: organizationId } });
+    if (!exists) return;
 
-    const { reference, metadata } = data;
-    const organizationId = metadata?.organization_id;
+    const plan = PLANS.includes(data.metadata?.plan) ? (data.metadata.plan as SubscriptionPlan) : null;
+    const common = {
+      status,
+      paymentMethod: data.payment_method ?? null,
+      metadata: data.metadata ?? undefined,
+      ...(status === 'completed' ? { paidAt: new Date() } : {}),
+    };
 
-    if (organizationId) {
-      await this.prisma.payment.create({
-        data: {
-          organizationId,
-          dexpayReference: reference,
-          amount: data.amount,
-          currency: data.currency,
-          status: 'failed',
-          plan: metadata?.plan,
-        },
-      });
+    const existing = await this.prisma.payment.findUnique({ where: { dexpayReference: data.reference } });
+    if (existing) {
+      await this.prisma.payment.update({ where: { id: existing.id }, data: common });
+      return;
     }
-  }
+    if (!plan) return; // un paiement sans plan connu ne peut pas être enregistré
 
-  /**
-   * Gérer un paiement annulé
-   */
-  private async handleCheckoutCancelled(data: any) {
-    this.logger.log(`❌ Paiement annulé: ${data.reference}`);
-
-    const { reference, metadata } = data;
-    const organizationId = metadata?.organization_id;
-
-    if (organizationId) {
-      await this.prisma.payment.create({
-        data: {
-          organizationId,
-          dexpayReference: reference,
-          amount: data.amount,
-          currency: data.currency,
-          status: 'cancelled',
-          plan: metadata?.plan,
-        },
-      });
-    }
-  }
-
-  /**
-   * Générer un token de vérification sécurisé
-   */
-  private generateToken(): string {
-    const { randomBytes } = require('crypto');
-    return randomBytes(32).toString('hex');
+    await this.prisma.payment.create({
+      data: {
+        organizationId,
+        dexpayReference: data.reference,
+        dexpayCheckoutId: data.id ?? null,
+        amount: Number.isFinite(Number(data.amount)) ? Math.round(Number(data.amount)) : 0,
+        currency: data.currency ?? 'XOF',
+        plan,
+        ...common,
+      },
+    });
   }
 }

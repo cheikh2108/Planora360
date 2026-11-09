@@ -8,6 +8,7 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 import { CreateFournisseurDto } from './dto/create-fournisseur.dto';
 import { UpdateFournisseurDto } from './dto/update-fournisseur.dto';
 import { StatusFournisseur } from '@prisma/client';
+import { AddFournisseurDocumentDto as AddDocumentDto } from './dto/add-document.dto';
 
 /**
  * Service de gestion des fournisseurs
@@ -218,7 +219,8 @@ export class FournisseursService {
       where: { id },
       data: {
         status: newStatus,
-        ...(motif && { remarques: motif }),
+        // Le motif est propre au statut : il ne doit pas écraser les remarques libres
+        motifStatut: newStatus === StatusFournisseur.ACTIF ? null : (motif ?? null),
       },
     });
   }
@@ -229,27 +231,20 @@ export class FournisseursService {
   async addDocument(
     fournisseurId: string,
     organizationId: string,
-    documentData: {
-      type: string;
-      nom: string;
-      url: string;
-      dateExpiration?: Date | string;
-    }
+    dto: AddDocumentDto,
   ) {
     await this.findOne(fournisseurId, organizationId);
 
-    const data: any = {
-      ...documentData,
-      fournisseurId,
-    };
-
-    // Convertir les dates string en DateTime pour Prisma
-    if (data.dateExpiration && typeof data.dateExpiration === 'string') {
-      data.dateExpiration = new Date(data.dateExpiration);
-    }
-
     return this.prisma.fournisseurDocument.create({
-      data,
+      data: {
+        fournisseurId,
+        type: dto.type,
+        nom: dto.nom,
+        url: dto.url,
+        ...(dto.fileSize !== undefined && { fileSize: dto.fileSize }),
+        ...(dto.mimeType !== undefined && { mimeType: dto.mimeType }),
+        ...(dto.dateExpiration && { dateExpiration: new Date(dto.dateExpiration) }),
+      },
     });
   }
 

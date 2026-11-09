@@ -24,12 +24,8 @@ import {
   calculateTrialEndDate,
   ROLE_ADMIN,
   DEFAULT_BRAND_COLOR,
-  ORG_STATUS_PENDING,
-  ORG_STATUS_REJECTED,
   ORG_STATUS_ACTIVE,
   ERROR_INVALID_CREDENTIALS,
-  ERROR_REGISTRATION_PENDING,
-  ERROR_REGISTRATION_REJECTED,
   ERROR_INVALID_2FA_CODE,
   ERROR_2FA_NOT_INITIALIZED,
   ERROR_INVALID_CODE,
@@ -39,6 +35,10 @@ import {
   TOTP_ISSUER,
   calculateRefreshTokenExpiry,
 } from '../common/constants/auth.constants';
+import { assertSessionAllowed } from '../common/auth/session-policy';
+
+/** Hash factice : comparé quand l'email est inconnu, pour un temps de réponse identique. */
+const DUMMY_PASSWORD_HASH = bcrypt.hashSync(randomBytes(16).toString('hex'), BCRYPT_SALT_ROUNDS);
 
 @Injectable()
 export class AuthService {
@@ -257,9 +257,17 @@ export class AuthService {
   }
 
   async login(dto: LoginDto, ipAddress?: string, userAgent?: string) {
-    const user = await this.findActiveUser(dto.email);
-    this.validateOrganizationStatus(user.organization?.status);
-    await this.validatePassword(dto.password, user.passwordHash);
+    // Le mot de passe est vérifié AVANT tout autre contrôle : sans lui, on ne révèle ni l'existence
+    // du compte ni le statut de son organisation (même message, même temps de réponse).
+    const user = await this.prisma.user.findFirst({
+      where: { email: dto.email, deletedAt: null },
+      include: { role: true, organization: true },
+    });
+    const passwordValid = await bcrypt.compare(dto.password, user?.passwordHash ?? DUMMY_PASSWORD_HASH);
+    if (!user || !passwordValid) {
+      throw new UnauthorizedException(ERROR_INVALID_CREDENTIALS);
+    }
+    assertSessionAllowed(user);
 
     if (user.isTwoFactorEnabled) {
       if (!dto.totp) return { requiresTwoFactor: true };
@@ -272,35 +280,6 @@ export class AuthService {
     this.posthog.trackLogin(user.id, user.email, user.organizationId);
 
     return this.generateTokens(user, ipAddress, userAgent);
-  }
-
-  private async findActiveUser(email: string) {
-    const user = await this.prisma.user.findFirst({
-      where: { email, deletedAt: null },
-      include: { role: true, organization: true },
-    });
-
-    if (!user || !user.isActive) {
-      throw new UnauthorizedException(ERROR_INVALID_CREDENTIALS);
-    }
-
-    return user;
-  }
-
-  private validateOrganizationStatus(status?: string) {
-    if (status === ORG_STATUS_PENDING) {
-      throw new UnauthorizedException(ERROR_REGISTRATION_PENDING);
-    }
-    if (status === ORG_STATUS_REJECTED) {
-      throw new UnauthorizedException(ERROR_REGISTRATION_REJECTED);
-    }
-  }
-
-  private async validatePassword(password: string, passwordHash: string) {
-    const passwordValid = await bcrypt.compare(password, passwordHash);
-    if (!passwordValid) {
-      throw new UnauthorizedException(ERROR_INVALID_CREDENTIALS);
-    }
   }
 
   private verifyTOTP(secret: string, token: string, errorMessage: string) {
@@ -323,6 +302,8 @@ export class AuthService {
   async refresh(token: string, ipAddress?: string, userAgent?: string) {
     const stored = await this.findRefreshToken(token);
     this.validateRefreshTokenExpiry(stored);
+    // Un refresh token ne ranime pas un compte supprimé ou une organisation suspendue
+    assertSessionAllowed(stored.user);
 
     await this.deleteRefreshToken(stored.id);
     return this.generateTokens(stored.user, ipAddress, userAgent);
@@ -352,11 +333,29 @@ export class AuthService {
     await this.prisma.refreshToken.deleteMany({ where: { id: tokenId } });
   }
 
-  async logout(userId: string) {
-    // Track logout in PostHog
+  /**
+   * Ferme la session de cet appareil : sa ligne refresh_tokens est supprimée, ce qui invalide
+   * immédiatement ses jetons d'accès (contrôle du `sid`). Les autres appareils restent connectés.
+   */
+  async logout(userId: string, sessionId?: string | null, refreshToken?: string) {
     this.posthog.trackLogout(userId);
 
+    const sessions = [
+      ...(sessionId ? [{ id: sessionId }] : []),
+      ...(refreshToken ? [{ token: refreshToken }] : []),
+    ];
+    if (sessions.length) {
+      await this.prisma.refreshToken.deleteMany({ where: { userId, OR: sessions } });
+      return;
+    }
+    // Jeton sans session identifiable (ancien format) : on ferme toutes les sessions
+    await this.logoutEverywhere(userId);
+  }
+
+  /** Ferme toutes les sessions de l'utilisateur (tous appareils). */
+  async logoutEverywhere(userId: string) {
     await this.prisma.refreshToken.deleteMany({ where: { userId } });
+    await this.prisma.user.update({ where: { id: userId }, data: { tokensValidAfter: new Date() } });
   }
 
   async setup2fa(userId: string) {
@@ -416,13 +415,24 @@ export class AuthService {
     });
   }
 
-  async changePassword(userId: string, newPassword: string) {
+  async changePassword(userId: string, currentPassword: string, newPassword: string, sessionId?: string | null) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { passwordHash: true } });
+    if (!user || !(await bcrypt.compare(currentPassword ?? '', user.passwordHash))) {
+      throw new BadRequestException('Mot de passe actuel incorrect');
+    }
+    if (currentPassword === newPassword) {
+      throw new BadRequestException('Le nouveau mot de passe doit être différent de l\'actuel');
+    }
     this.validatePasswordStrength(newPassword);
 
     const passwordHash = await this.hashPassword(newPassword);
     await this.prisma.user.update({
       where: { id: userId },
       data: { passwordHash, mustChangePassword: false },
+    });
+    // Les autres appareils sont déconnectés ; la session en cours est conservée
+    await this.prisma.refreshToken.deleteMany({
+      where: { userId, ...(sessionId && { id: { not: sessionId } }) },
     });
 
     return { message: 'Mot de passe mis à jour' };
@@ -449,9 +459,9 @@ export class AuthService {
   }
 
   private async generateTokens(user: any, ipAddress?: string, userAgent?: string) {
-    const payload = this.createJWTPayload(user);
-    const accessToken = this.signAccessToken(payload);
-    const refreshToken = await this.createRefreshToken(user.id);
+    // La session (refresh token) est créée d'abord : le jeton d'accès porte son identifiant
+    const { token: refreshToken, id: sessionId } = await this.createRefreshToken(user.id);
+    const accessToken = this.signAccessToken({ ...this.createJWTPayload(user), sid: sessionId });
 
     return {
       accessToken,
@@ -466,6 +476,7 @@ export class AuthService {
       email: user.email,
       organizationId: user.organizationId,
       roleId: user.roleId,
+      iatMs: Date.now(), // précision milliseconde pour la révocation (tokensValidAfter)
     };
   }
 
@@ -476,15 +487,16 @@ export class AuthService {
     });
   }
 
-  private async createRefreshToken(userId: string): Promise<string> {
+  private async createRefreshToken(userId: string): Promise<{ token: string; id: string }> {
     const token = randomBytes(REFRESH_TOKEN_BYTES).toString('hex');
     const expiresAt = calculateRefreshTokenExpiry();
 
-    await this.prisma.refreshToken.create({
+    const row = await this.prisma.refreshToken.create({
       data: { userId, token, expiresAt },
+      select: { id: true },
     });
 
-    return token;
+    return { token, id: row.id };
   }
 
   /**
@@ -497,6 +509,8 @@ export class AuthService {
       email: user.email,
       organizationId: user.organizationId,
       scope: 'websocket', // Limiter le scope pour sécurité
+      iatMs: Date.now(),
+      sid: user.sessionId ?? undefined, // le jeton tombe avec la session HTTP qui l'a obtenu
     };
 
     const token = this.jwtService.sign(payload, {
@@ -506,7 +520,8 @@ export class AuthService {
     return { token, expiresIn: 3600 };
   }
 
-  private serializeUserResponse(user: any) {
+  /** Représentation de l'utilisateur renvoyée au client (login, /auth/me) : aucun secret. */
+  serializeUserResponse(user: any) {
     return {
       id: user.id,
       email: user.email,
@@ -519,6 +534,8 @@ export class AuthService {
       role: {
         id: user.role?.id,
         name: user.role?.name,
+        // null = rôle système : le frontend s'en sert pour afficher les actions autorisées
+        organizationId: user.role?.organizationId ?? null,
         permissions: user.role?.permissions ?? [],
       },
       organization: user.organization
@@ -526,6 +543,7 @@ export class AuthService {
             id: user.organization.id,
             name: user.organization.name,
             brandColor: user.organization.brandColor ?? DEFAULT_BRAND_COLOR,
+            subscriptionPlan: user.organization.subscriptionPlan,
           }
         : undefined,
     };

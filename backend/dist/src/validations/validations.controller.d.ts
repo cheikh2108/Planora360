@@ -33,15 +33,15 @@ export declare class ValidationsController {
     getCurrentStep(activityId: string, user: any): Promise<{
         activity: {
             id: string;
-            organizationId: string;
             createdAt: Date;
             updatedAt: Date;
+            organizationId: string;
             status: import(".prisma/client").$Enums.ActivityStatus;
             description: string | null;
             startDate: Date;
+            title: string;
             axisId: string;
             parentActivityId: string | null;
-            title: string;
             expectedResults: string | null;
             responsibleId: string;
             dueDate: Date;
@@ -83,15 +83,15 @@ export declare class ValidationsController {
             }[];
         } & {
             id: string;
-            organizationId: string;
             createdAt: Date;
             updatedAt: Date;
+            organizationId: string;
             status: import(".prisma/client").$Enums.ActivityStatus;
             description: string | null;
             startDate: Date;
+            title: string;
             axisId: string;
             parentActivityId: string | null;
-            title: string;
             expectedResults: string | null;
             responsibleId: string;
             dueDate: Date;

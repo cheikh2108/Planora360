@@ -105,14 +105,59 @@ let MessagerieService = class MessagerieService {
         }
         return conversation;
     }
+    async validateContext(organizationId, context) {
+        if (!context || typeof context !== 'object')
+            return {};
+        const checks = [
+            ['projectId', () => this.prisma.actionPlan.count({ where: { id: context.projectId, organizationId } })],
+            ['activityId', () => this.prisma.activity.count({ where: { id: context.activityId, organizationId } })],
+            ['recommendationId', () => this.prisma.recommendation.count({ where: { id: context.recommendationId, organizationId } })],
+            ['procedureId', () => this.prisma.procedure.count({ where: { id: context.procedureId, organizationId } })],
+            ['contratId', () => this.prisma.contrat.count({ where: { id: context.contratId, organizationId } })],
+        ];
+        const safe = {};
+        for (const [key, count] of checks) {
+            const value = context[key];
+            if (!value)
+                continue;
+            if (typeof value !== 'string' || (await count()) === 0) {
+                throw new common_1.BadRequestException(`Contexte invalide : ${key}`);
+            }
+            safe[key] = value;
+        }
+        return safe;
+    }
+    async isParticipant(conversationId, userId, organizationId) {
+        if (!conversationId || typeof conversationId !== 'string')
+            return false;
+        const participant = await this.prisma.conversationParticipant.findFirst({
+            where: { conversationId, userId, leftAt: null, conversation: { organizationId } },
+            select: { id: true },
+        });
+        return !!participant;
+    }
     async createConversation(organizationId, createdById, type, name, participantIds, context) {
+        if (!Object.values(client_1.ConversationType).includes(type)) {
+            throw new common_1.BadRequestException('Type de conversation invalide');
+        }
+        const uniqueIds = Array.from(new Set((participantIds ?? []).filter((id) => id && id !== createdById)));
+        if (uniqueIds.length) {
+            const count = await this.prisma.user.count({
+                where: { id: { in: uniqueIds }, organizationId, deletedAt: null, isActive: true },
+            });
+            if (count !== uniqueIds.length) {
+                throw new common_1.BadRequestException('Un ou plusieurs participants n\'appartiennent pas à votre organisation');
+            }
+        }
+        participantIds = uniqueIds;
+        const safeContext = await this.validateContext(organizationId, context);
         return this.prisma.conversation.create({
             data: {
                 organizationId,
                 createdById,
                 type,
                 name,
-                ...context,
+                ...safeContext,
                 participants: {
                     create: [
                         {

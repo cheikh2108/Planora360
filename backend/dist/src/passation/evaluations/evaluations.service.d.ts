@@ -1,8 +1,9 @@
 import { PrismaService } from '../../common/prisma/prisma.service';
+import { CreateEvaluationDto } from './dto/create-evaluation.dto';
 export declare class EvaluationsService {
     private readonly prisma;
     constructor(prisma: PrismaService);
-    create(procedureId: string, userId: string, dto: any): Promise<{
+    create(procedureId: string, userId: string, organizationId: string, dto: CreateEvaluationDto): Promise<{
         soumission: {
             fournisseur: {
                 id: string;
@@ -11,10 +12,10 @@ export declare class EvaluationsService {
         } & {
             id: string;
             status: string;
+            procedureId: string;
             montantTotal: import("@prisma/client-runtime-utils").Decimal;
             fournisseurId: string;
             dateDepot: Date;
-            procedureId: string;
             devise: string;
             numeroDepot: string;
             montantTechnique: import("@prisma/client-runtime-utils").Decimal | null;
@@ -53,10 +54,10 @@ export declare class EvaluationsService {
         } & {
             id: string;
             status: string;
+            procedureId: string;
             montantTotal: import("@prisma/client-runtime-utils").Decimal;
             fournisseurId: string;
             dateDepot: Date;
-            procedureId: string;
             devise: string;
             numeroDepot: string;
             montantTechnique: import("@prisma/client-runtime-utils").Decimal | null;
