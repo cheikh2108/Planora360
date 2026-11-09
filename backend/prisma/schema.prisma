@@ -1849,7 +1849,7 @@ model Payment {
   dexpayCheckoutId  String?  @unique  // ID de la checkout session
 
   // Informations paiement
-  amount          Int      // montant en centimes (ex: 1500000 = 15 000 XOF)
+  amount          Int      // montant entier dans la devise (10000 = 10 000 XOF) : DexPay n'utilise pas de centimes
   currency        String   // XOF, XAF, GNF
   status          String   // pending, completed, failed, cancelled, refunded
   paymentMethod   String?  // wave, orange_money, mtn_money, etc.

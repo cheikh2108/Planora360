@@ -109,11 +109,36 @@ let MessagerieService = class MessagerieService {
         if (!context || typeof context !== 'object')
             return {};
         const checks = [
-            ['projectId', () => this.prisma.actionPlan.count({ where: { id: context.projectId, organizationId } })],
-            ['activityId', () => this.prisma.activity.count({ where: { id: context.activityId, organizationId } })],
-            ['recommendationId', () => this.prisma.recommendation.count({ where: { id: context.recommendationId, organizationId } })],
-            ['procedureId', () => this.prisma.procedure.count({ where: { id: context.procedureId, organizationId } })],
-            ['contratId', () => this.prisma.contrat.count({ where: { id: context.contratId, organizationId } })],
+            [
+                'projectId',
+                () => this.prisma.actionPlan.count({
+                    where: { id: context.projectId, organizationId },
+                }),
+            ],
+            [
+                'activityId',
+                () => this.prisma.activity.count({
+                    where: { id: context.activityId, organizationId },
+                }),
+            ],
+            [
+                'recommendationId',
+                () => this.prisma.recommendation.count({
+                    where: { id: context.recommendationId, organizationId },
+                }),
+            ],
+            [
+                'procedureId',
+                () => this.prisma.procedure.count({
+                    where: { id: context.procedureId, organizationId },
+                }),
+            ],
+            [
+                'contratId',
+                () => this.prisma.contrat.count({
+                    where: { id: context.contratId, organizationId },
+                }),
+            ],
         ];
         const safe = {};
         for (const [key, count] of checks) {
@@ -131,7 +156,12 @@ let MessagerieService = class MessagerieService {
         if (!conversationId || typeof conversationId !== 'string')
             return false;
         const participant = await this.prisma.conversationParticipant.findFirst({
-            where: { conversationId, userId, leftAt: null, conversation: { organizationId } },
+            where: {
+                conversationId,
+                userId,
+                leftAt: null,
+                conversation: { organizationId },
+            },
             select: { id: true },
         });
         return !!participant;
@@ -143,10 +173,15 @@ let MessagerieService = class MessagerieService {
         const uniqueIds = Array.from(new Set((participantIds ?? []).filter((id) => id && id !== createdById)));
         if (uniqueIds.length) {
             const count = await this.prisma.user.count({
-                where: { id: { in: uniqueIds }, organizationId, deletedAt: null, isActive: true },
+                where: {
+                    id: { in: uniqueIds },
+                    organizationId,
+                    deletedAt: null,
+                    isActive: true,
+                },
             });
             if (count !== uniqueIds.length) {
-                throw new common_1.BadRequestException('Un ou plusieurs participants n\'appartiennent pas à votre organisation');
+                throw new common_1.BadRequestException("Un ou plusieurs participants n'appartiennent pas à votre organisation");
             }
         }
         participantIds = uniqueIds;
@@ -162,9 +197,9 @@ let MessagerieService = class MessagerieService {
                     create: [
                         {
                             userId: createdById,
-                            role: client_1.ConversationRole.ADMIN
+                            role: client_1.ConversationRole.ADMIN,
                         },
-                        ...(participantIds || []).map(userId => ({
+                        ...(participantIds || []).map((userId) => ({
                             userId,
                             role: client_1.ConversationRole.MEMBER,
                         })),
@@ -196,7 +231,7 @@ let MessagerieService = class MessagerieService {
             },
         });
         if (!participant) {
-            throw new common_1.ForbiddenException('Vous n\'êtes pas participant de cette conversation');
+            throw new common_1.ForbiddenException("Vous n'êtes pas participant de cette conversation");
         }
         const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
         const recentMessages = await this.prisma.message.count({
@@ -256,7 +291,7 @@ let MessagerieService = class MessagerieService {
             },
         });
         if (!participant) {
-            throw new common_1.ForbiddenException('Vous n\'êtes pas participant de cette conversation');
+            throw new common_1.ForbiddenException("Vous n'êtes pas participant de cette conversation");
         }
         const message = await this.prisma.message.create({
             data: {
@@ -377,7 +412,7 @@ let MessagerieService = class MessagerieService {
             },
         });
         if (!participant) {
-            throw new common_1.ForbiddenException('Vous n\'êtes pas participant de cette conversation');
+            throw new common_1.ForbiddenException("Vous n'êtes pas participant de cette conversation");
         }
         const messages = await this.prisma.message.findMany({
             where: {
@@ -510,7 +545,7 @@ let MessagerieService = class MessagerieService {
             select: { id: true },
         });
         await this.prisma.messageRead.createMany({
-            data: unreadMessages.map(msg => ({
+            data: unreadMessages.map((msg) => ({
                 messageId: msg.id,
                 userId,
             })),
@@ -536,7 +571,7 @@ let MessagerieService = class MessagerieService {
             },
         });
         if (!participant) {
-            throw new common_1.ForbiddenException('Vous n\'êtes pas participant de cette conversation');
+            throw new common_1.ForbiddenException("Vous n'êtes pas participant de cette conversation");
         }
         const conversation = await this.prisma.conversation.findUnique({
             where: { id: conversationId },
@@ -561,7 +596,7 @@ let MessagerieService = class MessagerieService {
             },
         });
         if (!participant) {
-            throw new common_1.ForbiddenException('Vous n\'êtes pas participant de cette conversation');
+            throw new common_1.ForbiddenException("Vous n'êtes pas participant de cette conversation");
         }
         const conversation = await this.prisma.conversation.update({
             where: { id: conversationId },
@@ -578,7 +613,7 @@ let MessagerieService = class MessagerieService {
             },
         });
         if (!participant) {
-            throw new common_1.ForbiddenException('Vous n\'êtes pas participant de cette conversation');
+            throw new common_1.ForbiddenException("Vous n'êtes pas participant de cette conversation");
         }
         const conversation = await this.prisma.conversation.update({
             where: { id: conversationId },

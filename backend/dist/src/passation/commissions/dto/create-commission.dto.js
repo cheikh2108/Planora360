@@ -45,7 +45,13 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateCommissionDto.prototype, "presidentId", void 0);
-exports.MEMBRE_ROLES = ['PRESIDENT', 'RAPPORTEUR', 'MEMBRE', 'OBSERVATEUR', 'EXPERT'];
+exports.MEMBRE_ROLES = [
+    'PRESIDENT',
+    'RAPPORTEUR',
+    'MEMBRE',
+    'OBSERVATEUR',
+    'EXPERT',
+];
 class AddMembreDto {
     userId;
     role;

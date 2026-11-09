@@ -10,6 +10,8 @@ exports.DexpayModule = void 0;
 const common_1 = require("@nestjs/common");
 const dexpay_service_1 = require("./dexpay.service");
 const dexpay_controller_1 = require("./dexpay.controller");
+const billing_service_1 = require("./billing.service");
+const billing_controller_1 = require("./billing.controller");
 const notifications_module_1 = require("../notifications/notifications.module");
 let DexpayModule = class DexpayModule {
 };
@@ -17,9 +19,9 @@ exports.DexpayModule = DexpayModule;
 exports.DexpayModule = DexpayModule = __decorate([
     (0, common_1.Module)({
         imports: [notifications_module_1.NotificationsModule],
-        controllers: [dexpay_controller_1.DexpayController],
-        providers: [dexpay_service_1.DexpayService],
-        exports: [dexpay_service_1.DexpayService],
+        controllers: [dexpay_controller_1.DexpayController, billing_controller_1.BillingController],
+        providers: [dexpay_service_1.DexpayService, billing_service_1.BillingService],
+        exports: [dexpay_service_1.DexpayService, billing_service_1.BillingService],
     })
 ], DexpayModule);
 //# sourceMappingURL=dexpay.module.js.map

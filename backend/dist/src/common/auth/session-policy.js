@@ -41,7 +41,9 @@ async function loadSessionUser(prisma, userId) {
 function assertTokenNotRevoked(user, payload) {
     if (!user.tokensValidAfter)
         return;
-    const issuedAt = typeof payload?.iatMs === 'number' ? payload.iatMs : (payload?.iat ?? 0) * 1000;
+    const issuedAt = typeof payload?.iatMs === 'number'
+        ? payload.iatMs
+        : (payload?.iat ?? 0) * 1000;
     if (issuedAt < user.tokensValidAfter.getTime()) {
         throw new common_1.UnauthorizedException('Session expirée');
     }
@@ -49,7 +51,10 @@ function assertTokenNotRevoked(user, payload) {
 async function assertSessionActive(prisma, payload) {
     if (!payload?.sid)
         return;
-    const session = await prisma.refreshToken.findUnique({ where: { id: payload.sid }, select: { id: true } });
+    const session = await prisma.refreshToken.findUnique({
+        where: { id: payload.sid },
+        select: { id: true },
+    });
     if (!session)
         throw new common_1.UnauthorizedException('Session expirée');
 }

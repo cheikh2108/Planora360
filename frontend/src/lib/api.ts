@@ -6,6 +6,7 @@ import {
   NETWORK_ERROR_MESSAGE,
   LOGIN_REDIRECT_URL,
 } from './api-constants';
+import type { SubscriptionPlan } from './types';
 
 /**
  * Client HTTP de l'application.
@@ -305,6 +306,58 @@ export const organizationsApi = {
 };
 
 // Users (super admin scope — by org)
+// Abonnement : formules, paiement DexPay, suivi d'un paiement
+export type BillingCycle = 'MONTHLY' | 'YEARLY';
+
+export interface PlanCatalogEntry {
+  plan: SubscriptionPlan;
+  label: string;
+  payable: boolean;
+  currency: string;
+  prices: Record<BillingCycle, number> | null;
+  limits: { maxUsers: number; maxPlans: number };
+}
+
+export interface PaymentSummary {
+  reference: string;
+  status: 'pending' | 'completed' | 'failed' | 'cancelled' | 'refunded' | 'amount_mismatch';
+  plan: SubscriptionPlan;
+  amount: number;
+  currency: string;
+  billingCycle: BillingCycle | null;
+  periodEnd: string | null;
+  paidAt: string | null;
+  createdAt?: string;
+  paymentMethod?: string | null;
+}
+
+export interface SubscriptionInfo {
+  subscriptionPlan: SubscriptionPlan;
+  subscriptionStatus: 'TRIAL' | 'ACTIVE' | 'PAST_DUE' | 'CANCELED' | 'INCOMPLETE';
+  billingCycle: BillingCycle;
+  currentPeriodEnd: string | null;
+  trialEndsAt: string | null;
+  onlinePayment: boolean;
+  payments: PaymentSummary[];
+}
+
+export const billingApi = {
+  plans: () => api.get<{ currency: string; plans: PlanCatalogEntry[]; onlinePayment: boolean }>('/billing/plans'),
+  subscription: () => api.get<SubscriptionInfo>('/billing/subscription'),
+  checkout: (plan: SubscriptionPlan, billingCycle: BillingCycle) =>
+    api.post<{ reference: string; paymentUrl: string; amount: number; currency: string }>('/billing/checkout', {
+      plan,
+      billingCycle,
+    }),
+  paymentStatus: (reference: string) => api.get<PaymentSummary>(`/dexpay/status/${encodeURIComponent(reference)}`),
+};
+
+/** Montant en francs CFA : « 25 000 FCFA ». */
+export function formatXof(amount: number, currency = 'XOF'): string {
+  const value = new Intl.NumberFormat('fr-FR').format(amount);
+  return `${value} ${currency === 'XOF' ? 'FCFA' : currency}`;
+}
+
 export const usersApi = {
   listAll: () => api.get('/users'),
   listForAssignment: () => api.get('/users/list-for-assignment'),

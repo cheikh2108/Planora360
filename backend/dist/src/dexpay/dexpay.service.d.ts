@@ -1,15 +1,13 @@
 import { ConfigService } from '@nestjs/config';
 export interface CreateCheckoutParams {
+    reference: string;
+    itemName: string;
     amount: number;
     currency: string;
-    customerEmail: string;
-    customerName: string;
-    description: string;
-    plan: string;
-    billingCycle: 'MONTHLY' | 'YEARLY';
-    organizationId: string;
     successUrl: string;
     failureUrl: string;
+    webhookUrl?: string;
+    metadata?: Record<string, string>;
 }
 export interface CheckoutSession {
     reference: string;
@@ -23,8 +21,13 @@ export declare class DexpayService {
     private readonly publicKey;
     private readonly secretKey;
     constructor(config: ConfigService);
+    isConfigured(): boolean;
+    isTestMode(): boolean;
     createCheckoutSession(params: CreateCheckoutParams): Promise<CheckoutSession>;
-    getCheckoutSession(reference: string): Promise<any>;
+    getCheckoutSession(reference: string): Promise<{
+        status?: string;
+        amount?: number;
+        currency?: string;
+    } | null>;
     verifyWebhookSignature(signature: string | undefined, rawBody: Buffer | string | undefined): boolean;
-    getPlanPrice(plan: string, billingCycle?: 'MONTHLY' | 'YEARLY'): number;
 }

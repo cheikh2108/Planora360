@@ -27,7 +27,7 @@ class CreateDemandeDto {
 exports.CreateDemandeDto = CreateDemandeDto;
 __decorate([
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.IsNotEmpty)({ message: 'L\'objet est obligatoire' }),
+    (0, class_validator_1.IsNotEmpty)({ message: "L'objet est obligatoire" }),
     (0, class_validator_1.MaxLength)(300),
     __metadata("design:type", String)
 ], CreateDemandeDto.prototype, "objet", void 0);

@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
-import { authApi } from '@/lib/api';
+import { authApi, billingApi, formatXof, getErrorMessage, type BillingCycle, type PaymentSummary } from '@/lib/api';
 import api from '@/lib/api';
 import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
@@ -123,13 +124,49 @@ const PLAN_ORDER: SubscriptionPlan[] = ['INDIVIDUEL', 'PRO', 'EQUIPE', 'ORGANISA
 
 /* ─── SubscriptionSection ────────────────────────────────────── */
 
-function SubscriptionSection({ currentPlan }: { currentPlan: SubscriptionPlan }) {
-  const [upgradeModal, setUpgradeModal] = useState(false);
-  const [targetPlan, setTargetPlan] = useState<PlanInfo | null>(null);
-  const currentIndex = PLAN_ORDER.indexOf(currentPlan);
-  const current = PLANS.find(p => p.key === currentPlan)!;
+const PAYMENT_STATUS: Record<PaymentSummary['status'], { label: string; className: string }> = {
+  completed:       { label: 'Payé',              className: 'bg-emerald-50 text-emerald-700' },
+  pending:         { label: 'En attente',        className: 'bg-amber-50 text-amber-700' },
+  failed:          { label: 'Échoué',            className: 'bg-red-50 text-red-700' },
+  cancelled:       { label: 'Annulé',            className: 'bg-slate-100 text-slate-600' },
+  refunded:        { label: 'Remboursé',         className: 'bg-slate-100 text-slate-600' },
+  amount_mismatch: { label: 'À vérifier',        className: 'bg-red-50 text-red-700' },
+};
 
-  const openUpgrade = (plan: PlanInfo) => { setTargetPlan(plan); setUpgradeModal(true); };
+const formatDate = (iso: string | null | undefined) =>
+  iso ? new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(iso)) : '—';
+
+function SubscriptionSection({ currentPlan }: { currentPlan: SubscriptionPlan }) {
+  const [targetPlan, setTargetPlan] = useState<PlanInfo | null>(null);
+  const [cycle, setCycle] = useState<BillingCycle>('MONTHLY');
+
+  const { data: catalog } = useQuery({
+    queryKey: ['billing', 'plans'],
+    queryFn: async () => (await billingApi.plans()).data,
+  });
+  const { data: subscription } = useQuery({
+    queryKey: ['billing', 'subscription'],
+    queryFn: async () => (await billingApi.subscription()).data,
+  });
+
+  // La formule vient de l'abonnement si disponible (plus récent que la session mise en cache)
+  const plan = subscription?.subscriptionPlan ?? currentPlan;
+  const currentIndex = PLAN_ORDER.indexOf(plan);
+  const current = PLANS.find(p => p.key === plan)!;
+  const onlinePayment = catalog?.onlinePayment ?? subscription?.onlinePayment ?? false;
+  const priceOf = (key: SubscriptionPlan, c: BillingCycle) => catalog?.plans.find(p => p.plan === key)?.prices?.[c];
+
+  const checkout = useMutation({
+    mutationFn: async () => {
+      if (!targetPlan) throw new Error('Aucune formule choisie');
+      return (await billingApi.checkout(targetPlan.key, cycle)).data;
+    },
+    // Redirection vers la page de paiement DexPay ; le retour se fait sur /payment/success ou /payment/failed
+    onSuccess: (data) => { window.location.href = data.paymentUrl; },
+  });
+
+  const openPlan = (p: PlanInfo) => { setTargetPlan(p); setCycle('MONTHLY'); checkout.reset(); };
+  const closeModal = () => { if (!checkout.isPending) setTargetPlan(null); };
 
   const ACCENT: Record<SubscriptionPlan, { from: string; to: string; text: string; dot: string }> = {
     INDIVIDUEL:    { from: 'from-emerald-800', to: 'to-emerald-700', text: 'text-emerald-300', dot: 'bg-emerald-400' },
@@ -138,7 +175,17 @@ function SubscriptionSection({ currentPlan }: { currentPlan: SubscriptionPlan })
     ORGANISATION:  { from: 'from-indigo-800',  to: 'to-indigo-700',  text: 'text-indigo-300',  dot: 'bg-indigo-400' },
     ENTERPRISE:    { from: 'from-amber-900',   to: 'to-amber-700',   text: 'text-amber-300',   dot: 'bg-amber-400' },
   };
-  const acc = ACCENT[currentPlan];
+  const acc = ACCENT[plan];
+  const isPaidActive = subscription?.subscriptionStatus === 'ACTIVE' && !!subscription?.currentPeriodEnd;
+  const statusLabel = subscription?.subscriptionStatus === 'TRIAL' ? 'Essai' : 'Actif';
+
+  const targetMonthly = targetPlan ? priceOf(targetPlan.key, 'MONTHLY') : undefined;
+  const targetYearly = targetPlan ? priceOf(targetPlan.key, 'YEARLY') : undefined;
+  const targetPrice = cycle === 'YEARLY' ? targetYearly : targetMonthly;
+  const yearlySaving = targetMonthly && targetYearly ? targetMonthly * 12 - targetYearly : 0;
+
+  // Formules proposées : la formule actuelle (pour renouveler) et les formules supérieures
+  const offers = PLANS.filter(p => PLAN_ORDER.indexOf(p.key) >= currentIndex && !(p.key === plan && p.key === 'ENTERPRISE'));
 
   return (
     <div className="space-y-4">
@@ -152,18 +199,22 @@ function SubscriptionSection({ currentPlan }: { currentPlan: SubscriptionPlan })
           <div className="flex items-start justify-between gap-3 flex-wrap">
             <div>
               <h3 className="text-2xl md:text-3xl font-bold tracking-tight">{current.label}</h3>
-              <p className={cn('text-xs md:text-sm mt-1', acc.text)}>{current.tagline}</p>
+              <p className={cn('text-xs md:text-sm mt-1', acc.text)}>
+                {isPaidActive
+                  ? `Valable jusqu'au ${formatDate(subscription?.currentPeriodEnd)} · ${subscription?.billingCycle === 'YEARLY' ? 'annuel' : 'mensuel'}`
+                  : current.tagline}
+              </p>
             </div>
             <div className={cn('flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 text-xs font-semibold shrink-0', acc.text)}>
               <div className={cn('w-1.5 h-1.5 rounded-full', acc.dot)} />
-              Actif
+              {statusLabel}
             </div>
           </div>
           <div className="mt-4 grid grid-cols-2 gap-2">
             <div className="bg-white/8 rounded-xl px-3 py-2.5 flex items-center gap-2">
               <FolderKanban size={13} className="text-white/40 shrink-0" />
               <div className="min-w-0">
-                <p className="text-[10px] text-white/40">Plans d'action</p>
+                <p className="text-[10px] text-white/40">Plans d&apos;action</p>
                 <p className="text-xs md:text-sm font-semibold text-white leading-tight">{current.limits.plans}</p>
               </div>
             </div>
@@ -186,16 +237,27 @@ function SubscriptionSection({ currentPlan }: { currentPlan: SubscriptionPlan })
         </div>
       </div>
 
-      {/* Formules supérieures */}
-      {currentPlan !== 'ENTERPRISE' && (
+      {!onlinePayment && catalog && (
+        <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+          <CreditCard size={14} className="text-amber-600 shrink-0 mt-0.5" />
+          <p className="text-xs text-amber-800">
+            Le paiement en ligne n&apos;est pas encore activé sur cette installation. Pour changer de formule, écrivez à{' '}
+            <a href="mailto:support@planora360.org" className="font-semibold underline">support@planora360.org</a>.
+          </p>
+        </div>
+      )}
+
+      {/* Formules : renouveler ou évoluer */}
+      {offers.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <Zap size={13} className="text-[#2563eb]" />
-            <p className="text-sm font-semibold text-slate-800">Évoluer vers une formule supérieure</p>
+            <p className="text-sm font-semibold text-slate-800">Choisir une formule</p>
           </div>
           <div className="grid grid-cols-1 gap-3">
-            {PLANS.filter(p => PLAN_ORDER.indexOf(p.key) > currentIndex).map(plan => {
-              const extras = plan.features.filter(
+            {offers.map(p => {
+              const isCurrent = p.key === plan;
+              const extras = p.features.filter(
                 f => f.included && !current.features.find(cf => cf.label === f.label && cf.included)
               );
               const CARD_STYLES: Record<SubscriptionPlan, { border: string; icon: string }> = {
@@ -205,34 +267,43 @@ function SubscriptionSection({ currentPlan }: { currentPlan: SubscriptionPlan })
                 ORGANISATION:  { border: 'border-indigo-200 bg-indigo-50/40',   icon: 'text-indigo-600' },
                 ENTERPRISE:    { border: 'border-amber-200 bg-amber-50/40',     icon: 'text-amber-600' },
               };
-              const style = CARD_STYLES[plan.key];
+              const style = CARD_STYLES[p.key];
+              const monthly = priceOf(p.key, 'MONTHLY');
               return (
-                <div key={plan.key} className={cn('relative rounded-2xl border p-4 md:p-5 flex flex-col sm:flex-row sm:items-center gap-4', style.border)}>
-                  {plan.badge && (
+                <div key={p.key} className={cn('relative rounded-2xl border p-4 md:p-5 flex flex-col sm:flex-row sm:items-center gap-4', style.border)}>
+                  {p.badge && !isCurrent && (
                     <span className="absolute -top-2.5 left-4 text-[11px] font-bold bg-[#2563eb] text-white px-2.5 py-0.5 rounded-full shadow-sm">
-                      {plan.badge}
+                      {p.badge}
                     </span>
                   )}
                   <div className="sm:w-44 shrink-0">
                     <div className="flex items-center gap-1.5 mb-0.5">
                       <Star size={12} className={cn('shrink-0', style.icon)} />
-                      <p className="font-bold text-slate-900 text-sm">{plan.label}</p>
+                      <p className="font-bold text-slate-900 text-sm">{p.label}</p>
                     </div>
-                    <p className="text-xs text-slate-500 ml-[22px]">{plan.tagline}</p>
+                    <p className="text-xs text-slate-500 ml-[22px]">
+                      {p.key === 'ENTERPRISE' ? 'Sur devis' : monthly ? `${formatXof(monthly)} / mois` : p.tagline}
+                    </p>
                     <div className="flex gap-3 mt-1.5 ml-[22px]">
                       <span className="text-[11px] text-slate-500 flex items-center gap-1">
-                        <FolderKanban size={9} className="text-slate-600" />{plan.limits.plans}
+                        <FolderKanban size={9} className="text-slate-600" />{p.limits.plans}
                       </span>
                       <span className="text-[11px] text-slate-500 flex items-center gap-1">
-                        <Users size={9} className="text-slate-600" />{plan.limits.users}
+                        <Users size={9} className="text-slate-600" />{p.limits.users}
                       </span>
                     </div>
                   </div>
                   <div className="hidden sm:block w-px self-stretch bg-slate-200" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-semibold text-slate-600 uppercase tracking-wide mb-1.5">Ce que vous gagnez</p>
+                    <p className="text-[10px] font-semibold text-slate-600 uppercase tracking-wide mb-1.5">
+                      {isCurrent ? 'Votre formule' : 'Ce que vous gagnez'}
+                    </p>
                     <div className="flex flex-wrap gap-x-4 gap-y-1">
-                      {extras.length === 0 ? (
+                      {isCurrent ? (
+                        <span className="text-xs text-slate-600">
+                          {isPaidActive ? 'Renouveler : la nouvelle période s\'ajoute à la suite de l\'actuelle.' : 'Payer pour activer cette formule.'}
+                        </span>
+                      ) : extras.length === 0 ? (
                         <span className="text-xs text-slate-600 italic">Tout ce qui précède, en mieux</span>
                       ) : extras.map(f => (
                         <span key={f.label} className="flex items-center gap-1 text-xs text-slate-700">
@@ -242,13 +313,22 @@ function SubscriptionSection({ currentPlan }: { currentPlan: SubscriptionPlan })
                     </div>
                   </div>
                   <div className="shrink-0">
-                    {plan.key === 'ENTERPRISE' ? (
-                      <Button size="sm" variant="secondary" icon={<MessageSquare size={13} />} onClick={() => openUpgrade(plan)}>
-                        Nous contacter
-                      </Button>
+                    {p.key === 'ENTERPRISE' ? (
+                      <Link
+                        href="/contact-commercial"
+                        className="inline-flex items-center gap-1.5 h-9 px-3 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-700 hover:bg-slate-50"
+                      >
+                        <MessageSquare size={13} /> Nous contacter
+                      </Link>
                     ) : (
-                      <Button size="sm" icon={<ArrowRight size={13} />} onClick={() => openUpgrade(plan)}>
-                        Choisir
+                      <Button
+                        size="sm"
+                        variant={isCurrent ? 'secondary' : 'primary'}
+                        icon={<ArrowRight size={13} />}
+                        disabled={!onlinePayment}
+                        onClick={() => openPlan(p)}
+                      >
+                        {isCurrent ? 'Renouveler' : 'Choisir'}
                       </Button>
                     )}
                   </div>
@@ -259,14 +339,42 @@ function SubscriptionSection({ currentPlan }: { currentPlan: SubscriptionPlan })
         </div>
       )}
 
-      {currentPlan === 'ENTERPRISE' && (
+      {plan === 'ENTERPRISE' && (
         <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3.5">
           <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
             <Star size={15} className="text-amber-600" />
           </div>
           <div>
             <p className="text-sm font-semibold text-slate-900">Formule maximale active</p>
-            <p className="text-xs text-slate-500 mt-0.5">Pour toute modification, contactez l'équipe PLANORA 360.</p>
+            <p className="text-xs text-slate-500 mt-0.5">Pour toute modification, contactez l&apos;équipe PLANORA 360.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Historique des paiements */}
+      {subscription && subscription.payments.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-sm font-semibold text-slate-800">Historique des paiements</p>
+          <div className="rounded-xl border border-slate-200 divide-y divide-slate-100 bg-white">
+            {subscription.payments.map(p => (
+              <div key={p.reference} className="flex items-center justify-between gap-3 px-4 py-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-slate-900">
+                    {PLANS.find(x => x.key === p.plan)?.label ?? p.plan}
+                    {p.billingCycle && <span className="text-slate-500 font-normal"> · {p.billingCycle === 'YEARLY' ? 'annuel' : 'mensuel'}</span>}
+                  </p>
+                  <p className="text-xs text-slate-500 truncate">
+                    {formatDate(p.paidAt ?? p.createdAt)} · {p.reference}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="text-sm font-semibold text-slate-900">{formatXof(p.amount, p.currency)}</span>
+                  <span className={cn('text-[11px] font-semibold px-2 py-0.5 rounded-full', PAYMENT_STATUS[p.status]?.className)}>
+                    {PAYMENT_STATUS[p.status]?.label ?? p.status}
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -275,41 +383,71 @@ function SubscriptionSection({ currentPlan }: { currentPlan: SubscriptionPlan })
         <MessageSquare size={13} className="text-slate-600 shrink-0" />
         <p className="text-xs text-slate-500">
           Pour réduire votre formule ou toute autre demande :{' '}
-          <span className="font-medium text-slate-700">support@ataaba.com</span>
+          <a href="mailto:support@planora360.org" className="font-medium text-slate-700 hover:underline">support@planora360.org</a>
         </p>
       </div>
 
-      <Modal open={upgradeModal} onClose={() => setUpgradeModal(false)} title="" size="sm">
-        <div className="space-y-4">
-          <div className={cn('rounded-xl p-4 flex items-center gap-3',
-            targetPlan?.key === 'ENTERPRISE' ? 'bg-amber-50 border border-amber-100' : 'bg-blue-50 border border-blue-100'
-          )}>
-            <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0">
-              <Star size={18} className={targetPlan?.key === 'ENTERPRISE' ? 'text-amber-500' : 'text-[#2563eb]'} />
+      {/* Paiement d'une formule */}
+      <Modal open={!!targetPlan} onClose={closeModal} title={targetPlan ? `Formule ${targetPlan.label}` : ''} size="sm">
+        {targetPlan && (
+          <div className="space-y-4">
+            <div role="radiogroup" aria-label="Durée de l'abonnement" className="grid grid-cols-2 gap-2">
+              {(['MONTHLY', 'YEARLY'] as BillingCycle[]).map(c => {
+                const price = priceOf(targetPlan.key, c);
+                const selected = cycle === c;
+                return (
+                  <button
+                    key={c}
+                    type="button"
+                    role="radio"
+                    aria-checked={selected}
+                    onClick={() => setCycle(c)}
+                    className={cn(
+                      'rounded-xl border p-3 text-left transition-colors',
+                      selected ? 'border-[#2563eb] bg-blue-50 ring-2 ring-[#2563eb]/20' : 'border-slate-200 hover:border-slate-300',
+                    )}
+                  >
+                    <p className="text-xs font-semibold text-slate-600">{c === 'MONTHLY' ? 'Mensuel' : 'Annuel'}</p>
+                    <p className="text-base font-bold text-slate-900 mt-0.5">{price ? formatXof(price) : '—'}</p>
+                    <p className="text-[11px] text-slate-500">
+                      {c === 'MONTHLY' ? 'par mois' : yearlySaving > 0 ? `par an · ${formatXof(yearlySaving)} économisés` : 'par an'}
+                    </p>
+                  </button>
+                );
+              })}
             </div>
-            <div>
-              <p className="text-sm font-bold text-slate-900">{targetPlan?.label}</p>
-              <p className="text-xs text-slate-500">{targetPlan?.tagline}</p>
+
+            <div className="rounded-xl bg-slate-50 border border-slate-200 p-3 text-xs text-slate-600 space-y-1">
+              <p>
+                Paiement sécurisé par <strong>DexPay</strong> : Wave, Orange Money, Mixx by Yas ou carte bancaire.
+              </p>
+              <p>
+                {targetPlan.key === plan && isPaidActive
+                  ? `La période sera prolongée à partir du ${formatDate(subscription?.currentPeriodEnd)}.`
+                  : 'La formule est activée dès la confirmation du paiement.'}
+                {' '}Pas de renouvellement automatique.
+              </p>
+            </div>
+
+            {checkout.isError && (
+              <p role="alert" className="text-sm text-red-600">
+                {getErrorMessage(checkout.error, 'Le paiement n\'a pas pu démarrer. Réessayez.')}
+              </p>
+            )}
+
+            <div className="flex justify-end gap-3 pt-1 border-t border-slate-100">
+              <Button variant="secondary" onClick={closeModal} disabled={checkout.isPending}>Annuler</Button>
+              <Button
+                icon={<CreditCard size={14} />}
+                onClick={() => checkout.mutate()}
+                isLoading={checkout.isPending || checkout.isSuccess}
+                disabled={!targetPrice}
+              >
+                {targetPrice ? `Payer ${formatXof(targetPrice)}` : 'Payer'}
+              </Button>
             </div>
           </div>
-          {targetPlan?.key === 'ENTERPRISE' ? (
-            <p className="text-sm text-slate-600">
-              La formule <strong>Sur mesure</strong> requiert une configuration personnalisée.
-              Notre équipe vous contactera sous 24h.
-            </p>
-          ) : (
-            <p className="text-sm text-slate-600">
-              Votre demande de passage à la formule <strong>{targetPlan?.label}</strong> sera
-              transmise à l'équipe PLANORA 360. Confirmation par e-mail sous 24h.
-            </p>
-          )}
-          <div className="flex justify-end gap-3 pt-1 border-t border-slate-100">
-            <Button variant="secondary" onClick={() => setUpgradeModal(false)}>Annuler</Button>
-            <Button icon={<MessageSquare size={14} />} onClick={() => setUpgradeModal(false)}>
-              Envoyer la demande
-            </Button>
-          </div>
-        </div>
+        )}
       </Modal>
     </div>
   );
@@ -352,6 +490,14 @@ export default function SettingsPage() {
     return true;
   });
   const [section, setSection] = useState<Section>('Profil');
+
+  // Lien direct vers une section (ex. /settings?section=Abonnement après un paiement)
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get('section');
+    if (requested && (ALL_SECTIONS as readonly string[]).includes(requested)) {
+      setSection(requested as Section); // eslint-disable-line react-hooks/set-state-in-effect
+    }
+  }, []);
   const [menuOpen, setMenuOpen] = useState(false);
   const [qrModal, setQrModal] = useState(false);
   const [qrData, setQrData] = useState<{ qrCode: string; secret: string } | null>(null);

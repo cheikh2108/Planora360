@@ -10,7 +10,9 @@ const helmet_1 = __importDefault(require("helmet"));
 const http_exception_filter_1 = require("./common/filters/http-exception.filter");
 function configureApp(app) {
     app.use((0, helmet_1.default)({
-        contentSecurityPolicy: { directives: { defaultSrc: ["'none'"], frameAncestors: ["'none'"] } },
+        contentSecurityPolicy: {
+            directives: { defaultSrc: ["'none'"], frameAncestors: ["'none'"] },
+        },
         crossOriginResourcePolicy: { policy: 'same-site' },
     }));
     app.use(cookieParser());

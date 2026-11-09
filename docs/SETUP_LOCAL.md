@@ -13,17 +13,17 @@ JWT_EXPIRES_IN="2h"
 JWT_REFRESH_SECRET="votre_refresh_secret"
 JWT_REFRESH_EXPIRES_IN="7d"
 
-# Frontend URL (pour webhooks DexPay)
-FRONTEND_URL="http://localhost:3000"  # ⚠️ Port du frontend
+# Frontend (liens des e-mails, retours de paiement). Plusieurs origines possibles, séparées par des virgules.
+FRONTEND_URL="http://localhost:3001"
 
-# DexPay
-DEXPAY_API_URL=https://api.dexpay.africa/api/v1
-DEXPAY_API_KEY=pk_live_...
-DEXPAY_WEBHOOK_SECRET=sk_live_...
+# DexPay : en local, utilisez des clés de TEST (aucun argent réel)
+DEXPAY_PUBLIC_KEY=pk_test_...
+DEXPAY_SECRET_KEY=sk_test_...
+# URL publique de l'API pour les webhooks (en local : un tunnel, ex. ngrok ; sinon laisser vide,
+# la formule est activée au retour sur la page de succès, qui vérifie le paiement auprès de DexPay)
+API_PUBLIC_URL=
 
-# Tarifs INDIVIDUEL (en centimes XOF)
-PLAN_INDIVIDUEL_MONTHLY=1000000   # 10 000 FCFA/mois
-PLAN_INDIVIDUEL_YEARLY=10000000   # 100 000 FCFA/an
+# Prix : grille tarifaire par défaut, en FCFA entiers (voir backend/.env.example pour les surcharger)
 
 # Emails (Resend)
 RESEND_API_KEY=re_...

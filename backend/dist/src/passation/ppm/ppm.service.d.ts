@@ -39,9 +39,9 @@ export declare class PpmService {
         organizationId: string;
         status: import(".prisma/client").$Enums.StatusPPM;
         title: string;
+        year: number;
         projectId: string | null;
         createdBy: string;
-        year: number;
         validatedBy: string | null;
         validatedAt: Date | null;
         reference: string;
@@ -85,9 +85,9 @@ export declare class PpmService {
         organizationId: string;
         status: import(".prisma/client").$Enums.StatusPPM;
         title: string;
+        year: number;
         projectId: string | null;
         createdBy: string;
-        year: number;
         validatedBy: string | null;
         validatedAt: Date | null;
         reference: string;
@@ -138,9 +138,9 @@ export declare class PpmService {
         organizationId: string;
         status: import(".prisma/client").$Enums.StatusPPM;
         title: string;
+        year: number;
         projectId: string | null;
         createdBy: string;
-        year: number;
         validatedBy: string | null;
         validatedAt: Date | null;
         reference: string;
@@ -180,9 +180,9 @@ export declare class PpmService {
         organizationId: string;
         status: import(".prisma/client").$Enums.StatusPPM;
         title: string;
+        year: number;
         projectId: string | null;
         createdBy: string;
-        year: number;
         validatedBy: string | null;
         validatedAt: Date | null;
         reference: string;
@@ -196,9 +196,9 @@ export declare class PpmService {
         organizationId: string;
         status: import(".prisma/client").$Enums.StatusPPM;
         title: string;
+        year: number;
         projectId: string | null;
         createdBy: string;
-        year: number;
         validatedBy: string | null;
         validatedAt: Date | null;
         reference: string;
@@ -234,9 +234,9 @@ export declare class PpmService {
         organizationId: string;
         status: import(".prisma/client").$Enums.StatusPPM;
         title: string;
+        year: number;
         projectId: string | null;
         createdBy: string;
-        year: number;
         validatedBy: string | null;
         validatedAt: Date | null;
         reference: string;
@@ -276,9 +276,9 @@ export declare class PpmService {
         organizationId: string;
         status: import(".prisma/client").$Enums.StatusPPM;
         title: string;
+        year: number;
         projectId: string | null;
         createdBy: string;
-        year: number;
         validatedBy: string | null;
         validatedAt: Date | null;
         reference: string;
@@ -363,9 +363,9 @@ export declare class PpmService {
             organizationId: string;
             status: import(".prisma/client").$Enums.StatusPPM;
             title: string;
+            year: number;
             projectId: string | null;
             createdBy: string;
-            year: number;
             validatedBy: string | null;
             validatedAt: Date | null;
             reference: string;

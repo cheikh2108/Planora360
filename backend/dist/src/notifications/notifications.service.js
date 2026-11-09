@@ -27,7 +27,7 @@ let NotificationsService = NotificationsService_1 = class NotificationsService {
         this.prisma = prisma;
         this.config = config;
         const apiKey = this.config.get('RESEND_API_KEY');
-        this.frontendUrl = this.config.get('FRONTEND_URL') || 'https://planora360.org';
+        this.frontendUrl = (this.config.get('FRONTEND_URL') || 'https://planora360.org').split(',')[0].trim();
         this.emailTemplates = new email_templates_1.EmailTemplates(this.frontendUrl);
         if (apiKey) {
             this.resend = new resend_1.Resend(apiKey);
@@ -401,6 +401,39 @@ let NotificationsService = NotificationsService_1 = class NotificationsService {
             preheader: `${params.organizationName} demande un accès au plan ${planLabels[params.plan]}`,
             content,
             showLogo: false,
+        }));
+    }
+    async sendPaymentConfirmation(params) {
+        const esc = (v) => v.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        const amount = `${new Intl.NumberFormat('fr-FR').format(params.amount)} ${params.currency === 'XOF' ? 'FCFA' : esc(params.currency)}`;
+        const until = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
+            .format(params.periodEnd);
+        const content = `
+      <p style="margin:0 0 24px;color:#0f172a;font-size:16px">
+        Bonjour <strong>${esc(params.firstName)}</strong>,
+      </p>
+      <p style="margin:0 0 24px;color:#475569;font-size:15px;line-height:1.6">
+        Votre paiement a bien été reçu. La formule <strong>${esc(params.planLabel)}</strong> est active pour
+        <strong>${esc(params.organizationName)}</strong>.
+      </p>
+      ${this.emailTemplates.infoCard({
+            title: 'Récapitulatif',
+            rows: [
+                { label: 'Formule', value: esc(params.planLabel) },
+                { label: 'Montant payé', value: amount },
+                { label: 'Valable jusqu\'au', value: until },
+                { label: 'Référence', value: esc(params.reference) },
+            ],
+        })}
+      <div style="text-align:center;margin:32px 0">
+        ${this.emailTemplates.button({ text: 'Ouvrir PLANORA 360', url: `${this.frontendUrl}/settings`, color: '#2563eb' })}
+      </div>
+    `;
+        await this.sendEmail(params.email, `[PLANORA 360] Paiement confirmé - formule ${params.planLabel}`, this.emailTemplates.base({
+            title: 'Paiement confirmé',
+            preheader: `Formule ${params.planLabel} active jusqu'au ${until}`,
+            content,
+            headerGradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
         }));
     }
     async sendQuoteRequest(params) {

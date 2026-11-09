@@ -11,7 +11,12 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UpdateActionDto = exports.ACTION_STATUSES = void 0;
 const class_validator_1 = require("class-validator");
-exports.ACTION_STATUSES = ['NON_DEMARREE', 'EN_COURS', 'TERMINEE', 'ANNULEE'];
+exports.ACTION_STATUSES = [
+    'NON_DEMARREE',
+    'EN_COURS',
+    'TERMINEE',
+    'ANNULEE',
+];
 class UpdateActionDto {
     title;
     description;

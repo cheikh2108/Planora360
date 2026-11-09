@@ -12,8 +12,8 @@ export declare class PlanningController {
         organizationId: string;
         status: string;
         title: string;
-        createdBy: string;
         year: number;
+        createdBy: string;
         objectives: import("@prisma/client/runtime/client").JsonValue;
         validatedBy: string | null;
         validatedAt: Date | null;
@@ -25,8 +25,8 @@ export declare class PlanningController {
         organizationId: string;
         status: string;
         title: string;
-        createdBy: string;
         year: number;
+        createdBy: string;
         objectives: import("@prisma/client/runtime/client").JsonValue;
         validatedBy: string | null;
         validatedAt: Date | null;
@@ -38,8 +38,8 @@ export declare class PlanningController {
         organizationId: string;
         status: string;
         title: string;
-        createdBy: string;
         year: number;
+        createdBy: string;
         objectives: import("@prisma/client/runtime/client").JsonValue;
         validatedBy: string | null;
         validatedAt: Date | null;
@@ -51,8 +51,8 @@ export declare class PlanningController {
         organizationId: string;
         status: string;
         title: string;
-        createdBy: string;
         year: number;
+        createdBy: string;
         objectives: import("@prisma/client/runtime/client").JsonValue;
         validatedBy: string | null;
         validatedAt: Date | null;
@@ -64,8 +64,8 @@ export declare class PlanningController {
         organizationId: string;
         status: string;
         title: string;
-        createdBy: string;
         year: number;
+        createdBy: string;
         objectives: import("@prisma/client/runtime/client").JsonValue;
         validatedBy: string | null;
         validatedAt: Date | null;
@@ -77,8 +77,8 @@ export declare class PlanningController {
         organizationId: string;
         status: string;
         title: string;
-        createdBy: string;
         year: number;
+        createdBy: string;
         objectives: import("@prisma/client/runtime/client").JsonValue;
         validatedBy: string | null;
         validatedAt: Date | null;

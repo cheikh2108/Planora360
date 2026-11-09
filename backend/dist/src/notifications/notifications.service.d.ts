@@ -45,6 +45,16 @@ export declare class NotificationsService {
         userName: string;
         tempPassword: string;
     }): Promise<void>;
+    sendPaymentConfirmation(params: {
+        email: string;
+        firstName: string;
+        organizationName: string;
+        planLabel: string;
+        amount: number;
+        currency: string;
+        reference: string;
+        periodEnd: Date;
+    }): Promise<void>;
     sendQuoteRequest(params: {
         organizationName: string;
         plan: string;
