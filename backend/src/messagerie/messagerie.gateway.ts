@@ -34,7 +34,7 @@ const convRoom = (conversationId: string) => `conversation:${conversationId}`;
 @WebSocketGateway({
   namespace: 'messagerie',
   cors: {
-    origin: (process.env.CORS_ORIGINS || process.env.FRONTEND_URL || 'http://localhost:3000')
+    origin: (process.env.FRONTEND_URL || 'http://localhost:3001')
       .split(',')
       .map((o) => o.trim())
       .filter((o) => o && o !== '*'),
