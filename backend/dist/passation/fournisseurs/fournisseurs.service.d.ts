@@ -1,0 +1,281 @@
+import { PrismaService } from '../../common/prisma/prisma.service';
+import { CreateFournisseurDto } from './dto/create-fournisseur.dto';
+import { UpdateFournisseurDto } from './dto/update-fournisseur.dto';
+import { StatusFournisseur } from '@prisma/client';
+import { AddFournisseurDocumentDto as AddDocumentDto } from './dto/add-document.dto';
+export declare class FournisseursService {
+    private readonly prisma;
+    constructor(prisma: PrismaService);
+    create(organizationId: string, dto: CreateFournisseurDto): Promise<{
+        documents: {
+            fileSize: number | null;
+            id: string;
+            type: string;
+            url: string;
+            mimeType: string | null;
+            uploadedAt: Date;
+            nom: string;
+            dateExpiration: Date | null;
+            fournisseurId: string;
+        }[];
+    } & {
+        email: string | null;
+        organizationId: string;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: import(".prisma/client").$Enums.StatusFournisseur;
+        raisonSociale: string;
+        identifiantFiscal: string | null;
+        registreCommerce: string | null;
+        adresse: string | null;
+        ville: string | null;
+        pays: string;
+        telephone: string | null;
+        nomContact: string | null;
+        domainesActivite: string[];
+        siteWeb: string | null;
+        prenomContact: string | null;
+        fonctionContact: string | null;
+        telephoneContact: string | null;
+        emailContact: string | null;
+        categoriesBiens: string[];
+        zonesIntervention: string[];
+        motifStatut: string | null;
+    }>;
+    findAll(organizationId: string, filters?: {
+        status?: StatusFournisseur;
+        search?: string;
+    }): Promise<({
+        _count: {
+            evaluations: number;
+            soumissions: number;
+        };
+        documents: {
+            id: string;
+            type: string;
+            nom: string;
+            dateExpiration: Date | null;
+        }[];
+    } & {
+        email: string | null;
+        organizationId: string;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: import(".prisma/client").$Enums.StatusFournisseur;
+        raisonSociale: string;
+        identifiantFiscal: string | null;
+        registreCommerce: string | null;
+        adresse: string | null;
+        ville: string | null;
+        pays: string;
+        telephone: string | null;
+        nomContact: string | null;
+        domainesActivite: string[];
+        siteWeb: string | null;
+        prenomContact: string | null;
+        fonctionContact: string | null;
+        telephoneContact: string | null;
+        emailContact: string | null;
+        categoriesBiens: string[];
+        zonesIntervention: string[];
+        motifStatut: string | null;
+    })[]>;
+    findOne(id: string, organizationId: string): Promise<{
+        evaluations: ({
+            evaluateur: {
+                id: string;
+                firstName: string;
+                lastName: string;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            contratId: string | null;
+            fournisseurId: string;
+            qualite: number | null;
+            delais: number | null;
+            conformite: number | null;
+            disponibilite: number | null;
+            serviceAV: number | null;
+            respectContractuel: number | null;
+            rapportQualitePrix: number | null;
+            noteGlobale: number;
+            commentaires: string | null;
+            evaluateurId: string;
+        })[];
+        documents: {
+            fileSize: number | null;
+            id: string;
+            type: string;
+            url: string;
+            mimeType: string | null;
+            uploadedAt: Date;
+            nom: string;
+            dateExpiration: Date | null;
+            fournisseurId: string;
+        }[];
+        soumissions: ({
+            procedure: {
+                id: string;
+                reference: string;
+            };
+        } & {
+            id: string;
+            status: string;
+            procedureId: string;
+            montantTotal: import("@prisma/client-runtime-utils").Decimal;
+            fournisseurId: string;
+            dateDepot: Date;
+            devise: string;
+            numeroDepot: string;
+            montantTechnique: import("@prisma/client-runtime-utils").Decimal | null;
+            montantFinancier: import("@prisma/client-runtime-utils").Decimal;
+            conformeAdmin: boolean | null;
+            conformeTechnique: boolean | null;
+            conformeFinancier: boolean | null;
+            horsDelai: boolean;
+        })[];
+        contrats: {
+            id: string;
+            status: import(".prisma/client").$Enums.StatusContrat;
+            reference: string;
+            montantInitial: import("@prisma/client-runtime-utils").Decimal;
+            montantRevise: import("@prisma/client-runtime-utils").Decimal | null;
+        }[];
+    } & {
+        email: string | null;
+        organizationId: string;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: import(".prisma/client").$Enums.StatusFournisseur;
+        raisonSociale: string;
+        identifiantFiscal: string | null;
+        registreCommerce: string | null;
+        adresse: string | null;
+        ville: string | null;
+        pays: string;
+        telephone: string | null;
+        nomContact: string | null;
+        domainesActivite: string[];
+        siteWeb: string | null;
+        prenomContact: string | null;
+        fonctionContact: string | null;
+        telephoneContact: string | null;
+        emailContact: string | null;
+        categoriesBiens: string[];
+        zonesIntervention: string[];
+        motifStatut: string | null;
+    }>;
+    update(id: string, organizationId: string, dto: UpdateFournisseurDto): Promise<{
+        documents: {
+            fileSize: number | null;
+            id: string;
+            type: string;
+            url: string;
+            mimeType: string | null;
+            uploadedAt: Date;
+            nom: string;
+            dateExpiration: Date | null;
+            fournisseurId: string;
+        }[];
+    } & {
+        email: string | null;
+        organizationId: string;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: import(".prisma/client").$Enums.StatusFournisseur;
+        raisonSociale: string;
+        identifiantFiscal: string | null;
+        registreCommerce: string | null;
+        adresse: string | null;
+        ville: string | null;
+        pays: string;
+        telephone: string | null;
+        nomContact: string | null;
+        domainesActivite: string[];
+        siteWeb: string | null;
+        prenomContact: string | null;
+        fonctionContact: string | null;
+        telephoneContact: string | null;
+        emailContact: string | null;
+        categoriesBiens: string[];
+        zonesIntervention: string[];
+        motifStatut: string | null;
+    }>;
+    remove(id: string, organizationId: string): Promise<{
+        email: string | null;
+        organizationId: string;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: import(".prisma/client").$Enums.StatusFournisseur;
+        raisonSociale: string;
+        identifiantFiscal: string | null;
+        registreCommerce: string | null;
+        adresse: string | null;
+        ville: string | null;
+        pays: string;
+        telephone: string | null;
+        nomContact: string | null;
+        domainesActivite: string[];
+        siteWeb: string | null;
+        prenomContact: string | null;
+        fonctionContact: string | null;
+        telephoneContact: string | null;
+        emailContact: string | null;
+        categoriesBiens: string[];
+        zonesIntervention: string[];
+        motifStatut: string | null;
+    }>;
+    changeStatus(id: string, organizationId: string, newStatus: StatusFournisseur, motif?: string): Promise<{
+        email: string | null;
+        organizationId: string;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: import(".prisma/client").$Enums.StatusFournisseur;
+        raisonSociale: string;
+        identifiantFiscal: string | null;
+        registreCommerce: string | null;
+        adresse: string | null;
+        ville: string | null;
+        pays: string;
+        telephone: string | null;
+        nomContact: string | null;
+        domainesActivite: string[];
+        siteWeb: string | null;
+        prenomContact: string | null;
+        fonctionContact: string | null;
+        telephoneContact: string | null;
+        emailContact: string | null;
+        categoriesBiens: string[];
+        zonesIntervention: string[];
+        motifStatut: string | null;
+    }>;
+    addDocument(fournisseurId: string, organizationId: string, dto: AddDocumentDto): Promise<{
+        fileSize: number | null;
+        id: string;
+        type: string;
+        url: string;
+        mimeType: string | null;
+        uploadedAt: Date;
+        nom: string;
+        dateExpiration: Date | null;
+        fournisseurId: string;
+    }>;
+    removeDocument(fournisseurId: string, documentId: string, organizationId: string): Promise<{
+        fileSize: number | null;
+        id: string;
+        type: string;
+        url: string;
+        mimeType: string | null;
+        uploadedAt: Date;
+        nom: string;
+        dateExpiration: Date | null;
+        fournisseurId: string;
+    }>;
+}

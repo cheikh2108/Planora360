@@ -1,2 +1,1 @@
-release: npx prisma migrate deploy
-web: node dist/src/main
+web: node dist/main

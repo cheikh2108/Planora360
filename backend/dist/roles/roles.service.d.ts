@@ -1,0 +1,41 @@
+import { PrismaService } from '../common/prisma/prisma.service';
+import { CreateRoleDto } from './dto/create-role.dto';
+import { UpdateRoleDto } from './dto/update-role.dto';
+export declare class RolesService {
+    private prisma;
+    constructor(prisma: PrismaService);
+    findAll(organizationId: string, callerRole?: string | null): Promise<({
+        _count: {
+            users: number;
+        };
+    } & {
+        organizationId: string | null;
+        id: string;
+        name: string;
+        permissions: import("@prisma/client/runtime/client").JsonValue;
+    })[]>;
+    findOne(id: string, organizationId: string): Promise<{
+        _count: {
+            users: number;
+        };
+    } & {
+        organizationId: string | null;
+        id: string;
+        name: string;
+        permissions: import("@prisma/client/runtime/client").JsonValue;
+    }>;
+    private assertNotSystemName;
+    create(dto: CreateRoleDto, organizationId: string): Promise<{
+        organizationId: string | null;
+        id: string;
+        name: string;
+        permissions: import("@prisma/client/runtime/client").JsonValue;
+    }>;
+    update(id: string, dto: UpdateRoleDto, organizationId: string): Promise<{
+        organizationId: string | null;
+        id: string;
+        name: string;
+        permissions: import("@prisma/client/runtime/client").JsonValue;
+    }>;
+    remove(id: string, organizationId: string): Promise<void>;
+}
