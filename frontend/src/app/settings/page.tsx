@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth-context';
 import { authApi, billingApi, formatXof, getErrorMessage, type BillingCycle, type PaymentSummary } from '@/lib/api';
 import api from '@/lib/api';
 import { Header } from '@/components/layout/header';
+import { NotificationPreferencesSection } from '@/components/settings/notification-preferences-section';
 import { Button } from '@/components/ui/button';
 import { FormField, Input } from '@/components/ui/form-field';
 import { Modal } from '@/components/ui/modal';
@@ -809,33 +810,7 @@ export default function SettingsPage() {
             )}
 
             {/* Notifications */}
-            {section === 'Notifications' && (
-              <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-                <div className="px-5 py-4 border-b border-slate-100">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">Préférences de notification</p>
-                </div>
-                <div className="divide-y divide-slate-100">
-                  {[
-                    { label: 'Activités en retard',     desc: 'Alerte lorsque des activités dépassent leur échéance',            enabled: true  },
-                    { label: 'Validations en attente',  desc: 'Notification quand une activité attend votre validation',          enabled: true  },
-                    { label: 'Dépassement budgétaire',  desc: 'Alerte en cas de dépassement du budget prévu',                    enabled: true  },
-                    { label: 'Rapport hebdomadaire',    desc: 'Résumé hebdomadaire des activités de l\'organisation',             enabled: false },
-                    { label: 'Documents ajoutés',       desc: 'Notification lors de l\'ajout de documents',                      enabled: false },
-                  ].map(item => (
-                    <div key={item.label} className="flex items-center justify-between gap-4 px-5 py-3.5">
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-slate-900">{item.label}</p>
-                        <p className="text-xs text-slate-600 mt-0.5 leading-snug">{item.desc}</p>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer shrink-0">
-                        <input type="checkbox" defaultChecked={item.enabled} className="sr-only peer" />
-                        <div className="w-9 h-5 bg-slate-200 rounded-full peer peer-checked:bg-[#2563eb] after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full" />
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            {section === 'Notifications' && <NotificationPreferencesSection />}
 
             {/* Abonnement */}
             {section === 'Abonnement' && isAdmin && (

@@ -16,6 +16,8 @@ exports.AuthController = void 0;
 const common_1 = require("@nestjs/common");
 const change_password_dto_1 = require("./dto/change-password.dto");
 const request_quote_dto_1 = require("./dto/request-quote.dto");
+const password_reset_dto_1 = require("./dto/password-reset.dto");
+const password_reset_service_1 = require("./password-reset.service");
 const throttler_1 = require("@nestjs/throttler");
 const auth_service_1 = require("./auth.service");
 const login_dto_1 = require("./dto/login.dto");
@@ -32,11 +34,13 @@ let AuthController = class AuthController {
     securityEventsService;
     csrfService;
     prisma;
-    constructor(authService, securityEventsService, csrfService, prisma) {
+    passwordReset;
+    constructor(authService, securityEventsService, csrfService, prisma, passwordReset) {
         this.authService = authService;
         this.securityEventsService = securityEventsService;
         this.csrfService = csrfService;
         this.prisma = prisma;
+        this.passwordReset = passwordReset;
     }
     async getWebSocketToken(user) {
         return this.authService.generateWebSocketToken(user);
@@ -49,6 +53,15 @@ let AuthController = class AuthController {
     }
     requestQuote(dto) {
         return this.authService.requestQuote(dto);
+    }
+    forgotPassword(dto, req) {
+        return this.passwordReset.requestReset(dto.email, req.ip);
+    }
+    checkResetToken(dto) {
+        return this.passwordReset.checkToken(dto.token);
+    }
+    resetPassword(dto) {
+        return this.passwordReset.resetPassword(dto.token, dto.newPassword);
     }
     async login(dto, request, response) {
         const ipAddress = this.extractIpAddress(request);
@@ -237,6 +250,34 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "requestQuote", null);
 __decorate([
+    (0, common_1.Post)('forgot-password'),
+    (0, throttler_1.Throttle)({ default: { limit: 3, ttl: 60000 } }),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [password_reset_dto_1.ForgotPasswordDto, Object]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "forgotPassword", null);
+__decorate([
+    (0, common_1.Post)('reset-password/check'),
+    (0, throttler_1.Throttle)({ default: { limit: 10, ttl: 60000 } }),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [password_reset_dto_1.CheckResetTokenDto]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "checkResetToken", null);
+__decorate([
+    (0, common_1.Post)('reset-password'),
+    (0, throttler_1.Throttle)({ default: { limit: 5, ttl: 60000 } }),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [password_reset_dto_1.ResetPasswordDto]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "resetPassword", null);
+__decorate([
     (0, common_1.Post)('login'),
     (0, throttler_1.Throttle)({ default: { limit: 5, ttl: 60000 } }),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
@@ -325,6 +366,7 @@ exports.AuthController = AuthController = __decorate([
     __metadata("design:paramtypes", [auth_service_1.AuthService,
         security_events_service_1.SecurityEventsService,
         csrf_service_1.CsrfService,
-        prisma_service_1.PrismaService])
+        prisma_service_1.PrismaService,
+        password_reset_service_1.PasswordResetService])
 ], AuthController);
 //# sourceMappingURL=auth.controller.js.map

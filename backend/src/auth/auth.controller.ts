@@ -1,6 +1,8 @@
 import { Controller, Get, Post, Patch, Body, Param, UseGuards, HttpCode, HttpStatus, Req, Res, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { RequestQuoteDto } from './dto/request-quote.dto';
+import { CheckResetTokenDto, ForgotPasswordDto, ResetPasswordDto } from './dto/password-reset.dto';
+import { PasswordResetService } from './password-reset.service';
 import { Request, Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
@@ -21,6 +23,7 @@ export class AuthController {
     private securityEventsService: SecurityEventsService,
     private csrfService: CsrfService,
     private prisma: PrismaService,
+    private passwordReset: PasswordResetService,
   ) {}
 
   /**
@@ -54,6 +57,30 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   requestQuote(@Body() dto: RequestQuoteDto) {
     return this.authService.requestQuote(dto);
+  }
+
+  /** Mot de passe oublié : réponse identique que le compte existe ou non. */
+  @Post('forgot-password')
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
+  @HttpCode(HttpStatus.OK)
+  forgotPassword(@Body() dto: ForgotPasswordDto, @Req() req: Request) {
+    return this.passwordReset.requestReset(dto.email, req.ip);
+  }
+
+  /** Vérifie un lien de réinitialisation sans le consommer. */
+  @Post('reset-password/check')
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @HttpCode(HttpStatus.OK)
+  checkResetToken(@Body() dto: CheckResetTokenDto) {
+    return this.passwordReset.checkToken(dto.token);
+  }
+
+  /** Définit un nouveau mot de passe à partir du lien reçu par e-mail. */
+  @Post('reset-password')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @HttpCode(HttpStatus.OK)
+  resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.passwordReset.resetPassword(dto.token, dto.newPassword);
   }
 
   @Post('login')

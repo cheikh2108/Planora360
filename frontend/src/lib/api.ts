@@ -6,7 +6,7 @@ import {
   NETWORK_ERROR_MESSAGE,
   LOGIN_REDIRECT_URL,
 } from './api-constants';
-import type { SubscriptionPlan } from './types';
+import type { NotificationFeed, NotificationPreferences, SubscriptionPlan } from './types';
 
 /**
  * Client HTTP de l'application.
@@ -143,6 +143,10 @@ export const authApi = {
     email: string;
   }) => api.post('/auth/register', data),
   logout: () => api.post('/auth/logout'),
+  forgotPassword: (email: string) => api.post<{ message: string }>('/auth/forgot-password', { email }),
+  checkResetToken: (token: string) => api.post<{ valid: boolean }>('/auth/reset-password/check', { token }),
+  resetPassword: (token: string, newPassword: string) =>
+    api.post<{ message: string }>('/auth/reset-password', { token, newPassword }),
   setup2fa: () => api.post('/auth/2fa/setup'),
   enable2fa: (token: string) => api.post('/auth/2fa/enable', { token }),
   disable2fa: (token: string) => api.post('/auth/2fa/disable', { token }),
@@ -277,6 +281,16 @@ export const indicatorsApi = {
 // Audit
 export const auditApi = {
   list: (params?: Record<string, unknown>) => api.get('/audit', { params }),
+};
+
+// Notifications in-app (tous utilisateurs, toutes formules)
+export const notificationsApi = {
+  list: (params?: { page?: number; limit?: number }) =>
+    api.get<NotificationFeed>('/notifications', { params }),
+  markAllRead: () => api.post<{ readAt: string; unreadCount: number }>('/notifications/read-all'),
+  getPreferences: () => api.get<NotificationPreferences>('/notifications/preferences'),
+  updatePreferences: (data: Partial<NotificationPreferences>) =>
+    api.patch<NotificationPreferences>('/notifications/preferences', data),
 };
 
 // Roles

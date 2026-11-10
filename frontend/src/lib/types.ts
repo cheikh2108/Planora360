@@ -224,6 +224,33 @@ export interface AuditEntry {
   createdAt: string;
 }
 
+export interface NotificationEntry {
+  id: string;
+  action: string;
+  entityType: string;
+  entityId: string;
+  metadata?: Record<string, unknown> | null;
+  user?: { id: string; firstName: string; lastName: string } | null;
+  createdAt: string;
+  read: boolean;
+}
+
+export interface NotificationFeed {
+  entries: NotificationEntry[];
+  total: number;
+  page: number;
+  limit: number;
+  unreadCount: number;
+  readAt: string | null;
+}
+
+export interface NotificationPreferences {
+  validationRequests: boolean;
+  validationResults: boolean;
+  overdueActivities: boolean;
+  upcomingDeadlines: boolean;
+}
+
 export interface PaginatedResponse<T> {
   data: T[];
   total: number;

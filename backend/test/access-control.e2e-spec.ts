@@ -22,6 +22,10 @@ const PUBLIC_ROUTES = new Set([
   'GET /api/auth/verify-email/:token',
   'POST /api/auth/request-quote',
   'POST /api/auth/login',
+  // Mot de passe oublié : utilisé hors session par définition
+  'POST /api/auth/forgot-password',
+  'POST /api/auth/reset-password/check',
+  'POST /api/auth/reset-password',
   'POST /api/auth/refresh',
   'GET /api/auth/csrf',
   'POST /api/dexpay/webhook',

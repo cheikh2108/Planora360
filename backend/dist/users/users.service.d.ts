@@ -60,6 +60,8 @@ export declare class UsersService {
         isActive: boolean;
         mustChangePassword: boolean;
         lastLoginAt: Date | null;
+        notificationsReadAt: Date | null;
+        notificationPreferences: import("@prisma/client/runtime/client").JsonValue | null;
         updatedAt: Date;
         deletedAt: Date | null;
         tokensValidAfter: Date | null;
@@ -85,6 +87,8 @@ export declare class UsersService {
         isActive: boolean;
         mustChangePassword: boolean;
         lastLoginAt: Date | null;
+        notificationsReadAt: Date | null;
+        notificationPreferences: import("@prisma/client/runtime/client").JsonValue | null;
         updatedAt: Date;
         deletedAt: Date | null;
         tokensValidAfter: Date | null;

@@ -8,6 +8,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { SecurityEventsModule } from '../security-events/security-events.module';
 // import { DexpayModule } from '../dexpay/dexpay.module'; // Désactivé - intégration paiement à faire
 import { NotificationsModule } from '../notifications/notifications.module';
+import { PasswordResetService } from './password-reset.service';
 
 @Module({
   imports: [
@@ -24,7 +25,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
     NotificationsModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, PasswordResetService],
   exports: [JwtModule],
 })
 export class AuthModule {}

@@ -45,6 +45,17 @@ export declare class NotificationsService {
         userName: string;
         tempPassword: string;
     }): Promise<void>;
+    private esc;
+    sendPasswordResetLink(params: {
+        email: string;
+        firstName: string;
+        resetUrl: string;
+        expiresInMinutes: number;
+    }): Promise<void>;
+    sendPasswordChangedNotice(params: {
+        email: string;
+        firstName: string;
+    }): Promise<void>;
     sendPaymentConfirmation(params: {
         email: string;
         firstName: string;

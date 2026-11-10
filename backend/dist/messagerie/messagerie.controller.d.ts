@@ -19,11 +19,11 @@ export declare class MessagerieController {
             role: import(".prisma/client").$Enums.ConversationRole;
             id: string;
             userId: string;
+            unreadCount: number;
             conversationId: string;
             isMuted: boolean;
             isPinned: boolean;
             lastReadAt: Date | null;
-            unreadCount: number;
             joinedAt: Date;
             leftAt: Date | null;
         })[];
@@ -83,11 +83,11 @@ export declare class MessagerieController {
             role: import(".prisma/client").$Enums.ConversationRole;
             id: string;
             userId: string;
+            unreadCount: number;
             conversationId: string;
             isMuted: boolean;
             isPinned: boolean;
             lastReadAt: Date | null;
-            unreadCount: number;
             joinedAt: Date;
             leftAt: Date | null;
         })[];
@@ -121,11 +121,11 @@ export declare class MessagerieController {
             role: import(".prisma/client").$Enums.ConversationRole;
             id: string;
             userId: string;
+            unreadCount: number;
             conversationId: string;
             isMuted: boolean;
             isPinned: boolean;
             lastReadAt: Date | null;
-            unreadCount: number;
             joinedAt: Date;
             leftAt: Date | null;
         })[];

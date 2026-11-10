@@ -1,5 +1,7 @@
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { RequestQuoteDto } from './dto/request-quote.dto';
+import { CheckResetTokenDto, ForgotPasswordDto, ResetPasswordDto } from './dto/password-reset.dto';
+import { PasswordResetService } from './password-reset.service';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -14,7 +16,8 @@ export declare class AuthController {
     private securityEventsService;
     private csrfService;
     private prisma;
-    constructor(authService: AuthService, securityEventsService: SecurityEventsService, csrfService: CsrfService, prisma: PrismaService);
+    private passwordReset;
+    constructor(authService: AuthService, securityEventsService: SecurityEventsService, csrfService: CsrfService, prisma: PrismaService, passwordReset: PasswordResetService);
     getWebSocketToken(user: any): Promise<{
         token: string;
         expiresIn: number;
@@ -43,6 +46,15 @@ export declare class AuthController {
     }>;
     requestQuote(dto: RequestQuoteDto): Promise<{
         success: boolean;
+        message: string;
+    }>;
+    forgotPassword(dto: ForgotPasswordDto, req: Request): Promise<{
+        message: string;
+    }>;
+    checkResetToken(dto: CheckResetTokenDto): Promise<{
+        valid: boolean;
+    }>;
+    resetPassword(dto: ResetPasswordDto): Promise<{
         message: string;
     }>;
     login(dto: LoginDto, request: Request, response: Response): Promise<{

@@ -43,6 +43,8 @@ export declare function loadSessionUser(prisma: PrismaService, userId: string | 
     isActive: boolean;
     mustChangePassword: boolean;
     lastLoginAt: Date | null;
+    notificationsReadAt: Date | null;
+    notificationPreferences: import("@prisma/client/runtime/client").JsonValue | null;
     updatedAt: Date;
     deletedAt: Date | null;
     tokensValidAfter: Date | null;

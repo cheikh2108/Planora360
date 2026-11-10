@@ -16,6 +16,7 @@ const auth_controller_1 = require("./auth.controller");
 const jwt_strategy_1 = require("./strategies/jwt.strategy");
 const security_events_module_1 = require("../security-events/security-events.module");
 const notifications_module_1 = require("../notifications/notifications.module");
+const password_reset_service_1 = require("./password-reset.service");
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
@@ -34,7 +35,7 @@ exports.AuthModule = AuthModule = __decorate([
             notifications_module_1.NotificationsModule,
         ],
         controllers: [auth_controller_1.AuthController],
-        providers: [auth_service_1.AuthService, jwt_strategy_1.JwtStrategy],
+        providers: [auth_service_1.AuthService, jwt_strategy_1.JwtStrategy, password_reset_service_1.PasswordResetService],
         exports: [jwt_1.JwtModule],
     })
 ], AuthModule);

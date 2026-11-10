@@ -59,6 +59,8 @@ export declare class JwtStrategy extends JwtStrategy_base {
         isActive: boolean;
         mustChangePassword: boolean;
         lastLoginAt: Date | null;
+        notificationsReadAt: Date | null;
+        notificationPreferences: import("@prisma/client/runtime/client").JsonValue | null;
         updatedAt: Date;
         deletedAt: Date | null;
         tokensValidAfter: Date | null;

@@ -1,14 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { auditApi } from '@/lib/api';
-import type { AuditEntry } from '@/lib/types';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { notificationsApi } from '@/lib/api';
+import type { NotificationEntry, NotificationFeed } from '@/lib/types';
 import { Header } from '@/components/layout/header';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Pagination } from '@/components/ui/pagination';
 import { cn } from '@/lib/utils';
-import { Bell, Filter, Calendar } from 'lucide-react';
+import { Bell, Calendar, CheckCheck } from 'lucide-react';
 import { ACTION_CONFIG, DEFAULT_CONFIG, humanAction } from '@/lib/action-config';
 
 /* ─── Skeleton de timeline ───────────────────────────────────── */
@@ -43,33 +43,26 @@ function TimelineSkeleton() {
 
 export default function NotificationsPage() {
   const [page, setPage] = useState(1);
-  const [actionFilter, setActionFilter] = useState<string>('');
   const limit = 50;
+  const queryClient = useQueryClient();
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['audit-notifications', page, actionFilter],
-    queryFn: async () => {
-      const r = await auditApi.list({ limit, page });
-      // Backend retourne { entries, total, page, limit }
-      const response = r.data as any;
-      // Si c'est un tableau (ancien format), on le transforme
-      if (Array.isArray(response)) {
-        return { entries: response, total: response.length };
-      }
-      // Sinon c'est le nouveau format
-      return response as { entries: AuditEntry[]; total: number };
-    },
+  const { data, isLoading } = useQuery<NotificationFeed>({
+    queryKey: ['notifications', 'page', page],
+    queryFn: async () => (await notificationsApi.list({ limit, page })).data,
     refetchInterval: 30_000,
   });
 
-  const rawEntries = data?.entries ?? [];
-  const total = data?.total ?? 0;
+  const markAll = useMutation({
+    mutationFn: () => notificationsApi.markAllRead(),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+  });
 
-  // Guard défensif absolu : s'assurer que entries est TOUJOURS un tableau
-  const entries = Array.isArray(rawEntries) ? rawEntries : [];
+  const entries = data?.entries ?? [];
+  const total = data?.total ?? 0;
+  const unread = data?.unreadCount ?? 0;
 
   // Group by calendar day
-  const grouped = entries.reduce<Record<string, AuditEntry[]>>((acc, e) => {
+  const grouped = entries.reduce<Record<string, NotificationEntry[]>>((acc, e) => {
     const day = new Date(e.createdAt).toLocaleDateString('fr-FR', {
       weekday: 'long',
       day: 'numeric',
@@ -80,18 +73,11 @@ export default function NotificationsPage() {
     return acc;
   }, {});
 
-  // Get unique action types for filter
-  const allActions = Array.from(new Set(entries.map(e => e.action)));
-  const actionTypes = allActions.map(action => ({
-    value: action,
-    label: humanAction(action),
-  })).sort((a, b) => a.label.localeCompare(b.label));
-
   return (
     <div className="flex flex-col flex-1 min-h-0 overflow-auto bg-[#f8fafc]">
       <Header
-        title="Journal d'activité"
-        subtitle="Historique complet des événements de votre organisation"
+        title="Notifications"
+        subtitle="Ce que les autres membres de votre organisation ont fait récemment"
       />
 
       <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 w-full">
@@ -103,16 +89,21 @@ export default function NotificationsPage() {
                 <Bell size={20} className="text-[#0f1e38]" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-slate-900">{total.toLocaleString()} événements</h2>
-                <p className="text-xs text-slate-500">Depuis le début</p>
+                <h2 className="text-lg font-bold text-slate-900">
+                  {unread > 0 ? `${unread.toLocaleString('fr-FR')} non lue${unread > 1 ? 's' : ''}` : 'Tout est lu'}
+                </h2>
+                <p className="text-xs text-slate-500">{total.toLocaleString('fr-FR')} notification{total > 1 ? 's' : ''} au total</p>
               </div>
             </div>
 
-            {/* Filter button (future) */}
-            {actionTypes.length > 5 && (
-              <button className="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 text-sm text-slate-600 hover:bg-slate-50 transition-colors">
-                <Filter size={16} />
-                Filtrer par type
+            {unread > 0 && (
+              <button
+                onClick={() => markAll.mutate()}
+                disabled={markAll.isPending}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60 transition-colors"
+              >
+                <CheckCheck size={16} />
+                Tout marquer comme lu
               </button>
             )}
           </div>
@@ -143,8 +134,8 @@ export default function NotificationsPage() {
         ) : entries.length === 0 ? (
           <EmptyState
             illustration="inbox"
-            title="Aucun événement"
-            description="Les événements de votre organisation apparaîtront ici."
+            title="Aucune notification"
+            description="Les actions des autres membres de votre organisation apparaîtront ici."
           />
         ) : (
           <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-10">
@@ -201,7 +192,8 @@ export default function NotificationsPage() {
                         >
                           <div className="flex items-start justify-between gap-4">
                             <div className="min-w-0 flex-1">
-                              <p className="text-sm font-semibold text-slate-900 leading-snug mb-0.5">
+                              <p className={cn('text-sm leading-snug mb-0.5 flex items-center gap-2', entry.read ? 'font-medium text-slate-700' : 'font-semibold text-slate-900')}>
+                                {!entry.read && <span className="w-1.5 h-1.5 rounded-full bg-blue-600 shrink-0" aria-label="Non lue" />}
                                 {humanAction(entry.action)}
                               </p>
                               {target && (

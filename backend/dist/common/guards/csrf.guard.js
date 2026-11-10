@@ -24,7 +24,7 @@ let CsrfGuard = class CsrfGuard {
             return true;
         }
         const path = request.path ?? request.url.split('?')[0];
-        if (/^\/(api\/)?auth\/(login|register|refresh|request-quote)$/.test(path)) {
+        if (/^\/(api\/)?auth\/(login|register|refresh|request-quote|forgot-password|reset-password|reset-password\/check)$/.test(path)) {
             return true;
         }
         if (/^\/(api\/)?dexpay\/webhook$/.test(path)) {

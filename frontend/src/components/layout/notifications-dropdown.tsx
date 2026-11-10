@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { auditApi } from '@/lib/api';
-import type { AuditEntry } from '@/lib/types';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { notificationsApi } from '@/lib/api';
+import type { NotificationFeed } from '@/lib/types';
 import { Bell, CheckCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ACTION_CONFIG, DEFAULT_CONFIG, humanAction } from '@/lib/action-config';
@@ -19,27 +19,23 @@ function relativeTime(dateStr: string): string {
 
 export function NotificationsDropdown() {
   const [open, setOpen] = useState(false);
-  const [lastReadAt, setLastReadAt] = useState<number>(() => {
-    try { return Number(localStorage.getItem('notif-last-read-at') ?? 0); } catch { return 0; }
-  });
   const ref = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
 
-  const { data: rawEntries } = useQuery<AuditEntry[]>({
-    queryKey: ['audit-notifications'],
-    queryFn: async () => {
-      const r = await auditApi.list({ limit: 20 });
-      // Backend peut retourner soit un tableau (ancien), soit { entries, total } (nouveau)
-      if (Array.isArray(r.data)) {
-        return r.data;
-      }
-      return (r.data as any)?.entries ?? [];
-    },
+  // Fil personnel (actions des autres membres), état « lu » stocké côté serveur
+  const { data } = useQuery<NotificationFeed>({
+    queryKey: ['notifications', 'dropdown'],
+    queryFn: async () => (await notificationsApi.list({ limit: 20 })).data,
     refetchInterval: 30_000,
   });
 
-  // Guard défensif : s'assurer que entries est TOUJOURS un tableau
-  const entries = Array.isArray(rawEntries) ? rawEntries : [];
-  const unread = entries.filter(e => new Date(e.createdAt).getTime() > lastReadAt).length;
+  const entries = data?.entries ?? [];
+  const unread = data?.unreadCount ?? 0;
+
+  const markAll = useMutation({
+    mutationFn: () => notificationsApi.markAllRead(),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+  });
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
@@ -50,9 +46,7 @@ export function NotificationsDropdown() {
   }, []);
 
   function markAllRead() {
-    const now = Date.now();
-    setLastReadAt(now);
-    try { localStorage.setItem('notif-last-read-at', String(now)); } catch {}
+    markAll.mutate();
   }
 
   return (
@@ -96,6 +90,7 @@ export function NotificationsDropdown() {
               {unread > 0 && (
                 <button
                   onClick={markAllRead}
+                  disabled={markAll.isPending}
                   className="flex items-center gap-1 text-[11px] font-medium text-slate-300 hover:text-white transition-colors"
                 >
                   <CheckCheck size={12} />
@@ -115,13 +110,14 @@ export function NotificationsDropdown() {
                     <Bell size={18} className="text-slate-600" />
                   </div>
                   <p className="text-sm font-medium text-slate-300">Aucune notification</p>
+                  <p className="text-[11px] text-slate-500 mt-1 px-6">Les actions des autres membres de votre organisation apparaîtront ici.</p>
                 </div>
               ) : (
                 <div className="py-1">
                   {entries.map(entry => {
                     const cfg = ACTION_CONFIG[entry.action] ?? DEFAULT_CONFIG;
                     const Icon = cfg.icon;
-                    const isRead = new Date(entry.createdAt).getTime() <= lastReadAt;
+                    const isRead = entry.read;
                     const actor = entry.user
                       ? `${entry.user.firstName} ${entry.user.lastName}`
                       : 'Système';
@@ -130,15 +126,8 @@ export function NotificationsDropdown() {
                     return (
                       <div
                         key={entry.id}
-                        onClick={() => {
-                          const t = new Date(entry.createdAt).getTime();
-                          if (t > lastReadAt) {
-                            setLastReadAt(t);
-                            try { localStorage.setItem('notif-last-read-at', String(t)); } catch {}
-                          }
-                        }}
                         className={cn(
-                          'flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors',
+                          'flex items-start gap-3 px-4 py-3 transition-colors',
                           'hover:bg-white/5',
                           !isRead && 'border-l-2 border-blue-500 pl-[14px]'
                         )}
@@ -186,7 +175,7 @@ export function NotificationsDropdown() {
               onClick={() => setOpen(false)}
               className="flex items-center justify-center gap-1.5 py-3 text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/5 transition-colors"
             >
-              Voir toute l'activité →
+              Voir toutes les notifications →
             </Link>
           </div>
         </>

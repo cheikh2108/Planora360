@@ -25,7 +25,7 @@ export class CsrfGuard implements CanActivate {
 
     // Ignorer CSRF pour routes publiques (pas encore de cookie)
     const path: string = request.path ?? request.url.split('?')[0];
-    if (/^\/(api\/)?auth\/(login|register|refresh|request-quote)$/.test(path)) {
+    if (/^\/(api\/)?auth\/(login|register|refresh|request-quote|forgot-password|reset-password|reset-password\/check)$/.test(path)) {
       return true;
     }
     // Webhook DexPay : appel serveur à serveur, authentifié par signature HMAC (voir DexpayController)
