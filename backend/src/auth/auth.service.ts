@@ -112,7 +112,6 @@ export class AuthService {
       billingCycle,
       userEmail: user.email,
       userName: `${user.firstName} ${user.lastName}`,
-      tempPassword, // Le SuperAdmin peut le voir pour le communiquer après validation
     });
 
     console.log(`⏳ Organisation ${organization.name} créée en attente d'approbation (ID: ${organization.id})`);

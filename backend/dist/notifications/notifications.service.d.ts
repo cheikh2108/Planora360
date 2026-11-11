@@ -43,7 +43,6 @@ export declare class NotificationsService {
         billingCycle: string;
         userEmail: string;
         userName: string;
-        tempPassword: string;
     }): Promise<void>;
     private esc;
     sendPasswordResetLink(params: {

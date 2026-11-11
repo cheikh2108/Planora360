@@ -376,7 +376,6 @@ let NotificationsService = NotificationsService_1 = class NotificationsService {
             rows: [
                 { label: 'Nom', value: this.esc(params.userName) },
                 { label: 'Email', value: `<a href="mailto:${this.esc(params.userEmail)}" style="color:#2563eb;text-decoration:none">${this.esc(params.userEmail)}</a>` },
-                { label: 'Mot de passe temporaire', value: `<code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-family:monospace">${params.tempPassword}</code>` },
             ],
         })}
 

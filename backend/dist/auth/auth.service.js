@@ -117,7 +117,6 @@ let AuthService = class AuthService {
             billingCycle,
             userEmail: user.email,
             userName: `${user.firstName} ${user.lastName}`,
-            tempPassword,
         });
         console.log(`⏳ Organisation ${organization.name} créée en attente d'approbation (ID: ${organization.id})`);
         console.log(`📧 Notification envoyée au SuperAdmin`);
