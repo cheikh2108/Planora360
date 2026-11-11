@@ -22,8 +22,8 @@ export declare class CapitalizationService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        type: string;
         status: string;
+        type: string;
         title: string;
         tags: string[];
         authorId: string;
@@ -48,8 +48,8 @@ export declare class CapitalizationService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        type: string;
         status: string;
+        type: string;
         title: string;
         tags: string[];
         authorId: string;
@@ -75,8 +75,8 @@ export declare class CapitalizationService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        type: string;
         status: string;
+        type: string;
         title: string;
         tags: string[];
         authorId: string;
@@ -101,8 +101,8 @@ export declare class CapitalizationService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        type: string;
         status: string;
+        type: string;
         title: string;
         tags: string[];
         authorId: string;
@@ -117,8 +117,8 @@ export declare class CapitalizationService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        type: string;
         status: string;
+        type: string;
         title: string;
         tags: string[];
         authorId: string;

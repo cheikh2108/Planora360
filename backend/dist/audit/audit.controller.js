@@ -36,7 +36,7 @@ let AuditController = class AuditController {
     async searchWithFilters(filters, user) {
         const searchParams = {
             ...filters,
-            organizationId: filters.organizationId || user.organizationId,
+            organizationId: filters.organizationId || undefined,
             startDate: filters.startDate ? new Date(filters.startDate) : undefined,
             endDate: filters.endDate ? new Date(filters.endDate) : undefined,
         };
@@ -45,7 +45,7 @@ let AuditController = class AuditController {
     async export(filters, user, res) {
         const searchParams = {
             ...filters,
-            organizationId: filters.organizationId || user.organizationId,
+            organizationId: filters.organizationId || undefined,
             startDate: filters.startDate ? new Date(filters.startDate) : undefined,
             endDate: filters.endDate ? new Date(filters.endDate) : undefined,
             limit: 10000,

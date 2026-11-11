@@ -51,7 +51,7 @@ export default function ActivityDetailPage() {
     queryFn: async () => { const r = await activitiesApi.get(id); return r.data; },
   });
 
-  const { data: checklist = [] } = useQuery<ChecklistItem[]>({
+  const { data: checklistData } = useQuery<ChecklistItem[]>({
     queryKey: ['checklist', id],
     queryFn: async () => { const r = await checklistApi.list(id); return r.data; },
     enabled: tab === 'Checklist',
@@ -63,11 +63,15 @@ export default function ActivityDetailPage() {
     enabled: tab === 'Validation',
   });
 
-  const { data: budgets = [] } = useQuery<Budget[]>({
+  const { data: budgetsData } = useQuery<Budget[]>({
     queryKey: ['budgets', id],
     queryFn: async () => { const r = await budgetsApi.list(id); return r.data; },
     enabled: tab === 'Budget',
   });
+
+  // Garde-fou : ces onglets attendent des listes, même si une réponse inattendue arrive
+  const checklist = Array.isArray(checklistData) ? checklistData : [];
+  const budgets = Array.isArray(budgetsData) ? budgetsData : [];
 
   const { mutate: updateProgress } = useMutation({
     mutationFn: ({ itemId, progress }: { itemId: string; progress: number }) =>

@@ -187,8 +187,8 @@ export declare class ContratsController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            type: string;
             status: string;
+            type: string;
             contratId: string;
             dateEcheance: Date | null;
             montantBrut: import("@prisma/client-runtime-utils").Decimal;

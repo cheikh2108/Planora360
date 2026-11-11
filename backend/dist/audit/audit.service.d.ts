@@ -85,6 +85,10 @@ export declare class AuditService {
         page?: number;
     }): Promise<{
         entries: ({
+            organization: {
+                id: string;
+                name: string;
+            };
             user: {
                 email: string;
                 id: string;

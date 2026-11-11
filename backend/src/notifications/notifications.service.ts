@@ -411,6 +411,35 @@ export class NotificationsService {
   /**
    * Notifier le SuperAdmin d'une nouvelle inscription (en attente de validation)
    */
+  /** Inscription refusée par le super admin : la personne est prévenue, avec le motif s'il y en a un. */
+  async sendRegistrationRejected(params: { email: string; firstName: string; orgName: string; reason?: string }) {
+    const content = `
+      <p style="margin:0 0 24px;color:#0f172a;font-size:16px;line-height:1.6">
+        Bonjour <strong>${this.esc(params.firstName)}</strong>,
+      </p>
+      <p style="margin:0 0 24px;color:#475569;font-size:15px;line-height:1.7">
+        Votre demande d'inscription de l'organisation <strong>${this.esc(params.orgName)}</strong> sur PLANORA 360 n'a pas été acceptée.
+      </p>
+      ${
+        params.reason
+          ? this.emailTemplates.infoCard({ rows: [{ label: 'Motif', value: this.esc(params.reason) }] })
+          : ''
+      }
+      <p style="margin:24px 0 0;color:#475569;font-size:14px;line-height:1.7">
+        Pour toute question, répondez simplement à cet e-mail.
+      </p>
+    `;
+    await this.sendEmail(
+      params.email,
+      `[PLANORA 360] Votre demande d'inscription`,
+      this.emailTemplates.base({
+        title: 'Demande d\'inscription',
+        preheader: `Réponse à votre demande pour ${this.esc(params.orgName)}`,
+        content,
+      }),
+    );
+  }
+
   async sendNewRegistrationToAdmin(params: {
     organizationName: string;
     organizationId: string;

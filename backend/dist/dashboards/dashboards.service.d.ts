@@ -61,8 +61,8 @@ export declare class DashboardsService {
                 _count: {
                     checklistItems: number;
                 };
-                startDate: Date;
                 status: import(".prisma/client").$Enums.ActivityStatus;
+                startDate: Date;
                 title: string;
                 dueDate: Date;
                 priority: string;

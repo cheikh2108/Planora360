@@ -49,7 +49,8 @@ export class AuditController {
     // Regular users are restricted to their organization
     const searchParams = {
       ...filters,
-      organizationId: filters.organizationId || user.organizationId,
+      // Super admin : toutes les organisations, sauf filtre explicite
+      organizationId: filters.organizationId || undefined,
       startDate: filters.startDate ? new Date(filters.startDate) : undefined,
       endDate: filters.endDate ? new Date(filters.endDate) : undefined,
     };
@@ -71,7 +72,8 @@ export class AuditController {
   ) {
     const searchParams = {
       ...filters,
-      organizationId: filters.organizationId || user.organizationId,
+      // Super admin : toutes les organisations, sauf filtre explicite
+      organizationId: filters.organizationId || undefined,
       startDate: filters.startDate ? new Date(filters.startDate) : undefined,
       endDate: filters.endDate ? new Date(filters.endDate) : undefined,
       limit: 10000, // Max export limit

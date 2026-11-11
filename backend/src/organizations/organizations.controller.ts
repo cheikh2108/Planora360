@@ -5,6 +5,7 @@ import {
 import { OrganizationsService } from './organizations.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
+import { RejectOrganizationDto } from './dto/reject-organization.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -67,7 +68,7 @@ export class OrganizationsController {
   @Patch(':id/reject')
   @Roles('Super administrateur')
   @HttpCode(HttpStatus.OK)
-  reject(@Param('id') id: string, @Body() dto: { reason?: string }) {
+  reject(@Param('id') id: string, @Body() dto: RejectOrganizationDto) {
     return this.organizationsService.reject(id, dto.reason);
   }
 

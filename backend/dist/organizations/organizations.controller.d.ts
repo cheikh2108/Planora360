@@ -1,6 +1,7 @@
 import { OrganizationsService } from './organizations.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
+import { RejectOrganizationDto } from './dto/reject-organization.dto';
 export declare class OrganizationsController {
     private organizationsService;
     constructor(organizationsService: OrganizationsService);
@@ -14,9 +15,9 @@ export declare class OrganizationsController {
         createdAt: Date;
         name: string;
         deletedAt: Date | null;
-        status: import(".prisma/client").$Enums.OrganizationStatus;
         logoUrl: string | null;
         brandColor: string | null;
+        status: import(".prisma/client").$Enums.OrganizationStatus;
         rejectionReason: string | null;
         trialEndsAt: Date | null;
         dexpayCustomerId: string | null;
@@ -41,9 +42,9 @@ export declare class OrganizationsController {
         createdAt: Date;
         name: string;
         deletedAt: Date | null;
-        status: import(".prisma/client").$Enums.OrganizationStatus;
         logoUrl: string | null;
         brandColor: string | null;
+        status: import(".prisma/client").$Enums.OrganizationStatus;
         rejectionReason: string | null;
         trialEndsAt: Date | null;
         dexpayCustomerId: string | null;
@@ -72,9 +73,9 @@ export declare class OrganizationsController {
         createdAt: Date;
         name: string;
         deletedAt: Date | null;
-        status: import(".prisma/client").$Enums.OrganizationStatus;
         logoUrl: string | null;
         brandColor: string | null;
+        status: import(".prisma/client").$Enums.OrganizationStatus;
         rejectionReason: string | null;
         trialEndsAt: Date | null;
         dexpayCustomerId: string | null;
@@ -99,9 +100,9 @@ export declare class OrganizationsController {
         createdAt: Date;
         name: string;
         deletedAt: Date | null;
-        status: import(".prisma/client").$Enums.OrganizationStatus;
         logoUrl: string | null;
         brandColor: string | null;
+        status: import(".prisma/client").$Enums.OrganizationStatus;
         rejectionReason: string | null;
         trialEndsAt: Date | null;
         dexpayCustomerId: string | null;
@@ -126,9 +127,9 @@ export declare class OrganizationsController {
         createdAt: Date;
         name: string;
         deletedAt: Date | null;
-        status: import(".prisma/client").$Enums.OrganizationStatus;
         logoUrl: string | null;
         brandColor: string | null;
+        status: import(".prisma/client").$Enums.OrganizationStatus;
         rejectionReason: string | null;
         trialEndsAt: Date | null;
         dexpayCustomerId: string | null;
@@ -148,9 +149,9 @@ export declare class OrganizationsController {
         createdAt: Date;
         name: string;
         deletedAt: Date | null;
-        status: import(".prisma/client").$Enums.OrganizationStatus;
         logoUrl: string | null;
         brandColor: string | null;
+        status: import(".prisma/client").$Enums.OrganizationStatus;
         rejectionReason: string | null;
         trialEndsAt: Date | null;
         dexpayCustomerId: string | null;
@@ -167,9 +168,7 @@ export declare class OrganizationsController {
     approve(id: string): Promise<{
         message: string;
     }>;
-    reject(id: string, dto: {
-        reason?: string;
-    }): Promise<{
+    reject(id: string, dto: RejectOrganizationDto): Promise<{
         message: string;
     }>;
     remove(id: string, user: any): Promise<{

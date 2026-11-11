@@ -120,11 +120,11 @@ export class OrganizationsService {
       throw new BadRequestException('Organisation non en attente de validation');
     }
 
-    // Récupérer le mot de passe temporaire depuis la base (si stocké) ou en générer un nouveau
-    const tempPassword = randomBytes(4).toString('hex'); // 8 caractères
+    // Nouveau mot de passe temporaire, pour l'administrateur (premier compte) uniquement
+    const admin = org.users[0];
+    const tempPassword = randomBytes(6).toString('base64url').slice(0, 10);
     const passwordHash = await bcrypt.hash(tempPassword, 12);
 
-    // Transaction: activer organisation + utilisateurs
     await this.prisma.$transaction(async (tx) => {
       await tx.organization.update({
         where: { id },
@@ -134,19 +134,22 @@ export class OrganizationsService {
         },
       });
 
-      // Mettre à jour le mot de passe et activer les utilisateurs
       await tx.user.updateMany({
         where: { organizationId: id, deletedAt: null },
-        data: {
-          isActive: true,
-          passwordHash, // Nouveau mot de passe temporaire
-        },
+        data: { isActive: true },
       });
+
+      if (admin) {
+        // Mot de passe envoyé par e-mail → changement obligatoire à la première connexion
+        await tx.user.update({
+          where: { id: admin.id },
+          data: { passwordHash, mustChangePassword: true, tokensValidAfter: new Date() },
+        });
+      }
     });
 
     // Envoyer les credentials au premier utilisateur (admin)
-    if (org.users.length > 0) {
-      const admin = org.users[0];
+    if (admin) {
       await this.notifications.sendWelcomeCredentials({
         email: admin.email,
         firstName: admin.firstName,
@@ -166,11 +169,23 @@ export class OrganizationsService {
 
     await this.prisma.organization.update({
       where: { id },
-      data: { status: 'REJECTED', rejectionReason: reason ?? null },
+      data: { status: 'REJECTED', rejectionReason: reason?.trim() || null },
     });
 
-    // TODO: Envoyer un email à l'utilisateur pour l'informer du rejet avec la raison
-    // await this.notifications.sendRejectionEmail(...)
+    // Prévenir la personne inscrite (premier compte de l'organisation)
+    const registrant = await this.prisma.user.findFirst({
+      where: { organizationId: id, deletedAt: null },
+      orderBy: { createdAt: 'asc' },
+      select: { email: true, firstName: true },
+    });
+    if (registrant) {
+      await this.notifications.sendRegistrationRejected({
+        email: registrant.email,
+        firstName: registrant.firstName,
+        orgName: org.name,
+        reason: reason?.trim() || undefined,
+      });
+    }
 
     return { message: 'Organisation rejetée' };
   }
@@ -186,6 +201,13 @@ export class OrganizationsService {
 
   async update(id: string, dto: UpdateOrganizationDto) {
     await this.findOne(id);
+    if (dto.name) {
+      const taken = await this.prisma.organization.findFirst({
+        where: { name: dto.name, deletedAt: null, NOT: { id } },
+        select: { id: true },
+      });
+      if (taken) throw new ConflictException('Une organisation avec ce nom existe déjà');
+    }
     return this.prisma.organization.update({ where: { id }, data: dto });
   }
 
@@ -318,8 +340,9 @@ export class OrganizationsService {
     const deletedAt = new Date();
 
     await this.prisma.$transaction([
+      // Les comptes déjà supprimés gardent leur date : la restauration ne les ramènera pas
       this.prisma.user.updateMany({
-        where: { organizationId },
+        where: { organizationId, deletedAt: null },
         data: { deletedAt, isActive: false },
       }),
       this.prisma.organization.update({
@@ -330,9 +353,15 @@ export class OrganizationsService {
   }
 
   private async restoreOrganizationWithUsers(organizationId: string) {
+    const org = await this.prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: { deletedAt: true },
+    });
+    // Seuls les comptes désactivés en même temps que l'organisation sont restaurés ;
+    // un compte supprimé auparavant reste supprimé.
     await this.prisma.$transaction([
       this.prisma.user.updateMany({
-        where: { organizationId },
+        where: { organizationId, deletedAt: org?.deletedAt ?? undefined },
         data: { deletedAt: null, isActive: true },
       }),
       this.prisma.organization.update({

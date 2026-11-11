@@ -25,9 +25,9 @@ export declare class SecurityEventsService {
         createdAt: Date;
         userId: string | null;
         updatedAt: Date;
+        status: import(".prisma/client").$Enums.SecurityEventStatus;
         type: import(".prisma/client").$Enums.SecurityEventType;
         severity: import(".prisma/client").$Enums.SecurityEventSeverity;
-        status: import(".prisma/client").$Enums.SecurityEventStatus;
         description: string;
         resolvedAt: Date | null;
         resolvedBy: string | null;
@@ -76,9 +76,9 @@ export declare class SecurityEventsService {
             createdAt: Date;
             userId: string | null;
             updatedAt: Date;
+            status: import(".prisma/client").$Enums.SecurityEventStatus;
             type: import(".prisma/client").$Enums.SecurityEventType;
             severity: import(".prisma/client").$Enums.SecurityEventSeverity;
-            status: import(".prisma/client").$Enums.SecurityEventStatus;
             description: string;
             resolvedAt: Date | null;
             resolvedBy: string | null;
@@ -101,9 +101,9 @@ export declare class SecurityEventsService {
         createdAt: Date;
         userId: string | null;
         updatedAt: Date;
+        status: import(".prisma/client").$Enums.SecurityEventStatus;
         type: import(".prisma/client").$Enums.SecurityEventType;
         severity: import(".prisma/client").$Enums.SecurityEventSeverity;
-        status: import(".prisma/client").$Enums.SecurityEventStatus;
         description: string;
         resolvedAt: Date | null;
         resolvedBy: string | null;
@@ -122,9 +122,9 @@ export declare class SecurityEventsService {
         createdAt: Date;
         userId: string | null;
         updatedAt: Date;
+        status: import(".prisma/client").$Enums.SecurityEventStatus;
         type: import(".prisma/client").$Enums.SecurityEventType;
         severity: import(".prisma/client").$Enums.SecurityEventSeverity;
-        status: import(".prisma/client").$Enums.SecurityEventStatus;
         description: string;
         resolvedAt: Date | null;
         resolvedBy: string | null;

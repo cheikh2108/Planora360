@@ -24,9 +24,9 @@ export declare class JwtStrategy extends JwtStrategy_base {
             createdAt: Date;
             name: string;
             deletedAt: Date | null;
-            status: import(".prisma/client").$Enums.OrganizationStatus;
             logoUrl: string | null;
             brandColor: string | null;
+            status: import(".prisma/client").$Enums.OrganizationStatus;
             rejectionReason: string | null;
             trialEndsAt: Date | null;
             dexpayCustomerId: string | null;

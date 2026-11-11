@@ -151,7 +151,8 @@ let OrganizationsService = class OrganizationsService {
         if (org.status !== 'PENDING' && org.status !== 'PENDING_APPROVAL') {
             throw new common_1.BadRequestException('Organisation non en attente de validation');
         }
-        const tempPassword = (0, crypto_1.randomBytes)(4).toString('hex');
+        const admin = org.users[0];
+        const tempPassword = (0, crypto_1.randomBytes)(6).toString('base64url').slice(0, 10);
         const passwordHash = await bcrypt.hash(tempPassword, 12);
         await this.prisma.$transaction(async (tx) => {
             await tx.organization.update({
@@ -163,14 +164,16 @@ let OrganizationsService = class OrganizationsService {
             });
             await tx.user.updateMany({
                 where: { organizationId: id, deletedAt: null },
-                data: {
-                    isActive: true,
-                    passwordHash,
-                },
+                data: { isActive: true },
             });
+            if (admin) {
+                await tx.user.update({
+                    where: { id: admin.id },
+                    data: { passwordHash, mustChangePassword: true, tokensValidAfter: new Date() },
+                });
+            }
         });
-        if (org.users.length > 0) {
-            const admin = org.users[0];
+        if (admin) {
             await this.notifications.sendWelcomeCredentials({
                 email: admin.email,
                 firstName: admin.firstName,
@@ -187,8 +190,21 @@ let OrganizationsService = class OrganizationsService {
         }
         await this.prisma.organization.update({
             where: { id },
-            data: { status: 'REJECTED', rejectionReason: reason ?? null },
+            data: { status: 'REJECTED', rejectionReason: reason?.trim() || null },
         });
+        const registrant = await this.prisma.user.findFirst({
+            where: { organizationId: id, deletedAt: null },
+            orderBy: { createdAt: 'asc' },
+            select: { email: true, firstName: true },
+        });
+        if (registrant) {
+            await this.notifications.sendRegistrationRejected({
+                email: registrant.email,
+                firstName: registrant.firstName,
+                orgName: org.name,
+                reason: reason?.trim() || undefined,
+            });
+        }
         return { message: 'Organisation rejetée' };
     }
     async findOne(id) {
@@ -202,6 +218,14 @@ let OrganizationsService = class OrganizationsService {
     }
     async update(id, dto) {
         await this.findOne(id);
+        if (dto.name) {
+            const taken = await this.prisma.organization.findFirst({
+                where: { name: dto.name, deletedAt: null, NOT: { id } },
+                select: { id: true },
+            });
+            if (taken)
+                throw new common_1.ConflictException('Une organisation avec ce nom existe déjà');
+        }
         return this.prisma.organization.update({ where: { id }, data: dto });
     }
     async updateBrandColor(organizationId, brandColor) {
@@ -300,7 +324,7 @@ let OrganizationsService = class OrganizationsService {
         const deletedAt = new Date();
         await this.prisma.$transaction([
             this.prisma.user.updateMany({
-                where: { organizationId },
+                where: { organizationId, deletedAt: null },
                 data: { deletedAt, isActive: false },
             }),
             this.prisma.organization.update({
@@ -310,9 +334,13 @@ let OrganizationsService = class OrganizationsService {
         ]);
     }
     async restoreOrganizationWithUsers(organizationId) {
+        const org = await this.prisma.organization.findUnique({
+            where: { id: organizationId },
+            select: { deletedAt: true },
+        });
         await this.prisma.$transaction([
             this.prisma.user.updateMany({
-                where: { organizationId },
+                where: { organizationId, deletedAt: org?.deletedAt ?? undefined },
                 data: { deletedAt: null, isActive: true },
             }),
             this.prisma.organization.update({

@@ -36,6 +36,12 @@ export declare class NotificationsService {
         firstName: string;
         token: string;
     }): Promise<void>;
+    sendRegistrationRejected(params: {
+        email: string;
+        firstName: string;
+        orgName: string;
+        reason?: string;
+    }): Promise<void>;
     sendNewRegistrationToAdmin(params: {
         organizationName: string;
         organizationId: string;

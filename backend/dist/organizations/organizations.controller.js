@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const organizations_service_1 = require("./organizations.service");
 const create_organization_dto_1 = require("./dto/create-organization.dto");
 const update_organization_dto_1 = require("./dto/update-organization.dto");
+const reject_organization_dto_1 = require("./dto/reject-organization.dto");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../common/guards/roles.guard");
 const roles_decorator_1 = require("../common/decorators/roles.decorator");
@@ -135,7 +136,7 @@ __decorate([
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [String, reject_organization_dto_1.RejectOrganizationDto]),
     __metadata("design:returntype", void 0)
 ], OrganizationsController.prototype, "reject", null);
 __decorate([

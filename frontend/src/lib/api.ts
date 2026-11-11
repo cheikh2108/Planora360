@@ -1,4 +1,4 @@
-import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import {
   API_BASE_URL,
   ERROR_MESSAGES,
@@ -42,8 +42,30 @@ api.interceptors.request.use((config) => {
 
 type RetriableConfig = InternalAxiosRequestConfig & { _retry?: boolean };
 
+/** Message montré quand l'API répond autre chose que du JSON (redéploiement, page d'erreur de l'hébergeur…). */
+export const API_UNAVAILABLE_MESSAGE =
+  'Le service est momentanément indisponible (mise à jour en cours). Réessayez dans un instant.';
+
+/**
+ * Une réponse 2xx dont le corps n'est pas du JSON vient de l'hébergeur (page de maintenance ou de
+ * redéploiement en HTML), pas de l'API : on la traite comme une erreur au lieu de laisser une chaîne
+ * HTML arriver dans les écrans, où elle provoquerait des plantages (« x.filter is not a function »).
+ * Les téléchargements (responseType blob/arraybuffer) et les réponses vides (204) ne sont pas concernés.
+ */
+function assertJsonResponse(res: AxiosResponse): AxiosResponse {
+  const rt = res.config.responseType;
+  if (rt && rt !== 'json') return res;
+  if (res.status === 204 || res.data === '' || res.data === undefined) return res;
+  const contentType = String(res.headers?.['content-type'] ?? '');
+  if (typeof res.data === 'string' && !contentType.includes('json')) {
+    const err = new AxiosError(API_UNAVAILABLE_MESSAGE, 'ERR_BAD_RESPONSE', res.config, res.request, res);
+    throw err;
+  }
+  return res;
+}
+
 api.interceptors.response.use(
-  (res) => res,
+  (res) => assertJsonResponse(res),
   async (err: AxiosError) => {
     const original = err.config as RetriableConfig | undefined;
     const isAuthRoute = AUTH_ROUTES.test(original?.url ?? '');

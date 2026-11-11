@@ -121,6 +121,7 @@ export class AuditService {
               email: true,
             },
           },
+          organization: { select: { id: true, name: true } },
         },
       }),
       this.prisma.auditLog.count({ where }),

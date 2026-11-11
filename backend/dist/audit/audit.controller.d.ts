@@ -48,6 +48,10 @@ export declare class AuditController {
     }[]>;
     searchWithFilters(filters: AuditFiltersDto, user: any): Promise<{
         entries: ({
+            organization: {
+                id: string;
+                name: string;
+            };
             user: {
                 email: string;
                 id: string;

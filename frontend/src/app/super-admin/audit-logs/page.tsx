@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/select';
 import { Download, Search, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import api, { organizationsApi } from '@/lib/api';
 
 interface AuditLog {
   id: string;
@@ -29,6 +30,7 @@ interface AuditLog {
   newValues: any;
   metadata: any;
   createdAt: string;
+  organization?: { id: string; name: string } | null;
   user: {
     id: string;
     firstName: string;
@@ -47,6 +49,7 @@ interface AuditResponse {
 export default function AuditLogsPage() {
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState({
+    organizationId: '',
     userId: '',
     action: '',
     entityType: '',
@@ -67,16 +70,14 @@ export default function AuditLogsPage() {
         ),
       });
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/audit/search?${params}`,
-        {
-          credentials: 'include',
-        }
-      );
-
-      if (!response.ok) throw new Error('Failed to fetch audit logs');
-      return response.json();
+      // Client API commun : cookies, rafraîchissement de session sur 401, messages d'erreur en français
+      return (await api.get<AuditResponse>(`/audit/search?${params}`)).data;
     },
+  });
+
+  const { data: organizations = [] } = useQuery<Array<{ id: string; name: string }>>({
+    queryKey: ['super-admin', 'organizations-for-audit'],
+    queryFn: async () => (await organizationsApi.list()).data,
   });
 
   const handleApplyFilters = () => {
@@ -126,6 +127,24 @@ export default function AuditLogsPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <label className="text-xs font-semibold text-slate-700 mb-2 block">Organisation</label>
+            <Select
+              value={filters.organizationId}
+              onValueChange={(value) => setFilters({ ...filters, organizationId: value })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Toutes" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Toutes</SelectItem>
+                {organizations.map((o) => (
+                  <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div>
             <label className="text-xs font-semibold text-slate-700 mb-2 block">Action</label>
             <Input
@@ -291,8 +310,8 @@ function AuditLogRow({ log }: { log: AuditLog }) {
             <p className="text-[11px] md:text-xs font-mono text-slate-700 truncate">{log.ipAddress || '-'}</p>
           </div>
           <div>
-            <p className="text-[9px] md:text-[10px] uppercase tracking-wider font-semibold text-slate-600 mb-1">Request ID</p>
-            <p className="text-[11px] md:text-xs font-mono text-slate-700 truncate">{log.requestId?.slice(0, 8) || '-'}</p>
+            <p className="text-[9px] md:text-[10px] uppercase tracking-wider font-semibold text-slate-600 mb-1">Organisation</p>
+            <p className="text-[11px] md:text-xs text-slate-700 truncate">{log.organization?.name || '-'}</p>
           </div>
           <div>
             <p className="text-[9px] md:text-[10px] uppercase tracking-wider font-semibold text-slate-600 mb-1">Date</p>
