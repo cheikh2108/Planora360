@@ -5,6 +5,8 @@ import { AddressInfo } from 'net';
 import { ApiClient } from './helpers/api-client';
 import { closeTestApp, createTestApp, TestContext } from './helpers/app';
 import { createTenant, login, Tenant } from './helpers/fixtures';
+import { NotificationsService } from '../src/notifications/notifications.service';
+import { BillingService } from '../src/dexpay/billing.service';
 
 /**
  * Paiement d'une formule avec DexPay, contre un faux serveur DexPay local qui reproduit l'API
@@ -283,5 +285,213 @@ describe('Paiement des formules (DexPay)', () => {
     const otherAdmin = await login(ctx.http, other.users.admin);
     const ref = res.body.payments[0].reference;
     expect((await otherAdmin.get(`/api/dexpay/status/${ref}`)).status).toBe(404);
+  });
+});
+
+/**
+ * Parcours B : inscription Individuel payée directement (sans approbation), puis blocage à
+ * l'échéance et relances. Même faux serveur DexPay que ci-dessus.
+ */
+describe('Inscription payée et échéance des abonnements', () => {
+  let ctx: TestContext;
+  let stub: Awaited<ReturnType<typeof startStubDexpay>>;
+  const savedEnv: Record<string, string | undefined> = {};
+  let notif: NotificationsService;
+  let welcome: jest.SpyInstance;
+  let support: jest.SpyInstance;
+  let reminder: jest.SpyInstance;
+  let mail: jest.SpyInstance;
+
+  const uniq = () => `${Date.now()}.${Math.floor(Math.random() * 1e6)}`;
+  const register = (body: Record<string, unknown>) =>
+    request(ctx.http)
+      .post('/api/auth/register')
+      .set('X-Forwarded-For', `10.7.${Math.floor(Math.random() * 250)}.${Math.floor(Math.random() * 250)}`)
+      .send({ firstName: 'Awa', lastName: 'Diop', ...body });
+
+  beforeAll(async () => {
+    stub = await startStubDexpay();
+    for (const k of ENV_KEYS) savedEnv[k] = process.env[k];
+    process.env.DEXPAY_PUBLIC_KEY = 'pk_test_billing';
+    process.env.DEXPAY_SECRET_KEY = SECRET;
+    process.env.DEXPAY_API_URL = stub.url;
+    process.env.API_PUBLIC_URL = 'https://api.planora.test/api';
+    ctx = await createTestApp();
+    notif = ctx.app.get(NotificationsService);
+    welcome = jest.spyOn(notif, 'sendWelcomeCredentials');
+    support = jest.spyOn(notif, 'sendPaidSignupToSupport');
+    reminder = jest.spyOn(notif, 'sendSubscriptionReminder');
+    mail = jest.spyOn(notif as any, 'sendEmail').mockResolvedValue(undefined);
+  });
+  afterAll(async () => {
+    [welcome, support, reminder, mail].forEach((s) => s.mockRestore());
+    await closeTestApp(ctx);
+    await stub.close();
+    for (const k of ENV_KEYS) {
+      if (savedEnv[k] === undefined) delete process.env[k];
+      else process.env[k] = savedEnv[k];
+    }
+  });
+  beforeEach(() => [welcome, support, reminder, mail].forEach((s) => s.mockClear()));
+
+  it('inscription → paiement → compte activé, identifiants envoyés, connexion avec changement de mot de passe', async () => {
+    const email = `signup.${uniq()}@planora.test`;
+    const organizationName = `Cabinet ${uniq()}`;
+    const res = await register({ organizationName, email, billingCycle: 'MONTHLY' });
+    expect(res.status).toBe(201);
+    expect(res.body).toMatchObject({ status: 'PENDING_PAYMENT', amount: 5000, currency: 'XOF' });
+    expect(res.body.checkoutUrl).toBe(`https://pay.example.test/${res.body.reference}`);
+    const ref = res.body.reference;
+
+    const sent = stub.sessions.get(ref)!;
+    expect(sent.amount).toBe(5000);
+    expect(sent.success_url).toMatch(new RegExp(`/payment/success\\?ref=${ref}&signup=1$`));
+    expect(sent.failure_url).toMatch(/signup=1$/);
+    expect(sent.metadata.registration).toBe('true');
+
+    // Avant le paiement : organisation en attente, compte inactif, aucune connexion possible
+    const org = await ctx.prisma.organization.findFirstOrThrow({ where: { name: organizationName } });
+    expect(org.status).toBe('PENDING_PAYMENT');
+    expect((await ctx.prisma.user.findFirstOrThrow({ where: { email } })).isActive).toBe(false);
+    expect((await request(ctx.http).get(`/api/auth/register/payment/${ref}`)).body.status).toBe('pending');
+
+    // Paiement confirmé par webhook
+    const hook = await sendWebhook(ctx.http, { event: 'checkout.completed', reference: ref, amount: 5000, currency: 'XOF' });
+    expect(hook.status).toBe(200);
+
+    const after = await ctx.prisma.organization.findUniqueOrThrow({ where: { id: org.id } });
+    expect(after.status).toBe('ACTIVE');
+    expect(after.subscriptionStatus).toBe('ACTIVE');
+    expect(after.currentPeriodEnd!.getTime()).toBeGreaterThan(Date.now() + 27 * 86_400_000);
+    const user = await ctx.prisma.user.findFirstOrThrow({ where: { email } });
+    expect(user.isActive).toBe(true);
+    expect(user.mustChangePassword).toBe(true);
+
+    expect(welcome).toHaveBeenCalledTimes(1);
+    expect(support).toHaveBeenCalledTimes(1);
+    const { tempPassword } = welcome.mock.calls[0][0];
+    const login = await request(ctx.http).post('/api/auth/login').send({ email, password: tempPassword });
+    expect(login.status).toBe(200);
+    expect((await request(ctx.http).get(`/api/auth/register/payment/${ref}`)).body.status).toBe('completed');
+
+    // Webhook rejoué : aucun second e-mail d'identifiants
+    await sendWebhook(ctx.http, { event: 'checkout.completed', reference: ref, amount: 5000, currency: 'XOF' });
+    expect(welcome).toHaveBeenCalledTimes(1);
+
+    // Plus de relance possible une fois le compte activé
+    expect((await request(ctx.http).post(`/api/auth/register/payment/${ref}/retry`)).status).toBe(400);
+  });
+
+  it('paiement échoué : on peut réessayer, et une nouvelle inscription avec le même e-mail reprend la demande', async () => {
+    const email = `retry.${uniq()}@planora.test`;
+    const res = await register({ organizationName: `Retry ${uniq()}`, email, billingCycle: 'YEARLY' });
+    expect(res.body.amount).toBe(50000);
+    await sendWebhook(ctx.http, { event: 'checkout.failed', reference: res.body.reference });
+    expect((await request(ctx.http).get(`/api/auth/register/payment/${res.body.reference}`)).body.status).toBe('failed');
+
+    const retry = await request(ctx.http).post(`/api/auth/register/payment/${res.body.reference}/retry`);
+    expect(retry.status).toBe(200);
+    expect(retry.body.reference).not.toBe(res.body.reference);
+    expect(stub.sessions.get(retry.body.reference)!.amount).toBe(50000);
+
+    // Même e-mail, autre nom : la demande non payée est reprise (pas de 409)
+    const again = await register({ organizationName: `Retry renommé ${uniq()}`, email });
+    expect(again.status).toBe(201);
+    expect(again.body.organizationId).toBe(res.body.organizationId);
+    expect(await ctx.prisma.user.count({ where: { email } })).toBe(1);
+    expect(welcome).not.toHaveBeenCalled();
+  });
+
+  it('refuse l’inscription avec l’e-mail d’un compte existant, sans rien créer', async () => {
+    const t = await createTenant(ctx.prisma, 'signup-dup');
+    const organizationName = `Doublon ${uniq()}`;
+    const res = await register({ organizationName, email: t.users.admin.email });
+    expect(res.status).toBe(409);
+    expect(await ctx.prisma.organization.count({ where: { name: organizationName } })).toBe(0);
+  });
+
+  it('le statut public ne concerne que les paiements d’inscription', async () => {
+    const t = await createTenant(ctx.prisma, 'signup-public', { plan: 'INDIVIDUEL' });
+    const admin = await login(ctx.http, t.users.admin);
+    const checkout = await admin.post('/api/billing/checkout', { plan: 'PRO', billingCycle: 'MONTHLY' });
+    expect(checkout.status).toBe(201);
+    expect((await request(ctx.http).get(`/api/auth/register/payment/${checkout.body.reference}`)).status).toBe(404);
+    expect((await request(ctx.http).post(`/api/auth/register/payment/${checkout.body.reference}/retry`)).status).toBe(404);
+  });
+
+  it('abonnement expiré : API bloquée (402) sauf session et renouvellement, débloquée après paiement', async () => {
+    const t = await createTenant(ctx.prisma, 'expire', { plan: 'INDIVIDUEL' });
+    await ctx.prisma.organization.update({
+      where: { id: t.org.id },
+      data: { subscriptionStatus: 'ACTIVE', currentPeriodEnd: new Date(Date.now() - 3600_000) },
+    });
+    const admin = await login(ctx.http, t.users.admin);
+
+    const blocked = await admin.get('/api/action-plans');
+    expect(blocked.status).toBe(402);
+    expect(blocked.body.code).toBe('SUBSCRIPTION_EXPIRED');
+    expect((await admin.get('/api/auth/me')).status).toBe(200);
+    expect((await admin.get('/api/billing/subscription')).status).toBe(200);
+    expect((await admin.get('/api/billing/plans')).status).toBe(200);
+
+    const checkout = await admin.post('/api/billing/checkout', { plan: 'INDIVIDUEL', billingCycle: 'MONTHLY' });
+    expect(checkout.status).toBe(201);
+    await sendWebhook(ctx.http, { event: 'checkout.completed', reference: checkout.body.reference, amount: 5000, currency: 'XOF' });
+
+    expect((await admin.get('/api/action-plans')).status).toBe(200);
+    const org = await ctx.prisma.organization.findUniqueOrThrow({ where: { id: t.org.id } });
+    // Période expirée : la nouvelle démarre au paiement, pas à l'ancienne échéance
+    expect(org.currentPeriodEnd!.getTime()).toBeGreaterThan(Date.now() + 27 * 86_400_000);
+  });
+
+  it('une organisation sans date d’échéance (créée à la main) n’est pas bloquée', async () => {
+    const t = await createTenant(ctx.prisma, 'sans-echeance', { plan: 'INDIVIDUEL' });
+    const admin = await login(ctx.http, t.users.admin);
+    expect((await admin.get('/api/action-plans')).status).toBe(200);
+  });
+
+  it('relances : J-7, J-1, puis expiration (statut PAST_DUE), un e-mail par étape', async () => {
+    const billing = ctx.app.get(BillingService);
+    const now = new Date();
+    const at = (h: number) => new Date(now.getTime() + h * 3600_000);
+    const tenants = {
+      J7: await createTenant(ctx.prisma, 'rel-j7', { plan: 'INDIVIDUEL' }),
+      J1: await createTenant(ctx.prisma, 'rel-j1', { plan: 'INDIVIDUEL' }),
+      EXPIRED: await createTenant(ctx.prisma, 'rel-exp', { plan: 'INDIVIDUEL' }),
+      LATER: await createTenant(ctx.prisma, 'rel-later', { plan: 'INDIVIDUEL' }),
+    };
+    const ends = { J7: at(6.5 * 24), J1: at(12), EXPIRED: at(-12), LATER: at(20 * 24) };
+    for (const [k, t] of Object.entries(tenants)) {
+      await ctx.prisma.organization.update({
+        where: { id: t.org.id },
+        data: { subscriptionStatus: 'ACTIVE', currentPeriodEnd: ends[k as keyof typeof ends] },
+      });
+    }
+
+    await billing.sendRenewalReminders(now);
+    const byEmail = new Map(reminder.mock.calls.map((c) => [c[0].email, c[0].kind]));
+    expect(byEmail.get(tenants.J7.users.admin.email)).toBe('J7');
+    expect(byEmail.get(tenants.J1.users.admin.email)).toBe('J1');
+    expect(byEmail.get(tenants.EXPIRED.users.admin.email)).toBe('EXPIRED');
+    expect(byEmail.has(tenants.LATER.users.admin.email)).toBe(false);
+    // Seuls les administrateurs sont relancés
+    expect(byEmail.has(tenants.J7.users.coordinateur.email)).toBe(false);
+    expect(reminder.mock.calls[0][0].renewUrl).toMatch(/\/payment\/renew$/);
+
+    const expired = await ctx.prisma.organization.findUniqueOrThrow({ where: { id: tenants.EXPIRED.org.id } });
+    expect(expired.subscriptionStatus).toBe('PAST_DUE');
+  });
+
+  it('les inscriptions jamais payées sont supprimées après 7 jours', async () => {
+    const billing = ctx.app.get(BillingService);
+    const old = await register({ organizationName: `Ancienne ${uniq()}`, email: `old.${uniq()}@planora.test` });
+    const recent = await register({ organizationName: `Récente ${uniq()}`, email: `recent.${uniq()}@planora.test` });
+    await ctx.prisma.organization.update({
+      where: { id: old.body.organizationId },
+      data: { createdAt: new Date(Date.now() - 8 * 86_400_000) },
+    });
+    await billing.purgeUnpaidRegistrations();
+    expect(await ctx.prisma.organization.findUnique({ where: { id: old.body.organizationId } })).toBeNull();
+    expect(await ctx.prisma.organization.findUnique({ where: { id: recent.body.organizationId } })).not.toBeNull();
   });
 });

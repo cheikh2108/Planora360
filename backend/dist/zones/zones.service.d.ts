@@ -24,9 +24,9 @@ export declare class ZonesService {
         createdAt: Date;
         name: string;
         updatedAt: Date;
+        code: string | null;
         description: string | null;
         parentId: string | null;
-        code: string | null;
         level: number;
         latitude: number | null;
         longitude: number | null;
@@ -48,9 +48,9 @@ export declare class ZonesService {
         createdAt: Date;
         name: string;
         updatedAt: Date;
+        code: string | null;
         description: string | null;
         parentId: string | null;
-        code: string | null;
         level: number;
         latitude: number | null;
         longitude: number | null;
@@ -94,9 +94,9 @@ export declare class ZonesService {
         createdAt: Date;
         name: string;
         updatedAt: Date;
+        code: string | null;
         description: string | null;
         parentId: string | null;
-        code: string | null;
         level: number;
         latitude: number | null;
         longitude: number | null;
@@ -118,9 +118,9 @@ export declare class ZonesService {
         createdAt: Date;
         name: string;
         updatedAt: Date;
+        code: string | null;
         description: string | null;
         parentId: string | null;
-        code: string | null;
         level: number;
         latitude: number | null;
         longitude: number | null;
@@ -132,9 +132,9 @@ export declare class ZonesService {
         createdAt: Date;
         name: string;
         updatedAt: Date;
+        code: string | null;
         description: string | null;
         parentId: string | null;
-        code: string | null;
         level: number;
         latitude: number | null;
         longitude: number | null;

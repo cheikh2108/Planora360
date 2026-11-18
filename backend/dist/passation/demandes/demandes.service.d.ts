@@ -18,6 +18,7 @@ export declare class DemandesService {
             createdAt: Date;
             updatedAt: Date;
             status: string;
+            reference: string;
             observations: string | null;
             objet: string;
             montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
@@ -25,7 +26,6 @@ export declare class DemandesService {
             trimestre: number;
             sourceFinancement: string | null;
             ligneBudgetaire: string | null;
-            reference: string;
             ppmId: string;
             dateLancement: Date | null;
             dateAttribution: Date | null;
@@ -46,11 +46,11 @@ export declare class DemandesService {
         updatedAt: Date;
         status: import(".prisma/client").$Enums.StatusDemandeAchat;
         description: string;
+        reference: string;
         objet: string;
         montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
         sourceFinancement: string | null;
         ligneBudgetaire: string | null;
-        reference: string;
         justification: string;
         quantite: number | null;
         specifications: string | null;
@@ -67,8 +67,8 @@ export declare class DemandesService {
         } | null;
         lignePPM: {
             id: string;
-            objet: string;
             reference: string;
+            objet: string;
         } | null;
         validations: ({
             validateur: {
@@ -100,11 +100,11 @@ export declare class DemandesService {
         updatedAt: Date;
         status: import(".prisma/client").$Enums.StatusDemandeAchat;
         description: string;
+        reference: string;
         objet: string;
         montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
         sourceFinancement: string | null;
         ligneBudgetaire: string | null;
-        reference: string;
         justification: string;
         quantite: number | null;
         specifications: string | null;
@@ -123,6 +123,7 @@ export declare class DemandesService {
             createdAt: Date;
             updatedAt: Date;
             status: string;
+            reference: string;
             observations: string | null;
             objet: string;
             montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
@@ -130,7 +131,6 @@ export declare class DemandesService {
             trimestre: number;
             sourceFinancement: string | null;
             ligneBudgetaire: string | null;
-            reference: string;
             ppmId: string;
             dateLancement: Date | null;
             dateAttribution: Date | null;
@@ -170,11 +170,11 @@ export declare class DemandesService {
         updatedAt: Date;
         status: import(".prisma/client").$Enums.StatusDemandeAchat;
         description: string;
+        reference: string;
         objet: string;
         montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
         sourceFinancement: string | null;
         ligneBudgetaire: string | null;
-        reference: string;
         justification: string;
         quantite: number | null;
         specifications: string | null;
@@ -207,11 +207,11 @@ export declare class DemandesService {
         updatedAt: Date;
         status: import(".prisma/client").$Enums.StatusDemandeAchat;
         description: string;
+        reference: string;
         objet: string;
         montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
         sourceFinancement: string | null;
         ligneBudgetaire: string | null;
-        reference: string;
         justification: string;
         quantite: number | null;
         specifications: string | null;
@@ -227,11 +227,11 @@ export declare class DemandesService {
         updatedAt: Date;
         status: import(".prisma/client").$Enums.StatusDemandeAchat;
         description: string;
+        reference: string;
         objet: string;
         montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
         sourceFinancement: string | null;
         ligneBudgetaire: string | null;
-        reference: string;
         justification: string;
         quantite: number | null;
         specifications: string | null;
@@ -265,11 +265,11 @@ export declare class DemandesService {
         updatedAt: Date;
         status: import(".prisma/client").$Enums.StatusDemandeAchat;
         description: string;
+        reference: string;
         objet: string;
         montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
         sourceFinancement: string | null;
         ligneBudgetaire: string | null;
-        reference: string;
         justification: string;
         quantite: number | null;
         specifications: string | null;
@@ -303,11 +303,11 @@ export declare class DemandesService {
         updatedAt: Date;
         status: import(".prisma/client").$Enums.StatusDemandeAchat;
         description: string;
+        reference: string;
         objet: string;
         montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
         sourceFinancement: string | null;
         ligneBudgetaire: string | null;
-        reference: string;
         justification: string;
         quantite: number | null;
         specifications: string | null;

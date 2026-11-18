@@ -15,14 +15,36 @@ const common_1 = require("@nestjs/common");
 const schedule_1 = require("@nestjs/schedule");
 const prisma_service_1 = require("../common/prisma/prisma.service");
 const notifications_service_1 = require("../notifications/notifications.service");
+const billing_service_1 = require("../dexpay/billing.service");
 const retention_constants_1 = require("../common/constants/retention.constants");
 let SchedulerService = SchedulerService_1 = class SchedulerService {
     prisma;
     notifications;
+    billing;
     logger = new common_1.Logger(SchedulerService_1.name);
-    constructor(prisma, notifications) {
+    constructor(prisma, notifications, billing) {
         this.prisma = prisma;
         this.notifications = notifications;
+        this.billing = billing;
+    }
+    async subscriptionRenewalReminders() {
+        try {
+            const sent = await this.billing.sendRenewalReminders();
+            this.logger.log(`Relances d'abonnement envoyées : ${sent}`);
+        }
+        catch (error) {
+            this.logger.error('Erreur lors des relances d\'abonnement :', error);
+        }
+    }
+    async purgeUnpaidRegistrations() {
+        try {
+            const purged = await this.billing.purgeUnpaidRegistrations();
+            if (purged)
+                this.logger.log(`Inscriptions non payées supprimées : ${purged}`);
+        }
+        catch (error) {
+            this.logger.error('Erreur lors du nettoyage des inscriptions non payées :', error);
+        }
     }
     async dailyAlertScan() {
         this.logger.log('Démarrage du scan quotidien des alertes...');
@@ -107,6 +129,18 @@ let SchedulerService = SchedulerService_1 = class SchedulerService {
 };
 exports.SchedulerService = SchedulerService;
 __decorate([
+    (0, schedule_1.Cron)('0 9 * * *'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], SchedulerService.prototype, "subscriptionRenewalReminders", null);
+__decorate([
+    (0, schedule_1.Cron)('30 3 * * *'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], SchedulerService.prototype, "purgeUnpaidRegistrations", null);
+__decorate([
     (0, schedule_1.Cron)('0 8 * * *'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
@@ -127,6 +161,7 @@ __decorate([
 exports.SchedulerService = SchedulerService = SchedulerService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        notifications_service_1.NotificationsService])
+        notifications_service_1.NotificationsService,
+        billing_service_1.BillingService])
 ], SchedulerService);
 //# sourceMappingURL=scheduler.service.js.map

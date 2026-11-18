@@ -89,6 +89,9 @@ let HttpExceptionFilter = HttpExceptionFilter_1 = class HttpExceptionFilter {
             timestamp: new Date().toISOString(),
             path: request.url,
             message: typeof message === 'string' ? message : message.message || message,
+            ...(typeof message === 'object' && typeof message?.code === 'string'
+                ? { code: message.code }
+                : {}),
             ...(process.env.NODE_ENV !== 'production' && exception instanceof Error
                 ? { stack: exception.stack }
                 : {}),

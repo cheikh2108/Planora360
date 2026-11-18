@@ -13,9 +13,9 @@ export declare class ParticipantsController {
         lastName: string;
         updatedAt: Date;
         createdBy: string;
+        amount: number;
         phone: string;
         paymentMode: string;
-        amount: number;
     }>;
     import(file: Express.Multer.File, dto: ImportParticipantsDto, req: any): Promise<{
         success: boolean;
@@ -35,9 +35,9 @@ export declare class ParticipantsController {
         lastName: string;
         updatedAt: Date;
         createdBy: string;
+        amount: number;
         phone: string;
         paymentMode: string;
-        amount: number;
     }[]>;
     remove(id: string, req: any): Promise<{
         organizationId: string;
@@ -48,8 +48,8 @@ export declare class ParticipantsController {
         lastName: string;
         updatedAt: Date;
         createdBy: string;
+        amount: number;
         phone: string;
         paymentMode: string;
-        amount: number;
     }>;
 }

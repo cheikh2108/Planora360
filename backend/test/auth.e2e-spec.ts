@@ -352,23 +352,16 @@ describe('Auth (login, session, CSRF, inscription)', () => {
   });
 
   describe('inscription publique', () => {
-    it("crée une organisation INDIVIDUEL en attente d'approbation, compte inactif", async () => {
+    // Le parcours complet (inscription → paiement DexPay → compte activé) est dans billing.e2e-spec.ts
+    it('sans paiement en ligne configuré, refuse l’inscription Individuel sans rien créer', async () => {
       const email = `inscription.${Date.now()}@planora.test`;
+      const organizationName = `Org inscrite ${Date.now()}`;
       const res = await request(ctx.http)
         .post('/api/auth/register')
-        .send({
-          organizationName: `Org inscrite ${Date.now()}`,
-          firstName: 'Awa',
-          lastName: 'Diop',
-          email,
-        });
-      expect(res.status).toBe(201);
-      expect(res.body.status).toBe('PENDING_APPROVAL');
-
-      const login = await request(ctx.http)
-        .post('/api/auth/login')
-        .send({ email, password: 'nimportequoi' });
-      expect(login.status).toBe(401);
+        .send({ organizationName, firstName: 'Awa', lastName: 'Diop', email });
+      expect(res.status).toBe(503);
+      expect(await ctx.prisma.organization.count({ where: { name: organizationName } })).toBe(0);
+      expect(await ctx.prisma.user.count({ where: { email } })).toBe(0);
     });
 
     it('renvoie une demande de devis pour les plans non INDIVIDUEL', async () => {

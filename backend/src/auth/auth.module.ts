@@ -6,7 +6,7 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { SecurityEventsModule } from '../security-events/security-events.module';
-// import { DexpayModule } from '../dexpay/dexpay.module'; // Désactivé - intégration paiement à faire
+import { DexpayModule } from '../dexpay/dexpay.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { PasswordResetService } from './password-reset.service';
 
@@ -21,7 +21,7 @@ import { PasswordResetService } from './password-reset.service';
       }),
     }),
     SecurityEventsModule,
-    // DexpayModule, // Désactivé
+    DexpayModule,
     NotificationsModule,
   ],
   controllers: [AuthController],

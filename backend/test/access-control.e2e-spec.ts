@@ -19,6 +19,9 @@ import { TEST_ENV } from './setup/test-config';
 const PUBLIC_ROUTES = new Set([
   'GET /api/maintenance/status',
   'POST /api/auth/register',
+  // Inscription payée : la personne n'a pas encore de compte actif au retour de DexPay
+  'GET /api/auth/register/payment/:reference',
+  'POST /api/auth/register/payment/:reference/retry',
   'GET /api/auth/verify-email/:token',
   'POST /api/auth/request-quote',
   'POST /api/auth/login',

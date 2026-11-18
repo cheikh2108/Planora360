@@ -90,8 +90,8 @@ export declare class SoumissionsService {
         };
         procedure: {
             id: string;
-            objet: string;
             reference: string;
+            objet: string;
             dateOuverture: Date | null;
         };
         documents: {

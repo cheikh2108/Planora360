@@ -4,12 +4,13 @@ import {
   BadRequestException,
   NotFoundException,
   ConflictException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { PostHogService } from '../analytics/posthog.service';
-// import { DexpayService } from '../dexpay/dexpay.service'; // Désactivé - intégration paiement à faire
+import { BillingService } from '../dexpay/billing.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterOrganizationDto } from './dto/register-organization.dto';
@@ -47,19 +48,22 @@ export class AuthService {
     private jwtService: JwtService,
     private config: ConfigService,
     private posthog: PostHogService,
-    // private dexpay: DexpayService, // Désactivé - intégration paiement à faire par un autre dev
+    private billing: BillingService,
     private notifications: NotificationsService,
   ) {}
 
+  /**
+   * Inscription en libre-service (formule Individuel) : paiement immédiat, sans approbation.
+   * L'organisation est créée « en attente de paiement » avec un compte inactif, puis la personne
+   * est envoyée sur DexPay. À la confirmation du paiement, BillingService active l'organisation
+   * et le compte, et envoie les identifiants par e-mail.
+   * Une nouvelle tentative avec le même e-mail reprend l'inscription non payée au lieu de la refuser.
+   */
   async register(dto: RegisterOrganizationDto) {
-    await this.validateUniqueOrganization(dto.organizationName);
-    await this.validateUniqueEmail(dto.email);
-
-    const adminRole = await this.findAdminRole();
     const plan = dto.subscriptionPlan ?? 'INDIVIDUEL';
     const billingCycle = dto.billingCycle ?? 'MONTHLY';
 
-    // Seul INDIVIDUEL peut payer directement, autres plans → devis
+    // Seul INDIVIDUEL s'achète en ligne à l'inscription, autres plans → devis
     if (plan !== 'INDIVIDUEL') {
       return {
         requiresQuote: true,
@@ -68,62 +72,104 @@ export class AuthService {
       };
     }
 
-    // Générer mot de passe temporaire (8 caractères alphanumériques)
-    const tempPassword = randomBytes(4).toString('hex'); // 8 caractères
-
-    // Transaction atomique : créer organisation + user admin
-    const { organization, user } = await this.prisma.$transaction(async (tx) => {
-      const organization = await tx.organization.create({
-        data: {
-          name: dto.organizationName,
-          subscriptionPlan: plan,
-          brandColor: dto.brandColor ?? DEFAULT_BRAND_COLOR,
-          status: 'PENDING_APPROVAL', // ⏳ En attente d'approbation par le SuperAdmin
-          subscriptionStatus: 'INCOMPLETE',
-          subscriptionCurrency: 'XOF',
-          billingCycle,
-        },
-      });
-
-      const passwordHash = await this.hashPassword(tempPassword);
-      const user = await tx.user.create({
-        data: {
-          email: dto.email,
-          firstName: dto.firstName,
-          lastName: dto.lastName,
-          passwordHash,
-          organizationId: organization.id,
-          roleId: adminRole.id,
-          isActive: false, // ⏳ Inactif jusqu'à approbation
-        },
-      });
-
-      return { organization, user };
+    // Inscription déjà commencée mais jamais payée avec cet e-mail : on la reprend
+    const pending = await this.prisma.user.findFirst({
+      where: {
+        email: { equals: dto.email, mode: 'insensitive' },
+        deletedAt: null,
+        organization: { status: 'PENDING_PAYMENT', deletedAt: null },
+      },
+      include: { organization: true },
     });
 
-    // Track registration in PostHog
-    this.posthog.trackRegistration(user.id, organization.id, plan);
+    if (pending) {
+      await this.validateUniqueOrganization(dto.organizationName, pending.organizationId);
+    } else {
+      await this.validateUniqueOrganization(dto.organizationName);
+      await this.validateUniqueEmail(dto.email);
+    }
 
-    // ✅ Notifier le SuperAdmin de la nouvelle inscription
-    await this.notifications.sendNewRegistrationToAdmin({
-      organizationName: organization.name,
-      organizationId: organization.id,
-      plan,
-      billingCycle,
-      userEmail: user.email,
-      userName: `${user.firstName} ${user.lastName}`,
+    // Rien n'est créé si le paiement en ligne n'est pas disponible
+    if (!this.billing.isOnlinePaymentReady()) {
+      throw new ServiceUnavailableException(
+        'Le paiement en ligne est momentanément indisponible. Réessayez plus tard ou écrivez à contact@planora360.org.',
+      );
+    }
+
+    let organizationId: string;
+    let userId: string;
+    if (pending) {
+      await this.prisma.$transaction([
+        this.prisma.organization.update({
+          where: { id: pending.organizationId },
+          data: { name: dto.organizationName, brandColor: dto.brandColor ?? DEFAULT_BRAND_COLOR, billingCycle },
+        }),
+        this.prisma.user.update({
+          where: { id: pending.id },
+          data: { firstName: dto.firstName, lastName: dto.lastName },
+        }),
+      ]);
+      organizationId = pending.organizationId;
+      userId = pending.id;
+    } else {
+      const adminRole = await this.findAdminRole();
+      // Mot de passe inutilisable : le vrai mot de passe temporaire est créé et envoyé après le paiement
+      const passwordHash = await this.hashPassword(randomBytes(24).toString('hex'));
+
+      const { organization, user } = await this.prisma.$transaction(async (tx) => {
+        const organization = await tx.organization.create({
+          data: {
+            name: dto.organizationName,
+            subscriptionPlan: plan,
+            brandColor: dto.brandColor ?? DEFAULT_BRAND_COLOR,
+            status: 'PENDING_PAYMENT',
+            subscriptionStatus: 'INCOMPLETE',
+            subscriptionCurrency: 'XOF',
+            billingCycle,
+          },
+        });
+        const user = await tx.user.create({
+          data: {
+            email: dto.email,
+            firstName: dto.firstName,
+            lastName: dto.lastName,
+            passwordHash,
+            organizationId: organization.id,
+            roleId: adminRole.id,
+            isActive: false, // activé à la confirmation du paiement
+          },
+        });
+        return { organization, user };
+      });
+      organizationId = organization.id;
+      userId = user.id;
+      this.posthog.trackRegistration(user.id, organization.id, plan);
+    }
+
+    const checkout = await this.billing.startCheckout(organizationId, userId, plan, billingCycle, {
+      registration: true,
     });
-
-    console.log(`⏳ Organisation ${organization.name} créée en attente d'approbation (ID: ${organization.id})`);
-    console.log(`📧 Notification envoyée au SuperAdmin`);
 
     return {
       success: true,
-      organizationId: organization.id,
-      userId: user.id,
-      status: 'PENDING_APPROVAL',
-      message: 'Demande d\'inscription reçue ! Un administrateur va examiner votre demande et vous recevrez un email de confirmation sous 24-48h.'
+      organizationId,
+      status: 'PENDING_PAYMENT',
+      reference: checkout.reference,
+      checkoutUrl: checkout.paymentUrl,
+      amount: checkout.amount,
+      currency: checkout.currency,
     };
+  }
+
+  /** État du paiement d'une inscription (page de retour, sans connexion). */
+  signupPaymentStatus(reference: string) {
+    return this.billing.signupPaymentStatus(reference);
+  }
+
+  /** Relance le paiement d'une inscription non aboutie. */
+  async retrySignupPayment(reference: string) {
+    const checkout = await this.billing.retrySignupPayment(reference);
+    return { reference: checkout.reference, checkoutUrl: checkout.paymentUrl };
   }
 
   async verifyEmail(token: string) {
@@ -229,9 +275,9 @@ export class AuthService {
     };
   }
 
-  private async validateUniqueOrganization(name: string) {
+  private async validateUniqueOrganization(name: string, exceptOrganizationId?: string) {
     const existing = await this.prisma.organization.findFirst({
-      where: { name, deletedAt: null },
+      where: { name, deletedAt: null, ...(exceptOrganizationId ? { NOT: { id: exceptOrganizationId } } : {}) },
     });
     if (existing) throw new ConflictException('Une organisation avec ce nom existe déjà');
   }

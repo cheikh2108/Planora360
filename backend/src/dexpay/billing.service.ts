@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, Logger, NotFoundException, ServiceUnav
 import { ConfigService } from '@nestjs/config';
 import { BillingCycle, Payment, SubscriptionPlan } from '@prisma/client';
 import { randomBytes } from 'crypto';
+import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { CacheInvalidationService } from '../common/cache/cache-invalidation.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -84,7 +85,13 @@ export class BillingService {
   }
 
   /** Démarre le paiement d'une formule : enregistre le paiement en attente et renvoie l'URL DexPay. */
-  async startCheckout(organizationId: string, userId: string, plan: PayablePlan, billingCycle: BillingCycle) {
+  async startCheckout(
+    organizationId: string,
+    userId: string,
+    plan: PayablePlan,
+    billingCycle: BillingCycle,
+    options: { registration?: boolean } = {},
+  ) {
     if (!this.dexpay.isConfigured()) {
       throw new ServiceUnavailableException(
         'Le paiement en ligne n\'est pas encore disponible. Contactez le support pour changer de formule.',
@@ -99,7 +106,15 @@ export class BillingService {
 
     const amount = planPrice(plan, billingCycle);
     const reference = `PLN-${Date.now().toString(36).toUpperCase()}-${randomBytes(4).toString('hex').toUpperCase()}`;
-    const metadata = { organization_id: organizationId, plan, billing_cycle: billingCycle, requested_by: userId };
+    const metadata = {
+      organization_id: organizationId,
+      plan,
+      billing_cycle: billingCycle,
+      requested_by: userId,
+      // Inscription payée : le compte est créé (activé) à la confirmation du paiement
+      ...(options.registration ? { registration: true } : {}),
+    };
+    const signup = options.registration ? '&signup=1' : '';
 
     await this.prisma.payment.create({
       data: {
@@ -120,10 +135,11 @@ export class BillingService {
         itemName: `PLANORA 360 - Formule ${PLAN_LABELS[plan]} (${billingCycle === 'YEARLY' ? 'annuel' : 'mensuel'})`,
         amount,
         currency: PLAN_CURRENCY,
-        successUrl: `${frontendUrl}/payment/success?ref=${reference}`,
-        failureUrl: `${frontendUrl}/payment/failed?ref=${reference}`,
+        successUrl: `${frontendUrl}/payment/success?ref=${reference}${signup}`,
+        failureUrl: `${frontendUrl}/payment/failed?ref=${reference}${signup}`,
         webhookUrl: this.webhookUrl(),
-        metadata,
+        // DexPay n'accepte que des valeurs texte
+        metadata: Object.fromEntries(Object.entries(metadata).map(([k, v]) => [k, String(v)])),
       });
       return { reference, paymentUrl: session.payment_url, amount, currency: PLAN_CURRENCY };
     } catch (error) {
@@ -137,25 +153,58 @@ export class BillingService {
    * directement : la formule s'active même si le webhook n'est pas (encore) arrivé.
    */
   async paymentStatus(organizationId: string, reference: string) {
-    let payment = await this.prisma.payment.findFirst({ where: { dexpayReference: reference, organizationId } });
+    const payment = await this.prisma.payment.findFirst({ where: { dexpayReference: reference, organizationId } });
     if (!payment) throw new NotFoundException('Paiement introuvable');
+    return this.publicPayment(await this.refreshPending(payment));
+  }
 
-    if (payment.status === 'pending') {
-      try {
-        const session = await this.dexpay.getCheckoutSession(reference);
-        const remote = session?.status;
-        if (remote === 'completed') {
-          await this.completePayment({ reference, amount: session?.amount, currency: session?.currency });
-        } else if (remote === 'failed' || remote === 'cancelled') {
-          await this.markPayment(reference, remote);
-        }
-        payment = (await this.prisma.payment.findUnique({ where: { dexpayReference: reference } }))!;
-      } catch {
-        // DexPay injoignable : on renvoie l'état connu, le webhook prendra le relais
+  /** Paiement encore en attente : DexPay est interrogé directement (le webhook peut tarder). */
+  private async refreshPending(payment: Payment): Promise<Payment> {
+    if (payment.status !== 'pending') return payment;
+    const reference = payment.dexpayReference;
+    try {
+      const session = await this.dexpay.getCheckoutSession(reference);
+      const remote = session?.status;
+      if (remote === 'completed') {
+        await this.completePayment({ reference, amount: session?.amount, currency: session?.currency });
+      } else if (remote === 'failed' || remote === 'cancelled') {
+        await this.markPayment(reference, remote);
       }
+      return (await this.prisma.payment.findUnique({ where: { dexpayReference: reference } }))!;
+    } catch {
+      // DexPay injoignable : on renvoie l'état connu, le webhook prendra le relais
+      return payment;
     }
+  }
 
-    return this.publicPayment(payment);
+  /** Paiement d'une inscription (public : la personne n'a pas encore de compte actif). */
+  private async findSignupPayment(reference: string): Promise<Payment> {
+    const payment = await this.prisma.payment.findUnique({ where: { dexpayReference: reference } });
+    if (!payment || (payment.metadata as any)?.registration !== true) {
+      throw new NotFoundException('Paiement introuvable');
+    }
+    return payment;
+  }
+
+  /** État du paiement d'une inscription, pour la page de retour (sans connexion). */
+  async signupPaymentStatus(reference: string) {
+    const payment = await this.refreshPending(await this.findSignupPayment(reference));
+    const { reference: ref, status, plan, amount, currency, billingCycle } = this.publicPayment(payment);
+    return { reference: ref, status, plan, amount, currency, billingCycle };
+  }
+
+  /** Nouveau paiement pour une inscription dont le paiement a échoué ou a été annulé. */
+  async retrySignupPayment(reference: string) {
+    const payment = await this.findSignupPayment(reference);
+    const org = await this.prisma.organization.findUnique({ where: { id: payment.organizationId } });
+    if (!org || org.deletedAt || org.status !== 'PENDING_PAYMENT') {
+      throw new BadRequestException('Ce compte est déjà activé : connectez-vous avec les identifiants reçus par e-mail.');
+    }
+    const meta = payment.metadata as any;
+    const billingCycle: BillingCycle = meta?.billing_cycle === 'YEARLY' ? 'YEARLY' : 'MONTHLY';
+    return this.startCheckout(org.id, meta?.requested_by, payment.plan as PayablePlan, billingCycle, {
+      registration: true,
+    });
   }
 
   /**
@@ -206,6 +255,8 @@ export class BillingService {
         org.currentPeriodEnd > now;
       const periodStart = extendsCurrent ? org.currentPeriodEnd! : now;
       const periodEnd = addPeriod(periodStart, billingCycle);
+      // Inscription payée : l'organisation passe d'« en attente de paiement » à active
+      const activatesRegistration = org.status === 'PENDING_PAYMENT';
 
       await tx.payment.update({ where: { id: payment.id }, data: { periodStart, periodEnd } });
       await tx.organization.update({
@@ -217,17 +268,139 @@ export class BillingService {
           billingCycle,
           currentPeriodEnd: periodEnd,
           nextPaymentDate: periodEnd,
+          ...(activatesRegistration ? { status: 'ACTIVE' as const } : {}),
         },
       });
-      return { periodEnd, organizationName: org.name };
+      return { periodEnd, organizationName: org.name, activatesRegistration };
     });
 
     if (!applied) return false;
 
     await this.cacheInvalidation.invalidateAll(payment.organizationId);
     this.logger.log(`Formule ${payment.plan} activée pour ${payment.organizationId} jusqu'au ${applied.periodEnd.toISOString()}`);
+    if (applied.activatesRegistration) {
+      await this.activateRegistrationAccount(payment, applied.organizationName, billingCycle);
+    }
     await this.sendConfirmation(payment, applied.periodEnd, applied.organizationName);
     return true;
+  }
+
+  /**
+   * Après le paiement d'une inscription : le compte de la personne est activé avec un mot de passe
+   * temporaire (changement obligatoire à la première connexion), envoyé par e-mail ; le support est prévenu.
+   */
+  private async activateRegistrationAccount(payment: Payment, organizationName: string, billingCycle: BillingCycle) {
+    const user = await this.prisma.user.findFirst({
+      where: { organizationId: payment.organizationId, deletedAt: null },
+      orderBy: { createdAt: 'asc' },
+    });
+    if (!user) return;
+
+    const tempPassword = randomBytes(8).toString('base64url').slice(0, 10);
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        isActive: true,
+        passwordHash: await bcrypt.hash(tempPassword, 12),
+        mustChangePassword: true,
+        tokensValidAfter: new Date(),
+      },
+    });
+
+    try {
+      await this.notifications.sendWelcomeCredentials({
+        email: user.email,
+        firstName: user.firstName,
+        orgName: organizationName,
+        tempPassword,
+      });
+    } catch (error) {
+      this.logger.error(`Identifiants non envoyés à l'inscription ${payment.organizationId} : ${error}`);
+    }
+    try {
+      await this.notifications.sendPaidSignupToSupport({
+        organizationName,
+        organizationId: payment.organizationId,
+        planLabel: PLAN_LABELS[payment.plan],
+        billingCycle,
+        amount: payment.amount,
+        currency: payment.currency,
+        userEmail: user.email,
+        userName: `${user.firstName} ${user.lastName}`,
+      });
+    } catch (error) {
+      this.logger.error(`Support non prévenu de l'inscription ${payment.organizationId} : ${error}`);
+    }
+  }
+
+  /**
+   * Relances d'échéance (tâche quotidienne) : e-mail 7 jours avant, la veille, puis le jour où
+   * l'abonnement expire (statut PAST_DUE ; l'accès est alors bloqué jusqu'au renouvellement).
+   * Chaque fenêtre couvre 24 h, la tâche tournant une fois par jour : un seul e-mail par étape.
+   */
+  async sendRenewalReminders(now = new Date()) {
+    const day = 24 * 3600 * 1000;
+    const windows = [
+      { kind: 'J7' as const, from: new Date(now.getTime() + 6 * day), to: new Date(now.getTime() + 7 * day) },
+      { kind: 'J1' as const, from: now, to: new Date(now.getTime() + day) },
+      { kind: 'EXPIRED' as const, from: new Date(now.getTime() - day), to: now },
+    ];
+    let sent = 0;
+    for (const w of windows) {
+      const orgs = await this.prisma.organization.findMany({
+        where: {
+          deletedAt: null,
+          status: 'ACTIVE',
+          subscriptionPlan: { not: 'ENTERPRISE' },
+          currentPeriodEnd: { gt: w.from, lte: w.to },
+        },
+        select: { id: true, name: true, subscriptionPlan: true, currentPeriodEnd: true },
+      });
+      for (const org of orgs) {
+        if (w.kind === 'EXPIRED') {
+          await this.prisma.organization.update({ where: { id: org.id }, data: { subscriptionStatus: 'PAST_DUE' } });
+          await this.cacheInvalidation.invalidateAll(org.id);
+        }
+        const admins = await this.prisma.user.findMany({
+          where: { organizationId: org.id, deletedAt: null, isActive: true, role: { name: 'Administrateur' } },
+          select: { email: true, firstName: true },
+        });
+        for (const admin of admins) {
+          try {
+            await this.notifications.sendSubscriptionReminder({
+              email: admin.email,
+              firstName: admin.firstName,
+              organizationName: org.name,
+              planLabel: PLAN_LABELS[org.subscriptionPlan],
+              periodEnd: org.currentPeriodEnd!,
+              kind: w.kind,
+              renewUrl: `${this.frontendUrl()}/payment/renew`,
+            });
+            sent += 1;
+          } catch (error) {
+            this.logger.error(`Relance d'échéance non envoyée (${org.id}) : ${error}`);
+          }
+        }
+      }
+    }
+    return sent;
+  }
+
+  /** Inscriptions jamais payées : supprimées après 7 jours (le nom et l'e-mail redeviennent libres). */
+  async purgeUnpaidRegistrations(now = new Date()) {
+    const cutoff = new Date(now.getTime() - 7 * 24 * 3600 * 1000);
+    const stale = await this.prisma.organization.findMany({
+      where: { status: 'PENDING_PAYMENT', createdAt: { lt: cutoff }, payments: { none: { status: 'completed' } } },
+      select: { id: true },
+    });
+    for (const { id } of stale) {
+      await this.prisma.$transaction([
+        this.prisma.payment.deleteMany({ where: { organizationId: id } }),
+        this.prisma.user.deleteMany({ where: { organizationId: id } }),
+        this.prisma.organization.delete({ where: { id } }),
+      ]);
+    }
+    return stale.length;
   }
 
   /** Échec ou annulation (paiement en attente), remboursement (paiement confirmé). */

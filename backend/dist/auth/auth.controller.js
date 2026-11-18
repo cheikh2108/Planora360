@@ -48,6 +48,12 @@ let AuthController = class AuthController {
     register(dto) {
         return this.authService.register(dto);
     }
+    signupPaymentStatus(reference) {
+        return this.authService.signupPaymentStatus(reference);
+    }
+    retrySignupPayment(reference) {
+        return this.authService.retrySignupPayment(reference);
+    }
     verifyEmail(token) {
         return this.authService.verifyEmail(token);
     }
@@ -231,6 +237,23 @@ __decorate([
     __metadata("design:paramtypes", [register_organization_dto_1.RegisterOrganizationDto]),
     __metadata("design:returntype", void 0)
 ], AuthController.prototype, "register", null);
+__decorate([
+    (0, common_1.Get)('register/payment/:reference'),
+    (0, throttler_1.Throttle)({ default: { limit: 40, ttl: 60000 } }),
+    __param(0, (0, common_1.Param)('reference')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "signupPaymentStatus", null);
+__decorate([
+    (0, common_1.Post)('register/payment/:reference/retry'),
+    (0, throttler_1.Throttle)({ default: { limit: 5, ttl: 60000 } }),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    __param(0, (0, common_1.Param)('reference')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "retrySignupPayment", null);
 __decorate([
     (0, common_1.Get)('verify-email/:token'),
     (0, throttler_1.Throttle)({ default: { limit: 5, ttl: 60000 } }),

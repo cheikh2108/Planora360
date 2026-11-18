@@ -1,10 +1,43 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
@@ -14,6 +47,7 @@ exports.BillingService = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const crypto_1 = require("crypto");
+const bcrypt = __importStar(require("bcryptjs"));
 const prisma_service_1 = require("../common/prisma/prisma.service");
 const cache_invalidation_service_1 = require("../common/cache/cache-invalidation.service");
 const notifications_service_1 = require("../notifications/notifications.service");
@@ -72,7 +106,7 @@ let BillingService = BillingService_1 = class BillingService {
             })),
         };
     }
-    async startCheckout(organizationId, userId, plan, billingCycle) {
+    async startCheckout(organizationId, userId, plan, billingCycle, options = {}) {
         if (!this.dexpay.isConfigured()) {
             throw new common_1.ServiceUnavailableException('Le paiement en ligne n\'est pas encore disponible. Contactez le support pour changer de formule.');
         }
@@ -84,7 +118,14 @@ let BillingService = BillingService_1 = class BillingService {
         }
         const amount = (0, plan_catalog_1.planPrice)(plan, billingCycle);
         const reference = `PLN-${Date.now().toString(36).toUpperCase()}-${(0, crypto_1.randomBytes)(4).toString('hex').toUpperCase()}`;
-        const metadata = { organization_id: organizationId, plan, billing_cycle: billingCycle, requested_by: userId };
+        const metadata = {
+            organization_id: organizationId,
+            plan,
+            billing_cycle: billingCycle,
+            requested_by: userId,
+            ...(options.registration ? { registration: true } : {}),
+        };
+        const signup = options.registration ? '&signup=1' : '';
         await this.prisma.payment.create({
             data: {
                 organizationId,
@@ -103,10 +144,10 @@ let BillingService = BillingService_1 = class BillingService {
                 itemName: `PLANORA 360 - Formule ${plan_catalog_1.PLAN_LABELS[plan]} (${billingCycle === 'YEARLY' ? 'annuel' : 'mensuel'})`,
                 amount,
                 currency: plan_catalog_1.PLAN_CURRENCY,
-                successUrl: `${frontendUrl}/payment/success?ref=${reference}`,
-                failureUrl: `${frontendUrl}/payment/failed?ref=${reference}`,
+                successUrl: `${frontendUrl}/payment/success?ref=${reference}${signup}`,
+                failureUrl: `${frontendUrl}/payment/failed?ref=${reference}${signup}`,
                 webhookUrl: this.webhookUrl(),
-                metadata,
+                metadata: Object.fromEntries(Object.entries(metadata).map(([k, v]) => [k, String(v)])),
             });
             return { reference, paymentUrl: session.payment_url, amount, currency: plan_catalog_1.PLAN_CURRENCY };
         }
@@ -116,25 +157,53 @@ let BillingService = BillingService_1 = class BillingService {
         }
     }
     async paymentStatus(organizationId, reference) {
-        let payment = await this.prisma.payment.findFirst({ where: { dexpayReference: reference, organizationId } });
+        const payment = await this.prisma.payment.findFirst({ where: { dexpayReference: reference, organizationId } });
         if (!payment)
             throw new common_1.NotFoundException('Paiement introuvable');
-        if (payment.status === 'pending') {
-            try {
-                const session = await this.dexpay.getCheckoutSession(reference);
-                const remote = session?.status;
-                if (remote === 'completed') {
-                    await this.completePayment({ reference, amount: session?.amount, currency: session?.currency });
-                }
-                else if (remote === 'failed' || remote === 'cancelled') {
-                    await this.markPayment(reference, remote);
-                }
-                payment = (await this.prisma.payment.findUnique({ where: { dexpayReference: reference } }));
+        return this.publicPayment(await this.refreshPending(payment));
+    }
+    async refreshPending(payment) {
+        if (payment.status !== 'pending')
+            return payment;
+        const reference = payment.dexpayReference;
+        try {
+            const session = await this.dexpay.getCheckoutSession(reference);
+            const remote = session?.status;
+            if (remote === 'completed') {
+                await this.completePayment({ reference, amount: session?.amount, currency: session?.currency });
             }
-            catch {
+            else if (remote === 'failed' || remote === 'cancelled') {
+                await this.markPayment(reference, remote);
             }
+            return (await this.prisma.payment.findUnique({ where: { dexpayReference: reference } }));
         }
-        return this.publicPayment(payment);
+        catch {
+            return payment;
+        }
+    }
+    async findSignupPayment(reference) {
+        const payment = await this.prisma.payment.findUnique({ where: { dexpayReference: reference } });
+        if (!payment || payment.metadata?.registration !== true) {
+            throw new common_1.NotFoundException('Paiement introuvable');
+        }
+        return payment;
+    }
+    async signupPaymentStatus(reference) {
+        const payment = await this.refreshPending(await this.findSignupPayment(reference));
+        const { reference: ref, status, plan, amount, currency, billingCycle } = this.publicPayment(payment);
+        return { reference: ref, status, plan, amount, currency, billingCycle };
+    }
+    async retrySignupPayment(reference) {
+        const payment = await this.findSignupPayment(reference);
+        const org = await this.prisma.organization.findUnique({ where: { id: payment.organizationId } });
+        if (!org || org.deletedAt || org.status !== 'PENDING_PAYMENT') {
+            throw new common_1.BadRequestException('Ce compte est déjà activé : connectez-vous avec les identifiants reçus par e-mail.');
+        }
+        const meta = payment.metadata;
+        const billingCycle = meta?.billing_cycle === 'YEARLY' ? 'YEARLY' : 'MONTHLY';
+        return this.startCheckout(org.id, meta?.requested_by, payment.plan, billingCycle, {
+            registration: true,
+        });
     }
     async completePayment(event) {
         const payment = await this.prisma.payment.findUnique({ where: { dexpayReference: event.reference } });
@@ -172,6 +241,7 @@ let BillingService = BillingService_1 = class BillingService {
                 org.currentPeriodEnd > now;
             const periodStart = extendsCurrent ? org.currentPeriodEnd : now;
             const periodEnd = (0, plan_catalog_1.addPeriod)(periodStart, billingCycle);
+            const activatesRegistration = org.status === 'PENDING_PAYMENT';
             await tx.payment.update({ where: { id: payment.id }, data: { periodStart, periodEnd } });
             await tx.organization.update({
                 where: { id: payment.organizationId },
@@ -182,16 +252,127 @@ let BillingService = BillingService_1 = class BillingService {
                     billingCycle,
                     currentPeriodEnd: periodEnd,
                     nextPaymentDate: periodEnd,
+                    ...(activatesRegistration ? { status: 'ACTIVE' } : {}),
                 },
             });
-            return { periodEnd, organizationName: org.name };
+            return { periodEnd, organizationName: org.name, activatesRegistration };
         });
         if (!applied)
             return false;
         await this.cacheInvalidation.invalidateAll(payment.organizationId);
         this.logger.log(`Formule ${payment.plan} activée pour ${payment.organizationId} jusqu'au ${applied.periodEnd.toISOString()}`);
+        if (applied.activatesRegistration) {
+            await this.activateRegistrationAccount(payment, applied.organizationName, billingCycle);
+        }
         await this.sendConfirmation(payment, applied.periodEnd, applied.organizationName);
         return true;
+    }
+    async activateRegistrationAccount(payment, organizationName, billingCycle) {
+        const user = await this.prisma.user.findFirst({
+            where: { organizationId: payment.organizationId, deletedAt: null },
+            orderBy: { createdAt: 'asc' },
+        });
+        if (!user)
+            return;
+        const tempPassword = (0, crypto_1.randomBytes)(8).toString('base64url').slice(0, 10);
+        await this.prisma.user.update({
+            where: { id: user.id },
+            data: {
+                isActive: true,
+                passwordHash: await bcrypt.hash(tempPassword, 12),
+                mustChangePassword: true,
+                tokensValidAfter: new Date(),
+            },
+        });
+        try {
+            await this.notifications.sendWelcomeCredentials({
+                email: user.email,
+                firstName: user.firstName,
+                orgName: organizationName,
+                tempPassword,
+            });
+        }
+        catch (error) {
+            this.logger.error(`Identifiants non envoyés à l'inscription ${payment.organizationId} : ${error}`);
+        }
+        try {
+            await this.notifications.sendPaidSignupToSupport({
+                organizationName,
+                organizationId: payment.organizationId,
+                planLabel: plan_catalog_1.PLAN_LABELS[payment.plan],
+                billingCycle,
+                amount: payment.amount,
+                currency: payment.currency,
+                userEmail: user.email,
+                userName: `${user.firstName} ${user.lastName}`,
+            });
+        }
+        catch (error) {
+            this.logger.error(`Support non prévenu de l'inscription ${payment.organizationId} : ${error}`);
+        }
+    }
+    async sendRenewalReminders(now = new Date()) {
+        const day = 24 * 3600 * 1000;
+        const windows = [
+            { kind: 'J7', from: new Date(now.getTime() + 6 * day), to: new Date(now.getTime() + 7 * day) },
+            { kind: 'J1', from: now, to: new Date(now.getTime() + day) },
+            { kind: 'EXPIRED', from: new Date(now.getTime() - day), to: now },
+        ];
+        let sent = 0;
+        for (const w of windows) {
+            const orgs = await this.prisma.organization.findMany({
+                where: {
+                    deletedAt: null,
+                    status: 'ACTIVE',
+                    subscriptionPlan: { not: 'ENTERPRISE' },
+                    currentPeriodEnd: { gt: w.from, lte: w.to },
+                },
+                select: { id: true, name: true, subscriptionPlan: true, currentPeriodEnd: true },
+            });
+            for (const org of orgs) {
+                if (w.kind === 'EXPIRED') {
+                    await this.prisma.organization.update({ where: { id: org.id }, data: { subscriptionStatus: 'PAST_DUE' } });
+                    await this.cacheInvalidation.invalidateAll(org.id);
+                }
+                const admins = await this.prisma.user.findMany({
+                    where: { organizationId: org.id, deletedAt: null, isActive: true, role: { name: 'Administrateur' } },
+                    select: { email: true, firstName: true },
+                });
+                for (const admin of admins) {
+                    try {
+                        await this.notifications.sendSubscriptionReminder({
+                            email: admin.email,
+                            firstName: admin.firstName,
+                            organizationName: org.name,
+                            planLabel: plan_catalog_1.PLAN_LABELS[org.subscriptionPlan],
+                            periodEnd: org.currentPeriodEnd,
+                            kind: w.kind,
+                            renewUrl: `${this.frontendUrl()}/payment/renew`,
+                        });
+                        sent += 1;
+                    }
+                    catch (error) {
+                        this.logger.error(`Relance d'échéance non envoyée (${org.id}) : ${error}`);
+                    }
+                }
+            }
+        }
+        return sent;
+    }
+    async purgeUnpaidRegistrations(now = new Date()) {
+        const cutoff = new Date(now.getTime() - 7 * 24 * 3600 * 1000);
+        const stale = await this.prisma.organization.findMany({
+            where: { status: 'PENDING_PAYMENT', createdAt: { lt: cutoff }, payments: { none: { status: 'completed' } } },
+            select: { id: true },
+        });
+        for (const { id } of stale) {
+            await this.prisma.$transaction([
+                this.prisma.payment.deleteMany({ where: { organizationId: id } }),
+                this.prisma.user.deleteMany({ where: { organizationId: id } }),
+                this.prisma.organization.delete({ where: { id } }),
+            ]);
+        }
+        return stale.length;
     }
     async markPayment(reference, status) {
         const allowedFrom = status === 'refunded' ? ['completed'] : ['pending'];

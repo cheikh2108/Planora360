@@ -640,6 +640,92 @@ export class NotificationsService {
     );
   }
 
+  /** Nouvelle inscription payée : le support est prévenu (aucune action requise, le compte est déjà actif). */
+  async sendPaidSignupToSupport(params: {
+    organizationName: string;
+    organizationId: string;
+    planLabel: string;
+    billingCycle: string;
+    amount: number;
+    currency: string;
+    userEmail: string;
+    userName: string;
+  }) {
+    const supportEmail = this.config.get<string>('SUPPORT_EMAIL') || 'admin@ataaba.com';
+    const amount = `${new Intl.NumberFormat('fr-FR').format(params.amount)} ${params.currency === 'XOF' ? 'FCFA' : this.esc(params.currency)}`;
+    const content = `
+      <p style="margin:0 0 24px;color:#475569;font-size:15px;line-height:1.7">
+        Une nouvelle organisation s'est inscrite et a payé en ligne. Son compte est déjà actif ; ses identifiants lui ont été envoyés.
+      </p>
+      ${this.emailTemplates.infoCard({
+        rows: [
+          { label: 'Organisation', value: this.esc(params.organizationName) },
+          { label: 'Formule', value: `${this.esc(params.planLabel)} (${params.billingCycle === 'YEARLY' ? 'annuel' : 'mensuel'})` },
+          { label: 'Montant', value: amount },
+          { label: 'Responsable', value: this.esc(params.userName) },
+          { label: 'E-mail', value: this.esc(params.userEmail) },
+        ],
+      })}
+      <div style="text-align:center;margin:32px 0">
+        ${this.emailTemplates.button({ text: 'Voir l\'organisation', url: `${this.frontendUrl}/super-admin/organizations/${params.organizationId}` })}
+      </div>
+    `;
+    await this.sendEmail(
+      supportEmail,
+      `[PLANORA 360] Nouvelle inscription payée - ${params.organizationName}`,
+      this.emailTemplates.base({
+        title: 'Nouvelle inscription payée',
+        preheader: `${this.esc(params.organizationName)} - ${this.esc(params.planLabel)}`,
+        content,
+      }),
+    );
+  }
+
+  /** Relance d'échéance : 7 jours avant, la veille, puis à l'expiration (accès bloqué). */
+  async sendSubscriptionReminder(params: {
+    email: string;
+    firstName: string;
+    organizationName: string;
+    planLabel: string;
+    periodEnd: Date;
+    kind: 'J7' | 'J1' | 'EXPIRED';
+    renewUrl: string;
+  }) {
+    const until = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
+      .format(params.periodEnd);
+    const texts = {
+      J7: {
+        subject: `Votre abonnement expire le ${until}`,
+        intro: `Votre formule <strong>${this.esc(params.planLabel)}</strong> pour <strong>${this.esc(params.organizationName)}</strong> expire le <strong>${until}</strong>, dans 7 jours.`,
+        alert: 'Renouvelez dès maintenant : la nouvelle période s\'ajoute à la suite de l\'actuelle, vous ne perdez aucun jour.',
+      },
+      J1: {
+        subject: `Votre abonnement expire demain`,
+        intro: `Votre formule <strong>${this.esc(params.planLabel)}</strong> pour <strong>${this.esc(params.organizationName)}</strong> expire le <strong>${until}</strong>.`,
+        alert: 'Sans renouvellement, l\'accès à PLANORA 360 sera suspendu à l\'échéance. Vos données sont conservées.',
+      },
+      EXPIRED: {
+        subject: `Votre abonnement a expiré`,
+        intro: `Votre formule <strong>${this.esc(params.planLabel)}</strong> pour <strong>${this.esc(params.organizationName)}</strong> a expiré le <strong>${until}</strong>.`,
+        alert: 'L\'accès est suspendu jusqu\'au renouvellement. Vos données sont conservées et redeviennent accessibles dès le paiement.',
+      },
+    }[params.kind];
+
+    const content = `
+      <p style="margin:0 0 24px;color:#0f172a;font-size:16px">Bonjour <strong>${this.esc(params.firstName)}</strong>,</p>
+      <p style="margin:0 0 24px;color:#475569;font-size:15px;line-height:1.7">${texts.intro}</p>
+      ${this.emailTemplates.alert({ type: params.kind === 'J7' ? 'info' : 'warning', message: texts.alert })}
+      <div style="text-align:center;margin:32px 0">
+        ${this.emailTemplates.button({ text: 'Renouveler mon abonnement', url: params.renewUrl })}
+      </div>
+    `;
+    await this.sendEmail(
+      params.email,
+      `[PLANORA 360] ${texts.subject}`,
+      this.emailTemplates.base({ title: texts.subject, preheader: texts.subject, content }),
+    );
+  }
+
   async sendQuoteRequest(params: {
     organizationName: string;
     plan: string;

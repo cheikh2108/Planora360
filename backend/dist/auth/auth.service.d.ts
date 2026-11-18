@@ -2,6 +2,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { PostHogService } from '../analytics/posthog.service';
+import { BillingService } from '../dexpay/billing.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterOrganizationDto } from './dto/register-organization.dto';
@@ -10,24 +11,43 @@ export declare class AuthService {
     private jwtService;
     private config;
     private posthog;
+    private billing;
     private notifications;
-    constructor(prisma: PrismaService, jwtService: JwtService, config: ConfigService, posthog: PostHogService, notifications: NotificationsService);
+    constructor(prisma: PrismaService, jwtService: JwtService, config: ConfigService, posthog: PostHogService, billing: BillingService, notifications: NotificationsService);
     register(dto: RegisterOrganizationDto): Promise<{
         requiresQuote: boolean;
         plan: "PRO" | "EQUIPE" | "ORGANISATION" | "ENTERPRISE";
         message: string;
         success?: undefined;
         organizationId?: undefined;
-        userId?: undefined;
         status?: undefined;
+        reference?: undefined;
+        checkoutUrl?: undefined;
+        amount?: undefined;
+        currency?: undefined;
     } | {
         success: boolean;
         organizationId: string;
-        userId: string;
         status: string;
-        message: string;
+        reference: string;
+        checkoutUrl: string;
+        amount: number;
+        currency: string;
         requiresQuote?: undefined;
         plan?: undefined;
+        message?: undefined;
+    }>;
+    signupPaymentStatus(reference: string): Promise<{
+        reference: string;
+        status: string;
+        plan: import(".prisma/client").$Enums.SubscriptionPlan;
+        amount: number;
+        currency: string;
+        billingCycle: any;
+    }>;
+    retrySignupPayment(reference: string): Promise<{
+        reference: string;
+        checkoutUrl: string;
     }>;
     verifyEmail(token: string): Promise<{
         success: boolean;

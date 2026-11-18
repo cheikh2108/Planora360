@@ -11,8 +11,8 @@ export declare class PlanningService {
         createdAt: Date;
         updatedAt: Date;
         status: string;
-        title: string;
         year: number;
+        title: string;
         createdBy: string;
         objectives: import("@prisma/client/runtime/client").JsonValue;
         validatedBy: string | null;
@@ -24,8 +24,8 @@ export declare class PlanningService {
         createdAt: Date;
         updatedAt: Date;
         status: string;
-        title: string;
         year: number;
+        title: string;
         createdBy: string;
         objectives: import("@prisma/client/runtime/client").JsonValue;
         validatedBy: string | null;
@@ -37,8 +37,8 @@ export declare class PlanningService {
         createdAt: Date;
         updatedAt: Date;
         status: string;
-        title: string;
         year: number;
+        title: string;
         createdBy: string;
         objectives: import("@prisma/client/runtime/client").JsonValue;
         validatedBy: string | null;
@@ -50,8 +50,8 @@ export declare class PlanningService {
         createdAt: Date;
         updatedAt: Date;
         status: string;
-        title: string;
         year: number;
+        title: string;
         createdBy: string;
         objectives: import("@prisma/client/runtime/client").JsonValue;
         validatedBy: string | null;
@@ -63,8 +63,8 @@ export declare class PlanningService {
         createdAt: Date;
         updatedAt: Date;
         status: string;
-        title: string;
         year: number;
+        title: string;
         createdBy: string;
         objectives: import("@prisma/client/runtime/client").JsonValue;
         validatedBy: string | null;
@@ -76,8 +76,8 @@ export declare class PlanningService {
         createdAt: Date;
         updatedAt: Date;
         status: string;
-        title: string;
         year: number;
+        title: string;
         createdBy: string;
         objectives: import("@prisma/client/runtime/client").JsonValue;
         validatedBy: string | null;

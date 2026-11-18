@@ -9,11 +9,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SchedulerModule = void 0;
 const common_1 = require("@nestjs/common");
 const scheduler_service_1 = require("./scheduler.service");
+const dexpay_module_1 = require("../dexpay/dexpay.module");
 let SchedulerModule = class SchedulerModule {
 };
 exports.SchedulerModule = SchedulerModule;
 exports.SchedulerModule = SchedulerModule = __decorate([
     (0, common_1.Module)({
+        imports: [dexpay_module_1.DexpayModule],
         providers: [scheduler_service_1.SchedulerService],
     })
 ], SchedulerModule);

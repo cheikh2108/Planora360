@@ -48,6 +48,7 @@ const jwt_1 = require("@nestjs/jwt");
 const config_1 = require("@nestjs/config");
 const prisma_service_1 = require("../common/prisma/prisma.service");
 const posthog_service_1 = require("../analytics/posthog.service");
+const billing_service_1 = require("../dexpay/billing.service");
 const notifications_service_1 = require("../notifications/notifications.service");
 const bcrypt = __importStar(require("bcryptjs"));
 const speakeasy = __importStar(require("speakeasy"));
@@ -61,18 +62,17 @@ let AuthService = class AuthService {
     jwtService;
     config;
     posthog;
+    billing;
     notifications;
-    constructor(prisma, jwtService, config, posthog, notifications) {
+    constructor(prisma, jwtService, config, posthog, billing, notifications) {
         this.prisma = prisma;
         this.jwtService = jwtService;
         this.config = config;
         this.posthog = posthog;
+        this.billing = billing;
         this.notifications = notifications;
     }
     async register(dto) {
-        await this.validateUniqueOrganization(dto.organizationName);
-        await this.validateUniqueEmail(dto.email);
-        const adminRole = await this.findAdminRole();
         const plan = dto.subscriptionPlan ?? 'INDIVIDUEL';
         const billingCycle = dto.billingCycle ?? 'MONTHLY';
         if (plan !== 'INDIVIDUEL') {
@@ -82,51 +82,91 @@ let AuthService = class AuthService {
                 message: `Le plan ${plan} nécessite une demande de devis. Notre équipe commerciale vous contactera.`
             };
         }
-        const tempPassword = (0, crypto_1.randomBytes)(4).toString('hex');
-        const { organization, user } = await this.prisma.$transaction(async (tx) => {
-            const organization = await tx.organization.create({
-                data: {
-                    name: dto.organizationName,
-                    subscriptionPlan: plan,
-                    brandColor: dto.brandColor ?? auth_constants_1.DEFAULT_BRAND_COLOR,
-                    status: 'PENDING_APPROVAL',
-                    subscriptionStatus: 'INCOMPLETE',
-                    subscriptionCurrency: 'XOF',
-                    billingCycle,
-                },
-            });
-            const passwordHash = await this.hashPassword(tempPassword);
-            const user = await tx.user.create({
-                data: {
-                    email: dto.email,
-                    firstName: dto.firstName,
-                    lastName: dto.lastName,
-                    passwordHash,
-                    organizationId: organization.id,
-                    roleId: adminRole.id,
-                    isActive: false,
-                },
-            });
-            return { organization, user };
+        const pending = await this.prisma.user.findFirst({
+            where: {
+                email: { equals: dto.email, mode: 'insensitive' },
+                deletedAt: null,
+                organization: { status: 'PENDING_PAYMENT', deletedAt: null },
+            },
+            include: { organization: true },
         });
-        this.posthog.trackRegistration(user.id, organization.id, plan);
-        await this.notifications.sendNewRegistrationToAdmin({
-            organizationName: organization.name,
-            organizationId: organization.id,
-            plan,
-            billingCycle,
-            userEmail: user.email,
-            userName: `${user.firstName} ${user.lastName}`,
+        if (pending) {
+            await this.validateUniqueOrganization(dto.organizationName, pending.organizationId);
+        }
+        else {
+            await this.validateUniqueOrganization(dto.organizationName);
+            await this.validateUniqueEmail(dto.email);
+        }
+        if (!this.billing.isOnlinePaymentReady()) {
+            throw new common_1.ServiceUnavailableException('Le paiement en ligne est momentanément indisponible. Réessayez plus tard ou écrivez à contact@planora360.org.');
+        }
+        let organizationId;
+        let userId;
+        if (pending) {
+            await this.prisma.$transaction([
+                this.prisma.organization.update({
+                    where: { id: pending.organizationId },
+                    data: { name: dto.organizationName, brandColor: dto.brandColor ?? auth_constants_1.DEFAULT_BRAND_COLOR, billingCycle },
+                }),
+                this.prisma.user.update({
+                    where: { id: pending.id },
+                    data: { firstName: dto.firstName, lastName: dto.lastName },
+                }),
+            ]);
+            organizationId = pending.organizationId;
+            userId = pending.id;
+        }
+        else {
+            const adminRole = await this.findAdminRole();
+            const passwordHash = await this.hashPassword((0, crypto_1.randomBytes)(24).toString('hex'));
+            const { organization, user } = await this.prisma.$transaction(async (tx) => {
+                const organization = await tx.organization.create({
+                    data: {
+                        name: dto.organizationName,
+                        subscriptionPlan: plan,
+                        brandColor: dto.brandColor ?? auth_constants_1.DEFAULT_BRAND_COLOR,
+                        status: 'PENDING_PAYMENT',
+                        subscriptionStatus: 'INCOMPLETE',
+                        subscriptionCurrency: 'XOF',
+                        billingCycle,
+                    },
+                });
+                const user = await tx.user.create({
+                    data: {
+                        email: dto.email,
+                        firstName: dto.firstName,
+                        lastName: dto.lastName,
+                        passwordHash,
+                        organizationId: organization.id,
+                        roleId: adminRole.id,
+                        isActive: false,
+                    },
+                });
+                return { organization, user };
+            });
+            organizationId = organization.id;
+            userId = user.id;
+            this.posthog.trackRegistration(user.id, organization.id, plan);
+        }
+        const checkout = await this.billing.startCheckout(organizationId, userId, plan, billingCycle, {
+            registration: true,
         });
-        console.log(`⏳ Organisation ${organization.name} créée en attente d'approbation (ID: ${organization.id})`);
-        console.log(`📧 Notification envoyée au SuperAdmin`);
         return {
             success: true,
-            organizationId: organization.id,
-            userId: user.id,
-            status: 'PENDING_APPROVAL',
-            message: 'Demande d\'inscription reçue ! Un administrateur va examiner votre demande et vous recevrez un email de confirmation sous 24-48h.'
+            organizationId,
+            status: 'PENDING_PAYMENT',
+            reference: checkout.reference,
+            checkoutUrl: checkout.paymentUrl,
+            amount: checkout.amount,
+            currency: checkout.currency,
         };
+    }
+    signupPaymentStatus(reference) {
+        return this.billing.signupPaymentStatus(reference);
+    }
+    async retrySignupPayment(reference) {
+        const checkout = await this.billing.retrySignupPayment(reference);
+        return { reference: checkout.reference, checkoutUrl: checkout.paymentUrl };
     }
     async verifyEmail(token) {
         const organization = await this.prisma.organization.findFirst({
@@ -203,9 +243,9 @@ let AuthService = class AuthService {
             message: 'Votre demande de devis a bien été envoyée. Notre équipe vous contactera sous 48h.',
         };
     }
-    async validateUniqueOrganization(name) {
+    async validateUniqueOrganization(name, exceptOrganizationId) {
         const existing = await this.prisma.organization.findFirst({
-            where: { name, deletedAt: null },
+            where: { name, deletedAt: null, ...(exceptOrganizationId ? { NOT: { id: exceptOrganizationId } } : {}) },
         });
         if (existing)
             throw new common_1.ConflictException('Une organisation avec ce nom existe déjà');
@@ -466,6 +506,7 @@ exports.AuthService = AuthService = __decorate([
         jwt_1.JwtService,
         config_1.ConfigService,
         posthog_service_1.PostHogService,
+        billing_service_1.BillingService,
         notifications_service_1.NotificationsService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

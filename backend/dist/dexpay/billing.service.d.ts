@@ -48,12 +48,12 @@ export declare class BillingService {
             billingCycle: any;
             createdAt: Date;
             status: string;
-            plan: import(".prisma/client").$Enums.SubscriptionPlan;
-            periodStart: Date | null;
-            periodEnd: Date | null;
             amount: number;
             currency: string;
             paymentMethod: string | null;
+            plan: import(".prisma/client").$Enums.SubscriptionPlan;
+            periodStart: Date | null;
+            periodEnd: Date | null;
             paidAt: Date | null;
         }[];
         subscriptionPlan: import(".prisma/client").$Enums.SubscriptionPlan;
@@ -63,7 +63,9 @@ export declare class BillingService {
         currentPeriodEnd: Date | null;
         nextPaymentDate: Date | null;
     }>;
-    startCheckout(organizationId: string, userId: string, plan: PayablePlan, billingCycle: BillingCycle): Promise<{
+    startCheckout(organizationId: string, userId: string, plan: PayablePlan, billingCycle: BillingCycle, options?: {
+        registration?: boolean;
+    }): Promise<{
         reference: string;
         paymentUrl: string;
         amount: number;
@@ -79,7 +81,26 @@ export declare class BillingService {
         periodEnd: Date | null;
         paidAt: Date | null;
     }>;
+    private refreshPending;
+    private findSignupPayment;
+    signupPaymentStatus(reference: string): Promise<{
+        reference: string;
+        status: string;
+        plan: import(".prisma/client").$Enums.SubscriptionPlan;
+        amount: number;
+        currency: string;
+        billingCycle: any;
+    }>;
+    retrySignupPayment(reference: string): Promise<{
+        reference: string;
+        paymentUrl: string;
+        amount: number;
+        currency: string;
+    }>;
     completePayment(event: CheckoutEvent): Promise<boolean>;
+    private activateRegistrationAccount;
+    sendRenewalReminders(now?: Date): Promise<number>;
+    purgeUnpaidRegistrations(now?: Date): Promise<number>;
     markPayment(reference: string, status: 'failed' | 'cancelled' | 'refunded'): Promise<void>;
     private publicPayment;
     private sendConfirmation;

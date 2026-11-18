@@ -71,6 +71,25 @@ export declare class NotificationsService {
         reference: string;
         periodEnd: Date;
     }): Promise<void>;
+    sendPaidSignupToSupport(params: {
+        organizationName: string;
+        organizationId: string;
+        planLabel: string;
+        billingCycle: string;
+        amount: number;
+        currency: string;
+        userEmail: string;
+        userName: string;
+    }): Promise<void>;
+    sendSubscriptionReminder(params: {
+        email: string;
+        firstName: string;
+        organizationName: string;
+        planLabel: string;
+        periodEnd: Date;
+        kind: 'J7' | 'J1' | 'EXPIRED';
+        renewUrl: string;
+    }): Promise<void>;
     sendQuoteRequest(params: {
         organizationName: string;
         plan: string;

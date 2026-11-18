@@ -12,8 +12,8 @@ export declare class ContratsController {
         };
         procedure: {
             id: string;
-            objet: string;
             reference: string;
+            objet: string;
         };
         gestionnaireUser: {
             id: string;
@@ -119,9 +119,9 @@ export declare class ContratsController {
             updatedAt: Date;
             status: import(".prisma/client").$Enums.StatusProcedure;
             description: string;
+            reference: string;
             objet: string;
             montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
-            reference: string;
             dateAttribution: Date | null;
             responsableId: string;
             lignePPMId: string | null;

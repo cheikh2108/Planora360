@@ -10,6 +10,7 @@ const roles_guard_1 = require("../guards/roles.guard");
 const BLOCKED_STATUSES = {
     PENDING: auth_constants_1.ERROR_REGISTRATION_PENDING,
     PENDING_APPROVAL: auth_constants_1.ERROR_REGISTRATION_PENDING,
+    PENDING_PAYMENT: auth_constants_1.ERROR_REGISTRATION_PENDING,
     REJECTED: auth_constants_1.ERROR_REGISTRATION_REJECTED,
     SUSPENDED: auth_constants_1.ERROR_ORGANIZATION_SUSPENDED,
 };

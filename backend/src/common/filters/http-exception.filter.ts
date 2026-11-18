@@ -79,6 +79,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
       timestamp: new Date().toISOString(),
       path: request.url,
       message: typeof message === 'string' ? message : (message as any).message || message,
+      // Code machine lisible par le frontend (ex. SUBSCRIPTION_EXPIRED → page de renouvellement)
+      ...(typeof message === 'object' && typeof (message as any)?.code === 'string'
+        ? { code: (message as any).code }
+        : {}),
       // Inclure stack SEULEMENT en développement
       ...(process.env.NODE_ENV !== 'production' && exception instanceof Error
         ? { stack: exception.stack }

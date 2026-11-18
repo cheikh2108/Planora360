@@ -10,6 +10,7 @@ export declare class ProceduresService {
             createdAt: Date;
             updatedAt: Date;
             status: string;
+            reference: string;
             observations: string | null;
             objet: string;
             montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
@@ -17,7 +18,6 @@ export declare class ProceduresService {
             trimestre: number;
             sourceFinancement: string | null;
             ligneBudgetaire: string | null;
-            reference: string;
             ppmId: string;
             dateLancement: Date | null;
             dateAttribution: Date | null;
@@ -37,9 +37,9 @@ export declare class ProceduresService {
         updatedAt: Date;
         status: import(".prisma/client").$Enums.StatusProcedure;
         description: string;
+        reference: string;
         objet: string;
         montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
-        reference: string;
         dateAttribution: Date | null;
         responsableId: string;
         lignePPMId: string | null;
@@ -56,8 +56,8 @@ export declare class ProceduresService {
     findAll(organizationId: string, filters?: any): Promise<({
         lignePPM: {
             id: string;
-            objet: string;
             reference: string;
+            objet: string;
         } | null;
         _count: {
             soumissions: number;
@@ -74,9 +74,9 @@ export declare class ProceduresService {
         updatedAt: Date;
         status: import(".prisma/client").$Enums.StatusProcedure;
         description: string;
+        reference: string;
         objet: string;
         montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
-        reference: string;
         dateAttribution: Date | null;
         responsableId: string;
         lignePPMId: string | null;
@@ -94,6 +94,7 @@ export declare class ProceduresService {
             createdAt: Date;
             updatedAt: Date;
             status: string;
+            reference: string;
             observations: string | null;
             objet: string;
             montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
@@ -101,7 +102,6 @@ export declare class ProceduresService {
             trimestre: number;
             sourceFinancement: string | null;
             ligneBudgetaire: string | null;
-            reference: string;
             ppmId: string;
             dateLancement: Date | null;
             dateAttribution: Date | null;
@@ -166,9 +166,9 @@ export declare class ProceduresService {
         updatedAt: Date;
         status: import(".prisma/client").$Enums.StatusProcedure;
         description: string;
+        reference: string;
         objet: string;
         montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
-        reference: string;
         dateAttribution: Date | null;
         responsableId: string;
         lignePPMId: string | null;
@@ -186,9 +186,9 @@ export declare class ProceduresService {
         updatedAt: Date;
         status: import(".prisma/client").$Enums.StatusProcedure;
         description: string;
+        reference: string;
         objet: string;
         montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
-        reference: string;
         dateAttribution: Date | null;
         responsableId: string;
         lignePPMId: string | null;
@@ -206,9 +206,9 @@ export declare class ProceduresService {
         updatedAt: Date;
         status: import(".prisma/client").$Enums.StatusProcedure;
         description: string;
+        reference: string;
         objet: string;
         montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
-        reference: string;
         dateAttribution: Date | null;
         responsableId: string;
         lignePPMId: string | null;
@@ -226,9 +226,9 @@ export declare class ProceduresService {
         updatedAt: Date;
         status: import(".prisma/client").$Enums.StatusProcedure;
         description: string;
+        reference: string;
         objet: string;
         montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
-        reference: string;
         dateAttribution: Date | null;
         responsableId: string;
         lignePPMId: string | null;
@@ -246,9 +246,9 @@ export declare class ProceduresService {
         updatedAt: Date;
         status: import(".prisma/client").$Enums.StatusProcedure;
         description: string;
+        reference: string;
         objet: string;
         montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
-        reference: string;
         dateAttribution: Date | null;
         responsableId: string;
         lignePPMId: string | null;
@@ -266,9 +266,9 @@ export declare class ProceduresService {
         updatedAt: Date;
         status: import(".prisma/client").$Enums.StatusProcedure;
         description: string;
+        reference: string;
         objet: string;
         montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
-        reference: string;
         dateAttribution: Date | null;
         responsableId: string;
         lignePPMId: string | null;

@@ -28,16 +28,34 @@ export declare class AuthController {
         message: string;
         success?: undefined;
         organizationId?: undefined;
-        userId?: undefined;
         status?: undefined;
+        reference?: undefined;
+        checkoutUrl?: undefined;
+        amount?: undefined;
+        currency?: undefined;
     } | {
         success: boolean;
         organizationId: string;
-        userId: string;
         status: string;
-        message: string;
+        reference: string;
+        checkoutUrl: string;
+        amount: number;
+        currency: string;
         requiresQuote?: undefined;
         plan?: undefined;
+        message?: undefined;
+    }>;
+    signupPaymentStatus(reference: string): Promise<{
+        reference: string;
+        status: string;
+        plan: import(".prisma/client").$Enums.SubscriptionPlan;
+        amount: number;
+        currency: string;
+        billingCycle: any;
+    }>;
+    retrySignupPayment(reference: string): Promise<{
+        reference: string;
+        checkoutUrl: string;
     }>;
     verifyEmail(token: string): Promise<{
         success: boolean;

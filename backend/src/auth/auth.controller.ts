@@ -45,6 +45,21 @@ export class AuthController {
     return this.authService.register(dto);
   }
 
+  /** État du paiement d'une inscription (page de retour DexPay, sans connexion). */
+  @Get('register/payment/:reference')
+  @Throttle({ default: { limit: 40, ttl: 60000 } }) // la page interroge toutes les 3 s
+  signupPaymentStatus(@Param('reference') reference: string) {
+    return this.authService.signupPaymentStatus(reference);
+  }
+
+  /** Nouveau paiement pour une inscription dont le paiement a échoué ou a été annulé. */
+  @Post('register/payment/:reference/retry')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @HttpCode(HttpStatus.OK)
+  retrySignupPayment(@Param('reference') reference: string) {
+    return this.authService.retrySignupPayment(reference);
+  }
+
   @Get('verify-email/:token')
   @Throttle({ default: { limit: 5, ttl: 60000 } })
   @HttpCode(HttpStatus.OK)

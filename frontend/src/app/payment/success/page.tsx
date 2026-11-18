@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { CheckCircle2, Clock, Loader2, XCircle } from 'lucide-react';
-import { billingApi, formatXof, getErrorMessage } from '@/lib/api';
+import { authApi, billingApi, formatXof, getErrorMessage } from '@/lib/api';
+import { RetrySignupButton } from '@/components/payment/retry-signup-button';
 import { useAuth } from '@/lib/auth-context';
 
 const PLAN_LABELS: Record<string, string> = {
@@ -24,7 +25,10 @@ function Shell({ children }: { children: React.ReactNode }) {
 }
 
 function PaymentResult() {
-  const reference = useSearchParams().get('ref');
+  const params = useSearchParams();
+  const reference = params.get('ref');
+  // Inscription payée : la personne n'est pas encore connectée, ses identifiants arrivent par e-mail
+  const signup = params.get('signup') === '1';
   const { refreshUser } = useAuth();
   const queryClient = useQueryClient();
   const refreshed = useRef(false);
@@ -36,20 +40,23 @@ function PaymentResult() {
   }, []);
 
   const { data: payment, error, isLoading } = useQuery({
-    queryKey: ['payment-status', reference],
-    queryFn: async () => (await billingApi.paymentStatus(reference!)).data,
+    queryKey: ['payment-status', reference, signup],
+    queryFn: async (): Promise<{ reference: string; status: string; plan: string; amount: number; currency: string; periodEnd?: string | null }> =>
+      signup
+        ? (await authApi.signupPaymentStatus(reference!)).data
+        : (await billingApi.paymentStatus(reference!)).data,
     enabled: !!reference,
     refetchInterval: (query) => (query.state.data?.status === 'pending' && !timedOut ? POLL_MS : false),
   });
 
   // Formule activée : on recharge la session pour que les modules débloqués apparaissent tout de suite
   useEffect(() => {
-    if (payment?.status === 'completed' && !refreshed.current) {
+    if (payment?.status === 'completed' && !signup && !refreshed.current) {
       refreshed.current = true;
       void refreshUser();
       void queryClient.invalidateQueries({ queryKey: ['billing'] });
     }
-  }, [payment?.status, refreshUser, queryClient]);
+  }, [payment?.status, signup, refreshUser, queryClient]);
 
   if (!reference) {
     return (
@@ -88,6 +95,25 @@ function PaymentResult() {
     );
   }
 
+  if (payment.status === 'completed' && signup) {
+    return (
+      <Shell>
+        <div className="w-20 h-20 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-6">
+          <CheckCircle2 size={40} className="text-emerald-500" aria-hidden="true" />
+        </div>
+        <h1 className="text-3xl font-bold text-slate-900 mb-3">Votre compte est prêt</h1>
+        <p className="text-slate-600 mb-6">
+          Paiement de <strong>{formatXof(payment.amount, payment.currency)}</strong> reçu. Vos identifiants de connexion viennent
+          d&apos;être envoyés à votre adresse e-mail : vous choisirez votre mot de passe à la première connexion.
+        </p>
+        <p className="text-xs text-slate-500 mb-8">Pas d&apos;e-mail dans quelques minutes ? Regardez dans les indésirables, ou écrivez à contact@planora360.org avec la référence {payment.reference}.</p>
+        <Link href="/auth/login" className="block w-full h-12 leading-[3rem] bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold rounded-xl text-sm transition-colors">
+          Se connecter
+        </Link>
+      </Shell>
+    );
+  }
+
   if (payment.status === 'completed') {
     return (
       <Shell>
@@ -119,12 +145,15 @@ function PaymentResult() {
         </div>
         <h1 className="text-2xl font-bold text-slate-900 mb-3">Paiement en cours de traitement</h1>
         <p className="text-slate-600 mb-6">
-          DexPay n&apos;a pas encore confirmé le paiement. Si vous avez validé l&apos;opération sur votre téléphone, la formule
-          s&apos;activera automatiquement dès la confirmation. Vous recevrez un e-mail.
+          {signup
+            ? <>DexPay n&apos;a pas encore confirmé le paiement. Si vous avez validé l&apos;opération sur votre téléphone, votre compte sera activé automatiquement et vos identifiants vous seront envoyés par e-mail.</>
+            : <>DexPay n&apos;a pas encore confirmé le paiement. Si vous avez validé l&apos;opération sur votre téléphone, la formule s&apos;activera automatiquement dès la confirmation. Vous recevrez un e-mail.</>}
         </p>
-        <Link href="/settings?section=Abonnement" className="text-[#2563eb] font-semibold hover:underline">
-          Suivre mon abonnement
-        </Link>
+        {!signup && (
+          <Link href="/settings?section=Abonnement" className="text-[#2563eb] font-semibold hover:underline">
+            Suivre mon abonnement
+          </Link>
+        )}
       </Shell>
     );
   }
@@ -140,12 +169,18 @@ function PaymentResult() {
       <p className="text-slate-600 mb-6">
         {payment.status === 'amount_mismatch'
           ? 'Le montant reçu ne correspond pas à la formule choisie. Notre équipe va vérifier ; contactez support@planora360.org avec la référence ci-dessous.'
-          : 'Le paiement a échoué ou a été annulé. Votre formule n\'a pas changé.'}
+          : signup
+            ? 'Le paiement a échoué ou a été annulé : aucun montant n\'a été débité et votre compte n\'est pas encore créé.'
+            : 'Le paiement a échoué ou a été annulé. Votre formule n\'a pas changé.'}
       </p>
       <p className="text-xs text-slate-400 mb-6">Référence : {payment.reference}</p>
-      <Link href="/settings?section=Abonnement" className="block w-full h-12 leading-[3rem] bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold rounded-xl text-sm transition-colors">
-        Réessayer
-      </Link>
+      {signup ? (
+        payment.status !== 'amount_mismatch' && <RetrySignupButton reference={payment.reference} />
+      ) : (
+        <Link href="/settings?section=Abonnement" className="block w-full h-12 leading-[3rem] bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold rounded-xl text-sm transition-colors">
+          Réessayer
+        </Link>
+      )}
     </Shell>
   );
 }

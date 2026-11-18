@@ -12,9 +12,9 @@ export declare class ParticipantsService {
         lastName: string;
         updatedAt: Date;
         createdBy: string;
+        amount: number;
         phone: string;
         paymentMode: string;
-        amount: number;
     }>;
     importFromExcel(file: Express.Multer.File, activityId: string, organizationId: string, userId: string): Promise<{
         success: boolean;
@@ -34,9 +34,9 @@ export declare class ParticipantsService {
         lastName: string;
         updatedAt: Date;
         createdBy: string;
+        amount: number;
         phone: string;
         paymentMode: string;
-        amount: number;
     }[]>;
     remove(id: string, organizationId: string): Promise<{
         organizationId: string;
@@ -47,8 +47,8 @@ export declare class ParticipantsService {
         lastName: string;
         updatedAt: Date;
         createdBy: string;
+        amount: number;
         phone: string;
         paymentMode: string;
-        amount: number;
     }>;
 }

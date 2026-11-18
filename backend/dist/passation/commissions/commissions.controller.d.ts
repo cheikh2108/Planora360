@@ -6,8 +6,8 @@ export declare class CommissionsController {
     create(req: any, dto: CreateCommissionDto): Promise<{
         procedure: {
             id: string;
-            objet: string;
             reference: string;
+            objet: string;
         };
         president: {
             id: string;
@@ -32,8 +32,8 @@ export declare class CommissionsController {
     findAll(req: any): Promise<({
         procedure: {
             id: string;
-            objet: string;
             reference: string;
+            objet: string;
         };
         _count: {
             evaluations: number;
@@ -72,9 +72,9 @@ export declare class CommissionsController {
             updatedAt: Date;
             status: import(".prisma/client").$Enums.StatusProcedure;
             description: string;
+            reference: string;
             objet: string;
             montantEstimatif: import("@prisma/client-runtime-utils").Decimal;
-            reference: string;
             dateAttribution: Date | null;
             responsableId: string;
             lignePPMId: string | null;

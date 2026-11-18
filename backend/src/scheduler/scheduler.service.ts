@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { BillingService } from '../dexpay/billing.service';
 import {
   getRetentionCutoffDate,
   UPCOMING_DEADLINE_WARNING_DAYS,
@@ -14,7 +15,30 @@ export class SchedulerService {
   constructor(
     private prisma: PrismaService,
     private notifications: NotificationsService,
+    private billing: BillingService,
   ) {}
+
+  /** Relances d'échéance des abonnements (J-7, J-1, expiration → accès bloqué). */
+  @Cron('0 9 * * *')
+  async subscriptionRenewalReminders() {
+    try {
+      const sent = await this.billing.sendRenewalReminders();
+      this.logger.log(`Relances d'abonnement envoyées : ${sent}`);
+    } catch (error) {
+      this.logger.error('Erreur lors des relances d\'abonnement :', error);
+    }
+  }
+
+  /** Inscriptions jamais payées depuis 7 jours : supprimées. */
+  @Cron('30 3 * * *')
+  async purgeUnpaidRegistrations() {
+    try {
+      const purged = await this.billing.purgeUnpaidRegistrations();
+      if (purged) this.logger.log(`Inscriptions non payées supprimées : ${purged}`);
+    } catch (error) {
+      this.logger.error('Erreur lors du nettoyage des inscriptions non payées :', error);
+    }
+  }
 
   @Cron('0 8 * * *')
   async dailyAlertScan() {

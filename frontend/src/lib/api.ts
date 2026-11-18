@@ -80,6 +80,16 @@ api.interceptors.response.use(
       }
     }
 
+    // Abonnement expiré : toute l'application renvoie vers la page de renouvellement
+    if (
+      err.response?.status === 402 &&
+      (err.response.data as { code?: string } | undefined)?.code === 'SUBSCRIPTION_EXPIRED' &&
+      typeof window !== 'undefined' &&
+      !window.location.pathname.startsWith('/payment/')
+    ) {
+      window.location.href = '/payment/renew';
+    }
+
     transformErrorMessage(err as AxiosError<{ message?: string | string[] }>);
     return Promise.reject(err);
   },
@@ -164,6 +174,13 @@ export const authApi = {
     lastName: string;
     email: string;
   }) => api.post('/auth/register', data),
+  /** Paiement d'une inscription (page de retour DexPay, sans connexion). */
+  signupPaymentStatus: (reference: string) =>
+    api.get<{ reference: string; status: string; plan: SubscriptionPlan; amount: number; currency: string; billingCycle: BillingCycle | null }>(
+      `/auth/register/payment/${encodeURIComponent(reference)}`,
+    ),
+  retrySignupPayment: (reference: string) =>
+    api.post<{ reference: string; checkoutUrl: string }>(`/auth/register/payment/${encodeURIComponent(reference)}/retry`),
   logout: () => api.post('/auth/logout'),
   forgotPassword: (email: string) => api.post<{ message: string }>('/auth/forgot-password', { email }),
   checkResetToken: (token: string) => api.post<{ valid: boolean }>('/auth/reset-password/check', { token }),

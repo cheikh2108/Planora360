@@ -338,7 +338,7 @@ function RegisterForm() {
                   <h2 className="text-xl font-bold text-slate-900">Responsable du compte</h2>
                   <p className="text-sm text-slate-500 mt-1">
                     {plan === 'INDIVIDUEL'
-                      ? 'Votre demande sera examinée par notre équipe. Vous recevrez un email avec vos identifiants sous 24-48h.'
+                      ? `Vous allez payer ${displayPrice ?? ''} sur la page sécurisée DexPay. Dès le paiement confirmé, vos identifiants vous sont envoyés par e-mail.`
                       : 'Notre équipe commerciale vous contactera sous 48h pour vous proposer une offre personnalisée.'}
                   </p>
                 </div>
@@ -448,17 +448,17 @@ function RegisterForm() {
                 >
                   {loading && <Loader2 size={15} className="animate-spin" />}
                   {loading
-                    ? 'Envoi de la demande...'
+                    ? plan === 'INDIVIDUEL' ? 'Redirection vers le paiement...' : 'Envoi de la demande...'
                     : successMessage
                       ? 'Demande envoyée ✓'
                       : plan === 'INDIVIDUEL'
-                        ? "Demander l'accès"
+                        ? `Payer ${displayPrice ?? ''}`.trim()
                         : 'Demander un devis'}
                 </button>
 
                 {plan === 'INDIVIDUEL' && !successMessage && (
                   <p className="text-[10px] text-center text-slate-500">
-                    Votre demande sera examinée par notre équipe sous 24-48h.
+                    Paiement sécurisé avec DexPay. Accès immédiat après le paiement, sans engagement.
                   </p>
                 )}
               </div>

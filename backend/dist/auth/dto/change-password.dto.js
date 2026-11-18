@@ -24,7 +24,9 @@ __decorate([
 ], ChangePasswordDto.prototype, "currentPassword", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.MinLength)(8, { message: 'Le mot de passe doit contenir au moins 8 caractères' }),
+    (0, class_validator_1.MinLength)(8, {
+        message: 'Le mot de passe doit contenir au moins 8 caractères',
+    }),
     (0, class_validator_1.MaxLength)(128),
     (0, class_validator_1.Matches)(exports.PASSWORD_RULE, {
         message: 'Le mot de passe doit contenir une majuscule, une minuscule et un chiffre',

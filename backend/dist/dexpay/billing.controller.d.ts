@@ -33,12 +33,12 @@ export declare class BillingController {
             billingCycle: any;
             createdAt: Date;
             status: string;
-            plan: import(".prisma/client").$Enums.SubscriptionPlan;
-            periodStart: Date | null;
-            periodEnd: Date | null;
             amount: number;
             currency: string;
             paymentMethod: string | null;
+            plan: import(".prisma/client").$Enums.SubscriptionPlan;
+            periodStart: Date | null;
+            periodEnd: Date | null;
             paidAt: Date | null;
         }[];
         subscriptionPlan: import(".prisma/client").$Enums.SubscriptionPlan;
