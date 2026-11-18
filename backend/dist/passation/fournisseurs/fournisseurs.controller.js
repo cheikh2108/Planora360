@@ -16,11 +16,10 @@ exports.FournisseursController = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 const subscription_guard_1 = require("../../common/guards/subscription.guard");
-const client_1 = require("@prisma/client");
 const fournisseurs_service_1 = require("./fournisseurs.service");
 const create_fournisseur_dto_1 = require("./dto/create-fournisseur.dto");
 const update_fournisseur_dto_1 = require("./dto/update-fournisseur.dto");
-const client_2 = require("@prisma/client");
+const client_1 = require("@prisma/client");
 const write_roles_guard_1 = require("../../common/guards/write-roles.guard");
 const add_document_dto_1 = require("./dto/add-document.dto");
 let FournisseursController = class FournisseursController {
@@ -47,13 +46,13 @@ let FournisseursController = class FournisseursController {
         return this.fournisseursService.remove(id, req.user.organizationId);
     }
     suspend(id, req, motif) {
-        return this.fournisseursService.changeStatus(id, req.user.organizationId, client_2.StatusFournisseur.SUSPENDU, motif);
+        return this.fournisseursService.changeStatus(id, req.user.organizationId, client_1.StatusFournisseur.SUSPENDU, motif);
     }
     blacklist(id, req, motif) {
-        return this.fournisseursService.changeStatus(id, req.user.organizationId, client_2.StatusFournisseur.BLACKLISTE, motif);
+        return this.fournisseursService.changeStatus(id, req.user.organizationId, client_1.StatusFournisseur.BLACKLISTE, motif);
     }
     activate(id, req) {
-        return this.fournisseursService.changeStatus(id, req.user.organizationId, client_2.StatusFournisseur.ACTIF);
+        return this.fournisseursService.changeStatus(id, req.user.organizationId, client_1.StatusFournisseur.ACTIF);
     }
     getDocuments(id, req) {
         return this.fournisseursService.findOne(id, req.user.organizationId);
@@ -164,7 +163,6 @@ exports.FournisseursController = FournisseursController = __decorate([
     (0, common_1.Controller)('passation/fournisseurs'),
     (0, write_roles_guard_1.WriteRoles)({ roles: write_roles_guard_1.PASSATION_WRITERS, permission: 'plan.update' }),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, subscription_guard_1.SubscriptionGuard),
-    (0, subscription_guard_1.RequiresPlan)(client_1.SubscriptionPlan.ORGANISATION, client_1.SubscriptionPlan.ENTERPRISE),
     __metadata("design:paramtypes", [fournisseurs_service_1.FournisseursService])
 ], FournisseursController);
 //# sourceMappingURL=fournisseurs.controller.js.map

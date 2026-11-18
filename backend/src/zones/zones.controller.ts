@@ -9,14 +9,13 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { SubscriptionPlan } from '@prisma/client';
 import { ZonesService } from './zones.service';
 import { CreateZoneDto } from './dto/create-zone.dto';
 import { UpdateZoneDto } from './dto/update-zone.dto';
 import { CreateZoneConfigDto } from './dto/create-zone-config.dto';
 import { UpdateZoneConfigDto } from './dto/update-zone-config.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { SubscriptionGuard, RequiresPlan } from '../common/guards/subscription.guard';
+import { SubscriptionGuard } from '../common/guards/subscription.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { HttpCacheInterceptor } from '../common/cache/cache.interceptor';
 import { WriteRoles, ZONE_WRITERS } from '../common/guards/write-roles.guard';
@@ -24,7 +23,6 @@ import { WriteRoles, ZONE_WRITERS } from '../common/guards/write-roles.guard';
 @Controller('zones')
 @WriteRoles({ roles: ZONE_WRITERS, permission: 'plan.update' })
 @UseGuards(JwtAuthGuard, SubscriptionGuard)
-@RequiresPlan(SubscriptionPlan.ORGANISATION, SubscriptionPlan.ENTERPRISE)
 @UseInterceptors(HttpCacheInterceptor)
 export class ZonesController {
   constructor(private readonly zonesService: ZonesService) {}

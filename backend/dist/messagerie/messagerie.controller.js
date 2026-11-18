@@ -134,7 +134,6 @@ __decorate([
 exports.MessagerieController = MessagerieController = __decorate([
     (0, common_1.Controller)('messagerie'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, subscription_guard_1.SubscriptionGuard),
-    (0, subscription_guard_1.RequiresPlan)(client_1.SubscriptionPlan.EQUIPE, client_1.SubscriptionPlan.ORGANISATION, client_1.SubscriptionPlan.ENTERPRISE),
     __metadata("design:paramtypes", [messagerie_service_1.MessagerieService])
 ], MessagerieController);
 //# sourceMappingURL=messagerie.controller.js.map

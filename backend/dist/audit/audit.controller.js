@@ -18,7 +18,6 @@ const audit_service_1 = require("./audit.service");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../common/guards/roles.guard");
 const subscription_guard_1 = require("../common/guards/subscription.guard");
-const client_1 = require("@prisma/client");
 const roles_decorator_1 = require("../common/decorators/roles.decorator");
 const current_user_decorator_1 = require("../common/decorators/current-user.decorator");
 const audit_filters_dto_1 = require("./dto/audit-filters.dto");
@@ -33,7 +32,7 @@ let AuditController = class AuditController {
     findByActivity(id, user) {
         return this.auditService.findByEntity('Activity', id, user.organizationId);
     }
-    async searchWithFilters(filters, user) {
+    async searchWithFilters(filters) {
         const searchParams = {
             ...filters,
             organizationId: filters.organizationId || undefined,
@@ -42,7 +41,7 @@ let AuditController = class AuditController {
         };
         return this.auditService.findWithFilters(searchParams);
     }
-    async export(filters, user, res) {
+    async export(filters, res) {
         const searchParams = {
             ...filters,
             organizationId: filters.organizationId || undefined,
@@ -110,9 +109,8 @@ __decorate([
     (0, common_1.Get)('search'),
     (0, roles_decorator_1.Roles)('Super administrateur'),
     __param(0, (0, common_1.Query)()),
-    __param(1, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [audit_filters_dto_1.AuditFiltersDto, Object]),
+    __metadata("design:paramtypes", [audit_filters_dto_1.AuditFiltersDto]),
     __metadata("design:returntype", Promise)
 ], AuditController.prototype, "searchWithFilters", null);
 __decorate([
@@ -120,16 +118,14 @@ __decorate([
     (0, roles_decorator_1.Roles)('Super administrateur'),
     (0, common_1.HttpCode)(200),
     __param(0, (0, common_1.Query)()),
-    __param(1, (0, current_user_decorator_1.CurrentUser)()),
-    __param(2, (0, common_1.Res)()),
+    __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [audit_filters_dto_1.AuditFiltersDto, Object, Object]),
+    __metadata("design:paramtypes", [audit_filters_dto_1.AuditFiltersDto, Object]),
     __metadata("design:returntype", Promise)
 ], AuditController.prototype, "export", null);
 exports.AuditController = AuditController = __decorate([
     (0, common_1.Controller)('audit'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard, subscription_guard_1.SubscriptionGuard),
-    (0, subscription_guard_1.RequiresPlan)(client_1.SubscriptionPlan.ORGANISATION, client_1.SubscriptionPlan.ENTERPRISE),
     __metadata("design:paramtypes", [audit_service_1.AuditService])
 ], AuditController);
 //# sourceMappingURL=audit.controller.js.map

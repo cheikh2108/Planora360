@@ -11,8 +11,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { SubscriptionGuard, RequiresPlan } from '../../common/guards/subscription.guard';
-import { SubscriptionPlan } from '@prisma/client';
+import { SubscriptionGuard } from '../../common/guards/subscription.guard';
 import { DemandesService } from './demandes.service';
 import { ValidationDecision } from '@prisma/client';
 import { WriteRoles, PASSATION_WRITERS } from '../../common/guards/write-roles.guard';
@@ -22,7 +21,6 @@ import { UpdateDemandeDto } from './dto/update-demande.dto';
 @Controller('passation/demandes')
 @WriteRoles({ roles: PASSATION_WRITERS, permission: 'plan.update' })
 @UseGuards(JwtAuthGuard, SubscriptionGuard)
-@RequiresPlan(SubscriptionPlan.ORGANISATION, SubscriptionPlan.ENTERPRISE)
 export class DemandesController {
   constructor(private readonly demandesService: DemandesService) {}
 

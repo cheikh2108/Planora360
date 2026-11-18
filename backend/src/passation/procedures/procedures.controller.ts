@@ -11,8 +11,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { SubscriptionGuard, RequiresPlan } from '../../common/guards/subscription.guard';
-import { SubscriptionPlan } from '@prisma/client';
+import { SubscriptionGuard } from '../../common/guards/subscription.guard';
 import { ProceduresService } from './procedures.service';
 import { CreateProcedureDto } from './dto/create-procedure.dto';
 import { WriteRoles, PASSATION_WRITERS } from '../../common/guards/write-roles.guard';
@@ -21,7 +20,6 @@ import { UpdateProcedureDto } from './dto/update-procedure.dto';
 @Controller('passation/procedures')
 @WriteRoles({ roles: PASSATION_WRITERS, permission: 'plan.update' })
 @UseGuards(JwtAuthGuard, SubscriptionGuard)
-@RequiresPlan(SubscriptionPlan.ORGANISATION, SubscriptionPlan.ENTERPRISE)
 export class ProceduresController {
   constructor(private readonly proceduresService: ProceduresService) {}
 

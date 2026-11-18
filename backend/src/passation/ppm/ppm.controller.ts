@@ -11,8 +11,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { SubscriptionGuard, RequiresPlan } from '../../common/guards/subscription.guard';
-import { SubscriptionPlan } from '@prisma/client';
+import { SubscriptionGuard } from '../../common/guards/subscription.guard';
 import { PpmService } from './ppm.service';
 import { CreatePpmDto } from './dto/create-ppm.dto';
 import { UpdatePpmDto } from './dto/update-ppm.dto';
@@ -23,7 +22,6 @@ import { WriteRoles, PASSATION_WRITERS } from '../../common/guards/write-roles.g
 @Controller('passation/ppm')
 @WriteRoles({ roles: PASSATION_WRITERS, permission: 'plan.update' })
 @UseGuards(JwtAuthGuard, SubscriptionGuard)
-@RequiresPlan(SubscriptionPlan.ORGANISATION, SubscriptionPlan.ENTERPRISE)
 export class PpmController {
   constructor(private readonly ppmService: PpmService) {}
 

@@ -8,11 +8,13 @@ export type PayablePlan = (typeof PAYABLE_PLANS)[number];
 /**
  * Prix par défaut en francs CFA (XOF), montants entiers : DexPay attend des montants
  * sans décimales (10000 = 10 000 XOF). Grille tarifaire : l'annuel vaut 10 mois.
+ * Toutes les formules donnent accès à tous les modules ; elles se distinguent par le nombre
+ * d'utilisateurs et de plans d'action actifs (PLAN_LIMITS).
  * Chaque prix peut être remplacé par une variable PRICE_<FORMULE>_<CYCLE>
  * (ex. PRICE_PRO_MONTHLY=25000).
  */
 const DEFAULT_PRICES: Record<PayablePlan, Record<BillingCycle, number>> = {
-  INDIVIDUEL: { MONTHLY: 10_000, YEARLY: 100_000 },
+  INDIVIDUEL: { MONTHLY: 5_000, YEARLY: 50_000 },
   PRO: { MONTHLY: 25_000, YEARLY: 250_000 },
   EQUIPE: { MONTHLY: 50_000, YEARLY: 500_000 },
   ORGANISATION: { MONTHLY: 100_000, YEARLY: 1_000_000 },

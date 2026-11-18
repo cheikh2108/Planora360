@@ -19,7 +19,6 @@ const create_indicator_dto_1 = require("./dto/create-indicator.dto");
 const update_indicator_dto_1 = require("./dto/update-indicator.dto");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
 const subscription_guard_1 = require("../common/guards/subscription.guard");
-const client_1 = require("@prisma/client");
 const current_user_decorator_1 = require("../common/decorators/current-user.decorator");
 let IndicatorsController = class IndicatorsController {
     indicatorsService;
@@ -90,7 +89,6 @@ __decorate([
 exports.IndicatorsController = IndicatorsController = __decorate([
     (0, common_1.Controller)('indicators'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, subscription_guard_1.SubscriptionGuard),
-    (0, subscription_guard_1.RequiresPlan)(client_1.SubscriptionPlan.EQUIPE, client_1.SubscriptionPlan.ORGANISATION, client_1.SubscriptionPlan.ENTERPRISE),
     __metadata("design:paramtypes", [indicators_service_1.IndicatorsService])
 ], IndicatorsController);
 //# sourceMappingURL=indicators.controller.js.map

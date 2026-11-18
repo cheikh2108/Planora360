@@ -12,12 +12,11 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
-import { SubscriptionPlan } from '@prisma/client';
 import { ParticipantsService } from './participants.service';
 import { ImportParticipantsDto } from './dto/import-participants.dto';
 import { CreateParticipantDto } from './dto/create-participant.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { SubscriptionGuard, RequiresPlan } from '../common/guards/subscription.guard';
+import { SubscriptionGuard } from '../common/guards/subscription.guard';
 import { WriteRoles, FIELD_WRITERS } from '../common/guards/write-roles.guard';
 
 const upload = {
@@ -28,7 +27,6 @@ const upload = {
 @Controller('participants')
 @WriteRoles({ roles: FIELD_WRITERS, permission: 'activity.update' })
 @UseGuards(JwtAuthGuard, SubscriptionGuard)
-@RequiresPlan(SubscriptionPlan.PRO, SubscriptionPlan.EQUIPE, SubscriptionPlan.ORGANISATION, SubscriptionPlan.ENTERPRISE)
 export class ParticipantsController {
   constructor(private readonly participantsService: ParticipantsService) {}
 

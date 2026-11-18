@@ -16,7 +16,6 @@ exports.ProceduresController = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 const subscription_guard_1 = require("../../common/guards/subscription.guard");
-const client_1 = require("@prisma/client");
 const procedures_service_1 = require("./procedures.service");
 const create_procedure_dto_1 = require("./dto/create-procedure.dto");
 const write_roles_guard_1 = require("../../common/guards/write-roles.guard");
@@ -122,7 +121,6 @@ exports.ProceduresController = ProceduresController = __decorate([
     (0, common_1.Controller)('passation/procedures'),
     (0, write_roles_guard_1.WriteRoles)({ roles: write_roles_guard_1.PASSATION_WRITERS, permission: 'plan.update' }),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, subscription_guard_1.SubscriptionGuard),
-    (0, subscription_guard_1.RequiresPlan)(client_1.SubscriptionPlan.ORGANISATION, client_1.SubscriptionPlan.ENTERPRISE),
     __metadata("design:paramtypes", [procedures_service_1.ProceduresService])
 ], ProceduresController);
 //# sourceMappingURL=procedures.controller.js.map

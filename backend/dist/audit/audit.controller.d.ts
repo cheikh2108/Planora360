@@ -46,7 +46,7 @@ export declare class AuditController {
         createdAt: Date;
         userId: string;
     }[]>;
-    searchWithFilters(filters: AuditFiltersDto, user: any): Promise<{
+    searchWithFilters(filters: AuditFiltersDto): Promise<{
         entries: ({
             organization: {
                 id: string;
@@ -77,5 +77,5 @@ export declare class AuditController {
         page: number;
         limit: number;
     }>;
-    export(filters: AuditFiltersDto, user: any, res: Response): Promise<void>;
+    export(filters: AuditFiltersDto, res: Response): Promise<void>;
 }

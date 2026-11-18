@@ -43,8 +43,6 @@ describe('Notifications', () => {
 
   it('est accessible sur la formule Individuel et exclut ses propres actions et les autres organisations', async () => {
     const api = await ApiClient.loggedIn(ctx.http, tenant.users.coordinateur.email, tenant.users.coordinateur.password);
-    expect((await api.get('/api/audit')).status).toBe(403);
-
     const res = await api.get('/api/notifications');
     expect(res.status).toBe(200);
     const actions = res.body.entries.map((e: any) => e.action);

@@ -1,7 +1,6 @@
 import { Controller, Get, Post, Body, Param, UseGuards, Req } from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { SubscriptionGuard, RequiresPlan } from '../../common/guards/subscription.guard';
-import { SubscriptionPlan } from '@prisma/client';
+import { SubscriptionGuard } from '../../common/guards/subscription.guard';
 import { SoumissionConfidentialityGuard } from '../common/guards/soumission-confidentiality.guard';
 import { SoumissionsService } from './soumissions.service';
 import { WriteRoles, PASSATION_WRITERS } from '../../common/guards/write-roles.guard';
@@ -10,7 +9,6 @@ import { CreateSoumissionDto } from './dto/create-soumission.dto';
 @Controller('passation/procedures/:procedureId/soumissions')
 @WriteRoles({ roles: PASSATION_WRITERS, permission: 'plan.update' })
 @UseGuards(JwtAuthGuard, SubscriptionGuard)
-@RequiresPlan(SubscriptionPlan.ORGANISATION, SubscriptionPlan.ENTERPRISE)
 export class SoumissionsController {
   constructor(private readonly soumissionsService: SoumissionsService) {}
 

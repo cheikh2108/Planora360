@@ -11,7 +11,7 @@ const PLANS = {
   currency: 'XOF',
   onlinePayment: true,
   plans: [
-    { plan: 'INDIVIDUEL', label: 'Individuel', payable: true, currency: 'XOF', prices: { MONTHLY: 10000, YEARLY: 100000 }, limits: { maxUsers: 1, maxPlans: 3 } },
+    { plan: 'INDIVIDUEL', label: 'Individuel', payable: true, currency: 'XOF', prices: { MONTHLY: 5000, YEARLY: 50000 }, limits: { maxUsers: 1, maxPlans: 3 } },
     { plan: 'PRO', label: 'Pro', payable: true, currency: 'XOF', prices: { MONTHLY: 25000, YEARLY: 250000 }, limits: { maxUsers: 3, maxPlans: 10 } },
     { plan: 'EQUIPE', label: 'Équipe', payable: true, currency: 'XOF', prices: { MONTHLY: 50000, YEARLY: 500000 }, limits: { maxUsers: 10, maxPlans: 25 } },
     { plan: 'ORGANISATION', label: 'Organisation', payable: true, currency: 'XOF', prices: { MONTHLY: 100000, YEARLY: 1000000 }, limits: { maxUsers: 25, maxPlans: 50 } },

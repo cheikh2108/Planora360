@@ -14,7 +14,6 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ReportsController = void 0;
 const common_1 = require("@nestjs/common");
-const client_1 = require("@prisma/client");
 const reports_service_1 = require("./reports.service");
 const generate_report_dto_1 = require("./dto/generate-report.dto");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
@@ -60,7 +59,6 @@ exports.ReportsController = ReportsController = __decorate([
     (0, common_1.Controller)('reports'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard, subscription_guard_1.SubscriptionGuard),
     (0, roles_decorator_1.Roles)('Administrateur', 'Coordinateur', 'Responsable de projet', 'Responsable financier', 'Auditeur'),
-    (0, subscription_guard_1.RequiresPlan)(client_1.SubscriptionPlan.PRO, client_1.SubscriptionPlan.EQUIPE, client_1.SubscriptionPlan.ORGANISATION, client_1.SubscriptionPlan.ENTERPRISE),
     __metadata("design:paramtypes", [reports_service_1.ReportsService])
 ], ReportsController);
 //# sourceMappingURL=reports.controller.js.map

@@ -14,7 +14,6 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ZonesController = void 0;
 const common_1 = require("@nestjs/common");
-const client_1 = require("@prisma/client");
 const zones_service_1 = require("./zones.service");
 const create_zone_dto_1 = require("./dto/create-zone.dto");
 const update_zone_dto_1 = require("./dto/update-zone.dto");
@@ -152,7 +151,6 @@ exports.ZonesController = ZonesController = __decorate([
     (0, common_1.Controller)('zones'),
     (0, write_roles_guard_1.WriteRoles)({ roles: write_roles_guard_1.ZONE_WRITERS, permission: 'plan.update' }),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, subscription_guard_1.SubscriptionGuard),
-    (0, subscription_guard_1.RequiresPlan)(client_1.SubscriptionPlan.ORGANISATION, client_1.SubscriptionPlan.ENTERPRISE),
     (0, common_1.UseInterceptors)(cache_interceptor_1.HttpCacheInterceptor),
     __metadata("design:paramtypes", [zones_service_1.ZonesService])
 ], ZonesController);

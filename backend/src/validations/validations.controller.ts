@@ -4,13 +4,11 @@ import {
 import { ValidationsService } from './validations.service';
 import { TransitionDto } from './dto/transition.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { SubscriptionGuard, RequiresPlan } from '../common/guards/subscription.guard';
-import { SubscriptionPlan } from '@prisma/client';
+import { SubscriptionGuard } from '../common/guards/subscription.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 @Controller()
 @UseGuards(JwtAuthGuard, SubscriptionGuard)
-@RequiresPlan(SubscriptionPlan.EQUIPE, SubscriptionPlan.ORGANISATION, SubscriptionPlan.ENTERPRISE)
 export class ValidationsController {
   constructor(private validationsService: ValidationsService) {}
 

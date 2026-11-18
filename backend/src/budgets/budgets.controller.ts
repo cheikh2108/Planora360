@@ -7,14 +7,12 @@ import { CreateBudgetDto } from './dto/create-budget.dto';
 import { UpdateBudgetDto } from './dto/update-budget.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
-import { SubscriptionGuard, RequiresPlan } from '../common/guards/subscription.guard';
-import { SubscriptionPlan } from '@prisma/client';
+import { SubscriptionGuard } from '../common/guards/subscription.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 @Controller()
 @UseGuards(JwtAuthGuard, RolesGuard, SubscriptionGuard)
-@RequiresPlan(SubscriptionPlan.PRO, SubscriptionPlan.EQUIPE, SubscriptionPlan.ORGANISATION, SubscriptionPlan.ENTERPRISE)
 export class BudgetsController {
   constructor(private budgetsService: BudgetsService) {}
 

@@ -8,7 +8,7 @@ exports.addPeriod = addPeriod;
 const subscription_guard_1 = require("../common/guards/subscription.guard");
 exports.PAYABLE_PLANS = ['INDIVIDUEL', 'PRO', 'EQUIPE', 'ORGANISATION'];
 const DEFAULT_PRICES = {
-    INDIVIDUEL: { MONTHLY: 10_000, YEARLY: 100_000 },
+    INDIVIDUEL: { MONTHLY: 5_000, YEARLY: 50_000 },
     PRO: { MONTHLY: 25_000, YEARLY: 250_000 },
     EQUIPE: { MONTHLY: 50_000, YEARLY: 500_000 },
     ORGANISATION: { MONTHLY: 100_000, YEARLY: 1_000_000 },

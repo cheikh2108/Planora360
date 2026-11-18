@@ -16,7 +16,6 @@ exports.DocumentsController = void 0;
 const common_1 = require("@nestjs/common");
 const platform_express_1 = require("@nestjs/platform-express");
 const multer_1 = require("multer");
-const client_1 = require("@prisma/client");
 const documents_service_1 = require("./documents.service");
 const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
 const subscription_guard_1 = require("../common/guards/subscription.guard");
@@ -112,7 +111,6 @@ __decorate([
 exports.DocumentsController = DocumentsController = __decorate([
     (0, common_1.Controller)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, subscription_guard_1.SubscriptionGuard),
-    (0, subscription_guard_1.RequiresPlan)(client_1.SubscriptionPlan.EQUIPE, client_1.SubscriptionPlan.ORGANISATION, client_1.SubscriptionPlan.ENTERPRISE),
     __metadata("design:paramtypes", [documents_service_1.DocumentsService])
 ], DocumentsController);
 //# sourceMappingURL=documents.controller.js.map

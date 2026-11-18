@@ -3,15 +3,13 @@ import { Response } from 'express';
 import { AuditService } from './audit.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
-import { SubscriptionGuard, RequiresPlan } from '../common/guards/subscription.guard';
-import { SubscriptionPlan } from '@prisma/client';
+import { SubscriptionGuard } from '../common/guards/subscription.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { AuditFiltersDto } from './dto/audit-filters.dto';
 
 @Controller('audit')
 @UseGuards(JwtAuthGuard, RolesGuard, SubscriptionGuard)
-@RequiresPlan(SubscriptionPlan.ORGANISATION, SubscriptionPlan.ENTERPRISE)
 export class AuditController {
   constructor(private auditService: AuditService) {}
 
@@ -41,12 +39,8 @@ export class AuditController {
    */
   @Get('search')
   @Roles('Super administrateur')
-  async searchWithFilters(
-    @Query() filters: AuditFiltersDto,
-    @CurrentUser() user: any,
-  ) {
-    // Super Admin can search across all organizations
-    // Regular users are restricted to their organization
+  async searchWithFilters(@Query() filters: AuditFiltersDto) {
+    // Route réservée au super admin : toutes les organisations, sauf filtre explicite
     const searchParams = {
       ...filters,
       // Super admin : toutes les organisations, sauf filtre explicite
@@ -67,7 +61,6 @@ export class AuditController {
   @HttpCode(200)
   async export(
     @Query() filters: AuditFiltersDto,
-    @CurrentUser() user: any,
     @Res() res: Response,
   ) {
     const searchParams = {

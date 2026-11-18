@@ -16,9 +16,8 @@ exports.ContratsController = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 const subscription_guard_1 = require("../../common/guards/subscription.guard");
-const client_1 = require("@prisma/client");
 const contrats_service_1 = require("./contrats.service");
-const client_2 = require("@prisma/client");
+const client_1 = require("@prisma/client");
 const create_contrat_dto_1 = require("./dto/create-contrat.dto");
 const write_roles_guard_1 = require("../../common/guards/write-roles.guard");
 const update_contrat_dto_1 = require("./dto/update-contrat.dto");
@@ -40,13 +39,13 @@ let ContratsController = class ContratsController {
         return this.contratsService.update(id, req.user.organizationId, dto);
     }
     suspend(id, req, motif) {
-        return this.contratsService.changeStatus(id, req.user.organizationId, client_2.StatusContrat.SUSPENDU, motif);
+        return this.contratsService.changeStatus(id, req.user.organizationId, client_1.StatusContrat.SUSPENDU, motif);
     }
     terminate(id, req, motif) {
-        return this.contratsService.changeStatus(id, req.user.organizationId, client_2.StatusContrat.TERMINE, motif);
+        return this.contratsService.changeStatus(id, req.user.organizationId, client_1.StatusContrat.TERMINE, motif);
     }
     close(id, req) {
-        return this.contratsService.changeStatus(id, req.user.organizationId, client_2.StatusContrat.CLOTURE);
+        return this.contratsService.changeStatus(id, req.user.organizationId, client_1.StatusContrat.CLOTURE);
     }
     getDashboard(id, req) {
         return this.contratsService.getDashboard(id, req.user.organizationId);
@@ -124,7 +123,6 @@ exports.ContratsController = ContratsController = __decorate([
     (0, common_1.Controller)('passation/contrats'),
     (0, write_roles_guard_1.WriteRoles)({ roles: write_roles_guard_1.PASSATION_WRITERS, permission: 'plan.update' }),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, subscription_guard_1.SubscriptionGuard),
-    (0, subscription_guard_1.RequiresPlan)(client_1.SubscriptionPlan.ORGANISATION, client_1.SubscriptionPlan.ENTERPRISE),
     __metadata("design:paramtypes", [contrats_service_1.ContratsService])
 ], ContratsController);
 //# sourceMappingURL=contrats.controller.js.map

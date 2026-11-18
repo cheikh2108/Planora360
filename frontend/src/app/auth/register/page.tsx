@@ -21,10 +21,10 @@ const PLANS: {
   {
     id: 'INDIVIDUEL',
     label: 'Individuel',
-    description: 'Pour démarrer',
-    priceMonthly: '10 000 FCFA/mois',
-    priceYearly: '100 000 FCFA/an',
-    features: ['3 projets', '1 utilisateur', 'Tableau de bord personnel', 'Support e-mail'],
+    description: 'Tous les modules, pour une personne',
+    priceMonthly: '5 000 FCFA/mois',
+    priceYearly: '50 000 FCFA/an',
+    features: ['Tous les modules', '3 projets actifs', '1 utilisateur', 'Support e-mail'],
   },
 ];
 

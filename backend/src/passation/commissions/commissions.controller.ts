@@ -1,7 +1,6 @@
 import { Controller, Get, Post, Body, Param, Delete, UseGuards, Req } from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { SubscriptionGuard, RequiresPlan } from '../../common/guards/subscription.guard';
-import { SubscriptionPlan } from '@prisma/client';
+import { SubscriptionGuard } from '../../common/guards/subscription.guard';
 import { CommissionsService } from './commissions.service';
 import { WriteRoles, PASSATION_WRITERS } from '../../common/guards/write-roles.guard';
 import { CreateCommissionDto, AddMembreDto } from './dto/create-commission.dto';
@@ -9,7 +8,6 @@ import { CreateCommissionDto, AddMembreDto } from './dto/create-commission.dto';
 @Controller('passation/commissions')
 @WriteRoles({ roles: PASSATION_WRITERS, permission: 'plan.update' })
 @UseGuards(JwtAuthGuard, SubscriptionGuard)
-@RequiresPlan(SubscriptionPlan.ORGANISATION, SubscriptionPlan.ENTERPRISE)
 export class CommissionsController {
   constructor(private readonly commissionsService: CommissionsService) {}
 
