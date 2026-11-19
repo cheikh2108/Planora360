@@ -20,6 +20,10 @@ import {
 const PLAN_META: Record<SubscriptionPlan, {
   label: string; color: string; bg: string; dot: string;
 }> = {
+  SOLO: {
+    label: 'Solo',
+    color: 'text-teal-700', bg: 'bg-teal-100', dot: 'bg-teal-500',
+  },
   INDIVIDUEL: {
     label: 'Individuel',
     color: 'text-emerald-700', bg: 'bg-emerald-100', dot: 'bg-emerald-500',

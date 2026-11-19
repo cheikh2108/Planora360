@@ -7,7 +7,7 @@ import api, { authApi } from '@/lib/api';
 import { Loader2, CheckCircle2, ChevronLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-type Plan = 'INDIVIDUEL' | 'PRO' | 'EQUIPE' | 'ORGANISATION' | 'ENTERPRISE';
+type Plan = 'SOLO' | 'INDIVIDUEL' | 'PRO' | 'EQUIPE' | 'ORGANISATION' | 'ENTERPRISE';
 type BillingCycle = 'MONTHLY' | 'YEARLY';
 
 const PLANS: {
@@ -19,19 +19,30 @@ const PLANS: {
   features: string[];
 }[] = [
   {
-    id: 'INDIVIDUEL',
-    label: 'Individuel',
-    description: 'Tous les modules, pour une personne',
+    id: 'SOLO',
+    label: 'Solo',
+    description: 'Tous les modules, pour démarrer seul',
     priceMonthly: '5 000 FCFA/mois',
     priceYearly: '50 000 FCFA/an',
     features: ['Tous les modules', '3 projets actifs', '1 utilisateur', 'Support e-mail'],
   },
+  {
+    id: 'INDIVIDUEL',
+    label: 'Individuel',
+    description: 'Tous les modules, plus de projets',
+    priceMonthly: '10 000 FCFA/mois',
+    priceYearly: '100 000 FCFA/an',
+    features: ['Tous les modules', '10 projets actifs', '1 utilisateur', 'Support e-mail'],
+  },
 ];
+
+/** Formules achetées directement en ligne à l'inscription. */
+const SELF_SERVICE: Plan[] = ['SOLO', 'INDIVIDUEL'];
 
 function RegisterForm() {
   const searchParams = useSearchParams();
   const [step, setStep] = useState<1 | 2>(1);
-  const [plan, setPlan] = useState<Plan>('INDIVIDUEL');
+  const [plan, setPlan] = useState<Plan>('SOLO');
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('MONTHLY');
   const [orgName, setOrgName] = useState('');
   const [brandColor, setBrandColor] = useState('#2563eb');
@@ -247,7 +258,7 @@ function RegisterForm() {
                       )}
                     >
                       Annuel
-                      {plan === 'INDIVIDUEL' && (
+                      {SELF_SERVICE.includes(plan) && (
                         <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full">
                           2 MOIS OFFERTS
                         </span>
@@ -337,7 +348,7 @@ function RegisterForm() {
                   </button>
                   <h2 className="text-xl font-bold text-slate-900">Responsable du compte</h2>
                   <p className="text-sm text-slate-500 mt-1">
-                    {plan === 'INDIVIDUEL'
+                    {SELF_SERVICE.includes(plan)
                       ? `Vous allez payer ${displayPrice ?? ''} sur la page sécurisée DexPay. Dès le paiement confirmé, vos identifiants vous sont envoyés par e-mail.`
                       : 'Notre équipe commerciale vous contactera sous 48h pour vous proposer une offre personnalisée.'}
                   </p>
@@ -448,15 +459,15 @@ function RegisterForm() {
                 >
                   {loading && <Loader2 size={15} className="animate-spin" />}
                   {loading
-                    ? plan === 'INDIVIDUEL' ? 'Redirection vers le paiement...' : 'Envoi de la demande...'
+                    ? SELF_SERVICE.includes(plan) ? 'Redirection vers le paiement...' : 'Envoi de la demande...'
                     : successMessage
                       ? 'Demande envoyée ✓'
-                      : plan === 'INDIVIDUEL'
+                      : SELF_SERVICE.includes(plan)
                         ? `Payer ${displayPrice ?? ''}`.trim()
                         : 'Demander un devis'}
                 </button>
 
-                {plan === 'INDIVIDUEL' && !successMessage && (
+                {SELF_SERVICE.includes(plan) && !successMessage && (
                   <p className="text-[10px] text-center text-slate-500">
                     Paiement sécurisé avec DexPay. Accès immédiat après le paiement, sans engagement.
                   </p>

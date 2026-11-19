@@ -337,7 +337,7 @@ describe('Inscription payée et échéance des abonnements', () => {
   it('inscription → paiement → compte activé, identifiants envoyés, connexion avec changement de mot de passe', async () => {
     const email = `signup.${uniq()}@planora.test`;
     const organizationName = `Cabinet ${uniq()}`;
-    const res = await register({ organizationName, email, billingCycle: 'MONTHLY' });
+    const res = await register({ organizationName, email, subscriptionPlan: 'SOLO', billingCycle: 'MONTHLY' });
     expect(res.status).toBe(201);
     expect(res.body).toMatchObject({ status: 'PENDING_PAYMENT', amount: 5000, currency: 'XOF' });
     expect(res.body.checkoutUrl).toBe(`https://pay.example.test/${res.body.reference}`);
@@ -384,15 +384,16 @@ describe('Inscription payée et échéance des abonnements', () => {
 
   it('paiement échoué : on peut réessayer, et une nouvelle inscription avec le même e-mail reprend la demande', async () => {
     const email = `retry.${uniq()}@planora.test`;
-    const res = await register({ organizationName: `Retry ${uniq()}`, email, billingCycle: 'YEARLY' });
-    expect(res.body.amount).toBe(50000);
+    // Individuel annuel : 100 000 FCFA
+    const res = await register({ organizationName: `Retry ${uniq()}`, email, subscriptionPlan: 'INDIVIDUEL', billingCycle: 'YEARLY' });
+    expect(res.body.amount).toBe(100000);
     await sendWebhook(ctx.http, { event: 'checkout.failed', reference: res.body.reference });
     expect((await request(ctx.http).get(`/api/auth/register/payment/${res.body.reference}`)).body.status).toBe('failed');
 
     const retry = await request(ctx.http).post(`/api/auth/register/payment/${res.body.reference}/retry`);
     expect(retry.status).toBe(200);
     expect(retry.body.reference).not.toBe(res.body.reference);
-    expect(stub.sessions.get(retry.body.reference)!.amount).toBe(50000);
+    expect(stub.sessions.get(retry.body.reference)!.amount).toBe(100000);
 
     // Même e-mail, autre nom : la demande non payée est reprise (pas de 409)
     const again = await register({ organizationName: `Retry renommé ${uniq()}`, email });
@@ -400,6 +401,18 @@ describe('Inscription payée et échéance des abonnements', () => {
     expect(again.body.organizationId).toBe(res.body.organizationId);
     expect(await ctx.prisma.user.count({ where: { email } })).toBe(1);
     expect(welcome).not.toHaveBeenCalled();
+  });
+
+  it('la formule Individuel s’achète aussi à l’inscription, à 10 000 FCFA, et les formules d’équipe restent sur devis', async () => {
+    const organizationName = `Indiv ${uniq()}`;
+    const res = await register({ organizationName, email: `indiv.${uniq()}@planora.test`, subscriptionPlan: 'INDIVIDUEL' });
+    expect(res.status).toBe(201);
+    expect(res.body.amount).toBe(10000);
+    const org = await ctx.prisma.organization.findFirstOrThrow({ where: { name: organizationName } });
+    expect(org.subscriptionPlan).toBe('INDIVIDUEL');
+
+    const pro = await register({ organizationName: `Pro ${uniq()}`, email: `pro.${uniq()}@planora.test`, subscriptionPlan: 'PRO' });
+    expect(pro.body.requiresQuote).toBe(true);
   });
 
   it('refuse l’inscription avec l’e-mail d’un compte existant, sans rien créer', async () => {
@@ -436,7 +449,7 @@ describe('Inscription payée et échéance des abonnements', () => {
 
     const checkout = await admin.post('/api/billing/checkout', { plan: 'INDIVIDUEL', billingCycle: 'MONTHLY' });
     expect(checkout.status).toBe(201);
-    await sendWebhook(ctx.http, { event: 'checkout.completed', reference: checkout.body.reference, amount: 5000, currency: 'XOF' });
+    await sendWebhook(ctx.http, { event: 'checkout.completed', reference: checkout.body.reference, amount: 10000, currency: 'XOF' });
 
     expect((await admin.get('/api/action-plans')).status).toBe(200);
     const org = await ctx.prisma.organization.findUniqueOrThrow({ where: { id: t.org.id } });

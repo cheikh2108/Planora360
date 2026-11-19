@@ -452,6 +452,7 @@ export class NotificationsService {
     const frontendUrl = this.frontendUrl;
 
     const planLabels = {
+      SOLO: 'Solo',
       INDIVIDUEL: 'Individuel',
       PRO: 'Pro',
       EQUIPE: 'Équipe',

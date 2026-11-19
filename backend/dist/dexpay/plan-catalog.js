@@ -1,19 +1,22 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PLAN_CURRENCY = exports.PLAN_LABELS = exports.PAYABLE_PLANS = void 0;
+exports.PLAN_CURRENCY = exports.PLAN_LABELS = exports.SELF_SERVICE_PLANS = exports.PAYABLE_PLANS = void 0;
 exports.isPayablePlan = isPayablePlan;
 exports.planPrice = planPrice;
 exports.planCatalog = planCatalog;
 exports.addPeriod = addPeriod;
 const subscription_guard_1 = require("../common/guards/subscription.guard");
-exports.PAYABLE_PLANS = ['INDIVIDUEL', 'PRO', 'EQUIPE', 'ORGANISATION'];
+exports.PAYABLE_PLANS = ['SOLO', 'INDIVIDUEL', 'PRO', 'EQUIPE', 'ORGANISATION'];
+exports.SELF_SERVICE_PLANS = ['SOLO', 'INDIVIDUEL'];
 const DEFAULT_PRICES = {
-    INDIVIDUEL: { MONTHLY: 5_000, YEARLY: 50_000 },
+    SOLO: { MONTHLY: 5_000, YEARLY: 50_000 },
+    INDIVIDUEL: { MONTHLY: 10_000, YEARLY: 100_000 },
     PRO: { MONTHLY: 25_000, YEARLY: 250_000 },
     EQUIPE: { MONTHLY: 50_000, YEARLY: 500_000 },
     ORGANISATION: { MONTHLY: 100_000, YEARLY: 1_000_000 },
 };
 exports.PLAN_LABELS = {
+    SOLO: 'Solo',
     INDIVIDUEL: 'Individuel',
     PRO: 'Pro',
     EQUIPE: 'Équipe',

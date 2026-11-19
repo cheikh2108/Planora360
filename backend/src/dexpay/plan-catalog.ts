@@ -2,7 +2,9 @@ import { BillingCycle, SubscriptionPlan } from '@prisma/client';
 import { PLAN_LIMITS } from '../common/guards/subscription.guard';
 
 /** Formules payables en ligne (Enterprise : sur devis). */
-export const PAYABLE_PLANS = ['INDIVIDUEL', 'PRO', 'EQUIPE', 'ORGANISATION'] as const;
+export const PAYABLE_PLANS = ['SOLO', 'INDIVIDUEL', 'PRO', 'EQUIPE', 'ORGANISATION'] as const;
+/** Formules achetables directement à l'inscription (les autres passent par un devis). */
+export const SELF_SERVICE_PLANS = ['SOLO', 'INDIVIDUEL'] as const;
 export type PayablePlan = (typeof PAYABLE_PLANS)[number];
 
 /**
@@ -14,13 +16,15 @@ export type PayablePlan = (typeof PAYABLE_PLANS)[number];
  * (ex. PRICE_PRO_MONTHLY=25000).
  */
 const DEFAULT_PRICES: Record<PayablePlan, Record<BillingCycle, number>> = {
-  INDIVIDUEL: { MONTHLY: 5_000, YEARLY: 50_000 },
+  SOLO: { MONTHLY: 5_000, YEARLY: 50_000 },
+  INDIVIDUEL: { MONTHLY: 10_000, YEARLY: 100_000 },
   PRO: { MONTHLY: 25_000, YEARLY: 250_000 },
   EQUIPE: { MONTHLY: 50_000, YEARLY: 500_000 },
   ORGANISATION: { MONTHLY: 100_000, YEARLY: 1_000_000 },
 };
 
 export const PLAN_LABELS: Record<SubscriptionPlan, string> = {
+  SOLO: 'Solo',
   INDIVIDUEL: 'Individuel',
   PRO: 'Pro',
   EQUIPE: 'Équipe',

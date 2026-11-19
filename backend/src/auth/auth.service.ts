@@ -11,6 +11,7 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../common/prisma/prisma.service';
 import { PostHogService } from '../analytics/posthog.service';
 import { BillingService } from '../dexpay/billing.service';
+import { PayablePlan, SELF_SERVICE_PLANS } from '../dexpay/plan-catalog';
 import { NotificationsService } from '../notifications/notifications.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterOrganizationDto } from './dto/register-organization.dto';
@@ -63,8 +64,8 @@ export class AuthService {
     const plan = dto.subscriptionPlan ?? 'INDIVIDUEL';
     const billingCycle = dto.billingCycle ?? 'MONTHLY';
 
-    // Seul INDIVIDUEL s'achète en ligne à l'inscription, autres plans → devis
-    if (plan !== 'INDIVIDUEL') {
+    // Solo et Individuel s'achètent en ligne à l'inscription, autres plans → devis
+    if (!(SELF_SERVICE_PLANS as readonly string[]).includes(plan)) {
       return {
         requiresQuote: true,
         plan,
@@ -146,7 +147,7 @@ export class AuthService {
       this.posthog.trackRegistration(user.id, organization.id, plan);
     }
 
-    const checkout = await this.billing.startCheckout(organizationId, userId, plan, billingCycle, {
+    const checkout = await this.billing.startCheckout(organizationId, userId, plan as PayablePlan, billingCycle, {
       registration: true,
     });
 

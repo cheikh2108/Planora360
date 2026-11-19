@@ -9,7 +9,8 @@ export const PLAN_KEY = 'requiredPlan';
 export const RequiresPlan = (...plans: SubscriptionPlan[]) => SetMetadata(PLAN_KEY, plans);
 
 const PLAN_RANK: Record<SubscriptionPlan, number> = {
-  INDIVIDUEL: 0,
+  SOLO: 0,
+  INDIVIDUEL: 1,
   PRO: 1,
   EQUIPE: 2,
   ORGANISATION: 3,
@@ -17,7 +18,8 @@ const PLAN_RANK: Record<SubscriptionPlan, number> = {
 };
 
 const PLAN_LIMITS: Record<SubscriptionPlan, { maxUsers: number; maxPlans: number }> = {
-  INDIVIDUEL: { maxUsers: 1, maxPlans: 3 },
+  SOLO: { maxUsers: 1, maxPlans: 3 },
+  INDIVIDUEL: { maxUsers: 1, maxPlans: 10 },
   PRO: { maxUsers: 3, maxPlans: 10 },
   EQUIPE: { maxUsers: 10, maxPlans: 25 },
   ORGANISATION: { maxUsers: 25, maxPlans: 50 },
@@ -47,6 +49,7 @@ export class SubscriptionGuard implements CanActivate {
 
     if (!hasAccess) {
       const planNames = {
+        SOLO: 'Solo',
         INDIVIDUEL: 'Individuel',
         PRO: 'Pro',
         EQUIPE: 'Équipe',

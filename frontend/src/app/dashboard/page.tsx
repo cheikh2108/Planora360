@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { dashboardApi, activitiesApi, plansApi } from '@/lib/api';
 import type { DashboardOverview, Activity, ActionPlan } from '@/lib/types';
@@ -203,6 +203,16 @@ function CriticalActivities({ activities }: { activities: Activity[] }) {
 
 /* ─── Risques et blocages ────────────────────────────────────────── */
 
+/* Salutation + date du jour : vide au rendu serveur, calculée dans le navigateur (chaîne stable). */
+const subscribeNever = () => () => {};
+const serverTodayLabel = () => '';
+function browserTodayLabel() {
+  const now = new Date();
+  const hour = now.getHours();
+  const greeting = hour < 12 ? 'Bonjour' : hour < 18 ? 'Bon après-midi' : 'Bonsoir';
+  return `${greeting}|${now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}`;
+}
+
 function RisksAndBlockers({ activities }: { activities: Activity[] }) {
   // Guard défensif absolu
   const safeActivities = Array.isArray(activities) ? activities : [];
@@ -398,8 +408,9 @@ export default function DashboardPage() {
   const filteredActivities = useFilteredActivities(allActivities, filters);
 
   const firstName = user?.firstName ?? '';
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Bonjour' : hour < 18 ? 'Bon après-midi' : 'Bonsoir';
+  // Salutation et date calculées dans le navigateur : la page est pré-rendue au build, une valeur
+  // calculée au rendu serveur figerait la date du build (et provoquerait une erreur d'hydratation).
+  const todayLabel = useSyncExternalStore(subscribeNever, browserTodayLabel, serverTodayLabel);
 
   const byStatus = (overview?.byStatus ?? {}) as Partial<Record<string, number>>;
   const s = (k: string) => byStatus[k] ?? 0;
@@ -415,7 +426,7 @@ export default function DashboardPage() {
     <div className="flex flex-col flex-1 min-h-0 overflow-auto">
       <Header
         title="Tableau de bord"
-        subtitle={`${greeting}, ${firstName} — ${new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}`}
+        subtitle={todayLabel ? `${todayLabel.split('|')[0]}, ${firstName} — ${todayLabel.split('|')[1]}` : ' '}
       />
 
       <main className="flex-1 px-4 md:px-6 py-6 space-y-6">

@@ -37,16 +37,31 @@ interface PlanInfo {
 
 const PLANS: PlanInfo[] = [
   {
-    key: 'INDIVIDUEL',
-    label: 'Individuel',
-    tagline: 'Tous les modules, pour une personne',
-    color: 'bg-emerald-50 border-emerald-200',
-    ring: 'ring-emerald-300',
+    key: 'SOLO',
+    label: 'Solo',
+    tagline: 'Tous les modules, pour démarrer seul',
+    color: 'bg-teal-50 border-teal-200',
+    ring: 'ring-teal-300',
     limits: { plans: '3 plans actifs', users: '1 utilisateur' },
     features: [
       { label: 'Tous les modules', included: true },
       { label: 'Activités, budget, indicateurs', included: true },
       { label: 'Documents & messagerie', included: true },
+      { label: 'Module Passation', included: true },
+      { label: 'Audit & rapports', included: true },
+      { label: 'Ajout d’autres membres', included: false },
+    ],
+  },
+  {
+    key: 'INDIVIDUEL',
+    label: 'Individuel',
+    tagline: 'Tous les modules, plus de projets',
+    color: 'bg-emerald-50 border-emerald-200',
+    ring: 'ring-emerald-300',
+    limits: { plans: '10 plans actifs', users: '1 utilisateur' },
+    features: [
+      { label: 'Tous les modules', included: true },
+      { label: '10 plans d’action actifs', included: true },
       { label: 'Module Passation', included: true },
       { label: 'Audit & rapports', included: true },
       { label: 'Ajout d’autres membres', included: false },
@@ -113,7 +128,7 @@ const PLANS: PlanInfo[] = [
   },
 ];
 
-const PLAN_ORDER: SubscriptionPlan[] = ['INDIVIDUEL', 'PRO', 'EQUIPE', 'ORGANISATION', 'ENTERPRISE'];
+const PLAN_ORDER: SubscriptionPlan[] = ['SOLO', 'INDIVIDUEL', 'PRO', 'EQUIPE', 'ORGANISATION', 'ENTERPRISE'];
 
 /* ─── SubscriptionSection ────────────────────────────────────── */
 
@@ -162,6 +177,7 @@ function SubscriptionSection({ currentPlan }: { currentPlan: SubscriptionPlan })
   const closeModal = () => { if (!checkout.isPending) setTargetPlan(null); };
 
   const ACCENT: Record<SubscriptionPlan, { from: string; to: string; text: string; dot: string }> = {
+    SOLO:          { from: 'from-teal-800',    to: 'to-teal-700',    text: 'text-teal-300',    dot: 'bg-teal-400' },
     INDIVIDUEL:    { from: 'from-emerald-800', to: 'to-emerald-700', text: 'text-emerald-300', dot: 'bg-emerald-400' },
     PRO:           { from: 'from-[#0f1e38]',   to: 'to-[#1a3a6e]',   text: 'text-blue-300',    dot: 'bg-blue-400' },
     EQUIPE:        { from: 'from-purple-800',  to: 'to-purple-700',  text: 'text-purple-300',  dot: 'bg-purple-400' },
@@ -254,6 +270,7 @@ function SubscriptionSection({ currentPlan }: { currentPlan: SubscriptionPlan })
                 f => f.included && !current.features.find(cf => cf.label === f.label && cf.included)
               );
               const CARD_STYLES: Record<SubscriptionPlan, { border: string; icon: string }> = {
+                SOLO:          { border: 'border-teal-200 bg-teal-50/40',       icon: 'text-teal-600' },
                 INDIVIDUEL:    { border: 'border-emerald-200 bg-emerald-50/40', icon: 'text-emerald-600' },
                 PRO:           { border: 'border-[#2563eb]/40 bg-blue-50/50',   icon: 'text-[#2563eb]' },
                 EQUIPE:        { border: 'border-purple-200 bg-purple-50/40',   icon: 'text-purple-600' },

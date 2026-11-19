@@ -32,7 +32,7 @@ test.describe('Inscription payée (visiteur)', () => {
       r.fulfill({ json: { reference: 'PLN-SIGNUP-1', status: 'completed', plan: 'INDIVIDUEL', amount: 50000, currency: 'XOF', billingCycle: 'YEARLY' } }),
     );
 
-    await page.goto('/auth/register?plan=individuel');
+    await page.goto('/auth/register?plan=solo');
     await page.getByPlaceholder("Ex: Ministère de l'Agriculture").fill('Cabinet Ndiaye');
     await page.getByRole('button', { name: /Annuel/ }).click();
     await page.getByRole('button', { name: 'Continuer' }).click();
@@ -44,7 +44,7 @@ test.describe('Inscription payée (visiteur)', () => {
     await page.getByRole('button', { name: 'Payer 50 000 FCFA/an' }).click();
 
     await expect(page).toHaveURL(/\/payment\/success\?ref=PLN-SIGNUP-1&signup=1/);
-    expect(sent).toMatchObject({ organizationName: 'Cabinet Ndiaye', subscriptionPlan: 'INDIVIDUEL', billingCycle: 'YEARLY', email: 'awa@cabinet.test' });
+    expect(sent).toMatchObject({ organizationName: 'Cabinet Ndiaye', subscriptionPlan: 'SOLO', billingCycle: 'YEARLY', email: 'awa@cabinet.test' });
     await expect(page.getByRole('heading', { name: 'Votre compte est prêt' })).toBeVisible();
     await expect(page.getByText(/identifiants de connexion viennent/)).toBeVisible();
     await expect(page.getByRole('link', { name: 'Se connecter' })).toHaveAttribute('href', '/auth/login');

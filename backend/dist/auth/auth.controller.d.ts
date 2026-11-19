@@ -24,7 +24,7 @@ export declare class AuthController {
     }>;
     register(dto: RegisterOrganizationDto): Promise<{
         requiresQuote: boolean;
-        plan: "PRO" | "EQUIPE" | "ORGANISATION" | "ENTERPRISE";
+        plan: import(".prisma/client").$Enums.SubscriptionPlan;
         message: string;
         success?: undefined;
         organizationId?: undefined;

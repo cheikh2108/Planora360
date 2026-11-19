@@ -16,7 +16,7 @@ export declare class AuthService {
     constructor(prisma: PrismaService, jwtService: JwtService, config: ConfigService, posthog: PostHogService, billing: BillingService, notifications: NotificationsService);
     register(dto: RegisterOrganizationDto): Promise<{
         requiresQuote: boolean;
-        plan: "PRO" | "EQUIPE" | "ORGANISATION" | "ENTERPRISE";
+        plan: import(".prisma/client").$Enums.SubscriptionPlan;
         message: string;
         success?: undefined;
         organizationId?: undefined;

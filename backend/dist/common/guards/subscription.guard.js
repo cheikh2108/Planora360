@@ -16,14 +16,16 @@ exports.PLAN_KEY = 'requiredPlan';
 const RequiresPlan = (...plans) => (0, common_1.SetMetadata)(exports.PLAN_KEY, plans);
 exports.RequiresPlan = RequiresPlan;
 const PLAN_RANK = {
-    INDIVIDUEL: 0,
+    SOLO: 0,
+    INDIVIDUEL: 1,
     PRO: 1,
     EQUIPE: 2,
     ORGANISATION: 3,
     ENTERPRISE: 4,
 };
 const PLAN_LIMITS = {
-    INDIVIDUEL: { maxUsers: 1, maxPlans: 3 },
+    SOLO: { maxUsers: 1, maxPlans: 3 },
+    INDIVIDUEL: { maxUsers: 1, maxPlans: 10 },
     PRO: { maxUsers: 3, maxPlans: 10 },
     EQUIPE: { maxUsers: 10, maxPlans: 25 },
     ORGANISATION: { maxUsers: 25, maxPlans: 50 },
@@ -50,6 +52,7 @@ let SubscriptionGuard = class SubscriptionGuard {
         const hasAccess = requiredPlans.some((p) => orgRank >= PLAN_RANK[p]);
         if (!hasAccess) {
             const planNames = {
+                SOLO: 'Solo',
                 INDIVIDUEL: 'Individuel',
                 PRO: 'Pro',
                 EQUIPE: 'Équipe',

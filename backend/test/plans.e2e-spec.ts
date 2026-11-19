@@ -13,17 +13,18 @@ describe('Formules — accès aux modules et limites', () => {
 
   beforeAll(async () => {
     ctx = await createTestApp();
-    tenant = await createTenant(ctx.prisma, 'plan-indiv', { plan: 'INDIVIDUEL' });
+    tenant = await createTenant(ctx.prisma, 'plan-solo', { plan: 'SOLO' });
     admin = await ApiClient.loggedIn(ctx.http, tenant.users.admin.email, tenant.users.admin.password);
   });
   afterAll(() => closeTestApp(ctx));
 
-  it('la formule Individuel coûte 5 000 FCFA par mois et 50 000 par an', async () => {
+  it('Solo : 5 000 FCFA/mois, 3 projets ; Individuel : 10 000 FCFA/mois, 10 projets ; 1 utilisateur chacun', async () => {
     const res = await admin.get('/api/billing/plans');
     expect(res.status).toBe(200);
+    const solo = res.body.plans.find((p: any) => p.plan === 'SOLO');
+    expect(solo).toMatchObject({ label: 'Solo', payable: true, prices: { MONTHLY: 5000, YEARLY: 50000 }, limits: { maxUsers: 1, maxPlans: 3 } });
     const indiv = res.body.plans.find((p: any) => p.plan === 'INDIVIDUEL');
-    expect(indiv.prices).toEqual({ MONTHLY: 5000, YEARLY: 50000 });
-    expect(indiv.limits).toEqual({ maxUsers: 1, maxPlans: 3 });
+    expect(indiv).toMatchObject({ prices: { MONTHLY: 10000, YEARLY: 100000 }, limits: { maxUsers: 1, maxPlans: 10 } });
   });
 
   it.each([
@@ -35,12 +36,12 @@ describe('Formules — accès aux modules et limites', () => {
     '/api/passation/fournisseurs',
     '/api/passation/ppm',
     '/api/audit',
-  ])('la formule Individuel accède à %s', async (path) => {
+  ])('la formule Solo accède à %s', async (path) => {
     const res = await admin.get(path);
     expect({ path, status: res.status }).toEqual({ path, status: 200 });
   });
 
-  it('la formule Individuel reste limitée à 3 plans d’action actifs', async () => {
+  it('la formule Solo reste limitée à 3 plans d’action actifs', async () => {
     const coord = await ApiClient.loggedIn(ctx.http, tenant.users.coordinateur.email, tenant.users.coordinateur.password);
     const statuses: number[] = [];
     for (let i = 1; i <= 4; i++) {

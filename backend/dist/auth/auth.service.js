@@ -49,6 +49,7 @@ const config_1 = require("@nestjs/config");
 const prisma_service_1 = require("../common/prisma/prisma.service");
 const posthog_service_1 = require("../analytics/posthog.service");
 const billing_service_1 = require("../dexpay/billing.service");
+const plan_catalog_1 = require("../dexpay/plan-catalog");
 const notifications_service_1 = require("../notifications/notifications.service");
 const bcrypt = __importStar(require("bcryptjs"));
 const speakeasy = __importStar(require("speakeasy"));
@@ -75,7 +76,7 @@ let AuthService = class AuthService {
     async register(dto) {
         const plan = dto.subscriptionPlan ?? 'INDIVIDUEL';
         const billingCycle = dto.billingCycle ?? 'MONTHLY';
-        if (plan !== 'INDIVIDUEL') {
+        if (!plan_catalog_1.SELF_SERVICE_PLANS.includes(plan)) {
             return {
                 requiresQuote: true,
                 plan,

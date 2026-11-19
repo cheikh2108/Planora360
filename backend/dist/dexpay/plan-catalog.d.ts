@@ -1,5 +1,6 @@
 import { BillingCycle, SubscriptionPlan } from '@prisma/client';
-export declare const PAYABLE_PLANS: readonly ["INDIVIDUEL", "PRO", "EQUIPE", "ORGANISATION"];
+export declare const PAYABLE_PLANS: readonly ["SOLO", "INDIVIDUEL", "PRO", "EQUIPE", "ORGANISATION"];
+export declare const SELF_SERVICE_PLANS: readonly ["SOLO", "INDIVIDUEL"];
 export type PayablePlan = (typeof PAYABLE_PLANS)[number];
 export declare const PLAN_LABELS: Record<SubscriptionPlan, string>;
 export declare const PLAN_CURRENCY = "XOF";

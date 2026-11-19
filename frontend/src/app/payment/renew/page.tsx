@@ -9,7 +9,7 @@ import { useAuth } from '@/lib/auth-context';
 import { cn } from '@/lib/utils';
 
 const PLAN_LABELS: Record<string, string> = {
-  INDIVIDUEL: 'Individuel', PRO: 'Pro', EQUIPE: 'Équipe', ORGANISATION: 'Organisation', ENTERPRISE: 'Enterprise',
+  SOLO: 'Solo', INDIVIDUEL: 'Individuel', PRO: 'Pro', EQUIPE: 'Équipe', ORGANISATION: 'Organisation', ENTERPRISE: 'Enterprise',
 };
 
 function formatDate(value: string | null | undefined) {

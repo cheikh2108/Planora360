@@ -10,7 +10,7 @@ import { RetrySignupButton } from '@/components/payment/retry-signup-button';
 import { useAuth } from '@/lib/auth-context';
 
 const PLAN_LABELS: Record<string, string> = {
-  INDIVIDUEL: 'Individuel', PRO: 'Pro', EQUIPE: 'Équipe', ORGANISATION: 'Organisation', ENTERPRISE: 'Enterprise',
+  SOLO: 'Solo', INDIVIDUEL: 'Individuel', PRO: 'Pro', EQUIPE: 'Équipe', ORGANISATION: 'Organisation', ENTERPRISE: 'Enterprise',
 };
 /** Vérification toutes les 3 s pendant 2 min au plus (le webhook DexPay arrive en général en quelques secondes). */
 const POLL_MS = 3000;

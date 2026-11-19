@@ -17,18 +17,25 @@ import {
   Clock, CheckCheck, XCircle,
 } from 'lucide-react';
 
-const PLAN_ORDER: SubscriptionPlan[] = ['INDIVIDUEL', 'PRO', 'EQUIPE', 'ORGANISATION', 'ENTERPRISE'];
+const PLAN_ORDER: SubscriptionPlan[] = ['SOLO', 'INDIVIDUEL', 'PRO', 'EQUIPE', 'ORGANISATION', 'ENTERPRISE'];
 
 const PLAN_META: Record<SubscriptionPlan, {
   label: string; color: string; bg: string; dot: string;
   description: string; limits: string[]; badge?: string;
 }> = {
+  SOLO: {
+    label: 'Solo',
+    color: 'text-teal-700', bg: 'bg-teal-100', dot: 'bg-teal-500',
+    description: '5 000 FCFA/mois, pour une personne',
+    badge: '30 jours gratuits',
+    limits: ['3 plans d\'action actifs', '1 utilisateur', 'Tous les modules'],
+  },
   INDIVIDUEL: {
     label: 'Individuel',
     color: 'text-emerald-700', bg: 'bg-emerald-100', dot: 'bg-emerald-500',
-    description: 'Essai gratuit 30 jours, sans engagement',
+    description: '10 000 FCFA/mois, pour une personne',
     badge: '30 jours gratuits',
-    limits: ['2 plans d\'action', '5 utilisateurs', 'Fonctionnalités de base'],
+    limits: ['10 plans d\'action actifs', '1 utilisateur', 'Tous les modules'],
   },
   PRO: {
     label: 'Pro',

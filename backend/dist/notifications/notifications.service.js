@@ -370,6 +370,7 @@ let NotificationsService = NotificationsService_1 = class NotificationsService {
         const adminEmail = this.config.get('SUPPORT_EMAIL') || 'admin@ataaba.com';
         const frontendUrl = this.frontendUrl;
         const planLabels = {
+            SOLO: 'Solo',
             INDIVIDUEL: 'Individuel',
             PRO: 'Pro',
             EQUIPE: 'Équipe',

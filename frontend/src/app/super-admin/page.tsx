@@ -11,8 +11,9 @@ import {
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const PLAN_ORDER: SubscriptionPlan[] = ['INDIVIDUEL', 'PRO', 'EQUIPE', 'ORGANISATION', 'ENTERPRISE'];
+const PLAN_ORDER: SubscriptionPlan[] = ['SOLO', 'INDIVIDUEL', 'PRO', 'EQUIPE', 'ORGANISATION', 'ENTERPRISE'];
 const PLAN_META: Record<SubscriptionPlan, { label: string; color: string; bg: string; bar: string }> = {
+  SOLO:          { label: 'Solo',           color: 'text-teal-700',    bg: 'bg-teal-100',    bar: 'bg-teal-400' },
   INDIVIDUEL:    { label: 'Individuel',     color: 'text-emerald-700', bg: 'bg-emerald-100', bar: 'bg-emerald-400' },
   PRO:           { label: 'Pro',            color: 'text-blue-700',    bg: 'bg-blue-100',    bar: 'bg-blue-500' },
   EQUIPE:        { label: 'Équipe',         color: 'text-purple-700',  bg: 'bg-purple-100',  bar: 'bg-purple-400' },
